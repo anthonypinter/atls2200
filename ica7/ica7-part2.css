@@ -1,0 +1,66 @@
+body{
+    background-color: olive;
+}
+
+
+#flex-parent{
+    background-color: orangered;
+}
+#flex-parent p{
+    padding:5vw;
+}
+
+#flex-child1{
+     
+}
+#flex-child2{
+ 
+}
+#flex-child3{
+ 
+}
+#flex-child4{
+ 
+}
+
+
+#grid-parent{
+
+}
+
+#grid-parent h1{
+    background-color: grey;
+    padding:3vw 5vh;
+    margin:5vw;
+    
+}
+#no0{
+    
+}
+#no1{
+
+}
+#no2{
+
+}
+#no3{
+
+}
+#no4{
+
+}
+#no5{
+
+}
+#no6{
+
+}
+#no7{
+
+}
+#no8{
+
+}
+#no9{
+
+}
