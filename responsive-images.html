@@ -1,0 +1,170 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Responsive Images</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Recursive:slnt,wght,CASL,MONO@-15..0,300..1000,0..1,0..1&display=swap">
+<link rel="stylesheet" href="style.css">
+<style>
+  .stage.scroll { overflow-x: auto; min-height: 0; }
+  .container { border: 2px dashed var(--prop); border-radius: 8px; padding: 8px; position: relative; transition: width 0.2s; }
+  .container .lbl { font: 600 0.75rem var(--font-code); font-variation-settings: "MONO" 1; color: var(--prop); display: block; margin-bottom: 6px; }
+  .container img { display: block; border-radius: 4px; }
+  .status { font-size: 0.93rem; padding: 8px 10px; border-radius: 6px; }
+  .status.good { background: var(--good-soft); color: var(--good); } .status.bad { background: var(--bad-soft); color: var(--bad); }
+  .fit-box { border: 2px dashed var(--prop); border-radius: 6px; background: repeating-conic-gradient(var(--stage) 0 25%, var(--panel) 0 50%) 0 0 / 16px 16px; margin: 0 auto; transition: width 0.2s, height 0.2s; max-width: 100%; }
+  .fit-box img { width: 100%; height: 100%; display: block; }
+  .shape-row { display: grid; place-items: center; min-height: 340px; }
+  .cands { display: grid; gap: 8px; }
+  .cand { display: grid; grid-template-columns: 70px 1fr 70px; gap: 10px; align-items: center; padding: 8px 10px; border-radius: 6px; border: 1px solid var(--line); background: var(--panel); font: 0.88rem var(--font-code); font-variation-settings: "MONO" 1; }
+  .cand .bar { height: 10px; border-radius: 3px; background: var(--line); }
+  .cand.pick { border-color: var(--cobalt); box-shadow: inset 4px 0 0 var(--cobalt); }
+  .cand.pick .bar { background: var(--cobalt); }
+  .cand span:last-child { text-align: right; color: var(--muted); font-variant-numeric: tabular-nums; }
+  .saving { font: 800 1.4rem var(--font-display); color: var(--good); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <nav class="crumbs" aria-label="Site"><a class="crumb" href="index.html">← Field Guide</a><a class="crumb" href="glossary.html">Glossary</a></nav>
+  <header class="page-head">
+    <span class="eyebrow">Responsive Design · Responsive Images</span>
+    <h1>Responsive Images</h1>
+    <p class="lede">Images have a fixed size, but screens don't. Here's how to stop images from overflowing, crop them to fit a shape, and send phones a smaller file.</p>
+  </header>
+
+  <div class="section-title" style="margin-top:0"><span class="eyebrow">Part 1</span><h2>Make it shrink</h2><p>This photo is 800 × 500 pixels. Make the container narrower and see what each setting does.</p></div>
+  <section class="playground">
+    <div class="panel controls">
+      <div class="control"><label for="cw">container width</label><input id="cw" type="range" min="200" max="900" step="10" value="420"><span class="readout" id="cw-out"></span></div>
+      <label class="control row" for="mw" style="cursor:pointer"><span class="prop" style="font:600 0.85rem var(--font-code);font-variation-settings:'MONO' 1">max-width: 100%</span><input id="mw" type="checkbox"></label>
+      <label class="control row" for="ha" style="cursor:pointer"><span class="prop" style="font:600 0.85rem var(--font-code);font-variation-settings:'MONO' 1">height: auto</span><input id="ha" type="checkbox"></label>
+      <p class="hint">The img tag has <code>width="800" height="500"</code> attributes, which you should always include.</p>
+    </div>
+    <div class="stage-col">
+      <div class="stage scroll"><div class="container" id="c1"><span class="lbl" id="c1-lbl"></span><img id="img1" alt="Hiker on a ridge above a valley" width="800" height="500"></div></div>
+      <div class="status" id="status1" aria-live="polite"></div>
+    </div>
+  </section>
+
+  <div class="section-title"><span class="eyebrow">Part 2</span><h2>Fit it to a shape with object-fit</h2><p>When an image has to fill a box of a different shape, like a square profile photo or a wide banner, <code>object-fit</code> decides whether to stretch, shrink or crop it.</p></div>
+  <section class="playground">
+    <div class="panel controls">
+      <div class="control"><label>box shape</label><div class="seg" id="shape">
+        <button class="btn" data-w="260" data-h="260" aria-pressed="true">square</button><button class="btn" data-w="180" data-h="300">tall</button><button class="btn" data-w="420" data-h="150">wide</button></div></div>
+      <div class="control"><label for="fit">object-fit</label>
+        <select id="fit"><option>fill</option><option>contain</option><option selected>cover</option><option>none</option><option>scale-down</option></select></div>
+      <div class="control"><label for="opos">object-position</label>
+        <select id="opos"><option>center</option><option>left</option><option>right</option><option>top</option><option>bottom</option></select></div>
+    </div>
+    <div class="stage-col">
+      <div class="stage shape-row"><div class="fit-box" id="fitbox"><img id="img2" alt="Hiker on a ridge above a valley" width="800" height="500"></div></div>
+      <div class="status good" id="status2" aria-live="polite"></div>
+    </div>
+  </section>
+
+  <div class="section-title"><span class="eyebrow">Part 3</span><h2>Send the right file with srcset</h2><p>With <code>srcset</code> you list several copies of the same image at different widths. The browser downloads the smallest one that still looks sharp on the visitor's screen.</p></div>
+  <section class="playground">
+    <div class="panel controls">
+      <div class="control"><label for="dw">image shows at (CSS px)</label><input id="dw" type="range" min="200" max="1200" step="20" value="380"><span class="readout" id="dw-out"></span></div>
+      <div class="control"><label>screen pixel density</label><div class="seg" id="dpr">
+        <button class="btn" data-d="1">1x</button><button class="btn" data-d="2" aria-pressed="true">2x</button><button class="btn" data-d="3">3x</button></div></div>
+      <p class="hint">Most phones are 2x or 3x: each CSS pixel uses 2 or 3 real pixels across.</p>
+    </div>
+    <div class="stage-col">
+      <div class="panel" style="display:grid;gap:10px">
+        <span class="eyebrow" id="need"></span>
+        <div class="cands" id="cands"></div>
+      </div>
+      <div class="panel" style="display:grid;gap:4px" aria-live="polite"><span class="saving" id="saving"></span><span class="hint" id="saving-note"></span></div>
+    </div>
+  </section>
+
+  <section class="notes">
+    <div class="panel">
+      <h2>Key ideas</h2>
+      <ul>
+        <li>Put <code>max-width: 100%</code> and <code>height: auto</code> on images in nearly every stylesheet.</li>
+        <li>Keep the <code>width</code> and <code>height</code> attributes in the HTML. The browser uses them to reserve space before the image loads.</li>
+        <li><code>object-fit: cover</code> fills the box and crops the edges. <code>contain</code> shows the whole image and leaves empty space.</li>
+        <li>Use <code>object-position</code> to keep the important part of the photo in view when it's cropped.</li>
+      </ul>
+    </div>
+    <div class="panel mistake">
+      <h2>Common mistakes</h2>
+      <ul>
+        <li>Uploading a 4000px photo straight from a phone. It can be 5 MB for something shown 400px wide.</li>
+        <li>Setting both width and height in CSS without <code>object-fit</code>, which stretches the image.</li>
+        <li>Using <code>width: 100%</code> on a small image, which blows it up and makes it blurry.</li>
+        <li>Listing srcset widths that don't match the real files' widths.</li>
+      </ul>
+    </div>
+  </section>
+
+  <footer class="page-foot"><a href="media-queries.html">← Media Queries</a><a href="picture.html">Next: Picture &amp; Lazy Loading →</a></footer>
+</div>
+
+<script>
+  const $ = (id) => document.getElementById(id);
+  const PHOTO = "data:image/svg+xml," + encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="800" height="500" viewBox="0 0 800 500" preserveAspectRatio="none"><defs><linearGradient id="s" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f4a261"/><stop offset="1" stop-color="#fde2c4"/></linearGradient></defs><rect width="800" height="500" fill="url(#s)"/><circle cx="160" cy="150" r="46" fill="#fff3d6"/><path d="M0 500 L0 330 L140 250 L260 320 L400 200 L520 280 L640 190 L800 290 L800 500 Z" fill="#7d5a7a"/><path d="M0 500 L0 400 L200 360 L380 410 L560 330 L640 320 L800 380 L800 500 Z" fill="#3e4a61"/><g fill="#1b1f2b"><circle cx="620" cy="262" r="9"/><path d="M613 272 L627 272 L630 305 L610 305 Z"/><path d="M612 304 L605 322 L611 322 L618 306 Z"/><path d="M623 306 L630 322 L636 322 L628 304 Z"/><rect x="606" y="273" width="7" height="20" rx="2"/><path d="M630 276 L645 300" stroke="#1b1f2b" stroke-width="3"/></g></svg>`);
+  $("img1").src = PHOTO; $("img2").src = PHOTO;
+
+  function part1() {
+    const cw = +$("cw").value, mw = $("mw").checked, ha = $("ha").checked;
+    $("cw-out").textContent = cw + "px";
+    $("c1").style.width = cw + "px";
+    const img = $("img1");
+    img.style.maxWidth = mw ? "100%" : "none";
+    img.style.height = ha ? "auto" : "";
+    $("c1-lbl").textContent = `container · ${cw}px`;
+    const inner = cw - 20, s = $("status1");
+    if (!mw && inner < 800) { s.className = "status bad"; s.textContent = `Overflowing: the image is still 800px wide and sticks out ${800 - inner}px past its container. Turn on max-width: 100%.`; }
+    else if (mw && !ha && inner < 800) { s.className = "status bad"; s.textContent = "It fits now, but it's squished: the width shrank while the height stayed at 500px. Turn on height: auto."; }
+    else { s.className = "status good"; s.textContent = inner >= 800 ? "The container is wider than the image, so it shows at its natural 800px. max-width never makes an image bigger." : "The image shrinks to fit and keeps its shape."; }
+  }
+  ["cw", "mw", "ha"].forEach((id) => $(id).addEventListener("input", part1));
+  part1();
+
+  let shape = { w: 260, h: 260 };
+  const FIT = {
+    fill: "Stretches the image to the box's exact shape. Watch the hiker get squished.",
+    contain: "Shows the whole image, scaled down to fit. Empty space appears where the shapes don't match.",
+    cover: "Fills the whole box and crops whatever hangs over. Change object-position to choose what gets cut.",
+    none: "Shows the image at its real size, 800 × 500, cropped by the box.",
+    "scale-down": "Uses whichever of none or contain gives the smaller image.",
+  };
+  function part2() {
+    const fit = $("fit").value, pos = $("opos").value;
+    Object.assign($("fitbox").style, { width: shape.w + "px", height: shape.h + "px" });
+    Object.assign($("img2").style, { objectFit: fit, objectPosition: pos });
+    let msg = FIT[fit];
+    if (fit === "cover" && shape.h > shape.w && pos !== "right") msg += " In a tall box, try object-position: right to keep the hiker in frame.";
+    $("status2").textContent = msg;
+    document.querySelectorAll("#shape button").forEach((b) => b.setAttribute("aria-pressed", String(+b.dataset.w === shape.w)));
+  }
+  $("shape").addEventListener("click", (e) => { const b = e.target.closest("button"); if (b) { shape = { w: +b.dataset.w, h: +b.dataset.h }; part2(); } });
+  ["fit", "opos"].forEach((id) => $(id).addEventListener("input", part2));
+  part2();
+
+  const CANDS = [[400, 38], [800, 120], [1600, 390], [2400, 820]];
+  let dpr = 2;
+  function part3() {
+    const dw = +$("dw").value, need = dw * dpr;
+    $("dw-out").textContent = dw + "px";
+    $("need").textContent = `Needs ${dw} × ${dpr} = ${need} real pixels across`;
+    const pick = CANDS.find(([w]) => w >= need) || CANDS[CANDS.length - 1];
+    $("cands").innerHTML = CANDS.map(([w, kb]) => `<div class="cand ${w === pick[0] ? "pick" : ""}"><span>trail-${w}.jpg</span><div class="bar" style="width:${(w / 2400) * 100}%"></div><span>${kb} KB</span></div>`).join("");
+    const big = CANDS[CANDS.length - 1][1];
+    $("saving").textContent = pick[1] === big ? "No savings at this size" : `Saves ${big - pick[1]} KB`;
+    $("saving-note").textContent = `The browser picks trail-${pick[0]}.jpg (${pick[1]} KB). Without srcset, every visitor downloads the ${big} KB file.` + (need > 2400 ? " Even the largest file is a little small here, so it will look slightly soft." : "");
+    document.querySelectorAll("#dpr button").forEach((b) => b.setAttribute("aria-pressed", String(+b.dataset.d === dpr)));
+  }
+  $("dpr").addEventListener("click", (e) => { const b = e.target.closest("button"); if (b) { dpr = +b.dataset.d; part3(); } });
+  $("dw").addEventListener("input", part3);
+  part3();
+</script>
+</body>
+</html>

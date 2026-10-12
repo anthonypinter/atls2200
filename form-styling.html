@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Styling Forms</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Recursive:slnt,wght,CASL,MONO@-15..0,300..1000,0..1,0..1&display=swap">
+<link rel="stylesheet" href="style.css">
+<style>
+  .steps { display: grid; gap: 6px; }
+  .step { display: grid; grid-template-columns: 26px 1fr; gap: 8px; align-items: start; text-align: left; padding: 8px 10px; border-radius: 8px; border: 1px solid var(--line); background: var(--panel); color: var(--ink); font: inherit; font-size: 0.93rem; cursor: pointer; }
+  .step .n { font: 700 0.8rem/1.6 var(--font-code); font-variation-settings: "MONO" 1; color: var(--muted); }
+  .step.done { border-color: var(--good); } .step.done .n { color: var(--good); }
+  .step[aria-current="true"] { border-color: var(--cobalt); box-shadow: inset 4px 0 0 var(--cobalt); }
+  .form-stage { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 20px; min-width: 0; }
+  .step-text { display: grid; gap: 6px; }
+
+  /* The demo form. Each sN class adds one layer of styling. */
+  .fs .err { display: none; }
+  .fs.s1 { display: grid; gap: 16px; max-width: 420px; }
+  .fs.s1 .field { display: grid; gap: 6px; }
+  .fs.s1 label { font-weight: 700; }
+  .fs.s1 .hint-text { font-size: 0.85rem; color: var(--muted); }
+  .fs.s2 input, .fs.s2 select, .fs.s2 textarea, .fs.s2 button { font: inherit; color: inherit; }
+  .fs.s3 input:not([type="checkbox"]), .fs.s3 select, .fs.s3 textarea { width: 100%; box-sizing: border-box; }
+  .fs.s4 input:not([type="checkbox"]), .fs.s4 select, .fs.s4 textarea { padding: 10px 12px; border: 1.5px solid var(--line); border-radius: 8px; background: var(--paper); }
+  .fs.s4 textarea { resize: vertical; min-height: 90px; }
+  .fs.s5 input:focus-visible, .fs.s5 select:focus-visible, .fs.s5 textarea:focus-visible { outline: none; border-color: var(--cobalt); box-shadow: 0 0 0 4px var(--cobalt-soft); }
+  .fs.s6 .check { display: flex; gap: 10px; align-items: center; font-weight: 400; cursor: pointer; }
+  .fs.s6 input[type="checkbox"] { width: 20px; height: 20px; accent-color: var(--cobalt); }
+  .fs.s7 button { justify-self: start; background: var(--cobalt); color: var(--panel); border: 0; border-radius: 8px; padding: 12px 22px; font-weight: 700; cursor: pointer; transition: background 0.15s, transform 0.1s; }
+  .fs.s7 button:hover { background: color-mix(in srgb, var(--cobalt) 82%, var(--ink)); }
+  .fs.s7 button:active { transform: translateY(1px); }
+  .fs.s7 button:focus-visible { outline: 3px solid var(--prop); outline-offset: 3px; }
+  .fs.s8 input:user-invalid { border-color: var(--bad); background: var(--bad-soft); }
+  .fs.s8 input:user-invalid + .err { display: block; color: var(--bad); font-size: 0.85rem; }
+  .sent { padding: 10px 12px; border-radius: 8px; background: var(--good-soft); color: var(--good); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <nav class="crumbs" aria-label="Site"><a class="crumb" href="index.html">← Field Guide</a><a class="crumb" href="glossary.html">Glossary</a></nav>
+  <header class="page-head">
+    <span class="eyebrow">Polish &amp; Workflow · Styling Forms</span>
+    <h1>Styling Forms</h1>
+    <p class="lede">Browser-default forms look cramped and inconsistent. A handful of rules fixes most of it. Add them one layer at a time and watch the same form improve.</p>
+  </header>
+
+  <section class="playground even">
+    <div class="stage-col">
+      <div class="steps" id="steps" role="group" aria-label="Styling layers"></div>
+      <div class="panel step-text" id="step-text" aria-live="polite"></div>
+    </div>
+    <div class="form-stage">
+      <form class="fs" id="fs" novalidate>
+        <div class="field"><label for="fn">Name</label><input id="fn" required autocomplete="off"><span class="err">Please enter your name.</span></div>
+        <div class="field"><label for="fe">Email</label><input id="fe" type="email" required placeholder="you@example.com" autocomplete="off"><span class="err">That doesn't look like an email address.</span></div>
+        <div class="field"><label for="ft">Favorite trail</label><select id="ft"><option>Royal Arch</option><option>Mesa Trail</option><option>Chautauqua Loop</option></select></div>
+        <div class="field"><label for="fm">Message</label><textarea id="fm" rows="3"></textarea><span class="hint-text">Optional. Tell us about your last hike.</span></div>
+        <label class="check"><input type="checkbox" id="fc"> Email me when new trails are added</label>
+        <button type="submit">Join the club</button>
+        <div id="sent" aria-live="polite"></div>
+      </form>
+    </div>
+  </section>
+
+  <section class="notes">
+    <div class="panel">
+      <h2>Key ideas</h2>
+      <ul>
+        <li>Inputs, selects and buttons don't inherit fonts. Start every form with <code>font: inherit</code>.</li>
+        <li>Put labels above inputs. It's easiest to scan and works on narrow screens.</li>
+        <li><code>accent-color</code> recolors checkboxes, radios and range sliders in one line.</li>
+        <li><code>:user-invalid</code> only shows errors after someone has interacted with a field, not as soon as the page loads.</li>
+      </ul>
+    </div>
+    <div class="panel mistake">
+      <h2>Common mistakes</h2>
+      <ul>
+        <li>Removing the focus outline and replacing it with nothing.</li>
+        <li><code>width: 100%</code> plus padding without <code>box-sizing: border-box</code>, so inputs poke out of their container.</li>
+        <li>Showing errors in red only. Add a text message too, for people who can't tell the colors apart.</li>
+        <li>Tiny checkboxes and buttons that are hard to tap on a phone.</li>
+      </ul>
+    </div>
+  </section>
+
+  <footer class="page-foot"><a href="transitions.html">← Transitions &amp; Animations</a><a href="accessibility.html">Next: Accessibility Basics →</a></footer>
+</div>
+
+<script>
+  const $ = (id) => document.getElementById(id);
+  const STEPS = [
+    ["Browser defaults", "Nothing styled yet. Fields sit in a jumble, the font doesn't match the page, and every browser shows it differently."],
+    ["Stack the fields", "Turn the form into a grid with a gap, and put each label above its input. Instantly easier to scan."],
+    ["font: inherit", "Form controls use the browser's own small font. font: inherit and color: inherit make them match the rest of the page."],
+    ["Full width", "width: 100% lines the fields up, and box-sizing: border-box keeps padding from making them overflow."],
+    ["Padding, border, radius", "Roomier fields with a softer border are easier to read and to tap on a phone."],
+    ["Focus style", "Click or Tab into a field. A clear color ring shows where you're typing. Never remove the outline without replacing it."],
+    ["Checkbox", "accent-color recolors the checkbox, and a bigger size makes it easier to hit. The label is clickable too."],
+    ["Button", "A solid button with hover, pressed and focus styles. It should look clickable at a glance."],
+    ["Error states", "Type something wrong in Email and click away, or submit with Name empty. :user-invalid adds a red border and a message only after interaction."],
+  ];
+  let step = 0;
+  $("steps").innerHTML = STEPS.map(([t], i) => `<button class="step" data-i="${i}"><span class="n">${i}</span><span>${t}</span></button>`).join("");
+  $("steps").addEventListener("click", (e) => { const b = e.target.closest("button"); if (b) { step = +b.dataset.i; render(); } });
+  function render() {
+    $("fs").className = "fs " + Array.from({ length: step }, (_, i) => "s" + (i + 1)).join(" ");
+    document.querySelectorAll(".step").forEach((b, i) => { b.setAttribute("aria-current", String(i === step)); b.classList.toggle("done", i < step); });
+    $("step-text").innerHTML = `<span class="eyebrow">Layer ${step} of ${STEPS.length - 1}</span><h2>${STEPS[step][0]}</h2><p>${STEPS[step][1]}</p>` +
+      `<div class="seg" style="margin-top:6px"><button class="btn" id="prev" ${step === 0 ? "disabled" : ""}>← Remove layer</button><button class="btn" id="next" ${step === STEPS.length - 1 ? "disabled" : ""}>Add next layer →</button></div>`;
+    $("prev").addEventListener("click", () => { step--; render(); });
+    $("next").addEventListener("click", () => { step++; render(); });
+  }
+  $("fs").addEventListener("submit", (e) => {
+    e.preventDefault();
+    const ok = $("fs").checkValidity();
+    if (!ok) { $("fs").reportValidity(); $("sent").innerHTML = ""; return; }
+    $("sent").innerHTML = '<div class="sent">Thanks! A real form would send this now.</div>';
+  });
+  render();
+</script>
+</body>
+</html>

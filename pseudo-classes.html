@@ -1,0 +1,219 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pseudo-classes &amp; States</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Recursive:slnt,wght,CASL,MONO@-15..0,300..1000,0..1,0..1&display=swap">
+<link rel="stylesheet" href="style.css">
+<style>
+  .lab { display: grid; gap: 16px; padding: 22px; background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); align-content: start; }
+  .lab .row { display: grid; gap: 4px; }
+  .lab .who { font: 600 0.75rem var(--font-code); font-variation-settings: "MONO" 1; color: var(--muted); }
+  .lab .row.current .who { color: var(--cobalt); }
+  /* Real state styles on the sample controls */
+  .s-btn { font: 700 1rem var(--font-body); padding: 10px 18px; border-radius: 8px; border: 2px solid var(--cobalt); background: var(--cobalt); color: var(--panel); cursor: pointer; justify-self: start; transition: transform 0.1s, background 0.15s; }
+  .s-btn:hover { background: color-mix(in srgb, var(--cobalt) 80%, var(--ink)); }
+  .s-btn:active { transform: translateY(2px); }
+  .s-btn:focus { outline: none; }
+  .s-btn:focus-visible { outline: 3px solid var(--prop); outline-offset: 3px; }
+  .s-btn:disabled { background: var(--line); border-color: var(--line); color: var(--muted); cursor: not-allowed; }
+  .s-link { color: var(--cobalt); font-weight: 700; justify-self: start; }
+  .s-link:hover { color: var(--prop); text-decoration-thickness: 3px; }
+  .s-input { font: 1rem var(--font-body); padding: 9px 10px; border: 2px solid var(--line); border-radius: 8px; background: var(--paper); color: var(--ink); max-width: 320px; }
+  .s-input:focus { outline: none; border-color: var(--cobalt); box-shadow: 0 0 0 3px var(--cobalt-soft); }
+  .s-input:not(:placeholder-shown):invalid { border-color: var(--bad); }
+  .s-input:not(:placeholder-shown):valid { border-color: var(--good); }
+  .s-check { display: flex; gap: 8px; align-items: center; cursor: pointer; justify-self: start; }
+  .s-check input { width: 18px; height: 18px; accent-color: var(--cobalt); }
+  .s-check input:checked + span { font-weight: 700; color: var(--good); }
+
+  .states { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 6px; }
+  .state { font: 600 0.85rem var(--font-code); font-variation-settings: "MONO" 1; padding: 8px 10px; border-radius: 6px; border: 1px dashed var(--line); color: var(--muted); transition: background 0.1s; }
+  .state.on { border-style: solid; border-color: var(--cobalt); background: var(--cobalt-soft); color: var(--cobalt); }
+  .state-desc { font-size: 0.9rem; color: var(--muted); }
+
+  .check3 { display: flex; gap: 8px; align-items: center; font-size: 0.93rem; cursor: pointer; }
+  .check3 input { accent-color: var(--cobalt); }
+  .navdemo { background: #fff; border: 1px solid var(--line); border-radius: var(--radius); padding: 14px; font-family: var(--font-body); }
+  .navdemo a { color: #2340d9; }
+  .navdemo a:visited { color: #2340d9; }
+  .navdemo.s1 ul { list-style: none; padding-left: 0; margin: 0; }
+  .navdemo.s2 ul { display: flex; flex-wrap: wrap; gap: 6px; }
+  .navdemo.s3 a { display: block; padding: 10px 14px; border-radius: 6px; text-decoration: none; color: #1d2133; background: #eef1f8; }
+  .navdemo.s4 a:hover { background: #2340d9; color: #fff; }
+  .navdemo.s4 a:focus-visible { outline: 3px solid #b4410c; outline-offset: 2px; }
+  .navdemo.s4 a:active { transform: translateY(1px); }
+  .navdemo.s5 a[aria-current="page"] { font-weight: 700; box-shadow: inset 0 -3px 0 #b4410c; }
+  .nth-list { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(56px, 1fr)); gap: 6px; }
+  .nth-list li { display: grid; place-items: center; height: 56px; border-radius: 6px; background: var(--stage); border: 1px solid var(--line); font: 700 1rem var(--font-code); font-variation-settings: "MONO" 1; color: var(--muted); transition: background 0.15s; }
+  .nth-list li.hit { background: var(--cobalt); color: var(--panel); border-color: var(--cobalt); }
+  .formula { display: flex; align-items: center; gap: 2px; font: 1.05rem var(--font-code); font-variation-settings: "MONO" 1; flex-wrap: wrap; }
+  .formula input { font: inherit; color: var(--val); width: 9ch; padding: 6px 8px; border: 1px solid var(--line); border-radius: 6px; background: var(--panel); }
+  .formula input.bad { border-color: var(--bad); }
+  .nvals { font: 0.88rem var(--font-code); font-variation-settings: "MONO" 1; color: var(--muted); overflow-wrap: anywhere; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <nav class="crumbs" aria-label="Site"><a class="crumb" href="index.html">← Field Guide</a><a class="crumb" href="glossary.html">Glossary</a></nav>
+  <header class="page-head">
+    <span class="eyebrow">CSS Basics · Pseudo-classes &amp; States</span>
+    <h1>Pseudo-classes &amp; States</h1>
+    <p class="lede">A pseudo-class, written with one colon, selects an element when it's in a certain state or position. Hover, click, tab and type on the controls below and watch which states switch on.</p>
+  </header>
+
+  <div class="section-title" style="margin-top:0"><span class="eyebrow">Part 1</span><h2>Interactive states</h2></div>
+  <section class="playground even">
+    <div class="lab" id="lab">
+      <div class="row" data-name="button"><span class="who">button</span><button class="s-btn" type="button">Save trail</button></div>
+      <div class="row" data-name="disabled button"><span class="who">button disabled</span><button class="s-btn" type="button" disabled>Sold out</button></div>
+      <div class="row" data-name="link"><span class="who">a</span><a class="s-link" href="#lab">View the trail map</a></div>
+      <div class="row" data-name="email input"><span class="who">input type="email" required</span><input class="s-input" type="email" required placeholder="you@example.com" aria-label="Email"></div>
+      <div class="row" data-name="checkbox"><span class="who">input type="checkbox"</span><label class="s-check"><input type="checkbox"><span>Dogs allowed</span></label></div>
+    </div>
+    <div class="panel" style="display:grid;gap:10px;align-content:start">
+      <span class="eyebrow" id="cur-label">Point at or tab to a control</span>
+      <div class="states" id="states"></div>
+      <p class="state-desc" id="desc"></p>
+      <p class="hint">Try clicking the button with the mouse, then reaching it with the Tab key. Only the keyboard shows the <code>:focus-visible</code> ring.</p>
+    </div>
+  </section>
+
+  <div class="section-title"><span class="eyebrow">Part 2</span><h2>Position: :nth-child()</h2><p>The formula <code>an+b</code> is calculated for n = 0, 1, 2, 3... and every result picks an item.</p></div>
+  <section class="playground">
+    <div class="panel controls">
+      <div class="formula"><span class="sel">li</span><span>:nth-child(</span><input id="f" value="3n+1" spellcheck="false" aria-label="nth-child formula"><span>)</span></div>
+      <div class="seg" id="presets"></div>
+      <p class="hint" id="f-desc"></p>
+    </div>
+    <div class="stage-col">
+      <ol class="nth-list" id="nth"></ol>
+      <p class="nvals" id="nvals"></p>
+    </div>
+  </section>
+
+  <div class="section-title"><span class="eyebrow">Part 3</span><h2>Styling links and building a menu</h2><p>Links have four states. Write them in this order, or later ones get overridden: <strong>:link, :visited, :hover, :active</strong>. A common memory trick is "LoVe HAte." Then add <code>:focus-visible</code> for keyboard users. Build up a menu one step at a time below.</p></div>
+  <section class="playground">
+    <div class="panel controls">
+      <label class="check3"><input type="checkbox" id="n1"> Remove bullets and indent</label>
+      <label class="check3"><input type="checkbox" id="n2"> Put the links in a row (flex)</label>
+      <label class="check3"><input type="checkbox" id="n3"> Make each link a padded block</label>
+      <label class="check3"><input type="checkbox" id="n4"> :hover and :focus-visible styles</label>
+      <label class="check3"><input type="checkbox" id="n5"> Mark the current page with aria-current</label>
+      <button class="btn" id="n-all" style="justify-self:start">Turn everything on</button>
+    </div>
+    <div class="stage-col">
+      <nav class="navdemo" id="navdemo" aria-label="Sample menu"><ul><li><a href="#navdemo">Home</a></li><li><a href="#navdemo" aria-current="page">Trails</a></li><li><a href="#navdemo">Maps</a></li><li><a href="#navdemo">Gear</a></li></ul></nav>
+      <p class="hint" id="nav-note"></p>
+    </div>
+  </section>
+
+  <section class="notes">
+    <div class="panel">
+      <h2>Key ideas</h2>
+      <ul>
+        <li>Pseudo-classes use one colon (<code>:hover</code>). Pseudo-elements like <code>::before</code> use two.</li>
+        <li>Style <code>:hover</code> and <code>:focus-visible</code> together so keyboard users get the same feedback as mouse users.</li>
+        <li>Phones have no hover. Never hide something important behind <code>:hover</code> alone.</li>
+        <li><code>:nth-child(odd)</code> and <code>(even)</code> are great for striped tables and lists.</li>
+        <li>For security, browsers only let <code>:visited</code> change colors, nothing else.</li>
+      </ul>
+    </div>
+    <div class="panel mistake">
+      <h2>Common mistakes</h2>
+      <ul>
+        <li>Removing focus outlines with <code>outline: none</code> and adding nothing back, so keyboard users get lost.</li>
+        <li>A space before the colon: <code>a :hover</code> means "any hovered element inside an a."</li>
+        <li>Expecting <code>p:first-child</code> to pick the first p. It picks a p only if it's the very first child of its parent.</li>
+        <li>Showing <code>:invalid</code> styles before the user has typed anything.</li>
+      </ul>
+    </div>
+  </section>
+
+  <footer class="page-foot"><a href="selectors.html">← Selectors &amp; Specificity</a><a href="pseudo-elements.html">Next: Pseudo-elements →</a></footer>
+</div>
+
+<script>
+  const $ = (id) => document.getElementById(id);
+  const STATES = {
+    ":hover": "The pointer is over it.",
+    ":active": "It's being pressed right now.",
+    ":focus": "It has keyboard focus, by click or Tab.",
+    ":focus-visible": "It has focus and the browser thinks a focus ring should show, usually after keyboard use.",
+    ":disabled": "It has the disabled attribute and can't be used.",
+    ":checked": "A checkbox or radio that is ticked.",
+    ":placeholder-shown": "The input is empty, so its placeholder is showing.",
+    ":valid": "The current value passes the input's rules.",
+    ":invalid": "The current value breaks a rule, like required or type=\"email\".",
+  };
+  let current = null;
+  const rows = [...document.querySelectorAll("#lab .row")];
+  const ctrl = (row) => row.querySelector("button, a, input");
+  rows.forEach((row) => {
+    const el = ctrl(row);
+    ["pointerenter", "focus"].forEach((ev) => el.addEventListener(ev, () => (current = row)));
+    row.addEventListener("pointerenter", () => (current = row));
+  });
+  function tick() {
+    rows.forEach((r) => r.classList.toggle("current", r === current));
+    if (current) {
+      const el = ctrl(current);
+      const on = Object.keys(STATES).filter((s) => { try { return el.matches(s); } catch (e) { return false; } });
+      $("cur-label").textContent = `Watching: ${current.dataset.name}`;
+      const html = Object.keys(STATES).map((s) => `<div class="state ${on.includes(s) ? "on" : ""}">${s}</div>`).join("");
+      if ($("states").innerHTML !== html) $("states").innerHTML = html;
+      const d = on.length ? on.map((s) => `${s}: ${STATES[s]}`).join(" ") : "No states active right now.";
+      if ($("desc").textContent !== d) $("desc").textContent = d;
+    } else if (!$("states").innerHTML) {
+      $("states").innerHTML = Object.keys(STATES).map((s) => `<div class="state">${s}</div>`).join("");
+    }
+    requestAnimationFrame(tick);
+  }
+  tick();
+
+  // Menu builder
+  const NAVN = ["Plain list: bullets, indent and underlined blue links. This is how the browser styles it by default.",
+    "list-style: none and padding-left: 0 remove the bullets and the indent.",
+    "display: flex on the ul puts the items in a row, with a gap between them.",
+    "display: block and padding on each a make the whole box clickable, not just the text. Bigger targets are easier to tap.",
+    "Hover or Tab through the links: :hover and :focus-visible give the same feedback for mouse and keyboard.",
+    "aria-current=\"page\" marks the page you're on. Screen readers announce it, and CSS can target it with an attribute selector."];
+  function navb() {
+    let last = 0; const nav = $("navdemo");
+    [1, 2, 3, 4, 5].forEach((i) => { const on = $("n" + i).checked; nav.classList.toggle("s" + i, on); if (on) last = i; });
+    $("nav-note").textContent = NAVN[last];
+  }
+  [1, 2, 3, 4, 5].forEach((i) => $("n" + i).addEventListener("input", navb));
+  $("n-all").addEventListener("click", () => { [1, 2, 3, 4, 5].forEach((i) => ($("n" + i).checked = true)); navb(); });
+  $("navdemo").addEventListener("click", (e) => { if (e.target.closest("a")) e.preventDefault(); });
+  navb();
+
+  // nth-child
+  $("nth").innerHTML = Array.from({ length: 15 }, (_, i) => `<li>${i + 1}</li>`).join("");
+  const PRESETS = { "odd": "Items 1, 3, 5... Same as 2n+1.", "even": "Items 2, 4, 6... Same as 2n.", "3n": "Every third item: 3, 6, 9...", "3n+1": "Every third item, starting at 1.", "-n+3": "The first three items only.", "n+4": "Item 4 and everything after it.", "5": "Only the fifth item." };
+  $("presets").innerHTML = Object.keys(PRESETS).map((p) => `<button class="btn">${p}</button>`).join("");
+  $("presets").addEventListener("click", (e) => { const b = e.target.closest("button"); if (b) { $("f").value = b.textContent; nth(); } });
+  function nth() {
+    const f = $("f").value.trim().replace(/\s+/g, "");
+    const items = [...$("nth").children];
+    items.forEach((li) => li.classList.remove("hit"));
+    let hits;
+    try { hits = $("nth").querySelectorAll(`li:nth-child(${f})`); $("f").classList.remove("bad"); }
+    catch (e) { $("f").classList.add("bad"); $("nvals").textContent = "That formula isn't valid. Use a number, odd, even, or the form an+b like 2n+1."; $("f-desc").textContent = ""; return; }
+    hits.forEach((li) => li.classList.add("hit"));
+    $("f-desc").textContent = PRESETS[f] || "";
+    const m = f.match(/^([+-]?\d*)n([+-]\d+)?$/);
+    if (m) {
+      const a = m[1] === "" || m[1] === "+" ? 1 : m[1] === "-" ? -1 : +m[1], b = m[2] ? +m[2] : 0;
+      const vals = []; for (let n = 0; n < 6; n++) vals.push(`n=${n} → ${a * n + b}`);
+      $("nvals").textContent = vals.join(" · ") + " · …  (results below 1 are skipped)";
+    } else $("nvals").textContent = `${hits.length} item${hits.length === 1 ? "" : "s"} selected.`;
+  }
+  $("f").addEventListener("input", nth);
+  nth();
+</script>
+</body>
+</html>

@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Images &amp; Alt Text</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Recursive:slnt,wght,CASL,MONO@-15..0,300..1000,0..1,0..1&display=swap">
+<link rel="stylesheet" href="style.css">
+<style>
+  .article { background: #fff; color: #1d2133; border-radius: var(--radius); border: 1px solid var(--line); padding: 18px; display: grid; gap: 12px; font-family: Georgia, serif; min-width: 0; }
+  .article .masthead { display: flex; align-items: center; gap: 10px; font: 800 1.1rem var(--font-display); color: #0b6b5e; }
+  .article h3 { font: 700 1.4rem/1.2 Georgia, serif; }
+  .article p { font-size: 1rem; }
+  .article img { display: block; max-width: 100%; height: auto; border-radius: 6px; }
+  .article .logo img { width: 40px; height: 40px; }
+  .slot { position: relative; display: block; }
+  .logo .slot { display: inline-block; }
+  .slot .num { position: absolute; top: 6px; left: 6px; background: #2340d9; color: #fff; font: 700 0.75rem var(--font-code); border-radius: 50%; width: 22px; height: 22px; display: grid; place-items: center; z-index: 1; }
+  .logo .num { top: -6px; left: -8px; }
+  /* Screen reader view */
+  .spoken { display: block; font: 0.9rem/1.4 var(--font-code); font-variation-settings: "MONO" 1; padding: 10px 12px; border-radius: 6px; border: 2px dashed #9aa2bf; color: #1d2133; background: #f2f4fa; }
+  .spoken.skip { color: #8a8fa3; font-style: italic; }
+  .spoken.bad { border-color: #b42318; background: #fde8e6; color: #b42318; }
+  .logo .spoken { padding: 4px 8px; }
+
+  #fig-demo figure { margin: 0; display: grid; gap: 6px; }
+  #fig-demo figcaption, #fig-demo .cap-p { font-size: 0.9rem; color: #5a6280; font-style: italic; margin: 0; }
+  .spoken-line { font: 0.9rem/1.5 var(--font-code); font-variation-settings: "MONO" 1; padding: 10px 12px; border-radius: 6px; background: var(--stage); margin: 0; }
+  .spoken-line.weak { background: var(--bad-soft); color: var(--bad); }
+  .choices { display: grid; gap: 14px; }
+  .choice { display: grid; gap: 6px; }
+  .choice .what { font-weight: 700; display: flex; gap: 8px; align-items: center; }
+  .choice .what .n { background: var(--cobalt); color: var(--panel); font: 700 0.75rem var(--font-code); border-radius: 50%; width: 22px; height: 22px; display: grid; place-items: center; flex: none; }
+  .choice select { font: 0.88rem var(--font-body); padding: 7px; border: 1px solid var(--line); border-radius: 6px; background: var(--paper); color: var(--ink); width: 100%; }
+  .grade { font-size: 0.88rem; }
+  .grade.right { color: var(--good); } .grade.wrong { color: var(--bad); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <nav class="crumbs" aria-label="Site"><a class="crumb" href="index.html">← Field Guide</a><a class="crumb" href="glossary.html">Glossary</a></nav>
+  <header class="page-head">
+    <span class="eyebrow">HTML Foundations · Images &amp; Alt Text</span>
+    <h1>Images &amp; Alt Text</h1>
+    <p class="lede">The <code>alt</code> attribute is what people hear when they can't see an image. Pick alt text for each image in this article, then switch to the screen reader view to hear the result.</p>
+  </header>
+
+  <section class="playground">
+    <div class="panel controls">
+      <span class="eyebrow">Choose alt text</span>
+      <div class="choices" id="choices"></div>
+      <p class="score" id="score"></p>
+    </div>
+    <div class="stage-col">
+      <div class="seg" role="group" aria-label="View">
+        <button class="btn" id="v-see" aria-pressed="true">What you see</button>
+        <button class="btn" id="v-hear" aria-pressed="false">What a screen reader says</button>
+        <button class="btn" id="v-broken" aria-pressed="false">Image failed to load</button>
+      </div>
+      <article class="article" id="article"></article>
+    </div>
+  </section>
+
+  <div class="section-title"><span class="eyebrow">Captions</span><h2>figure and figcaption</h2><p>When an image needs a visible caption, wrap the image and its caption in a <code>&lt;figure&gt;</code> and put the caption in <code>&lt;figcaption&gt;</code>. That ties them together for screen readers and for CSS.</p></div>
+  <section class="playground even">
+    <div class="stage-col">
+      <div class="seg" role="group" aria-label="Markup"><button class="btn" id="fig-p" aria-pressed="true">img + p</button><button class="btn" id="fig-f" aria-pressed="false">figure + figcaption</button></div>
+      <div class="article" id="fig-demo"></div>
+    </div>
+    <div class="stage-col">
+      <div class="panel" style="display:grid;gap:8px"><span class="eyebrow">The markup</span><pre class="snippet" id="fig-code"></pre></div>
+      <div class="panel" style="display:grid;gap:8px"><span class="eyebrow">What a screen reader says</span><p class="spoken-line" id="fig-say"></p></div>
+    </div>
+  </section>
+  <div class="panel" style="display:grid;gap:8px;margin-top:14px"><span class="eyebrow">alt text vs caption</span><p><strong>alt</strong> replaces the image for people who can't see it. A <strong>caption</strong> is visible to everyone and adds information, like who took the photo or when. Don't repeat the same words in both: a screen reader would read them twice.</p></div>
+
+  <section class="notes">
+    <div class="panel">
+      <h2>Key ideas</h2>
+      <ul>
+        <li>Describe what the image <em>means in context</em>, not every detail. Ask: what would I say if I read this page aloud?</li>
+        <li>Purely decorative images get an empty <code>alt=""</code> so screen readers skip them. Don't leave alt out entirely.</li>
+        <li>For an image inside a link, describe where the link goes ("Trailhead home"), not the picture.</li>
+        <li>For charts, give the main takeaway in the alt and put the full data in nearby text or a table.</li>
+        <li>Use <code>&lt;figure&gt;</code> and <code>&lt;figcaption&gt;</code> when an image has a visible caption.</li>
+        <li>Always set <code>width</code> and <code>height</code> attributes so the page doesn't jump around while images load.</li>
+      </ul>
+    </div>
+    <div class="panel mistake">
+      <h2>Common mistakes</h2>
+      <ul>
+        <li>Starting with "Image of…". Screen readers already announce that it's an image.</li>
+        <li>Using the file name, like <code>IMG_4031.jpg</code>, as the alt text.</li>
+        <li>Missing alt completely. Many screen readers then read out the file name.</li>
+        <li>Wrong paths: <code>src="images/photo.JPG"</code> won't load <code>photo.jpg</code> on most servers, because file names are case-sensitive.</li>
+      </ul>
+    </div>
+  </section>
+
+  <footer class="page-foot"><a href="forms.html">← Forms &amp; Inputs</a><a href="image-formats.html">Next: Image Formats →</a></footer>
+</div>
+
+<script>
+  const $ = (id) => document.getElementById(id);
+  const svg = (s) => "data:image/svg+xml," + encodeURIComponent(s);
+  const IMGS = {
+    logo: svg(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40"><circle cx="20" cy="20" r="19" fill="#0b6b5e"/><path d="M8 28 L17 14 L22 21 L26 16 L33 28 Z" fill="#fff"/></svg>`),
+    photo: svg(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 300"><defs><linearGradient id="s" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#5b9be0"/><stop offset="1" stop-color="#cfe4f7"/></linearGradient></defs><rect width="640" height="300" fill="url(#s)"/><circle cx="520" cy="70" r="30" fill="#fff6c9"/><path d="M0 300 L120 170 L200 230 L330 70 L460 210 L540 150 L640 240 L640 300 Z" fill="#4d5b73"/><path d="M290 120 L330 70 L372 125 L350 115 L330 130 L310 112 Z" fill="#fff"/><path d="M100 192 L120 170 L142 186 L125 182 Z" fill="#fff"/><path d="M0 300 L90 250 L200 280 L320 240 L460 285 L640 260 L640 300 Z" fill="#2f5d3a"/></svg>`),
+    chart: svg(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 260" font-family="Arial" font-size="16"><rect width="640" height="260" fill="#fff"/><text x="20" y="28" font-weight="700" font-size="18" fill="#1d2133">Trail visits per year</text><line x1="60" y1="220" x2="620" y2="220" stroke="#9aa2bf"/><rect x="110" y="150" width="110" height="70" fill="#0b6b5e"/><rect x="290" y="115" width="110" height="105" fill="#0b6b5e"/><rect x="470" y="60" width="110" height="160" fill="#0b6b5e"/><text x="165" y="142" text-anchor="middle" fill="#1d2133">12,000</text><text x="345" y="107" text-anchor="middle" fill="#1d2133">15,500</text><text x="525" y="52" text-anchor="middle" fill="#1d2133">19,000</text><text x="165" y="242" text-anchor="middle" fill="#5a6280">2022</text><text x="345" y="242" text-anchor="middle" fill="#5a6280">2023</text><text x="525" y="242" text-anchor="middle" fill="#5a6280">2024</text></svg>`),
+    divider: svg(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 24"><path d="M0 12 Q20 0 40 12 T80 12 T120 12 T160 12 T200 12 T240 12 T280 12 T320 12 T360 12 T400 12 T440 12 T480 12 T520 12 T560 12 T600 12 T640 12" fill="none" stroke="#b4410c" stroke-width="3"/></svg>`),
+  };
+  const SLOTS = [
+    { key: "logo", file: "logo-final-v3.png", what: "The logo, which links to the home page", w: 40, h: 40,
+      opts: [{ alt: null, why: "No alt: the link has no name, so it's announced as \"link, logo-final-v3.png.\"" },
+             { alt: "Logo", why: "\"Logo\" doesn't say where the link goes." },
+             { alt: "Trailhead home", good: true, why: "It names the destination, which is what a link needs." }] },
+    { key: "photo", file: "IMG_4031.jpg", what: "Photo for the news story", w: 640, h: 300,
+      opts: [{ alt: "IMG_4031.jpg", why: "A file name tells the listener nothing." },
+             { alt: "Image of a mountain", why: "Too vague, and \"Image of\" is repeated by the screen reader anyway." },
+             { alt: "Longs Peak with fresh snow on its summit under a clear blue sky", good: true, why: "It describes what matters for this story: the snow." }] },
+    { key: "chart", file: "visits-chart.svg", what: "Chart of trail visits", w: 640, h: 260,
+      opts: [{ alt: "Chart", why: "The listener learns there's a chart but not what it shows." },
+             { alt: "Bar chart: trail visits rose from 12,000 in 2022 to 19,000 in 2024", good: true, why: "It gives the takeaway with the key numbers." },
+             { alt: "", why: "Empty alt hides real information. Only use it for decoration." }] },
+    { key: "divider", file: "squiggle.svg", what: "Decorative squiggle divider", w: 640, h: 24,
+      opts: [{ alt: null, why: "No alt: some screen readers read \"squiggle.svg\" out loud." },
+             { alt: "Orange wavy line", why: "Accurate, but it's noise. The line adds no information." },
+             { alt: "", good: true, why: "Empty alt tells screen readers to skip a purely decorative image." }] },
+  ];
+  const picks = SLOTS.map(() => 0);
+  let view = "see";
+  const esc = (s) => String(s).replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;");
+  const label = (o) => o.alt === null ? "(no alt attribute)" : o.alt === "" ? 'alt="" (empty)' : `alt="${o.alt}"`;
+
+  $("choices").innerHTML = SLOTS.map((s, i) => `<div class="choice"><label class="what" for="c${i}"><span class="n">${i + 1}</span>${s.what}</label><select id="c${i}" data-i="${i}">${s.opts.map((o, j) => `<option value="${j}">${esc(label(o))}</option>`).join("")}</select><div class="grade" id="g${i}"></div></div>`).join("");
+  document.querySelectorAll("#choices select").forEach((sel) => sel.addEventListener("input", () => { picks[+sel.dataset.i] = +sel.value; render(); }));
+
+  function img(i) {
+    const s = SLOTS[i], o = s.opts[picks[i]];
+    const tag = `<span class="num" aria-hidden="true">${i + 1}</span>`;
+    if (view === "hear") {
+      if (o.alt === "") return `<span class="slot">${tag}<span class="spoken skip">(skipped)</span></span>`;
+      if (o.alt === null) return `<span class="slot">${tag}<span class="spoken bad">"${s.key === "logo" ? "link, " : ""}image, ${s.file}"</span></span>`;
+      return `<span class="slot">${tag}<span class="spoken">"${s.key === "logo" ? "link, " : ""}image, ${esc(o.alt)}"</span></span>`;
+    }
+    const src = view === "broken" ? "images/" + s.file : IMGS[s.key];
+    const alt = o.alt === null ? "" : ` alt="${esc(o.alt)}"`;
+    return `<span class="slot">${tag}<img src="${src}"${alt} width="${s.w}" height="${s.h}"></span>`;
+  }
+
+  function render() {
+    $("article").innerHTML = `
+      <a class="masthead logo" href="#article">${img(0)} Trailhead Weekly</a>
+      <h3>Snow arrives early on Longs Peak</h3>
+      ${img(1)}
+      <p>Rangers reported six inches of snow above 12,000 feet on Tuesday, three weeks earlier than last year.</p>
+      ${img(3)}
+      <p>Visits keep climbing, which means busier trailheads on clear weekends.</p>
+      ${img(2)}`;
+    let right = 0;
+    SLOTS.forEach((s, i) => {
+      const o = s.opts[picks[i]];
+      if (o.good) right++;
+      const g = $("g" + i); g.className = "grade " + (o.good ? "right" : "wrong"); g.textContent = (o.good ? "Good choice. " : "") + o.why;
+    });
+    $("score").textContent = `${right} / ${SLOTS.length} good choices`;
+    ["see", "hear", "broken"].forEach((v) => $("v-" + v).setAttribute("aria-pressed", String(view === v)));
+  }
+  ["see", "hear", "broken"].forEach((v) => $("v-" + v).addEventListener("click", () => { view = v; render(); }));
+  render();
+
+  // figure and figcaption
+  let figMode = "p";
+  function fig() {
+    const alt = "Longs Peak with fresh snow on its summit under a clear blue sky";
+    const cap = "Longs Peak from the Chasm Lake trail, October 9. Photo by ranger Ana Ortiz.";
+    const img = `<img src="${IMGS.photo}" alt="${alt}" width="640" height="300">`;
+    $("fig-demo").innerHTML = figMode === "f" ? `<figure>${img}<figcaption>${cap}</figcaption></figure>` : `${img}<p class="cap-p">${cap}</p>`;
+    $("fig-code").textContent = figMode === "f"
+      ? `<figure>\n  <img src="longs-peak.jpg" alt="${alt}">\n  <figcaption>${cap}</figcaption>\n</figure>`
+      : `<img src="longs-peak.jpg" alt="${alt}">\n<p>${cap}</p>`;
+    const say = $("fig-say");
+    if (figMode === "f") { say.className = "spoken-line"; say.textContent = `"Figure: ${cap} Image, ${alt}." The caption is announced as belonging to the image.`; }
+    else { say.className = "spoken-line weak"; say.textContent = `"Image, ${alt}." … then later, as an ordinary paragraph: "${cap}" Nothing says the two are connected.`; }
+    $("fig-p").setAttribute("aria-pressed", String(figMode === "p")); $("fig-f").setAttribute("aria-pressed", String(figMode === "f"));
+  }
+  $("fig-p").addEventListener("click", () => { figMode = "p"; fig(); });
+  $("fig-f").addEventListener("click", () => { figMode = "f"; fig(); });
+  fig();
+</script>
+</body>
+</html>

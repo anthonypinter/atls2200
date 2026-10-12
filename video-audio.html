@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Video &amp; Audio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Recursive:slnt,wght,CASL,MONO@-15..0,300..1000,0..1,0..1&display=swap">
+<link rel="stylesheet" href="style.css">
+<style>
+  .player { position: relative; aspect-ratio: 16 / 9; max-width: 100%; border-radius: 10px; overflow: hidden; background: #0d1018; color: #fff; }
+  .scene { position: absolute; inset: 0; background: linear-gradient(#5b9be0, #cfe4f7 70%); }
+  .scene .sun { position: absolute; width: 11%; aspect-ratio: 1; border-radius: 50%; background: #fff3d6; top: 14%; }
+  .scene .mtn { position: absolute; inset: auto 0 0 0; height: 60%; background: #4d5b73; clip-path: polygon(0 100%, 0 55%, 20% 25%, 38% 60%, 55% 5%, 75% 50%, 100% 30%, 100% 100%); }
+  .scene .hill { position: absolute; inset: auto 0 0 0; height: 25%; background: #2f5d3a; clip-path: polygon(0 100%, 0 40%, 30% 0, 60% 50%, 100% 20%, 100% 100%); }
+  .poster { position: absolute; inset: 0; display: grid; place-items: center; background: linear-gradient(135deg, #0b6b5e, #2340d9); font: 800 clamp(1.1rem, 4vw, 2rem) var(--font-display); text-align: center; padding: 20px; }
+  .first-frame { position: absolute; inset: 0; background: #0d1018; display: grid; place-items: center; color: #7a8099; font-size: 0.9rem; }
+  .bigplay { position: absolute; inset: 0; margin: auto; width: 64px; height: 64px; border-radius: 50%; background: rgba(0,0,0,0.55); border: 2px solid #fff; color: #fff; font-size: 1.4rem; cursor: pointer; }
+  .bar { position: absolute; inset: auto 0 0 0; display: flex; gap: 10px; align-items: center; padding: 8px 10px; background: linear-gradient(transparent, rgba(0,0,0,0.75)); font: 600 0.8rem var(--font-code); font-variation-settings: "MONO" 1; }
+  .bar button { background: none; border: 0; color: #fff; font: inherit; cursor: pointer; padding: 4px 6px; border-radius: 4px; }
+  .bar button[aria-pressed="true"] { background: rgba(255,255,255,0.25); }
+  .bar .track { flex: 1; height: 4px; background: rgba(255,255,255,0.35); border-radius: 2px; position: relative; }
+  .bar .track i { position: absolute; inset: 0 auto 0 0; background: #fff; border-radius: 2px; }
+  .cap { position: absolute; left: 50%; bottom: 48px; transform: translateX(-50%); background: rgba(0,0,0,0.8); padding: 4px 10px; border-radius: 4px; font-size: clamp(0.8rem, 2.4vw, 1rem); white-space: nowrap; max-width: 92%; overflow: hidden; text-overflow: ellipsis; }
+  .badge { position: absolute; top: 10px; left: 10px; background: #b42318; color: #fff; padding: 4px 10px; border-radius: 4px; font-size: 0.8rem; font-weight: 700; max-width: calc(100% - 20px); }
+  .badge.ok { background: #1a7f37; }
+  .mute { position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.6); padding: 4px 8px; border-radius: 4px; font-size: 0.8rem; }
+  .check { display: flex; gap: 8px; align-items: center; font-size: 0.92rem; cursor: pointer; }
+  .check input { accent-color: var(--cobalt); }
+  .check code { font-size: 0.85rem; }
+  .status { font-size: 0.93rem; padding: 8px 10px; border-radius: 6px; background: var(--stage); }
+  .vtt { font: 0.85rem/1.5 var(--font-code); font-variation-settings: "MONO" 1; display: grid; gap: 2px; }
+  .vtt div { padding: 3px 8px; border-radius: 4px; }
+  .vtt div.now { background: var(--cobalt-soft); color: var(--cobalt); }
+  .vtt .t { color: var(--muted); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <nav class="crumbs" aria-label="Site"><a class="crumb" href="index.html">← Field Guide</a><a class="crumb" href="glossary.html">Glossary</a></nav>
+  <header class="page-head">
+    <span class="eyebrow">HTML Foundations · Video &amp; Audio</span>
+    <h1>Video &amp; Audio</h1>
+    <p class="lede">The <code>&lt;video&gt;</code> and <code>&lt;audio&gt;</code> elements play media without any plugins. Their attributes control what visitors see and whether anything plays by itself. This player is a simulation that follows the same rules as a real one.</p>
+  </header>
+
+  <section class="playground">
+    <div class="panel controls">
+      <span class="eyebrow">&lt;video&gt; attributes</span>
+      <label class="check"><input type="checkbox" id="a-controls" checked><code>controls</code></label>
+      <label class="check"><input type="checkbox" id="a-poster" checked><code>poster="cover.jpg"</code></label>
+      <label class="check"><input type="checkbox" id="a-autoplay"><code>autoplay</code></label>
+      <label class="check"><input type="checkbox" id="a-muted"><code>muted</code></label>
+      <label class="check"><input type="checkbox" id="a-loop"><code>loop</code></label>
+      <span class="eyebrow" style="margin-top:6px">Child elements</span>
+      <label class="check"><input type="checkbox" id="a-track" checked><code>&lt;track kind="captions"&gt;</code></label>
+      <button class="btn" id="restart" style="justify-self:start;margin-top:6px">Reload the page</button>
+    </div>
+    <div class="stage-col">
+      <div class="player" id="player" aria-label="Simulated video player"></div>
+      <p class="status" id="status" aria-live="polite"></p>
+    </div>
+  </section>
+
+  <div class="section-title"><span class="eyebrow">Captions</span><h2>The captions file</h2><p>Captions live in a separate WebVTT text file, linked with <code>&lt;track&gt;</code>. Each cue has a start time, an end time and the text. The current cue is highlighted while the video plays.</p></div>
+  <div class="panel vtt" id="vtt"></div>
+
+  <section class="notes">
+    <div class="panel">
+      <h2>Key ideas</h2>
+      <ul>
+        <li>Always include <code>controls</code> unless you build your own play button. Without it, people can't pause or adjust volume.</li>
+        <li>Browsers block autoplay with sound. Autoplay only works with <code>muted</code>, and should be rare.</li>
+        <li>List more than one <code>&lt;source&gt;</code> (like MP4 and WebM) and the browser plays the first one it supports.</li>
+        <li>Add captions for videos and a transcript for audio, for people who can't hear it and everyone watching on mute.</li>
+        <li><code>&lt;audio controls&gt;</code> works the same way, without the picture.</li>
+      </ul>
+    </div>
+    <div class="panel mistake">
+      <h2>Common mistakes</h2>
+      <ul>
+        <li>Uploading a huge video file straight from a phone. Compress it, or host it on YouTube or Vimeo and embed it.</li>
+        <li>Expecting <code>autoplay</code> to work without <code>muted</code>.</li>
+        <li>No <code>poster</code>, so the player shows a black box until it loads.</li>
+        <li>Background videos that loop forever with no way to pause them.</li>
+      </ul>
+    </div>
+  </section>
+
+  <footer class="page-foot"><a href="image-formats.html">← Image Formats</a><a href="embeds.html">Next: Embeds &amp; iframes →</a></footer>
+</div>
+
+<script>
+  const $ = (id) => document.getElementById(id);
+  const DUR = 16;
+  const CUES = [[0, 3, "[wind blowing]"], [3, 7, "Welcome to the Longs Peak trailhead."], [7, 11, "The summit is 14,259 feet above sea level."], [11, 16, "Start before sunrise to beat the storms."]];
+  const fmt = (s) => `00:${String(Math.floor(s)).padStart(2, "0")}.000`;
+  $("vtt").innerHTML = '<div>WEBVTT</div><div>&nbsp;</div>' + CUES.map((c, i) => `<div data-i="${i}"><span class="t">${fmt(c[0])} --> ${fmt(c[1])}</span><br>${c[2]}</div>`).join("");
+  let t = 0, playing = false, started = false, timer = null, ccOn = true, muted = false, blocked = false;
+  const A = (id) => $("a-" + id).checked;
+
+  function tick() {
+    t += 0.1;
+    if (t >= DUR) { if (A("loop")) t = 0; else { t = DUR; stop(); } }
+    draw();
+  }
+  function play() { if (playing) return; if (t >= DUR) t = 0; playing = true; started = true; blocked = false; timer = setInterval(tick, 100); draw(); }
+  function stop() { playing = false; clearInterval(timer); draw(); }
+  function reload() {
+    stop(); t = 0; started = false; blocked = false; muted = A("muted");
+    if (A("autoplay")) { if (A("muted")) play(); else blocked = true; }
+    draw();
+  }
+  function draw() {
+    const p = $("player"), cue = CUES.find((c) => t >= c[0] && t < c[1]);
+    let html = `<div class="scene"><div class="sun" style="left:${8 + (t / DUR) * 78}%"></div><div class="mtn"></div><div class="hill"></div></div>`;
+    if (!started) html += A("poster") ? '<div class="poster">Longs Peak: Trail Briefing</div>' : '<div class="first-frame">(black until the video loads its first frame)</div>';
+    if (started && A("track") && ccOn && cue) html += `<div class="cap">${cue[2]}</div>`;
+    if (blocked) html += '<div class="badge">Autoplay blocked: this video has sound</div>';
+    else if (A("autoplay") && A("muted") && playing && t < 3) html += '<div class="badge ok">Autoplaying, muted</div>';
+    if (started && muted) html += '<div class="mute">🔇 muted</div>';
+    if (A("controls")) {
+      html += `<div class="bar"><button id="pp" aria-label="${playing ? "Pause" : "Play"}">${playing ? "❚❚" : "▶"}</button><span>0:${String(Math.floor(t)).padStart(2, "0")} / 0:${DUR}</span><div class="track"><i style="width:${(t / DUR) * 100}%"></i></div><button id="mu" aria-label="Mute">${muted ? "🔇" : "🔊"}</button>${A("track") ? `<button id="cc" aria-pressed="${ccOn}" aria-label="Captions">CC</button>` : ""}<button aria-label="Full screen" tabindex="-1">⛶</button></div>`;
+      if (!playing && !started) html += '<button class="bigplay" id="bp" aria-label="Play">▶</button>';
+    }
+    const focused = p.contains(document.activeElement) ? document.activeElement.id : null;
+    p.innerHTML = html;
+    if (focused && $(focused)) $(focused).focus();
+    const on = (id, fn) => { const el = $(id); if (el) el.addEventListener("click", fn); };
+    on("pp", () => (playing ? stop() : play())); on("bp", play); on("mu", () => { muted = !muted; draw(); }); on("cc", () => { ccOn = !ccOn; draw(); });
+    document.querySelectorAll("#vtt [data-i]").forEach((d) => d.classList.toggle("now", started && cue === CUES[+d.dataset.i]));
+    status();
+  }
+  function status() {
+    const s = [];
+    if (!A("controls")) s.push(A("autoplay") && A("muted") ? "No controls: it plays by itself, but nobody can pause it." : "No controls and no autoplay: there's no way to start this video at all.");
+    if (blocked) s.push("autoplay without muted is blocked by browsers. Add muted, or let people press play.");
+    if (!A("poster") && !started) s.push("Without a poster, visitors see a black box until playback starts.");
+    if (!A("track")) s.push("No captions track: deaf viewers and anyone watching with the sound off miss what's said.");
+    if (A("loop") && playing) s.push("loop: it will start over when it reaches the end.");
+    $("status").textContent = s.join(" ") || "A good setup: controls, a poster image and captions. Press play.";
+  }
+  document.querySelectorAll(".controls input").forEach((el) => el.addEventListener("input", reload));
+  $("restart").addEventListener("click", reload);
+  reload();
+</script>
+</body>
+</html>

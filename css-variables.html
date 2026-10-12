@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CSS Variables</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Recursive:slnt,wght,CASL,MONO@-15..0,300..1000,0..1,0..1&display=swap">
+<link rel="stylesheet" href="style.css">
+<style>
+  /* The sample site's own variables. Controls on this page change them live. */
+  #site { --brand: #0b6b5e; --accent: #b4410c; --radius: 10px; --space: 14px; --bg: #f7f4ef; --text: #1d2133; --card: #ffffff;
+    background: var(--bg); color: var(--text); padding: var(--space); border-radius: 12px; display: grid; gap: var(--space); font-family: var(--font-body); transition: background 0.2s, color 0.2s; }
+  #site.dark { --bg: #161a24; --text: #eef0f6; --card: #222838; }
+  #site .top { display: flex; justify-content: space-between; align-items: center; gap: var(--space); flex-wrap: wrap; }
+  #site .logo { font: 800 1.2rem var(--font-display); color: var(--brand); }
+  #site .pill { background: var(--accent); color: #fff; border-radius: 999px; padding: 4px 12px; font-size: 0.85rem; font-weight: 700; }
+  #site .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: var(--space); }
+  #site .tcard { background: var(--card); border-radius: var(--radius); padding: var(--space); display: grid; gap: 8px; border-top: 5px solid var(--brand); }
+  #site .tcard h4 { margin: 0; font-size: 1.05rem; color: var(--brand); }
+  #site .tcard p { margin: 0; font-size: 0.9rem; }
+  #site .tcard button { font: 700 0.9rem var(--font-body); background: var(--brand); color: #fff; border: 0; border-radius: calc(var(--radius) / 2); padding: 8px 12px; cursor: pointer; justify-self: start; }
+  #site .tcard .sale { color: var(--sale, crimson); font-weight: 700; font-size: 0.85rem; }
+  #site .featured { --brand: #7a3fb8; }
+  #site [data-uses].show { outline: 3px dashed var(--accent); outline-offset: 3px; }
+  #site.no-feature .featured { --brand: inherit; }
+  .var-btns { display: flex; flex-wrap: wrap; gap: 6px; }
+  .var-btns .btn { font-size: 0.82rem; }
+  .use-note { font-size: 0.9rem; color: var(--muted); min-height: 1.4em; }
+  .check { display: flex; gap: 8px; align-items: center; cursor: pointer; font-size: 0.95rem; }
+  .check input { accent-color: var(--cobalt); }
+  .control input[type="color"] { width: 100%; height: 34px; border: 1px solid var(--line); border-radius: 6px; background: var(--paper); padding: 2px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <nav class="crumbs" aria-label="Site"><a class="crumb" href="index.html">← Field Guide</a><a class="crumb" href="glossary.html">Glossary</a></nav>
+  <header class="page-head">
+    <span class="eyebrow">CSS Basics · CSS Variables</span>
+    <h1>CSS Variables</h1>
+    <p class="lede">A CSS variable (custom property) stores a value once so you can reuse it everywhere. Change one variable here and every part of the site that uses it updates at once.</p>
+  </header>
+
+  <section class="playground">
+    <div class="panel controls">
+      <span class="eyebrow">Variables on #site</span>
+      <div class="control"><label for="v-brand">--brand</label><input id="v-brand" type="color" value="#0b6b5e"></div>
+      <div class="control"><label for="v-accent">--accent</label><input id="v-accent" type="color" value="#b4410c"></div>
+      <div class="control"><label for="v-radius">--radius</label><input id="v-radius" type="range" min="0" max="24" value="10"><span class="readout" id="r-out"></span></div>
+      <div class="control"><label for="v-space">--space</label><input id="v-space" type="range" min="4" max="28" step="2" value="14"><span class="readout" id="s-out"></span></div>
+      <span class="eyebrow" style="margin-top:6px">Try these too</span>
+      <label class="check"><input type="checkbox" id="dark">Dark theme (redefines --bg, --text, --card)</label>
+      <label class="check"><input type="checkbox" id="feature" checked>Featured card overrides --brand</label>
+      <label class="check"><input type="checkbox" id="sale">Define --sale</label>
+    </div>
+    <div class="stage-col">
+      <div class="var-btns" id="vbtns" role="group" aria-label="Show where a variable is used"></div>
+      <p class="use-note" id="use-note">Pick a variable above to outline everything that uses it.</p>
+      <div id="site">
+        <div class="top"><span class="logo" data-uses="--brand">Trailhead</span><span class="pill" data-uses="--accent">3 new trails</span></div>
+        <div class="cards">
+          <div class="tcard" data-uses="--brand --radius --space"><h4 data-uses="--brand">Royal Arch</h4><p>3.4 mi · Hard</p><span class="sale" data-uses="--sale">Guided hike: 20% off</span><button data-uses="--brand --radius">Save</button></div>
+          <div class="featured"><div class="tcard" data-uses="--brand --radius --space"><h4 data-uses="--brand">Mesa Trail</h4><p>6.7 mi · Featured</p><button data-uses="--brand --radius">Save</button></div></div>
+          <div class="tcard" data-uses="--brand --radius --space"><h4 data-uses="--brand">Chautauqua</h4><p>1.2 mi · Easy</p><button data-uses="--brand --radius">Save</button></div>
+        </div>
+      </div>
+      <p class="hint" id="explain"></p>
+    </div>
+  </section>
+
+  <section class="notes">
+    <div class="panel">
+      <h2>Key ideas</h2>
+      <ul>
+        <li>Define variables with two dashes, usually on <code>:root</code> so the whole page can use them: <code>--brand: #0b6b5e;</code></li>
+        <li>Use them with <code>var()</code>: <code>color: var(--brand);</code></li>
+        <li>Variables inherit. Redefine one on a single element, and only that element and its children see the new value.</li>
+        <li>Give a fallback for when a variable isn't defined: <code>var(--sale, crimson)</code>.</li>
+        <li>A dark theme can be as simple as redefining a few color variables.</li>
+      </ul>
+    </div>
+    <div class="panel mistake">
+      <h2>Common mistakes</h2>
+      <ul>
+        <li>Forgetting <code>var()</code>: <code>color: --brand;</code> does nothing.</li>
+        <li>Only one dash, or a typo in the name. Variable names are case-sensitive.</li>
+        <li>Doing math without <code>calc()</code>: use <code>calc(var(--space) * 2)</code>.</li>
+        <li>Defining the variable on an element that isn't a parent of where you use it.</li>
+      </ul>
+    </div>
+  </section>
+
+  <footer class="page-foot"><a href="colors-units.html">← Colors &amp; Units</a><a href="backgrounds-borders.html">Next: Backgrounds &amp; Borders →</a></footer>
+</div>
+
+<script>
+  const $ = (id) => document.getElementById(id);
+  const site = $("site");
+  const VARS = ["--brand", "--accent", "--radius", "--space", "--sale"];
+  let shown = null;
+  $("vbtns").innerHTML = VARS.map((v) => `<button class="btn" data-v="${v}">${v}</button>`).join("");
+  $("vbtns").addEventListener("click", (e) => { const b = e.target.closest("button"); if (!b) return; shown = shown === b.dataset.v ? null : b.dataset.v; highlight(); });
+  function highlight() {
+    let n = 0;
+    site.querySelectorAll("[data-uses]").forEach((el) => { const on = !!shown && el.dataset.uses.split(" ").includes(shown); el.classList.toggle("show", on); if (on) n++; });
+    if (shown === "--space") n += 2; // also the site's padding and both grid gaps
+    document.querySelectorAll("#vbtns button").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.v === shown)));
+    $("use-note").textContent = shown ? `${shown} is used in ${n} places. Change it once and they all update.` : "Pick a variable above to outline everything that uses it.";
+  }
+  function update() {
+    site.style.setProperty("--brand", $("v-brand").value);
+    site.style.setProperty("--accent", $("v-accent").value);
+    site.style.setProperty("--radius", $("v-radius").value + "px");
+    site.style.setProperty("--space", $("v-space").value + "px");
+    $("r-out").textContent = $("v-radius").value + "px"; $("s-out").textContent = $("v-space").value + "px";
+    site.classList.toggle("dark", $("dark").checked);
+    site.classList.toggle("no-feature", !$("feature").checked);
+    if ($("sale").checked) site.style.setProperty("--sale", "#1a7f37"); else site.style.removeProperty("--sale");
+    const notes = [];
+    if ($("feature").checked) notes.push("The featured card is purple because its wrapper redefines --brand. Only it and its children see that value.");
+    notes.push($("sale").checked ? "--sale is now defined (green), so the sale text uses it." : "--sale isn't defined anywhere, so the sale text falls back to crimson.");
+    $("explain").textContent = notes.join(" ");
+  }
+  document.querySelectorAll(".controls input").forEach((el) => el.addEventListener("input", update));
+  update(); highlight();
+</script>
+</body>
+</html>

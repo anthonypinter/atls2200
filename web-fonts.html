@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Web Fonts</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Recursive:slnt,wght,CASL,MONO@-15..0,300..1000,0..1,0..1&family=Merriweather:wght@400;700&family=Playfair+Display:wght@400;700&family=Roboto+Slab:wght@400;700&family=Pacifico&family=Space+Mono:wght@400;700&family=Source+Sans+3:wght@400;700&display=swap">
+<link rel="stylesheet" href="style.css">
+<style>
+  .specimen { background: #fff; color: #1d2133; border: 1px solid var(--line); border-radius: var(--radius); padding: 22px; display: grid; gap: 10px; min-width: 0; overflow-wrap: anywhere; }
+  .specimen h3 { margin: 0; font-size: 2rem; line-height: 1.15; font-weight: 700; }
+  .specimen p { margin: 0; font-size: 1.05rem; line-height: 1.6; max-width: none; }
+  .tag { font: 600 0.78rem var(--font-code); font-variation-settings: "MONO" 1; color: var(--muted); }
+  .check { display: flex; gap: 8px; align-items: center; font-size: 0.92rem; cursor: pointer; }
+  .check input { accent-color: var(--cobalt); }
+  .status { font-size: 0.93rem; padding: 8px 10px; border-radius: 6px; background: var(--stage); }
+  .status.bad { background: var(--bad-soft); color: var(--bad); }
+
+  .timeline { position: relative; height: 10px; background: var(--stage); border-radius: 5px; overflow: hidden; }
+  .timeline .fill { position: absolute; inset: 0 auto 0 0; width: 0; background: var(--cobalt); }
+  .tl-labels { display: flex; justify-content: space-between; font: 0.75rem var(--font-code); font-variation-settings: "MONO" 1; color: var(--muted); }
+  .fd-text { background: #fff; color: #1d2133; border: 1px solid var(--line); border-radius: var(--radius); padding: 20px; font-size: 1.6rem; min-height: 90px; display: grid; align-items: center; }
+  .fd-text.invisible span { color: transparent; }
+  .fd-state { font: 600 0.88rem var(--font-code); font-variation-settings: "MONO" 1; }
+  .weights { display: grid; gap: 6px; }
+  .kb { font: 800 1.5rem var(--font-display); font-variant-numeric: tabular-nums; }
+  .steps-list { margin: 0; padding-left: 1.3em; display: grid; gap: 6px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <nav class="crumbs" aria-label="Site"><a class="crumb" href="index.html">← Field Guide</a><a class="crumb" href="glossary.html">Glossary</a></nav>
+  <header class="page-head">
+    <span class="eyebrow">CSS Basics · Web Fonts</span>
+    <h1>Web Fonts</h1>
+    <p class="lede">Visitors only have a handful of fonts installed. A web font is downloaded along with your page so everyone sees the same type. Here's how to add one, what happens while it loads, and why the fallback still matters.</p>
+  </header>
+
+  <div class="tools" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:14px">
+    <div class="panel" style="display:grid;gap:8px;align-content:start"><span class="eyebrow">The easy way: Google Fonts</span>
+      <ol class="steps-list"><li>Find a font at <a href="https://fonts.google.com">fonts.google.com</a> and choose the weights you need.</li><li>Copy the <code>&lt;link&gt;</code> tags it gives you into your page's <code>&lt;head&gt;</code>, above your own stylesheet.</li><li>Use the font in CSS with <code>font-family</code>, followed by fallbacks.</li></ol></div>
+    <div class="panel" style="display:grid;gap:8px;align-content:start"><span class="eyebrow">Self-hosting with @font-face</span>
+      <ol class="steps-list"><li>Put the <code>.woff2</code> files in a <code>fonts/</code> folder in your project.</li><li>Add an <code>@font-face</code> rule naming the font and pointing to the file.</li><li>Use that name in <code>font-family</code> like any other font.</li></ol></div>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Part 1</span><h2>Always include a fallback</h2><p>If the font fails to load, or hasn't loaded yet, the browser uses the next font in your list. Pick one that's similar.</p></div>
+  <section class="playground">
+    <div class="panel controls">
+      <div class="control"><label for="ff">web font</label><select id="ff">
+        <option value="Merriweather" data-kind="serif">Merriweather</option><option value="Playfair Display" data-kind="serif">Playfair Display</option>
+        <option value="Roboto Slab" data-kind="serif">Roboto Slab</option><option value="Source Sans 3" data-kind="sans-serif">Source Sans 3</option>
+        <option value="Space Mono" data-kind="monospace">Space Mono</option><option value="Pacifico" data-kind="cursive">Pacifico</option></select></div>
+      <div class="control"><label for="fb">fallback</label><select id="fb"><option>serif</option><option>sans-serif</option><option>monospace</option><option>cursive</option></select></div>
+      <label class="check"><input type="checkbox" id="fail">Pretend the font failed to load</label>
+    </div>
+    <div class="stage-col">
+      <div class="specimen" id="spec"><span class="tag" id="spec-tag"></span><h3>Weekend Hikes Near Boulder</h3><p>Pack water, layers and a map. Afternoon storms roll in fast above treeline, so start early and turn back by noon.</p></div>
+      <p class="status" id="fb-status" aria-live="polite"></p>
+    </div>
+  </section>
+
+  <div class="section-title"><span class="eyebrow">Part 2</span><h2>What visitors see while it loads</h2><p><code>font-display</code> decides what happens during the download. Pick a setting and simulate a slow connection where the font takes 2.5 seconds.</p></div>
+  <section class="playground">
+    <div class="panel controls">
+      <div class="control"><label for="fd">font-display</label><select id="fd"><option>swap</option><option>block</option><option>fallback</option><option>optional</option></select></div>
+      <button class="btn" id="go" style="justify-self:start">Simulate slow load</button>
+      <p class="hint" id="fd-desc"></p>
+    </div>
+    <div class="stage-col">
+      <div class="fd-text" id="fdt"><span>Royal Arch Trail</span></div>
+      <div class="timeline"><div class="fill" id="fill"></div></div>
+      <div class="tl-labels"><span>0s</span><span>font arrives at 2.5s</span><span>3s</span></div>
+      <p class="fd-state" id="fd-state" aria-live="polite">Press "Simulate slow load."</p>
+    </div>
+  </section>
+
+  <div class="section-title"><span class="eyebrow">Part 3</span><h2>Only load what you use</h2><p>Every weight and style is a separate file to download. These sizes are rough estimates for a typical font.</p></div>
+  <section class="playground">
+    <div class="panel controls weights" id="weights"></div>
+    <div class="panel" style="display:grid;gap:6px;align-content:start"><span class="eyebrow">Extra download</span><span class="kb" id="kb"></span><p class="hint" id="kb-note"></p></div>
+  </section>
+
+  <section class="notes">
+    <div class="panel">
+      <h2>Key ideas</h2>
+      <ul>
+        <li>Put font names with spaces in quotes: <code>font-family: "Source Sans 3", sans-serif;</code></li>
+        <li>End every font list with a generic family: <code>serif</code>, <code>sans-serif</code> or <code>monospace</code>.</li>
+        <li><code>font-display: swap</code> is a good default. Text shows right away and switches when the font arrives.</li>
+        <li>Two families and three or four weights is plenty for most sites.</li>
+      </ul>
+    </div>
+    <div class="panel mistake">
+      <h2>Common mistakes</h2>
+      <ul>
+        <li>Using a font name in CSS without the <code>&lt;link&gt;</code> or <code>@font-face</code> that loads it. It only works on computers that happen to have it installed.</li>
+        <li>Asking for <code>font-weight: 700</code> when only 400 was downloaded, so the browser fakes a blurry bold.</li>
+        <li>Misspelling the font name. CSS silently falls back with no error.</li>
+        <li>Fancy script fonts for body text, which are hard to read at small sizes.</li>
+      </ul>
+    </div>
+  </section>
+
+  <footer class="page-foot"><a href="typography.html">← Typography</a><a href="flexbox.html">Next: Flexbox →</a></footer>
+</div>
+
+<script>
+  const $ = (id) => document.getElementById(id);
+  function part1() {
+    const opt = $("ff").selectedOptions[0], font = opt.value, kind = opt.dataset.kind, fb = $("fb").value, fail = $("fail").checked;
+    const stack = `"${font}", ${fb}`;
+    $("spec").style.fontFamily = fail ? fb : stack;
+    $("spec-tag").textContent = fail ? `font-family: ${stack}  →  showing the fallback: ${fb}` : `font-family: ${stack}`;
+    const s = $("fb-status");
+    if (fail && fb !== kind) { s.className = "status bad"; s.textContent = `${font} is a ${kind} font, but the fallback is ${fb}. If the download fails, the page suddenly looks completely different. Make the fallback ${kind}.`; }
+    else if (fail) { s.className = "status"; s.textContent = `The fallback is the same kind of font, so the page still looks close to the design.`; }
+    else { s.className = "status"; s.textContent = `${font} loaded. Tick the box to see what visitors get if it doesn't.`; }
+  }
+  ["ff", "fb", "fail"].forEach((id) => $(id).addEventListener("input", part1));
+  part1();
+
+  const FD = {
+    swap: "Shows the fallback right away, then swaps in the web font whenever it arrives. Text is never invisible.",
+    block: "Hides the text for up to 3 seconds while waiting for the font. On a slow connection, visitors stare at a blank space.",
+    fallback: "Hides text for a split second, then shows the fallback. Swaps only if the font arrives within about 3 seconds.",
+    optional: "Hides text for a split second, then uses the fallback for this visit if the font isn't ready. The font is cached for next time.",
+  };
+  const fdText = $("fdt"), state = $("fd-state"), fill = $("fill");
+  let timers = [];
+  function setFont(kind) { fdText.classList.toggle("invisible", kind === "none"); fdText.style.fontFamily = kind === "web" ? '"Pacifico", cursive' : "Georgia, serif"; }
+  function desc() { $("fd-desc").textContent = FD[$("fd").value]; }
+  $("fd").addEventListener("input", () => { desc(); reset(); });
+  function reset() { timers.forEach(clearTimeout); timers = []; fill.style.setProperty("transition", "none", "important"); fill.style.width = "0"; setFont("web"); state.textContent = 'Press "Simulate slow load."'; }
+  $("go").addEventListener("click", () => {
+    reset();
+    const mode = $("fd").value, at = (ms, fn) => timers.push(setTimeout(fn, ms));
+    void fill.offsetWidth; fill.style.setProperty("transition", "width 3s linear", "important"); fill.style.width = "100%";
+    if (mode === "swap") { setFont("fallback"); state.textContent = "0s: fallback font showing"; at(2500, () => { setFont("web"); state.textContent = "2.5s: web font arrived and swapped in. The text jumped a little."; }); }
+    if (mode === "block") { setFont("none"); state.textContent = "0s: text is invisible while waiting"; at(2500, () => { setFont("web"); state.textContent = "2.5s: web font arrived. Visitors saw nothing for 2.5 seconds."; }); }
+    if (mode === "fallback") { setFont("none"); state.textContent = "0s: invisible for a moment"; at(150, () => { setFont("fallback"); state.textContent = "0.15s: fallback showing"; }); at(2500, () => { setFont("web"); state.textContent = "2.5s: arrived within the window, so it swapped in."; }); }
+    if (mode === "optional") { setFont("none"); state.textContent = "0s: invisible for a moment"; at(150, () => { setFont("fallback"); state.textContent = "0.15s: not ready, so the fallback stays for this visit"; }); at(2500, () => { state.textContent = "2.5s: font downloaded and cached, but not swapped in. It'll be used on the next page."; }); }
+  });
+  desc(); setFont("web");
+
+  const W = [["300 (light)", 18], ["400 (regular)", 18, true], ["400 italic", 20], ["700 (bold)", 19, true], ["700 italic", 21], ["900 (black)", 19]];
+  $("weights").innerHTML = '<span class="eyebrow">Styles to download</span>' + W.map(([n, kb, on], i) => `<label class="check"><input type="checkbox" data-i="${i}" ${on ? "checked" : ""}>${n} · ~${kb} KB</label>`).join("");
+  function kb() {
+    const on = [...document.querySelectorAll("#weights input")].filter((c) => c.checked).map((c) => W[+c.dataset.i]);
+    const total = on.reduce((t, [, k]) => t + k, 0);
+    $("kb").textContent = `≈ ${total} KB`;
+    $("kb-note").textContent = on.length > 4 ? `${on.length} files is a lot. Most sites need regular and bold, plus maybe an italic.` : on.length ? `${on.length} file${on.length > 1 ? "s" : ""}. That's a sensible amount.` : "No web font, so the page uses system fonts and loads fastest.";
+  }
+  $("weights").addEventListener("input", kb); kb();
+</script>
+</body>
+</html>

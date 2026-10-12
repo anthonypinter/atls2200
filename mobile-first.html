@@ -1,0 +1,183 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mobile-First Workflow</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Recursive:slnt,wght,CASL,MONO@-15..0,300..1000,0..1,0..1&display=swap">
+<link rel="stylesheet" href="style.css">
+<style>
+  .steps { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+  @media (max-width: 640px) { .steps { grid-template-columns: 1fr 1fr; } }
+  .step { display: grid; gap: 4px; text-align: left; padding: 12px; border-radius: 8px; border: 1px solid var(--line); background: var(--panel); color: var(--ink); font: inherit; cursor: pointer; }
+  .step .n { font: 700 0.75rem var(--font-code); font-variation-settings: "MONO" 1; color: var(--muted); letter-spacing: 0.06em; text-transform: uppercase; }
+  .step b { font-family: var(--font-display); }
+  .step[aria-current="true"] { border-color: var(--cobalt); box-shadow: inset 0 -3px 0 var(--cobalt); }
+  .step.done .n { color: var(--good); }
+  .step-info { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  @media (max-width: 760px) { .step-info { grid-template-columns: 1fr; } }
+  .step-info .panel { display: grid; gap: 8px; align-content: start; }
+  .verdicts { display: grid; gap: 6px; }
+  .verdicts div { font-size: 0.92rem; padding: 6px 10px; border-radius: 6px; }
+  .verdicts .good { background: var(--good-soft); color: var(--good); } .verdicts .bad { background: var(--bad-soft); color: var(--bad); }
+  .nav-row { display: flex; gap: 8px; justify-content: space-between; }
+
+  .devices { display: grid; grid-template-columns: 0.8fr 1.3fr 2fr; gap: 14px; align-items: start; margin-top: 16px; }
+  @media (max-width: 860px) { .devices { grid-template-columns: 1fr 1fr; } .devices .dev:last-child { grid-column: 1 / -1; } }
+  .dev { display: grid; gap: 6px; min-width: 0; }
+  .dev .cap { font: 600 0.8rem var(--font-code); font-variation-settings: "MONO" 1; color: var(--muted); }
+  .screen { border: 2px solid var(--line); border-radius: 10px; overflow: hidden; background: #fff; height: 340px; position: relative; }
+  .screen .demo { transform-origin: top left; position: absolute; top: 0; left: 0; }
+
+  /* The sample site. Step 1 = browser defaults only. */
+  .demo:not(.styled), .demo:not(.styled) * { all: revert; }
+  .demo:not(.styled) { display: block; background: #fff; color: #000; padding: 8px; }
+  .demo.styled { font-family: var(--font-body); color: #1d2133; background: #f7f4ef; padding: 16px; display: grid; gap: 14px; font-size: 16px; line-height: 1.5; }
+  .demo.styled * { box-sizing: border-box; margin: 0; }
+  .demo.styled header { display: grid; gap: 10px; }
+  .demo.styled .logo { font: 800 1.3rem var(--font-display); color: #0b6b5e; }
+  .demo.styled nav ul { list-style: none; padding: 0; display: grid; gap: 6px; }
+  .demo.styled nav a { display: block; padding: 10px 12px; background: #fff; border-radius: 6px; color: #1d2133; text-decoration: none; border: 1px solid #e4ded3; }
+  .demo.styled h1 { font: 800 1.6rem/1.2 var(--font-display); }
+  .demo.styled .wrapper { display: grid; gap: 14px; }
+  .demo.styled .cards { list-style: none; padding: 0; display: grid; gap: 12px; }
+  .demo.styled .cards li { background: #fff; border-radius: 8px; padding: 12px; border: 1px solid #e4ded3; display: grid; gap: 4px; }
+  .demo.styled .cards li::before { content: ""; height: 70px; border-radius: 5px; background: #0b6b5e; }
+  .demo.styled .cards li:nth-child(2)::before { background: #b4410c; } .demo.styled .cards li:nth-child(3)::before { background: #2340d9; }
+  .demo.styled aside { background: #fff4ec; border: 1px solid #f2d3bf; border-radius: 8px; padding: 12px; }
+  .demo.bp1 header { grid-template-columns: auto 1fr; align-items: center; }
+  .demo.bp1 nav ul { display: flex; justify-content: flex-end; }
+  .demo.bp1 .cards { grid-template-columns: 1fr 1fr; }
+  .demo.bp2 > * { width: 100%; max-width: 1000px; justify-self: center; }
+  .demo.bp2 .wrapper { grid-template-columns: 1fr 260px; align-items: start; }
+  .demo.bp2 .cards { grid-template-columns: repeat(3, 1fr); }
+  .demo.bp2 h1 { font-size: 2.2rem; }
+
+  .checklist { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+  .checklist label { display: flex; gap: 10px; align-items: flex-start; cursor: pointer; padding: 8px 10px; border-radius: 6px; background: var(--panel); border: 1px solid var(--line); }
+  .checklist input { margin-top: 4px; accent-color: var(--cobalt); }
+  .checklist input:checked + span { color: var(--muted); text-decoration: line-through; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <nav class="crumbs" aria-label="Site"><a class="crumb" href="index.html">← Field Guide</a><a class="crumb" href="glossary.html">Glossary</a></nav>
+  <header class="page-head">
+    <span class="eyebrow">Responsive Design · Mobile-First Workflow</span>
+    <h1>Mobile-First Workflow</h1>
+    <p class="lede">Build the phone version first, then add to it as the screen gets wider. Step through how one page comes together and watch it on three screen sizes at once.</p>
+  </header>
+
+  <div class="steps" id="steps" role="group" aria-label="Steps"></div>
+  <div class="devices">
+    <div class="dev"><span class="cap">Phone · 375px</span><div class="screen" data-w="375"></div></div>
+    <div class="dev"><span class="cap">Tablet · 768px</span><div class="screen" data-w="768"></div></div>
+    <div class="dev"><span class="cap">Laptop · 1280px</span><div class="screen" data-w="1280"></div></div>
+  </div>
+  <div class="step-info" style="margin-top:16px">
+    <div class="panel" id="what" aria-live="polite"></div>
+    <div class="panel"><span class="eyebrow">How it looks now</span><div class="verdicts" id="verdicts"></div>
+      <div class="nav-row" style="margin-top:8px"><button class="btn" id="prev">← Previous step</button><button class="btn" id="next">Next step →</button></div></div>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Before you hand it in</span><h2>Responsive checklist</h2><p>Tick these off for your own project. Your checks are saved in this browser only.</p></div>
+  <ul class="checklist" id="checklist"></ul>
+
+  <section class="notes">
+    <div class="panel">
+      <h2>Key ideas</h2>
+      <ul>
+        <li>The phone layout is usually the simplest: one column. Starting there means less CSS to undo later.</li>
+        <li>Styles outside any media query apply everywhere. Media queries only <em>add</em> changes for wider screens.</li>
+        <li>Use <code>min-width</code> queries, listed from smallest to largest.</li>
+        <li>Add a breakpoint when the layout starts to look wrong as you widen the window, not at a specific device's width.</li>
+      </ul>
+    </div>
+    <div class="panel mistake">
+      <h2>Common mistakes</h2>
+      <ul>
+        <li>Designing for a laptop, then cramming it onto a phone with lots of <code>max-width</code> overrides.</li>
+        <li>Only testing by shrinking the browser window. Check on a real phone too.</li>
+        <li>Fixed widths like <code>width: 960px</code> on a wrapper, which cause sideways scrolling on phones.</li>
+        <li>Hiding important content on mobile instead of rearranging it.</li>
+      </ul>
+    </div>
+  </section>
+
+  <footer class="page-foot"><a href="picture.html">← Picture &amp; Lazy Loading</a><a href="fluid-sizing.html">Next: Fluid Sizing →</a></footer>
+</div>
+
+<script>
+  const $ = (id) => document.getElementById(id);
+  const DEMO = `<header><span class="logo">Trailhead</span><nav><ul><li><a href="#steps">Trails</a></li><li><a href="#steps">Maps</a></li><li><a href="#steps">Gear</a></li></ul></nav></header>
+    <h1>Weekend hikes near you</h1>
+    <div class="wrapper"><ul class="cards"><li><b>Royal Arch</b><span>3.4 mi · Hard</span></li><li><b>Mesa Trail</b><span>6.7 mi · Moderate</span></li><li><b>Chautauqua Loop</b><span>1.2 mi · Easy</span></li></ul>
+    <aside><b>Trail conditions</b><p>Muddy below 7,000 ft. Bring layers.</p></aside></div>`;
+  const STEPS = [
+    { title: "Content", what: "Write the HTML in a sensible reading order: header, heading, the trail list, then the side note. No CSS yet.",
+      why: "This order is what phones and screen readers will use, so get it right before any styling.",
+      v: [["good", "Everything is readable on every screen, in the right order."], ["bad", "It looks plain, and on the laptop the lines stretch very wide."]] },
+    { title: "Base styles", what: "Add colors, fonts, spacing and a single-column layout, all outside any media query. These styles apply to every screen.",
+      why: "One column is exactly what a phone needs, so the phone version is now finished.",
+      v: [["good", "Phone: done. Big tap targets, nothing overflows."], ["bad", "Tablet and laptop: cards are stretched huge, with lots of wasted space."]] },
+    { title: "First breakpoint", what: "At min-width: 600px, put the cards in two columns and move the nav into a row beside the logo.",
+      why: "600px is roughly where the single column started to look too stretched.",
+      v: [["good", "Tablet looks right now."], ["good", "Phone is unchanged, because 375px is under 600px."], ["bad", "Laptop: two big columns and the content runs edge to edge."]] },
+    { title: "Second breakpoint", what: "At min-width: 960px, add a sidebar column, use three card columns, and cap the content at 1000px wide in the center.",
+      why: "Wide screens get the most complex layout, built on top of everything before it.",
+      v: [["good", "Phone, tablet and laptop all have a layout that fits."], ["good", "Each step only added CSS. Nothing earlier had to be undone."]] },
+  ];
+  let step = 0;
+  $("steps").innerHTML = STEPS.map((s, i) => `<button class="step" data-i="${i}"><span class="n">Step ${i + 1}</span><b>${s.title}</b></button>`).join("");
+  $("steps").addEventListener("click", (e) => { const b = e.target.closest("button"); if (b) { step = +b.dataset.i; render(); } });
+  $("prev").addEventListener("click", () => { step = Math.max(0, step - 1); render(); });
+  $("next").addEventListener("click", () => { step = Math.min(STEPS.length - 1, step + 1); render(); });
+
+  const screens = [...document.querySelectorAll(".screen")];
+  screens.forEach((sc) => (sc.innerHTML = `<div class="demo">${DEMO}</div>`));
+
+  function layout() {
+    screens.forEach((sc) => {
+      const w = +sc.dataset.w, d = sc.firstElementChild;
+      d.className = "demo" + (step >= 1 ? " styled" : "") + (step >= 2 && w >= 600 ? " bp1" : "") + (step >= 3 && w >= 960 ? " bp2" : "");
+      d.style.width = w + "px";
+      d.style.transform = `scale(${sc.clientWidth / w})`;
+      // Set inline: step 1 reverts all stylesheet rules on the demo, including these.
+      Object.assign(d.style, { position: "absolute", top: "0", left: "0", transformOrigin: "top left" });
+    });
+  }
+  function render() {
+    const s = STEPS[step];
+    document.querySelectorAll(".step").forEach((b, i) => { b.setAttribute("aria-current", String(i === step)); b.classList.toggle("done", i < step); });
+    $("what").innerHTML = `<span class="eyebrow">Step ${step + 1} of ${STEPS.length}</span><h2>${s.title}</h2><p>${s.what}</p><p class="hint">${s.why}</p>`;
+    $("verdicts").innerHTML = s.v.map(([c, t]) => `<div class="${c}">${t}</div>`).join("");
+    $("prev").disabled = step === 0; $("next").disabled = step === STEPS.length - 1;
+    layout();
+  }
+  window.addEventListener("resize", layout);
+  render();
+
+  // Checklist, remembered per browser
+  const ITEMS = [
+    "The viewport meta tag is in the <head> of every page.",
+    "Base styles (outside media queries) give a good one-column phone layout.",
+    "Media queries use min-width and go from smallest to largest.",
+    "Nothing scrolls sideways at 320px wide.",
+    "Images have max-width: 100% and height: auto.",
+    "Buttons and links are big enough to tap, about 44px tall.",
+    "Text is at least 16px on phones.",
+    "Tested on a real phone, not just a narrow browser window.",
+  ];
+  let saved = [];
+  try { saved = JSON.parse(localStorage.getItem("mf-checklist") || "[]"); } catch (e) {}
+  const esc = (s) => s.replace(/</g, "&lt;");
+  $("checklist").innerHTML = ITEMS.map((t, i) => `<li><label for="ck${i}"><input type="checkbox" id="ck${i}" ${saved.includes(i) ? "checked" : ""}><span>${esc(t)}</span></label></li>`).join("");
+  $("checklist").addEventListener("change", () => {
+    const on = ITEMS.map((_, i) => i).filter((i) => $("ck" + i).checked);
+    try { localStorage.setItem("mf-checklist", JSON.stringify(on)); } catch (e) {}
+  });
+</script>
+</body>
+</html>

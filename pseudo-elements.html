@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pseudo-elements</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Recursive:slnt,wght,CASL,MONO@-15..0,300..1000,0..1,0..1&family=Lora:ital,wght@0,400;0,700;1,400&display=swap">
+<link rel="stylesheet" href="style.css">
+<style>
+  .grid-demos { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px; }
+  @media (max-width: 380px) { .grid-demos { grid-template-columns: 1fr; } }
+  .demo-card { display: grid; gap: 10px; align-content: start; min-width: 0; }
+  .demo-card .top { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+  .demo-card h2 { font: 700 1.05rem var(--font-code); font-variation-settings: "MONO" 1; color: var(--cobalt); }
+  .switch { display: flex; gap: 6px; align-items: center; font-size: 0.85rem; cursor: pointer; white-space: nowrap; }
+  .switch input { accent-color: var(--cobalt); width: 18px; height: 18px; }
+  .sample { background: #fff; color: #1d2133; border: 1px solid var(--line); border-radius: 8px; padding: 14px 16px; font: 1rem/1.6 "Lora", Georgia, serif; min-height: 90px; }
+  .sample p { margin: 0; max-width: none; }
+  .demo-card .what { font-size: 0.92rem; color: var(--muted); }
+
+  /* The demos: each only applies when its card has .on */
+  .on .d-quote { position: relative; padding-left: 34px; }
+  .on .d-quote::before { content: "\201C"; position: absolute; left: -2px; top: -14px; font-size: 3.6rem; color: #b4410c; line-height: 1; }
+  .d-ext a { color: #2340d9; }
+  .on .d-ext a[href^="http"]::after { content: " ↗"; font-size: 0.85em; }
+  .on .d-bar h3::after { content: ""; display: block; width: 48px; height: 4px; background: #0b6b5e; border-radius: 2px; margin-top: 6px; }
+  .d-bar h3 { margin: 0; font: 700 1.3rem "Lora", serif; }
+  .d-req label { font: 700 0.95rem var(--font-body); display: block; margin-bottom: 4px; }
+  .d-req input { font: inherit; padding: 6px 8px; border: 1.5px solid #c9cedb; border-radius: 6px; width: 100%; }
+  .on .d-req label.required::after { content: " *"; color: #b42318; }
+  .on .d-drop p::first-letter { float: left; font-size: 3.4em; line-height: 0.85; font-weight: 700; color: #0b6b5e; margin: 4px 8px 0 0; }
+  .on .d-line p::first-line { font-variant: small-caps; letter-spacing: 0.04em; color: #b4410c; }
+  .d-ph input { font: 1rem var(--font-body); padding: 8px 10px; border: 1.5px solid #c9cedb; border-radius: 6px; width: 100%; background: #fff; color: #1d2133; }
+  .on .d-ph input::placeholder { color: #0b6b5e; font-style: italic; opacity: 1; }
+  .on .d-sel ::selection { background: #f4a261; color: #1d2133; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <nav class="crumbs" aria-label="Site"><a class="crumb" href="index.html">← Field Guide</a><a class="crumb" href="glossary.html">Glossary</a></nav>
+  <header class="page-head">
+    <span class="eyebrow">CSS Basics · Pseudo-elements</span>
+    <h1>Pseudo-elements</h1>
+    <p class="lede">Pseudo-elements, written with two colons, style a <em>part</em> of an element, or add decorative content before or after it, without changing your HTML. Switch each one on and off to see what it adds.</p>
+  </header>
+
+  <div class="grid-demos" id="demos"></div>
+
+  <section class="notes">
+    <div class="panel">
+      <h2>Key ideas</h2>
+      <ul>
+        <li><code>::before</code> and <code>::after</code> need a <code>content</code> property, even if it's empty (<code>content: ""</code>), or they don't appear.</li>
+        <li>They're inserted <em>inside</em> the element, as its first and last child.</li>
+        <li>Use them for decoration: quote marks, icons, underlines, arrows. Don't put important information in them.</li>
+        <li>Two colons mark a pseudo-element (<code>::before</code>). One colon is a pseudo-class (<code>:hover</code>).</li>
+      </ul>
+    </div>
+    <div class="panel mistake">
+      <h2>Common mistakes</h2>
+      <ul>
+        <li>Forgetting <code>content</code>, then wondering why <code>::after</code> does nothing.</li>
+        <li>Trying <code>::before</code> on an <code>&lt;img&gt;</code> or <code>&lt;input&gt;</code>. Elements with no content inside can't have them.</li>
+        <li>Putting real text in <code>content</code>. It can't be selected and some screen readers skip it.</li>
+        <li>Expecting <code>::first-letter</code> to work on an inline element like a span.</li>
+      </ul>
+    </div>
+  </section>
+
+  <footer class="page-foot"><a href="pseudo-classes.html">← Pseudo-classes &amp; States</a><a href="cascade.html">Next: Cascade &amp; Inheritance →</a></footer>
+</div>
+
+<script>
+  const DEMOS = [
+    { n: "::before", cls: "d-quote", html: "<p>The mountain will be there tomorrow. Turn back when the weather does.</p>", what: "Adds a big decorative quotation mark before the text, positioned in the corner. Nothing was added to the HTML." },
+    { n: "::after with content: \"\"", cls: "d-bar", html: "<h3>Trail Conditions</h3>", what: "An empty ::after with a width, height and background draws a short accent bar under the heading." },
+    { n: "::after on external links", cls: "d-ext", html: '<p>Check the <a href="#demos">closures page</a> and the <a href="https://www.nps.gov/romo/">park service site</a>.</p>', what: "Combined with an attribute selector, ::after adds ↗ only to links starting with http, marking ones that leave the site." },
+    { n: "::after for required fields", cls: "d-req", html: '<label class="required" for="pe-name">Name</label><input id="pe-name">', what: "A red asterisk after every label with class=\"required\". Also add the required attribute to the input so screen readers know." },
+    { n: "::first-letter", cls: "d-drop", html: "<p>Every April, the lower Mesa Trail closes for about six weeks while snowmelt turns the clay soil into deep mud and hikers widen the path.</p>", what: "Styles only the first letter, here as a large drop cap that floats beside the paragraph." },
+    { n: "::first-line", cls: "d-line", html: "<p>Rangers reopen the trail once the ground can hold a footprint without sinking. Until then, the upper loop stays open and drains much faster.</p>", what: "Styles whatever ends up on the first line. Resize the window: the styled part changes as the text rewraps." },
+    { n: "::placeholder", cls: "d-ph", html: '<input aria-label="Search trails" placeholder="Search trails…">', what: "Styles an input's placeholder text. Keep it readable, and remember a placeholder isn't a label." },
+    { n: "::selection", cls: "d-sel", html: "<p>Select some of this text with your mouse or finger to see the highlight color change.</p>", what: "Changes the color of text the user highlights." },
+  ];
+  document.getElementById("demos").innerHTML = DEMOS.map((d, i) => `
+    <div class="panel demo-card on" id="dc${i}">
+      <div class="top"><h2>${d.n}</h2><label class="switch"><input type="checkbox" checked data-i="${i}" aria-label="Turn ${d.n} on or off"> On</label></div>
+      <div class="sample ${d.cls}">${d.html}</div>
+      <p class="what">${d.what}</p>
+    </div>`).join("");
+  document.getElementById("demos").addEventListener("input", (e) => { const i = e.target.dataset.i; if (i !== undefined) document.getElementById("dc" + i).classList.toggle("on", e.target.checked); });
+</script>
+</body>
+</html>

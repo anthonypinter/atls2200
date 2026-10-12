@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CSS Grid Playground</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Recursive:slnt,wght,CASL,MONO@-15..0,300..1000,0..1,0..1&display=swap">
+<link rel="stylesheet" href="style.css">
+<style>
+  .stage { display: grid; grid-auto-rows: minmax(70px, auto); }
+  .stage .item { min-height: 0; }
+  .fr-note { font: 0.85rem var(--font-code); font-variation-settings: "MONO" 1; color: var(--muted); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <nav class="crumbs" aria-label="Site"><a class="crumb" href="index.html">← Field Guide</a><a class="crumb" href="glossary.html">Glossary</a></nav>
+  <header class="page-head">
+    <span class="eyebrow">Layout · CSS Grid</span>
+    <h1>CSS Grid Playground</h1>
+    <p class="lede">Grid controls rows and columns at the same time. Define the columns on the container, and items fill the cells in order unless you tell one to span more space.</p>
+  </header>
+
+  <section class="playground">
+    <div class="panel controls" aria-label="Grid container settings">
+      <span class="eyebrow">.container</span>
+      <div class="control"><label for="cols">grid-template-columns</label>
+        <select id="cols">
+          <option>repeat(3, 1fr)</option>
+          <option>repeat(4, 1fr)</option>
+          <option>1fr 2fr 1fr</option>
+          <option>200px 1fr</option>
+          <option>repeat(auto-fit, minmax(120px, 1fr))</option>
+        </select></div>
+      <div class="control"><label for="gap">gap</label>
+        <input id="gap" type="range" min="0" max="40" step="4" value="12"><span class="readout" id="gap-out">12px</span></div>
+      <div class="control"><label for="ji">justify-items</label>
+        <select id="ji"><option>stretch</option><option>start</option><option>center</option><option>end</option></select></div>
+      <div class="control"><label for="ai">align-items</label>
+        <select id="ai"><option>stretch</option><option>start</option><option>center</option><option>end</option></select></div>
+      <span class="eyebrow" style="margin-top:6px">Items</span>
+      <div class="control"><label for="count">number of items</label>
+        <input id="count" type="range" min="1" max="12" value="7"><span class="readout" id="count-out">7</span></div>
+      <div class="control"><label for="cspan">.item-1 { grid-column }</label>
+        <select id="cspan"><option value="1">span 1</option><option value="2" selected>span 2</option><option value="3">span 3</option></select></div>
+      <div class="control"><label for="rspan">.item-1 { grid-row }</label>
+        <select id="rspan"><option value="1">span 1</option><option value="2">span 2</option></select></div>
+    </div>
+
+    <div class="stage-col">
+      <p class="fr-note" id="fr-note"></p>
+      <div class="stage" id="stage" aria-label="Live grid container"></div>
+    </div>
+  </section>
+
+  <section class="notes">
+    <div class="panel">
+      <h2>Key ideas</h2>
+      <ul>
+        <li><code>fr</code> means "a fraction of the leftover space." <code>1fr 2fr</code> makes the second column twice as wide.</li>
+        <li><code>repeat(3, 1fr)</code> is shorthand for <code>1fr 1fr 1fr</code>.</li>
+        <li><code>grid-column: span 2</code> makes an item take up two columns. Other items flow around it.</li>
+        <li><code>repeat(auto-fit, minmax(120px, 1fr))</code> makes a responsive grid with no media queries. Resize the window to see it.</li>
+      </ul>
+    </div>
+    <div class="panel mistake">
+      <h2>Common mistakes</h2>
+      <ul>
+        <li>Setting <code>grid-template-columns</code> on the items instead of the container.</li>
+        <li>Spanning more columns than the grid has, which creates extra implicit columns.</li>
+        <li>Using fixed <code>px</code> columns everywhere, so the layout overflows on phones.</li>
+        <li>Mixing up <code>justify-items</code> (horizontal, inside each cell) with <code>justify-content</code> (the whole grid).</li>
+      </ul>
+    </div>
+  </section>
+
+  <footer class="page-foot"><a href="flexbox.html">← Flexbox</a><a href="flex-vs-grid.html">Next: Flexbox vs Grid →</a></footer>
+</div>
+
+<script>
+  const $ = (id) => document.getElementById(id);
+  const stage = $("stage");
+  const notes = {
+    "repeat(3, 1fr)": "Three equal columns.",
+    "repeat(4, 1fr)": "Four equal columns.",
+    "1fr 2fr 1fr": "Middle column gets 2 of the 4 shares of space, so it's twice as wide.",
+    "200px 1fr": "A fixed 200px sidebar, and the second column takes whatever is left.",
+    "repeat(auto-fit, minmax(120px, 1fr))": "As many columns as fit, each at least 120px. Resize the window to watch columns appear and disappear.",
+  };
+
+  function update() {
+    const s = { cols: $("cols").value, gap: $("gap").value + "px", ji: $("ji").value, ai: $("ai").value, c: $("cspan").value, r: $("rspan").value };
+    const n = +$("count").value;
+    $("gap-out").textContent = s.gap;
+    $("count-out").textContent = n;
+    $("fr-note").textContent = notes[s.cols];
+
+    Object.assign(stage.style, { gridTemplateColumns: s.cols, gap: s.gap, justifyItems: s.ji, alignItems: s.ai });
+    stage.innerHTML = "";
+    for (let i = 0; i < n; i++) {
+      const el = document.createElement("div");
+      el.className = "item";
+      el.textContent = i + 1;
+      if (i === 0) { el.style.gridColumn = "span " + s.c; el.style.gridRow = "span " + s.r; }
+      stage.appendChild(el);
+    }
+
+  }
+
+  document.querySelectorAll("select, input").forEach((el) => el.addEventListener("input", update));
+  update();
+</script>
+</body>
+</html>

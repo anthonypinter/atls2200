@@ -1,0 +1,289 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1"><style>:root{color-scheme:light}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>HTML &amp; CSS Field Guide</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Recursive:slnt,wght,CASL,MONO@-15..0,300..1000,0..1,0..1&display=swap">
+<link rel="stylesheet" href="style.css">
+<style>
+  .hero { display: grid; grid-template-columns: 1.3fr 1fr; gap: 32px; align-items: end; padding-block: 24px 40px; border-bottom: 1px solid var(--line); }
+  @media (max-width: 800px) { .hero { grid-template-columns: 1fr; } }
+  .hero-text { display: grid; gap: 16px; min-width: 0; }
+  .hero h1 .sel { font-variation-settings: "CASL" 1, "MONO" 0; }
+  .hero .lede { font-size: 1.2rem; color: var(--muted); }
+  .hero pre { margin: 0; background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 18px 20px; font-size: 0.95rem; line-height: 1.6; overflow-x: auto; min-width: 0; }
+
+  .toolbar { display: flex; flex-wrap: wrap; gap: 12px 20px; align-items: center; justify-content: space-between; padding-block: 28px 8px; }
+  .search { display: flex; align-items: center; gap: 8px; background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 6px 12px; flex: 1 1 260px; max-width: 380px; }
+  .search input { border: 0; background: transparent; color: var(--ink); font: 1rem var(--font-body); width: 100%; outline: none; }
+  .search:focus-within { outline: 3px solid var(--cobalt); outline-offset: 2px; }
+  .legend { display: flex; gap: 16px; font-size: 0.9rem; color: var(--muted); }
+  .legend span { display: inline-flex; align-items: center; gap: 6px; }
+
+  .unit { display: grid; grid-template-columns: 200px 1fr; gap: 20px; padding-block: 28px; border-bottom: 1px solid var(--line); }
+  @media (max-width: 800px) { .unit { grid-template-columns: 1fr; gap: 14px; } }
+  .unit-head { display: grid; gap: 6px; align-content: start; }
+  .unit-head p { font-size: 0.95rem; color: var(--muted); }
+  .cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 14px; }
+
+  .card { display: grid; grid-template-rows: auto 1fr auto; gap: 10px; padding: 16px; border-radius: var(--radius); border: 1px solid var(--line); background: var(--panel); color: var(--ink); text-decoration: none; min-width: 0; }
+  a.card { transition: border-color 0.15s, transform 0.15s; }
+  a.card:hover { border-color: var(--cobalt); transform: translateY(-2px); }
+  a.card:hover h3 { color: var(--cobalt); }
+  .card.planned { background: transparent; border-style: dashed; color: var(--muted); }
+  .card-top { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+  .card p { font-size: 0.95rem; color: var(--muted); }
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; }
+  .chips code { font-size: 0.78rem; color: var(--prop); background: transparent; border: 1px solid var(--line); padding: 2px 6px; }
+  .status { font: 600 0.7rem/1 var(--font-code); font-variation-settings: "MONO" 1; letter-spacing: 0.06em; text-transform: uppercase; padding: 4px 7px; border-radius: 4px; white-space: nowrap; }
+  .status.ready { background: var(--cobalt-soft); color: var(--cobalt); }
+  .status.soon { border: 1px dashed var(--line); color: var(--muted); }
+  .dot { width: 9px; height: 9px; border-radius: 50%; display: inline-block; }
+
+  /* Tiny live diagrams on the ready cards */
+  .mini { height: 54px; border-radius: 6px; background: var(--stage); padding: 6px; display: flex; gap: 4px; }
+  .mini i { display: block; border-radius: 3px; }
+  .mini.flex { justify-content: space-between; align-items: center; }
+  .mini.flex i { width: 18%; height: 60%; }
+  .mini.flex i:nth-child(2) { height: 85%; }
+  .mini.grid { display: grid; grid-template-columns: 2fr 1fr 1fr; grid-template-rows: 1fr 1fr; }
+  .mini.grid i:first-child { grid-row: span 2; }
+  .mini.box { justify-content: center; align-items: center; }
+  .mini.box i { width: 60%; height: 100%; border: 6px solid var(--item-2); outline: 6px dashed color-mix(in srgb, var(--item-3) 50%, transparent); outline-offset: 0; background: var(--item-1) content-box; padding: 6px; }
+  .mini.mq { gap: 6px; align-items: stretch; }
+  .mini.mq .phone { width: 22%; display: grid; gap: 3px; }
+  .mini.mq .desk { flex: 1; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 3px; }
+  .mini i:nth-child(3n+1) { background: var(--item-1); } .mini i:nth-child(3n+2) { background: var(--item-2); } .mini i:nth-child(3n+3) { background: var(--item-3); }
+  .mini.box i { background-color: var(--item-1); }
+  .mini.doc { flex-direction: column; } .mini.doc i:first-child { height: 25%; } .mini.doc i:last-child { flex: 1; }
+  .mini.sem { display: grid; grid-template-columns: 3fr 1fr; grid-template-rows: 1fr 2.4fr 1fr; } .mini.sem i:first-child, .mini.sem i:last-child { grid-column: 1 / -1; }
+  .mini.form { flex-direction: column; justify-content: center; } .mini.form b { width: 30%; height: 5px; border-radius: 2px; background: var(--muted); }
+  .mini.form i:nth-of-type(1) { height: 14px; background: var(--panel) !important; border: 1.5px solid var(--line); } .mini.form i:nth-of-type(2) { width: 34%; height: 14px; }
+  .mini.img { align-items: stretch; } .mini.img i { width: 52%; background: linear-gradient(160deg, var(--item-2) 0 45%, var(--item-3) 45%) !important; }
+  .mini.img b { flex: 1; display: grid; place-items: center; font: 600 0.75rem var(--font-code); font-variation-settings: "MONO" 1; color: var(--val); }
+  .mini.sel { display: grid; grid-template-columns: repeat(3, 1fr); } .mini.sel i { background: var(--line) !important; } .mini.sel i.hit { background: var(--cobalt) !important; }
+  .mini.color i { flex: 1; } .mini.color i:nth-child(n) { background: hsl(225 70% calc(var(--n, 1) * 1%)); }
+  .mini.color i:nth-child(1) { --n: 20; } .mini.color i:nth-child(2) { --n: 32; } .mini.color i:nth-child(3) { --n: 44; } .mini.color i:nth-child(4) { --n: 58; } .mini.color i:nth-child(5) { --n: 72; } .mini.color i:nth-child(6) { --n: 86; }
+  .mini.type { align-items: center; gap: 10px; padding-inline: 10px; } .mini.type b { font: 800 1.7rem/1 var(--font-display); color: var(--cobalt); }
+  .mini.type span { flex: 1; display: grid; gap: 5px; } .mini.type span i { height: 4px; background: var(--muted) !important; opacity: 0.5; } .mini.type span i:last-child { width: 60%; }
+  .mini.pos { position: relative; } .mini.pos i { position: absolute; width: 40%; height: 55%; } .mini.pos i:first-child { left: 10%; top: 12%; } .mini.pos i:last-child { left: 34%; top: 34%; box-shadow: 0 2px 6px rgba(0,0,0,0.25); }
+  .mini.rimg { align-items: flex-end; justify-content: center; gap: 8px; } .mini.rimg i { background: linear-gradient(160deg, var(--item-2) 0 45%, var(--item-3) 45%) !important; }
+  .mini.rimg i:nth-child(1) { width: 14%; height: 40%; } .mini.rimg i:nth-child(2) { width: 26%; height: 65%; } .mini.rimg i:nth-child(3) { width: 40%; height: 100%; }
+  .mini.mf { align-items: flex-end; gap: 6px; } .mini.mf i:nth-child(1) { width: 12%; height: 70%; } .mini.mf i:nth-child(2) { width: 26%; height: 85%; } .mini.mf i:nth-child(3) { flex: 1; height: 100%; }
+  .mini.links { align-items: center; gap: 8px; } .mini.links i { width: 30%; height: 70%; } .mini.links b { font: 700 0.85rem var(--font-code); font-variation-settings: "MONO" 1; color: var(--prop); }
+  .mini.table { display: grid; grid-template-columns: repeat(4, 1fr); gap: 2px; } .mini.table i { background: var(--line) !important; } .mini.table i:nth-child(-n+4) { background: var(--cobalt) !important; }
+  .mini.cascade { position: relative; } .mini.cascade i { position: absolute; width: 50%; height: 50%; border-radius: 4px; }
+  .mini.cascade i:nth-child(1) { left: 8%; top: 10%; } .mini.cascade i:nth-child(2) { left: 22%; top: 25%; } .mini.cascade i:nth-child(3) { left: 36%; top: 40%; }
+  .mini.pseudo { align-items: center; justify-content: center; gap: 10px; } .mini.pseudo i { width: 34%; height: 60%; border-radius: 6px !important; } .mini.pseudo i:last-child { outline: 3px solid var(--prop); outline-offset: 2px; }
+  .mini.display { flex-wrap: wrap; align-content: center; gap: 4px; } .mini.display span { width: 20%; height: 5px; background: var(--muted); opacity: 0.5; border-radius: 2px; align-self: center; } .mini.display i { width: 16%; height: 12px; } .mini.display i.blk { width: 100%; height: 12px; }
+  .mini.vars { align-items: center; gap: 6px; padding-inline: 10px; } .mini.vars b { font: 800 1.2rem var(--font-code); font-variation-settings: "MONO" 1; color: var(--cobalt); } .mini.vars i { flex: 1; height: 60%; background: var(--item-3) !important; }
+  .mini.fvg { gap: 8px; } .mini.fvg div { flex: 1; display: flex; gap: 3px; flex-wrap: wrap; } .mini.fvg div:last-child { display: grid; grid-template-columns: 1fr 1fr; }
+  .mini.fvg div:first-child i { flex: 1 1 35%; } .mini.fvg i { min-height: 8px; }
+  .mini.motion { align-items: center; gap: 0; padding-inline: 10px; } .mini.motion i { width: 18px; height: 18px; border-radius: 50%; margin-right: 14%; } .mini.motion i:nth-child(1) { opacity: 0.3; } .mini.motion i:nth-child(2) { opacity: 0.6; }
+  .mini.fstyle { flex-direction: column; justify-content: center; gap: 5px; } .mini.fstyle i { height: 11px; background: var(--panel) !important; border: 1.5px solid var(--line); border-radius: 4px; } .mini.fstyle i:nth-child(2) { border-color: var(--cobalt); box-shadow: 0 0 0 2px var(--cobalt-soft); } .mini.fstyle i:nth-child(3) { width: 35%; background: var(--cobalt) !important; border: 0; }
+  .mini.a11y { align-items: center; justify-content: center; gap: 8px; } .mini.a11y i { width: 22%; height: 40%; } .mini.a11y i.f { outline: 3px solid var(--cobalt); outline-offset: 2px; }
+  .mini.valid { align-items: center; gap: 10px; padding-inline: 10px; } .mini.valid b { font: 800 1.5rem var(--font-display); color: var(--good); } .mini.valid span { flex: 1; display: grid; gap: 4px; }
+  .mini.valid span i { height: 5px; background: var(--muted) !important; opacity: 0.5; } .mini.valid span i.x { background: var(--bad) !important; opacity: 1; width: 60%; }
+  .mini.publish { align-items: center; justify-content: center; gap: 10px; } .mini.publish i { width: 30%; height: 70%; } .mini.publish b { color: var(--muted); font-size: 1.2rem; }
+  .mini.syntax, .mini.cssbasics { align-items: center; justify-content: center; } .mini.syntax b, .mini.cssbasics b { font: 700 1.05rem var(--font-code); font-variation-settings: "MONO" 1; color: var(--cobalt); }
+  .mini.cssbasics b { color: var(--prop); font-size: 1.2rem; }
+  .mini.textsem { flex-direction: column; gap: 4px; } .mini.textsem i { height: 5px; background: var(--muted) !important; opacity: 0.45; border-radius: 2px; } .mini.textsem i.h { height: 10px; width: 55%; background: var(--cobalt) !important; opacity: 1; }
+  .mini.textsem span { display: flex; gap: 4px; } .mini.textsem span i { flex: 1; } .mini.textsem i.st { background: var(--ink) !important; opacity: 0.9; }
+  .mini.lists { flex-direction: column; justify-content: center; gap: 6px; padding-left: 12px; } .mini.lists span { display: flex; gap: 8px; align-items: center; } .mini.lists b { width: 7px; height: 7px; border-radius: 50%; background: var(--prop); } .mini.lists i { height: 5px; width: 60%; background: var(--muted) !important; opacity: 0.5; }
+  .mini.video { position: relative; background: #1d2133; justify-content: center; align-items: center; } .mini.video b { color: #fff; font-size: 1rem; } .mini.video i { position: absolute; left: 10%; right: 10%; bottom: 8px; height: 4px; background: rgba(255,255,255,0.5) !important; }
+  .mini.web { align-items: center; justify-content: center; gap: 10px; } .mini.web i { width: 26%; height: 70%; } .mini.web i:first-child { border-radius: 3px 3px 8px 8px; } .mini.web b { color: var(--muted); font-size: 1.2rem; }
+  .mini.head { flex-direction: column; gap: 0; } .mini.head span { display: flex; align-items: center; gap: 5px; width: 55%; height: 16px; padding: 0 6px; background: var(--panel); border-radius: 5px 5px 0 0; } .mini.head span b { width: 8px; height: 8px; border-radius: 2px; background: var(--cobalt); } .mini.head span i { flex: 1; height: 4px; background: var(--muted) !important; opacity: 0.5; } .mini.head > i { flex: 1; background: var(--panel) !important; border-radius: 0 5px 5px 5px; }
+  .mini.fmt { align-items: center; justify-content: center; gap: 6px; } .mini.fmt b { font: 700 0.7rem var(--font-code); font-variation-settings: "MONO" 1; color: #fff; padding: 6px 7px; border-radius: 4px; } .mini.fmt b:nth-child(1) { background: var(--item-2); } .mini.fmt b:nth-child(2) { background: var(--item-3); } .mini.fmt b:nth-child(3) { background: var(--item-1); }
+  .mini.embed { align-items: center; justify-content: center; } .mini.embed i { width: 62%; height: 100%; position: relative; background: #1d2133 !important; outline: 2px dashed var(--prop); outline-offset: 2px; } .mini.embed i::after { content: ""; position: absolute; inset: 0; margin: auto; width: 0; height: 0; border: 7px solid transparent; border-left: 11px solid #fff; border-right: 0; }
+  .mini.pic { align-items: center; justify-content: center; gap: 8px; } .mini.pic i { height: 80%; background: linear-gradient(160deg, var(--item-2) 0 45%, var(--item-3) 45%) !important; } .mini.pic i:nth-child(1) { aspect-ratio: 21 / 9; height: 50%; } .mini.pic i:nth-child(2) { aspect-ratio: 16 / 9; height: 65%; } .mini.pic i:nth-child(3) { aspect-ratio: 1; }
+  .mini.fluid { align-items: flex-end; gap: 4px; } .mini.fluid i { flex: 1; } .mini.fluid i:nth-child(-n+2) { height: 30%; } .mini.fluid i:nth-child(3) { height: 50%; } .mini.fluid i:nth-child(4) { height: 70%; } .mini.fluid i:nth-child(n+5) { height: 88%; }
+  .mini.tf { align-items: center; justify-content: center; position: relative; } .mini.tf span { position: absolute; width: 32px; height: 32px; border: 2px dashed var(--muted); border-radius: 4px; } .mini.tf i { width: 32px; height: 32px; transform: translate(14px, -4px) rotate(20deg); }
+  .mini.pseudoel { align-items: center; gap: 6px; padding-inline: 10px; } .mini.pseudoel b { font: 800 2rem/1 Georgia, serif; color: var(--prop); } .mini.pseudoel span { flex: 1; display: grid; gap: 5px; } .mini.pseudoel span i { height: 5px; background: var(--muted) !important; opacity: 0.5; }
+  .mini.sizing { flex-direction: column; gap: 4px; justify-content: center; } .mini.sizing i { height: 10px; } .mini.sizing i:nth-child(1) { width: 100%; } .mini.sizing i:nth-child(2) { width: 50%; } .mini.sizing i:nth-child(3) { width: 75%; }
+  .mini.overflow { align-items: flex-start; padding: 6px 8px; } .mini.overflow div { width: 55%; height: 100%; border: 2px solid var(--cobalt); border-radius: 4px; display: grid; gap: 3px; padding: 3px; overflow: visible; } .mini.overflow div i { height: 6px; background: var(--muted) !important; opacity: 0.6; } .mini.overflow div i:nth-child(2) { width: 160%; background: var(--bad) !important; opacity: 1; }
+  .mini.bg { padding: 6px; } .mini.bg i { flex: 1; border-radius: 10px; background: linear-gradient(135deg, var(--item-3), var(--item-1)) !important; border: 3px dashed var(--prop); }
+  .mini.fonts { align-items: center; justify-content: center; gap: 12px; } .mini.fonts b { font-size: 1.4rem; color: var(--ink); }
+  .mini.devtools { gap: 6px; } .mini.devtools span { flex: 1; display: grid; gap: 4px; align-content: center; } .mini.devtools span i { height: 5px; background: var(--muted) !important; opacity: 0.5; } .mini.devtools span i.x { background: var(--bad) !important; opacity: 1; width: 70%; }
+  .mini.devtools span:last-child { background: var(--panel); border-radius: 4px; padding: 4px; }
+  .mini.shadow { align-items: center; justify-content: center; } .mini.shadow i { width: 50%; height: 60%; border-radius: 6px; background: var(--panel) !important; box-shadow: 0 6px 14px rgb(0 0 0 / 22%); }
+  .mini.float { display: block; padding: 6px; } .mini.float i { float: left; width: 34%; height: 34px; margin: 0 6px 2px 0; } .mini.float span { display: block; height: 5px; margin-bottom: 5px; background: var(--muted); opacity: 0.45; border-radius: 2px; }
+  .mini.organize { flex-direction: column; justify-content: center; gap: 3px; padding-left: 10px; } .mini.organize b { font: 600 0.62rem var(--font-code); font-variation-settings: "MONO" 1; color: var(--muted); line-height: 1; } .mini.organize span { display: flex; flex-direction: column; gap: 3px; } .mini.organize span i { height: 4px; width: 70%; background: var(--cobalt) !important; opacity: 0.6; }
+  .empty { padding-block: 28px; color: var(--muted); }
+</style>
+
+<div class="wrap">
+  <header class="hero">
+    <div class="hero-text">
+      <span class="eyebrow">Intro to HTML, CSS &amp; JS · Student helpers</span>
+      <h1>HTML &amp; CSS <span class="sel">Field Guide</span></h1>
+      <p class="lede">Hands-on reference pages for the parts of front-end code that trip people up. Change a setting and watch the layout respond, then try the same idea in your own project.</p>
+    </div>
+    <pre aria-label="Example CSS rule"><span class="cmt">/* every page works the same way */</span>
+<span class="sel">.you</span> {
+  <span class="prop">try</span>: <span class="val">the-controls</span>;
+  <span class="prop">watch</span>: <span class="val">the-stage</span>;
+  <span class="prop">repeat</span>: <span class="val">in-your-project</span>;
+}</pre>
+  </header>
+
+  <div class="toolbar">
+    <label class="search" for="filter">
+      <span class="mono" aria-hidden="true" style="color:var(--muted)">/</span>
+      <input id="filter" type="search" placeholder="Find a topic or property, e.g. gap">
+    </label>
+    <div class="legend">
+      <span id="page-count"></span>
+      <a href="glossary.html">Glossary →</a>
+    </div>
+  </div>
+
+  <main id="units"></main>
+  <p class="empty" id="empty" hidden>No topics match that search. Try a property name like <code>flex</code> or <code>margin</code>.</p>
+
+  <footer class="page-foot">
+    <span>Pages work in any modern browser. Resize the window to test responsive examples.</span>
+    <span class="mono">Pages are listed in a suggested learning order.</span>
+  </footer>
+</div>
+
+<script>
+  const UNITS = [
+    { name: "HTML Foundations", blurb: "Structure and meaning before any styling.", topics: [
+      { title: "How the Web Works", href: "how-the-web-works.html", mini: "web", desc: "Browsers, servers and URLs, what happens when a page loads, and setting up your editor.", props: ["URL", "404", "file://"] },
+      { title: "HTML Syntax", href: "html-syntax.html", mini: "syntax", desc: "Elements, tags and attributes, plus how whitespace and special characters behave.", props: ["<tag>", "attribute", "&amp;"] },
+      { title: "Document Structure", href: "document-structure.html", mini: "doc", desc: "The skeleton every page needs: doctype, head, body, and how they nest.", props: ["<!DOCTYPE>", "<head>", "<meta>"] },
+      { title: "The Head & Metadata", href: "head-metadata.html", mini: "head", desc: "Page titles, favicons, meta descriptions, and the preview card when a link is shared.", props: ["<title>", "favicon", "og:image"] },
+      { title: "Text Semantics", href: "text-semantics.html", mini: "textsem", desc: "Headings, strong vs b, em vs i, quotes, code and more, chosen for meaning.", props: ["<h1>–<h6>", "<strong>", "<blockquote>"] },
+      { title: "Lists", href: "lists.html", mini: "lists", desc: "Unordered, ordered and description lists, nesting, and styling markers.", props: ["<ul>", "<ol>", "<dl>"] },
+      { title: "Semantic Elements", href: "semantic-elements.html", mini: "sem", desc: "When to use header, nav, main, section, and article instead of div.", props: ["<main>", "<nav>", "<section>"] },
+      { title: "Links & Paths", href: "links-paths.html", mini: "links", desc: "Relative paths, ../, and why a link works on your laptop but not online.", props: ["href", "../", "#anchor"] },
+      { title: "Tables", href: "tables.html", mini: "table", desc: "Header cells, spanning cells and footers for real data, and when not to use a table.", props: ["<th>", "colspan", "scope"] },
+      { title: "Forms & Inputs", href: "forms.html", mini: "form", desc: "Labels, input types, fieldsets, validation rules, and where the data goes.", props: ["<label>", "<fieldset>", "method"] },
+      { title: "Images & Alt Text", href: "images.html", mini: "img", desc: "Adding images, writing useful alt text, and captioning with figure and figcaption.", props: ["<img>", "alt", "<figure>"] },
+      { title: "Image Formats", href: "image-formats.html", mini: "fmt", desc: "JPG vs PNG vs SVG vs WebP, real file sizes, and resizing before you upload.", props: ["JPG", "SVG", "WebP"] },
+      { title: "Video & Audio", href: "video-audio.html", mini: "video", desc: "Player attributes, why autoplay gets blocked, and adding captions.", props: ["<video>", "controls", "<track>"] },
+      { title: "Embeds & iframes", href: "embeds.html", mini: "embed", desc: "Put YouTube videos and Google Maps on your page, and make them fit on phones.", props: ["<iframe>", "title", "aspect-ratio"] },
+    ]},
+    { name: "CSS Basics", blurb: "How the browser decides what each element looks like.", topics: [
+      { title: "How CSS Is Applied", href: "css-basics.html", mini: "cssbasics", desc: "The parts of a rule, and external vs internal vs inline styles.", props: ["selector", "declaration", "<link>"] },
+      { title: "Selectors & Specificity", href: "selectors.html", mini: "sel", desc: "Classes, IDs, combinators and attribute selectors, and why one rule beats another.", props: [".class", "h2 + p", "[href]"] },
+      { title: "Pseudo-classes & States", href: "pseudo-classes.html", mini: "pseudo", desc: "Hover, focus and link states, nth-child, and building a nav menu.", props: [":hover", ":focus-visible", ":nth-child"] },
+      { title: "Pseudo-elements", href: "pseudo-elements.html", mini: "pseudoel", desc: "Decorate with ::before and ::after, drop caps, placeholders and selections.", props: ["::before", "content", "::first-letter"] },
+      { title: "Cascade & Inheritance", href: "cascade.html", mini: "cascade", desc: "Which styles pass down to children, and how the browser settles conflicts.", props: ["inherit", "!important", "order"] },
+      { title: "The Box Model", href: "box-model.html", mini: "box", desc: "Content, padding, border, margin, and why your 300px box is 352px wide.", props: ["padding", "margin", "box-sizing"] },
+      { title: "Display Types", href: "display.html", mini: "display", desc: "Block vs inline vs inline-block, and why width does nothing on a span.", props: ["block", "inline", "inline-block"] },
+      { title: "Sizing Items", href: "sizing.html", mini: "sizing", desc: "Fixed vs flexible widths, min and max limits, aspect-ratio and vh.", props: ["max-width", "min-height", "aspect-ratio"] },
+      { title: "Overflow", href: "overflow.html", mini: "overflow", desc: "Content that doesn't fit, and hunting down sideways scrolling.", props: ["overflow", "text-overflow", "overflow-wrap"] },
+      { title: "Colors & Units", href: "colors-units.html", mini: "color", desc: "px, rem, %, vw, and the many ways to write a color.", props: ["rem", "vw", "hsl()"] },
+      { title: "CSS Variables", href: "css-variables.html", mini: "vars", desc: "Store a value once and reuse it everywhere, including a dark theme.", props: ["--brand", "var()", ":root"] },
+      { title: "Backgrounds & Borders", href: "backgrounds-borders.html", mini: "bg", desc: "Gradients, background images, layering, borders and rounded corners.", props: ["linear-gradient", "background-size", "border-radius"] },
+      { title: "Shadows & Filters", href: "shadows.html", mini: "shadow", desc: "box-shadow, text-shadow on photos, drop-shadow, and other filters.", props: ["box-shadow", "text-shadow", "filter"] },
+      { title: "Typography", href: "typography.html", mini: "type", desc: "Fonts, sizes, line height, and making text easy to read.", props: ["font-family", "line-height"] },
+      { title: "Web Fonts", href: "web-fonts.html", mini: "fonts", desc: "Loading fonts from Google Fonts, fallbacks, and what happens while they load.", props: ["@font-face", "font-display", "fallback"] },
+    ]},
+    { name: "Layout", blurb: "Putting boxes where you want them.", topics: [
+      { title: "Flexbox", href: "flexbox.html", mini: "flex", desc: "Line items up in a row or column, then space and align them.", props: ["display: flex", "justify-content", "align-items", "gap"] },
+      { title: "CSS Grid", href: "grid.html", mini: "grid", desc: "Rows and columns at the same time, with items that span cells.", props: ["grid-template-columns", "fr", "span"] },
+      { title: "Flexbox vs Grid", href: "flex-vs-grid.html", mini: "fvg", desc: "Six real layouts built both ways, and which one fits each job.", props: ["flex", "grid", "when to use"] },
+      { title: "Floats", href: "floats.html", mini: "float", desc: "Wrap text around an image, clear floats, and fix collapsing parents.", props: ["float", "clear", "flow-root"] },
+      { title: "Positioning", href: "positioning.html", mini: "pos", desc: "relative, absolute, fixed, and sticky, and what each one is relative to.", props: ["position", "top", "z-index"] },
+    ]},
+    { name: "Responsive Design", blurb: "One page that works on a phone and a laptop.", topics: [
+      { title: "Media Queries", href: "media-queries.html", mini: "mq", desc: "Change a layout at specific screen widths with breakpoints.", props: ["@media", "min-width", "breakpoints"] },
+      { title: "Responsive Images", href: "responsive-images.html", mini: "rimg", desc: "Images that shrink to fit and never overflow their container.", props: ["max-width", "srcset", "object-fit"] },
+      { title: "Picture & Lazy Loading", href: "picture.html", mini: "pic", desc: "The sizes attribute, different crops with picture, and loading images only when needed.", props: ["sizes", "<picture>", "loading=\"lazy\""] },
+      { title: "Mobile-First Workflow", href: "mobile-first.html", mini: "mf", desc: "Write the phone layout first, then add complexity as screens grow.", props: ["min-width", "viewport meta"] },
+      { title: "Fluid Sizing", href: "fluid-sizing.html", mini: "fluid", desc: "Sizes that scale smoothly between limits with clamp(), min(), max() and calc().", props: ["clamp()", "min()", "calc()"] },
+    ]},
+    { name: "Polish & Workflow", blurb: "Finishing touches, debugging, and getting your site online.", topics: [
+      { title: "Transforms", href: "transforms.html", mini: "tf", desc: "Move, rotate, scale and skew elements without disturbing the layout around them.", props: ["translate", "rotate", "transform-origin"] },
+      { title: "Transitions & Animations", href: "transitions.html", mini: "motion", desc: "Smooth state changes and keyframe animations, with timing curves.", props: ["transition", "@keyframes", "ease"] },
+      { title: "Styling Forms", href: "form-styling.html", mini: "fstyle", desc: "Turn a default form into a polished one, one layer at a time.", props: ["font: inherit", "accent-color", ":user-invalid"] },
+      { title: "Accessibility Basics", href: "accessibility.html", mini: "a11y", desc: "Seven common problems on one page, and how to find and fix them.", props: ["keyboard", "focus", "contrast"] },
+      { title: "Organizing CSS", href: "organizing-css.html", mini: "organize", desc: "Sections, comments, purposeful class names and BEM, and variables.", props: ["comments", "BEM", "naming"] },
+      { title: "Debugging with DevTools", href: "devtools.html", mini: "devtools", desc: "Read the Styles pane, spot crossed-out rules, and fix three real bugs.", props: ["Inspect", "Styles", "box model"] },
+      { title: "Validating Your Code", href: "validation.html", mini: "valid", desc: "Use the W3C validators, spot common errors, and see how browsers repair bad HTML.", props: ["W3C", "errors", "Elements panel"] },
+      { title: "Project Structure & Publishing", href: "publishing.html", mini: "publish", desc: "Name and organize files, then publish with GitHub Pages.", props: ["index.html", "folders", "GitHub Pages"] },
+    ]},
+  ];
+
+  const esc = (s) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;");
+  const minis = {
+    flex: '<div class="mini flex" aria-hidden="true"><i></i><i></i><i></i></div>',
+    grid: '<div class="mini grid" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>',
+    box:  '<div class="mini box" aria-hidden="true"><i></i></div>',
+    mq:   '<div class="mini mq" aria-hidden="true"><div class="phone"><i></i><i></i><i></i></div><div class="desk"><i></i><i></i><i></i></div></div>',
+    doc:  '<div class="mini doc" aria-hidden="true"><i></i><i></i></div>',
+    sem:  '<div class="mini sem" aria-hidden="true"><i></i><i></i><i></i><i></i></div>',
+    form: '<div class="mini form" aria-hidden="true"><b></b><i></i><i></i></div>',
+    img:  '<div class="mini img" aria-hidden="true"><i></i><b>alt="…"</b></div>',
+    sel:  '<div class="mini sel" aria-hidden="true"><i></i><i></i><i class="hit"></i><i></i><i class="hit"></i><i></i></div>',
+    color:'<div class="mini color" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></div>',
+    type: '<div class="mini type" aria-hidden="true"><b>Aa</b><span><i></i><i></i><i></i></span></div>',
+    pos:  '<div class="mini pos" aria-hidden="true"><i></i><i></i></div>',
+    rimg: '<div class="mini rimg" aria-hidden="true"><i></i><i></i><i></i></div>',
+    mf:   '<div class="mini mf" aria-hidden="true"><i></i><i></i><i></i></div>',
+    links: '<div class="mini links" aria-hidden="true"><i></i><b>../</b><i></i></div>',
+    table: '<div class="mini table" aria-hidden="true">' + '<i></i>'.repeat(12) + '</div>',
+    cascade: '<div class="mini cascade" aria-hidden="true"><i></i><i></i><i></i></div>',
+    pseudo: '<div class="mini pseudo" aria-hidden="true"><i></i><i></i></div>',
+    display: '<div class="mini display" aria-hidden="true"><span></span><i></i><span></span><i class="blk"></i><span></span></div>',
+    vars: '<div class="mini vars" aria-hidden="true"><b>--</b><i></i><i></i><i></i></div>',
+    fvg: '<div class="mini fvg" aria-hidden="true"><div><i></i><i></i><i></i></div><div><i></i><i></i><i></i><i></i></div></div>',
+    motion: '<div class="mini motion" aria-hidden="true"><i></i><i></i><i></i></div>',
+    fstyle: '<div class="mini fstyle" aria-hidden="true"><i></i><i></i><i></i></div>',
+    a11y: '<div class="mini a11y" aria-hidden="true"><i></i><i class="f"></i><i></i></div>',
+    valid: '<div class="mini valid" aria-hidden="true"><b>✓</b><span><i></i><i></i><i class="x"></i></span></div>',
+    publish: '<div class="mini publish" aria-hidden="true"><i></i><b>→</b><i></i></div>',
+    syntax: '<div class="mini syntax" aria-hidden="true"><b>&lt;a href&gt;</b></div>',
+    textsem: '<div class="mini textsem" aria-hidden="true"><i class="h"></i><span><i></i><i class="st"></i><i></i></span><span><i></i><i></i></span></div>',
+    lists: '<div class="mini lists" aria-hidden="true"><span><b></b><i></i></span><span><b></b><i></i></span><span><b></b><i></i></span></div>',
+    video: '<div class="mini video" aria-hidden="true"><b>▶</b><i></i></div>',
+    web: '<div class="mini web" aria-hidden="true"><i></i><b>⇄</b><i></i></div>',
+    head: '<div class="mini head" aria-hidden="true"><span><b></b><i></i></span><i></i></div>',
+    fmt: '<div class="mini fmt" aria-hidden="true"><b>JPG</b><b>PNG</b><b>SVG</b></div>',
+    embed: '<div class="mini embed" aria-hidden="true"><i></i></div>',
+    pic: '<div class="mini pic" aria-hidden="true"><i></i><i></i><i></i></div>',
+    fluid: '<div class="mini fluid" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></div>',
+    tf: '<div class="mini tf" aria-hidden="true"><span></span><i></i></div>',
+    cssbasics: '<div class="mini cssbasics" aria-hidden="true"><b>{ ; }</b></div>',
+    pseudoel: '<div class="mini pseudoel" aria-hidden="true"><b>“</b><span><i></i><i></i></span></div>',
+    sizing: '<div class="mini sizing" aria-hidden="true"><i></i><i></i><i></i></div>',
+    overflow: '<div class="mini overflow" aria-hidden="true"><div><i></i><i></i><i></i></div></div>',
+    bg: '<div class="mini bg" aria-hidden="true"><i></i></div>',
+    fonts: '<div class="mini fonts" aria-hidden="true"><b style="font-family:Georgia,serif">Ag</b><b>Ag</b><b style="font-family:var(--font-code)">Ag</b></div>',
+    shadow: '<div class="mini shadow" aria-hidden="true"><i></i></div>',
+    float: '<div class="mini float" aria-hidden="true"><i></i><span></span><span></span><span></span><span></span></div>',
+    organize: '<div class="mini organize" aria-hidden="true"><b>/* */</b><span><i></i><i></i></span><b>/* */</b><span><i></i></span></div>',
+    devtools: '<div class="mini devtools" aria-hidden="true"><span><i></i><i class="x"></i><i></i></span><span><i></i><i></i></span></div>',
+  };
+
+  function cardHTML(t) {
+    const chips = `<div class="chips">${t.props.map((p) => `<code>${esc(p)}</code>`).join("")}</div>`;
+    const top = `<div class="card-top"><h3>${esc(t.title)}</h3><span class="status ready">Open</span></div>`;
+    if (t.href) return `<a class="card" href="${t.href}">${top}<div style="display:grid;gap:10px">${minis[t.mini]}<p>${esc(t.desc)}</p></div>${chips}</a>`;
+    return `<div class="card planned">${top}<p>${esc(t.desc)}</p>${chips}</div>`;
+  }
+
+  function render(query) {
+    const q = query.trim().toLowerCase();
+    let shown = 0;
+    document.getElementById("units").innerHTML = UNITS.map((u) => {
+      const topics = u.topics.filter((t) => !q || [t.title, t.desc, ...t.props].join(" ").toLowerCase().includes(q));
+      shown += topics.length;
+      if (!topics.length) return "";
+      return `<section class="unit"><div class="unit-head"><span class="eyebrow">${u.topics.length} pages</span><h2>${esc(u.name)}</h2><p>${esc(u.blurb)}</p></div><div class="cards">${topics.map(cardHTML).join("")}</div></section>`;
+    }).join("");
+    document.getElementById("empty").hidden = shown > 0;
+  }
+
+  const filter = document.getElementById("filter");
+  filter.addEventListener("input", () => render(filter.value));
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "/" && document.activeElement !== filter) { e.preventDefault(); filter.focus(); }
+  });
+  document.getElementById("page-count").textContent = UNITS.reduce((n, u) => n + u.topics.length, 0) + " interactive pages";
+  render("");
+</script>
+
+</body></html>

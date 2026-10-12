@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Flexbox Playground</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Recursive:slnt,wght,CASL,MONO@-15..0,300..1000,0..1,0..1&display=swap">
+<link rel="stylesheet" href="style.css">
+<style>
+  .stage { display: flex; }
+  .axis { display: flex; gap: 18px; flex-wrap: wrap; font: 0.85rem var(--font-code); font-variation-settings: "MONO" 1; color: var(--muted); }
+  .axis b { color: var(--cobalt); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <nav class="crumbs" aria-label="Site"><a class="crumb" href="index.html">← Field Guide</a><a class="crumb" href="glossary.html">Glossary</a></nav>
+  <header class="page-head">
+    <span class="eyebrow">Layout · Flexbox</span>
+    <h1>Flexbox Playground</h1>
+    <p class="lede">Flexbox lays out items in one direction, a row or a column. You set the rules on the <em>container</em>, and its direct children (the flex items) follow them.</p>
+  </header>
+
+  <section class="playground">
+    <div class="panel controls" aria-label="Flex container settings">
+      <span class="eyebrow">.container</span>
+      <div class="control"><label for="fd">flex-direction</label>
+        <select id="fd"><option>row</option><option>row-reverse</option><option>column</option><option>column-reverse</option></select></div>
+      <div class="control"><label for="jc">justify-content</label>
+        <select id="jc"><option>flex-start</option><option>center</option><option>flex-end</option><option selected>space-between</option><option>space-around</option><option>space-evenly</option></select></div>
+      <div class="control"><label for="ai">align-items</label>
+        <select id="ai"><option>stretch</option><option selected>center</option><option>flex-start</option><option>flex-end</option><option>baseline</option></select></div>
+      <div class="control"><label for="fw">flex-wrap</label>
+        <select id="fw"><option>nowrap</option><option>wrap</option></select></div>
+      <div class="control"><label for="gap">gap</label>
+        <input id="gap" type="range" min="0" max="40" step="4" value="12"><span class="readout" id="gap-out">12px</span></div>
+      <span class="eyebrow" style="margin-top:6px">Items</span>
+      <div class="control"><label for="count">number of items</label>
+        <input id="count" type="range" min="1" max="12" value="4"><span class="readout" id="count-out">4</span></div>
+      <div class="control"><label for="grow">.item:first-child { flex-grow }</label>
+        <select id="grow"><option value="0">0 (don't grow)</option><option value="1">1 (fill extra space)</option></select></div>
+    </div>
+
+    <div class="stage-col">
+      <div class="axis" id="axis"></div>
+      <div class="stage" id="stage" aria-label="Live flex container"></div>
+    </div>
+  </section>
+
+  <section class="notes">
+    <div class="panel">
+      <h2>Key ideas</h2>
+      <ul>
+        <li><code>justify-content</code> works along the <strong>main axis</strong>, which is the direction set by <code>flex-direction</code>.</li>
+        <li><code>align-items</code> works along the <strong>cross axis</strong>, perpendicular to the main axis.</li>
+        <li>Switch to <code>column</code> and the two swap: now <code>justify-content</code> moves things up and down.</li>
+        <li><code>gap</code> adds space between items without margins on each one.</li>
+      </ul>
+    </div>
+    <div class="panel mistake">
+      <h2>Common mistakes</h2>
+      <ul>
+        <li>Putting <code>display: flex</code> on the items instead of their parent.</li>
+        <li>Expecting <code>align-items: center</code> to center vertically when the container has no extra height.</li>
+        <li>Forgetting <code>flex-wrap: wrap</code>, so items squish instead of moving to a new line.</li>
+        <li>Using Flexbox for a full two-dimensional grid. Reach for <a href="grid.html">CSS Grid</a> instead.</li>
+      </ul>
+    </div>
+  </section>
+
+  <footer class="page-foot"><a href="web-fonts.html">← Web Fonts</a><a href="grid.html">Next: CSS Grid →</a></footer>
+</div>
+
+<script>
+  const $ = (id) => document.getElementById(id);
+  const stage = $("stage");
+  const heights = [44, 70, 52, 88, 60, 48, 76, 56, 66, 40, 82, 50];
+
+  function update() {
+    const s = { fd: $("fd").value, jc: $("jc").value, ai: $("ai").value, fw: $("fw").value, gap: $("gap").value + "px", grow: $("grow").value };
+    const n = +$("count").value;
+    $("gap-out").textContent = s.gap;
+    $("count-out").textContent = n;
+
+    Object.assign(stage.style, { flexDirection: s.fd, justifyContent: s.jc, alignItems: s.ai, flexWrap: s.fw, gap: s.gap });
+    stage.style.minHeight = s.fd.startsWith("column") ? "420px" : "260px";
+    stage.innerHTML = "";
+    for (let i = 0; i < n; i++) {
+      const el = document.createElement("div");
+      el.className = "item";
+      el.textContent = i + 1;
+      // Varied sizes make alignment visible; 'stretch' needs auto size on the cross axis.
+      const cross = s.ai === "stretch" ? "" : heights[i] + "px";
+      if (s.fd.startsWith("column")) el.style.width = cross ? (heights[i] * 1.6) + "px" : "";
+      else el.style.height = cross;
+      if (i === 0) el.style.flexGrow = s.grow;
+      stage.appendChild(el);
+    }
+
+    const main = s.fd.startsWith("row") ? "horizontal ↔" : "vertical ↕";
+    const crossAxis = s.fd.startsWith("row") ? "vertical ↕" : "horizontal ↔";
+    $("axis").innerHTML = `<span>main axis: <b>${main}</b></span><span>cross axis: <b>${crossAxis}</b></span>`;
+
+  }
+
+  document.querySelectorAll("select, input").forEach((el) => el.addEventListener("input", update));
+  update();
+</script>
+</body>
+</html>

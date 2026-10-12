@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Head &amp; Metadata</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Recursive:slnt,wght,CASL,MONO@-15..0,300..1000,0..1,0..1&display=swap">
+<link rel="stylesheet" href="style.css">
+<style>
+  .text-in { font: 0.95rem var(--font-body); width: 100%; padding: 7px 9px; border: 1px solid var(--line); border-radius: 6px; background: var(--paper); color: var(--ink); resize: vertical; }
+  .count { font: 0.8rem var(--font-code); font-variation-settings: "MONO" 1; }
+  .count.good { color: var(--good); } .count.bad { color: var(--bad); }
+  .previews { display: grid; gap: 16px; }
+  .pv-label { font: 600 0.75rem var(--font-code); font-variation-settings: "MONO" 1; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); margin-bottom: 6px; display: block; }
+
+  .tabs { background: #dfe3ea; border-radius: 8px 8px 0 0; padding: 8px 8px 0; display: flex; gap: 4px; }
+  .tab { background: #fff; color: #222; border-radius: 8px 8px 0 0; padding: 7px 10px; display: flex; gap: 8px; align-items: center; width: 220px; max-width: 60%; font: 0.82rem system-ui, sans-serif; }
+  .tab.other { background: transparent; color: #555; width: 140px; }
+  .tab span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .fav { width: 16px; height: 16px; flex: none; border-radius: 3px; }
+  .fav.generic { border: 1.5px solid #888; border-radius: 50%; }
+  .tab-body { background: #fff; height: 14px; border-radius: 0 0 8px 8px; border: 1px solid #dfe3ea; border-top: 0; }
+
+  .serp { background: #fff; color: #202124; border-radius: 8px; padding: 14px 16px; border: 1px solid var(--line); font-family: arial, sans-serif; display: grid; gap: 3px; }
+  .serp .site { display: flex; gap: 10px; align-items: center; font-size: 0.85rem; }
+  .serp .site .fav-wrap { width: 26px; height: 26px; border-radius: 50%; background: #f1f3f4; display: grid; place-items: center; }
+  .serp .site small { display: block; color: #4d5156; font-size: 0.78rem; }
+  .serp h3 { font: 400 1.25rem arial, sans-serif; color: #1a0dab; margin-top: 4px; }
+  .serp p { font-size: 0.9rem; color: #4d5156; line-height: 1.5; }
+
+  .share { background: #fff; color: #111; border: 1px solid #cfd9de; border-radius: 14px; overflow: hidden; max-width: 460px; font-family: system-ui, sans-serif; }
+  .share .og-img { aspect-ratio: 1.91 / 1; background: linear-gradient(170deg, #f4a261 0 40%, #7d5a7a 40% 68%, #3e4a61 68%); display: grid; place-items: end start; padding: 12px; color: #fff; font: 800 1.4rem system-ui; }
+  .share .meta { padding: 10px 12px; display: grid; gap: 2px; font-size: 0.85rem; }
+  .share .meta small { color: #536471; }
+  .share.plain { border-radius: 8px; padding: 10px 12px; color: #1d9bf0; font-size: 0.95rem; overflow-wrap: anywhere; }
+
+  .fav-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px; }
+  .fav-grid .panel { display: grid; gap: 8px; align-content: start; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <nav class="crumbs" aria-label="Site"><a class="crumb" href="index.html">← Field Guide</a><a class="crumb" href="glossary.html">Glossary</a></nav>
+  <header class="page-head">
+    <span class="eyebrow">HTML Foundations · The Head &amp; Metadata</span>
+    <h1>The Head &amp; Metadata</h1>
+    <p class="lede">Nothing in the <code>&lt;head&gt;</code> shows on the page, but it decides how your site looks everywhere else: the browser tab, search results, and the preview card when someone shares a link.</p>
+  </header>
+
+  <section class="playground">
+    <div class="panel controls" aria-label="Head settings">
+      <span class="eyebrow">&lt;head&gt;</span>
+      <div class="control"><label for="title">&lt;title&gt;</label><input class="text-in" id="title" type="text" value="Royal Arch Trail | Boulder Trail Club"><span class="count" id="title-count"></span></div>
+      <label class="control row" for="use-desc" style="cursor:pointer"><span class="prop" style="font:600 0.85rem var(--font-code);font-variation-settings:'MONO' 1">meta description</span><input id="use-desc" type="checkbox" checked></label>
+      <div class="control"><textarea class="text-in" id="desc" rows="4" aria-label="Description text">A steep 3.4-mile round trip from Chautauqua to a natural sandstone arch, with views over Boulder. Trail conditions, parking and what to bring.</textarea><span class="count" id="desc-count"></span></div>
+      <label class="control row" for="use-fav" style="cursor:pointer"><span class="prop" style="font:600 0.85rem var(--font-code);font-variation-settings:'MONO' 1">link rel="icon"</span><input id="use-fav" type="checkbox" checked></label>
+      <label class="control row" for="use-og" style="cursor:pointer"><span class="prop" style="font:600 0.85rem var(--font-code);font-variation-settings:'MONO' 1">Open Graph tags</span><input id="use-og" type="checkbox" checked></label>
+    </div>
+
+    <div class="stage-col">
+      <div class="previews">
+        <div><span class="pv-label">Browser tab</span>
+          <div class="tabs"><div class="tab" id="tab"></div><div class="tab other"><span class="fav generic"></span><span>New Tab</span></div></div><div class="tab-body"></div></div>
+        <div><span class="pv-label">Search result</span><div class="serp" id="serp"></div></div>
+        <div><span class="pv-label">Shared in a chat or social post</span><div id="share"></div></div>
+      </div>
+      <div class="code-box"><pre id="code"></pre><button class="copy" id="copy">Copy</button></div>
+    </div>
+  </section>
+
+  <div class="section-title"><span class="eyebrow">Favicons</span><h2>Make the little tab icon</h2><p>A favicon is a small square image. One SVG covers most browsers. Add a PNG for phones that save your site to the home screen.</p></div>
+  <section class="fav-grid">
+    <div class="panel"><h3>1. Make a square image</h3><p>Use a simple shape or one or two letters. Fine detail disappears at 16 × 16 pixels. Save it as <code>favicon.svg</code>, or as a 32 × 32 <code>favicon.png</code>.</p></div>
+    <div class="panel"><h3>2. Link it in the head</h3><pre class="snippet"><span class="tag-name">&lt;link</span> <span class="attr">rel</span>=<span class="str">"icon"</span> <span class="attr">href</span>=<span class="str">"favicon.svg"</span>
+      <span class="attr">type</span>=<span class="str">"image/svg+xml"</span><span class="tag-name">&gt;</span></pre></div>
+    <div class="panel"><h3>3. Add a home-screen icon</h3><pre class="snippet"><span class="tag-name">&lt;link</span> <span class="attr">rel</span>=<span class="str">"apple-touch-icon"</span>
+      <span class="attr">href</span>=<span class="str">"icon-180.png"</span><span class="tag-name">&gt;</span></pre><p class="hint">A 180 × 180 PNG, used when someone adds your site to their phone's home screen.</p></div>
+  </section>
+
+  <section class="notes">
+    <div class="panel">
+      <h2>Key ideas</h2>
+      <ul>
+        <li>Give every page its own <code>&lt;title&gt;</code>, most specific part first: "Royal Arch Trail | Boulder Trail Club". It's also what bookmarks and screen readers announce.</li>
+        <li>The meta description is a one-sentence pitch of about 150 characters. Search engines may show it under your title.</li>
+        <li>Open Graph (<code>og:</code>) tags control the preview card in chats and social posts. Without them, apps guess, or show a bare link.</li>
+        <li><code>og:image</code> needs a full <code>https://</code> URL, not a relative path, because the image is fetched by another company's server.</li>
+        <li>A good share image is 1200 × 630 pixels.</li>
+      </ul>
+    </div>
+    <div class="panel mistake">
+      <h2>Common mistakes</h2>
+      <ul>
+        <li>Copying one page to start another and leaving the same title on every page.</li>
+        <li>Putting <code>&lt;meta&gt;</code> or <code>&lt;link&gt;</code> tags in the body. They only work in the head.</li>
+        <li>Expecting <code>&lt;meta name="keywords"&gt;</code> to help. Search engines have ignored it for years.</li>
+        <li>Changing the favicon and not seeing it. Browsers cache favicons hard: try a private window.</li>
+      </ul>
+    </div>
+  </section>
+
+  <footer class="page-foot"><a href="document-structure.html">← Document Structure</a><a href="text-semantics.html">Next: Text Semantics →</a></footer>
+</div>
+
+<script>
+  const $ = (id) => document.getElementById(id);
+  const esc = (s) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/"/g, "&quot;");
+  const FAV = `<svg class="fav" viewBox="0 0 16 16" aria-hidden="true"><rect width="16" height="16" rx="3" fill="#2340d9"/><path d="M2 13 L6 6 L9 10 L11 7 L14 13 Z" fill="#fff"/></svg>`;
+  const GENERIC = `<span class="fav generic" aria-hidden="true"></span>`;
+  const URL_SHOWN = "trailclub.github.io › hikes › royal-arch";
+
+  function cut(s, n) { return s.length > n ? s.slice(0, n).replace(/\s+\S*$/, "") + " …" : s; }
+
+  function update() {
+    const title = $("title").value.trim(), desc = $("desc").value.trim();
+    const useDesc = $("use-desc").checked, useFav = $("use-fav").checked, useOg = $("use-og").checked;
+    $("desc").disabled = !useDesc;
+
+    const tl = title.length;
+    $("title-count").textContent = tl === 0 ? "Missing: the tab shows the file name instead" : `${tl} characters` + (tl > 60 ? " · search results cut it off around 60" : "");
+    $("title-count").className = "count " + (tl === 0 || tl > 60 ? "bad" : "good");
+    const dl = desc.length;
+    $("desc-count").textContent = !useDesc ? "Off: search engines pick a random sentence from the page" : `${dl} characters` + (dl > 160 ? " · too long, it'll be cut off" : dl < 70 ? " · a bit short to be useful" : " · a good length");
+    $("desc-count").className = "count " + (!useDesc || dl > 160 || dl < 70 ? "bad" : "good");
+
+    const shownTitle = title || "royal-arch.html";
+    $("tab").innerHTML = (useFav ? FAV : GENERIC) + `<span>${esc(shownTitle)}</span>`;
+
+    const snippet = useDesc && desc ? desc : "Skip to content. Trail Club. Home Hikes About. Royal Arch. Posted Oct 3. 3.4 miles round trip …";
+    $("serp").innerHTML = `<div class="site"><span class="fav-wrap">${useFav ? FAV : GENERIC}</span><span>Boulder Trail Club<small>https://${URL_SHOWN}</small></span></div><h3>${esc(cut(shownTitle, 60))}</h3><p>${esc(cut(snippet, 160))}</p>`;
+
+    $("share").innerHTML = useOg
+      ? `<div class="share"><div class="og-img">Royal Arch</div><div class="meta"><small>trailclub.github.io</small><b>${esc(title || "Royal Arch Trail")}</b><span>${esc(cut(useDesc && desc ? desc : "", 100))}</span></div></div>`
+      : `<div class="share plain">https://trailclub.github.io/hikes/royal-arch.html</div>`;
+
+    const lines = [
+      `<span class="tag-name">&lt;head&gt;</span>`,
+      `  <span class="tag-name">&lt;meta</span> <span class="attr">charset</span>=<span class="str">"utf-8"</span><span class="tag-name">&gt;</span>`,
+      `  <span class="tag-name">&lt;meta</span> <span class="attr">name</span>=<span class="str">"viewport"</span> <span class="attr">content</span>=<span class="str">"width=device-width, initial-scale=1"</span><span class="tag-name">&gt;</span>`,
+      title ? `  <span class="tag-name">&lt;title&gt;</span>${esc(title)}<span class="tag-name">&lt;/title&gt;</span>` : `  <span class="cmt">&lt;!-- no title --&gt;</span>`,
+    ];
+    if (useDesc) lines.push(`  <span class="tag-name">&lt;meta</span> <span class="attr">name</span>=<span class="str">"description"</span> <span class="attr">content</span>=<span class="str">"${esc(desc)}"</span><span class="tag-name">&gt;</span>`);
+    if (useFav) lines.push(`  <span class="tag-name">&lt;link</span> <span class="attr">rel</span>=<span class="str">"icon"</span> <span class="attr">href</span>=<span class="str">"favicon.svg"</span> <span class="attr">type</span>=<span class="str">"image/svg+xml"</span><span class="tag-name">&gt;</span>`);
+    if (useOg) {
+      const og = (p, c) => `  <span class="tag-name">&lt;meta</span> <span class="attr">property</span>=<span class="str">"og:${p}"</span> <span class="attr">content</span>=<span class="str">"${esc(c)}"</span><span class="tag-name">&gt;</span>`;
+      lines.push("", `  <span class="cmt">&lt;!-- Share preview --&gt;</span>`, og("title", title || "Royal Arch Trail"));
+      if (useDesc) lines.push(og("description", cut(desc, 100)));
+      lines.push(og("image", "https://trailclub.github.io/images/royal-arch-share.jpg"), og("url", "https://trailclub.github.io/hikes/royal-arch.html"));
+    }
+    lines.push(`  <span class="tag-name">&lt;link</span> <span class="attr">rel</span>=<span class="str">"stylesheet"</span> <span class="attr">href</span>=<span class="str">"css/style.css"</span><span class="tag-name">&gt;</span>`, `<span class="tag-name">&lt;/head&gt;</span>`);
+    $("code").innerHTML = lines.join("\n");
+  }
+
+  document.querySelectorAll("input, textarea").forEach((el) => el.addEventListener("input", update));
+  $("copy").addEventListener("click", () => {
+    navigator.clipboard.writeText($("code").textContent).then(() => { $("copy").textContent = "Copied"; setTimeout(() => ($("copy").textContent = "Copy"), 1200); }).catch(() => {});
+  });
+  update();
+</script>
+</body>
+</html>

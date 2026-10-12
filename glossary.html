@@ -1,0 +1,223 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Field Guide Glossary</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Recursive:slnt,wght,CASL,MONO@-15..0,300..1000,0..1,0..1&display=swap">
+<link rel="stylesheet" href="style.css">
+<style>
+  .tools { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--paper); padding-block: 12px; display: grid; gap: 10px; border-bottom: 1px solid var(--line); }
+  .search { display: flex; align-items: center; gap: 8px; background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 6px 12px; max-width: 420px; }
+  .search input { border: 0; background: transparent; color: var(--ink); font: 1rem var(--font-body); width: 100%; outline: none; }
+  .search:focus-within { outline: 3px solid var(--cobalt); outline-offset: 2px; }
+  .row { display: flex; flex-wrap: wrap; gap: 6px 14px; align-items: center; justify-content: space-between; }
+  .letters { display: flex; flex-wrap: wrap; gap: 2px; }
+  .letters a, .letters span { font: 600 0.82rem var(--font-code); font-variation-settings: "MONO" 1; width: 24px; height: 26px; display: grid; place-items: center; border-radius: 4px; text-decoration: none; }
+  .letters a:hover { background: var(--cobalt-soft); }
+  .letters span { color: var(--line); }
+  .count { font: 600 0.85rem var(--font-code); font-variation-settings: "MONO" 1; color: var(--muted); }
+  .group { display: grid; grid-template-columns: 56px 1fr; gap: 16px; padding-block: 22px; border-bottom: 1px solid var(--line); scroll-margin-top: 150px; }
+  @media (max-width: 560px) { .group { grid-template-columns: 1fr; gap: 6px; } }
+  .group > h2 { font-size: 2rem; color: var(--cobalt); }
+  dl { margin: 0; display: grid; gap: 16px; }
+  .entry { display: grid; gap: 4px; }
+  dt { display: flex; flex-wrap: wrap; align-items: baseline; gap: 8px; font: 700 1.1rem var(--font-display); }
+  dt .cat { font: 600 0.68rem var(--font-code); font-variation-settings: "MONO" 1; letter-spacing: 0.06em; text-transform: uppercase; padding: 2px 6px; border-radius: 4px; background: var(--stage); color: var(--muted); }
+  dt .cat.html { color: var(--prop); } dt .cat.css { color: var(--cobalt); } dt .cat.layout { color: var(--val); }
+  dd { margin: 0; display: grid; gap: 4px; max-width: 70ch; }
+  dd .ex { font-size: 0.9rem; color: var(--muted); }
+  dd .more { font-size: 0.9rem; }
+  mark { background: color-mix(in srgb, var(--prop) 25%, transparent); color: inherit; border-radius: 2px; }
+  .empty { padding-block: 24px; color: var(--muted); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="crumb" href="index.html">← Field Guide</a>
+  <header class="page-head">
+    <span class="eyebrow">Reference</span>
+    <h1>Glossary</h1>
+    <p class="lede">Plain-language definitions of the words used across the Field Guide. Each one links to the page that teaches it.</p>
+  </header>
+
+  <div class="tools">
+    <div class="row">
+      <label class="search" for="q"><span class="mono" aria-hidden="true" style="color:var(--muted)">/</span><input id="q" type="search" placeholder="Search terms and definitions"></label>
+      <div class="seg" id="cats" role="group" aria-label="Category"></div>
+    </div>
+    <div class="row"><nav class="letters" id="letters" aria-label="Jump to letter"></nav><span class="count" id="count"></span></div>
+  </div>
+
+  <main id="list"></main>
+  <p class="empty" id="empty" hidden>No terms match. Try a shorter word, or switch the category back to All.</p>
+
+  <footer class="page-foot"><a href="index.html">← All topics</a><span class="mono">Missing a term? Ask your instructor.</span></footer>
+</div>
+
+<script>
+  // [term, category, definition, example (optional), page (optional)]
+  const T = [
+    ["!important", "css", "A flag that makes a declaration beat every normal rule, regardless of specificity. Avoid it: it makes styles hard to override later.", "color: red !important;", "cascade.html"],
+    ["Absolute path", "html", "A full web address including the domain. Use it to link to other websites.", "https://developer.mozilla.org", "links-paths.html"],
+    ["Accessibility (a11y)", "workflow", "Making sites usable by everyone, including people using screen readers, keyboards, zoom, or captions. \"a11y\" is short for the 11 letters between a and y.", "", "accessibility.html"],
+    ["Alt text", "html", "The alt attribute on an image: a text description read by screen readers and shown if the image fails to load. Use alt=\"\" for decorative images.", '<img src="arch.jpg" alt="Royal Arch above the trees">', "images.html"],
+    ["Animation", "css", "Motion defined with @keyframes that runs by itself, as opposed to a transition, which runs when a style changes.", "animation: pulse 1s infinite;", "transitions.html"],
+    ["aspect-ratio", "css", "Keeps an element's width-to-height shape as its size changes.", "aspect-ratio: 16 / 9;", "sizing.html"],
+    ["Attribute", "html", "Extra information in an element's opening tag, written as name=\"value\".", '<a href="about.html">', "html-syntax.html"],
+    ["Attribute selector", "css", "Selects elements by their attributes, using square brackets.", 'a[href$=".pdf"]', "selectors.html"],
+    ["BEM", "workflow", "A class-naming pattern: Block, Element, Modifier. It makes it clear which classes belong together.", ".card__title, .btn--large", "organizing-css.html"],
+    ["Block element", "css", "An element that starts on a new line and fills the available width, like a div, p or h1.", "display: block;", "display.html"],
+    ["Border", "css", "The line around an element's padding. Part of the box model, between padding and margin.", "border: 2px solid gray;", "box-model.html"],
+    ["border-radius", "css", "Rounds an element's corners. 50% on a square makes a circle.", "border-radius: 8px;", "backgrounds-borders.html"],
+    ["box-shadow", "css", "Draws a shadow around an element's box, set by x and y offset, blur, spread and color.", "box-shadow: 0 4px 12px rgb(0 0 0 / 15%);", "shadows.html"],
+    ["box-sizing", "css", "Decides whether width includes padding and border. border-box is easier to work with, and most stylesheets set it on everything.", "* { box-sizing: border-box; }", "box-model.html"],
+    ["Box model", "css", "Every element is a rectangle made of four layers: content, padding, border and margin.", "", "box-model.html"],
+    ["Breakpoint", "layout", "A screen width where a media query changes the layout.", "@media (min-width: 600px)", "media-queries.html"],
+    ["Browser cache", "workflow", "Saved copies of files your browser keeps to load pages faster. A hard refresh (Ctrl+Shift+R, or Cmd+Shift+R on a Mac) skips it to show your latest changes.", "", "publishing.html"],
+    ["Cascade", "css", "The rules the browser uses to choose between conflicting declarations: importance, then specificity, then source order.", "", "cascade.html"],
+    ["Character entity", "html", "A code for a character that would otherwise be read as HTML, or is hard to type.", "&lt;  &amp;  &copy;", "html-syntax.html"],
+    ["Child", "html", "An element directly inside another element. The outer one is its parent.", "<ul> <li>child</li> </ul>", "selectors.html"],
+    ["Class", "css", "A reusable label added with the class attribute and selected in CSS with a dot. Many elements can share a class.", '.trail-card  →  <div class="trail-card">', "selectors.html"],
+    ["clear", "layout", "Makes an element start below any floated elements before it.", "clear: both;", "floats.html"],
+    ["Combinator", "css", "The part of a selector that describes a relationship: space (descendant), > (child), + (next sibling), ~ (later sibling).", ".card > a", "selectors.html"],
+    ["Comment", "html", "Notes in your code that the browser ignores. HTML and CSS use different syntax.", "<!-- HTML -->   /* CSS */", "html-syntax.html"],
+    ["Contrast ratio", "workflow", "How different text and background colors are in brightness. Body text needs at least 4.5 : 1.", "", "colors-units.html"],
+    ["Cross axis", "layout", "In Flexbox, the direction perpendicular to the main axis. align-items works along it.", "", "flexbox.html"],
+    ["CSS", "css", "Cascading Style Sheets: the language that controls how HTML looks, from colors and fonts to layout.", "", "css-basics.html"],
+    ["CSS variable", "css", "A reusable value with a name starting with two dashes, read with var(). Also called a custom property.", "--brand: #2340d9;  color: var(--brand);", "css-variables.html"],
+    ["Declaration", "css", "One property and its value, ending in a semicolon.", "color: navy;", "css-basics.html"],
+    ["Descendant", "html", "Any element inside another one, at any depth: children, grandchildren and so on.", ".card p", "selectors.html"],
+    ["DevTools", "workflow", "Tools built into every browser for inspecting the HTML and CSS of a page. Open with F12, or Cmd+Option+I on a Mac.", "", "devtools.html"],
+    ["display", "css", "The property that sets how an element is laid out: block, inline, inline-block, flex, grid or none.", "display: inline-block;", "display.html"],
+    ["DOCTYPE", "html", "The first line of every HTML file. It tells the browser to use modern standards mode.", "<!DOCTYPE html>", "document-structure.html"],
+    ["DOM", "html", "Document Object Model: the tree of elements the browser builds from your HTML. DevTools' Elements panel shows it, after the browser has repaired any errors.", "", "validation.html"],
+    ["Element", "html", "A piece of a web page: an opening tag, its content and a closing tag.", "<p>Hello</p>", "html-syntax.html"],
+    ["em (unit)", "css", "A length relative to the current element's font size. Nested em sizes multiply.", "padding: 1em;", "colors-units.html"],
+    ["Empty element", "html", "An element with no content and no closing tag. Also called a void element.", "<img>  <br>  <input>", "html-syntax.html"],
+    ["Fallback font", "css", "The next font in a font-family list, used when the first isn't available. Always end with a generic family like serif or sans-serif.", 'font-family: "Lora", Georgia, serif;', "web-fonts.html"],
+    ["figure / figcaption", "html", "Wraps an image, chart or code sample with its visible caption.", "<figure><img …><figcaption>…</figcaption></figure>", "images.html"],
+    ["filter", "css", "Applies visual effects like blur, grayscale or drop shadows to an element.", "filter: grayscale(1);", "shadows.html"],
+    ["Flexbox", "layout", "A layout method for arranging items in one row or column, with control over spacing and alignment.", "display: flex;", "flexbox.html"],
+    ["Float", "layout", "Moves an element to the left or right so text wraps around it.", "float: left;", "floats.html"],
+    ["Focus", "workflow", "The element that keyboard input goes to. Tab moves focus; :focus-visible styles show where it is.", "", "pseudo-classes.html"],
+    ["Font stack", "css", "A list of fonts in font-family, tried in order.", "font-family: system-ui, sans-serif;", "typography.html"],
+    ["fr (unit)", "layout", "A fraction of the free space in a grid container.", "grid-template-columns: 1fr 2fr;", "grid.html"],
+    ["Gap", "layout", "Space between items in a flex or grid container, without margins on each item.", "gap: 16px;", "flexbox.html"],
+    ["GitHub Pages", "workflow", "A free service that publishes the HTML, CSS and JavaScript files in a GitHub repository as a website.", "", "publishing.html"],
+    ["Gradient", "css", "A smooth blend between colors, used as a background image.", "linear-gradient(135deg, teal, navy)", "backgrounds-borders.html"],
+    ["Grid", "layout", "A layout method for rows and columns at the same time.", "display: grid;", "grid.html"],
+    ["Head", "html", "The part of an HTML document with information about the page, like its title and stylesheet links. Not shown on the page.", "<head> … </head>", "document-structure.html"],
+    ["Heading", "html", "h1 to h6 elements that give a page its outline. Use one h1 and don't skip levels.", "<h2>Conditions</h2>", "text-semantics.html"],
+    ["Hex color", "css", "A color written as # followed by pairs of red, green and blue values from 00 to ff.", "#2340d9", "colors-units.html"],
+    ["HSL", "css", "A color written as hue, saturation and lightness. Easy to adjust by hand.", "hsl(225 72% 50%)", "colors-units.html"],
+    ["HTML", "html", "HyperText Markup Language: the language that describes the structure and meaning of web page content.", "", "html-syntax.html"],
+    ["ID", "css", "A unique name for one element, selected with #. IDs have very high specificity, so prefer classes for styling.", '#featured  →  <div id="featured">', "selectors.html"],
+    ["index.html", "workflow", "The name for a site's home page, or the main page in any folder. Servers open it automatically.", "", "publishing.html"],
+    ["Inheritance", "css", "Some properties, mostly text-related ones like color and font, pass from a parent to its children automatically.", "", "cascade.html"],
+    ["Inline element", "css", "An element that flows within a line of text, like span, a or strong. Width and height don't apply.", "display: inline;", "display.html"],
+    ["Inline style", "css", "CSS written in an element's style attribute. It beats stylesheet rules, so avoid it.", '<p style="color: red">', "css-basics.html"],
+    ["Label", "html", "Text connected to a form control. Its for attribute matches the input's id.", '<label for="email">Email</label>', "forms.html"],
+    ["Landmark", "html", "A major page region, like header, nav, main or footer, that screen reader users can jump to.", "", "semantic-elements.html"],
+    ["Main axis", "layout", "In Flexbox, the direction items are laid out in, set by flex-direction. justify-content works along it.", "", "flexbox.html"],
+    ["Margin", "css", "Transparent space outside an element's border that pushes other elements away.", "margin: 0 auto;", "box-model.html"],
+    ["Media query", "layout", "A condition that applies CSS only when it's true, usually based on screen width.", "@media (min-width: 900px) { … }", "media-queries.html"],
+    ["Mobile first", "layout", "Writing the phone layout first, then adding min-width media queries for larger screens.", "", "mobile-first.html"],
+    ["Nesting", "html", "Putting elements inside other elements. Inner ones must close before outer ones.", "<p><strong>…</strong></p>", "html-syntax.html"],
+    ["Normal flow", "layout", "How elements are laid out with no layout CSS: blocks stack down the page, inline content flows in lines.", "", "display.html"],
+    ["object-fit", "css", "Decides how an image fills a box of a different shape: stretch, fit inside, or crop to cover.", "object-fit: cover;", "responsive-images.html"],
+    ["Overflow", "css", "What happens when content is bigger than its box: visible, hidden, or scrollable.", "overflow: auto;", "overflow.html"],
+    ["Padding", "css", "Space inside an element, between its content and its border.", "padding: 16px;", "box-model.html"],
+    ["Parent", "html", "The element directly containing another element.", "", "selectors.html"],
+    ["Placeholder", "html", "Hint text shown in an empty input. It disappears when typing starts, so it can't replace a label.", 'placeholder="you@example.com"', "forms.html"],
+    ["position", "layout", "Controls how an element is placed: static, relative, absolute, fixed or sticky.", "position: absolute;", "positioning.html"],
+    ["Property", "css", "What a declaration changes, like color, margin or font-size.", "font-size", "css-basics.html"],
+    ["Pseudo-class", "css", "A keyword with one colon that selects elements in a state or position.", ":hover  :focus-visible  :nth-child(2)", "pseudo-classes.html"],
+    ["Pseudo-element", "css", "A keyword with two colons that styles part of an element or adds decorative content.", "::before  ::first-letter", "pseudo-elements.html"],
+    ["Relative path", "html", "Directions to a file starting from the current file's folder. ../ goes up one folder.", "../images/logo.png", "links-paths.html"],
+    ["rem (unit)", "css", "A length relative to the root (html) font size, usually 16px. Good for font sizes.", "font-size: 1.25rem;", "colors-units.html"],
+    ["Repository", "workflow", "A project folder tracked by Git, with its full history of changes. On GitHub, it's often called a repo.", "", "publishing.html"],
+    ["Responsive design", "layout", "Building pages that adapt to any screen size, using flexible layouts, images and media queries.", "", "media-queries.html"],
+    ["Root-relative path", "html", "A path starting with /, measured from the top of the domain. Breaks on GitHub Pages project sites.", "/images/logo.png", "links-paths.html"],
+    ["Rule", "css", "A selector plus its block of declarations. Also called a ruleset.", "h1 { color: navy; }", "css-basics.html"],
+    ["Screen reader", "workflow", "Software that reads a page aloud for people who are blind or have low vision. It relies on semantic HTML and alt text.", "", "accessibility.html"],
+    ["Selector", "css", "The part of a rule that picks which elements to style.", ".card h2", "selectors.html"],
+    ["Semantic HTML", "html", "Choosing elements for what content means, like nav, article or button, rather than how it looks.", "", "semantic-elements.html"],
+    ["Sibling", "html", "Elements that share the same parent.", "h2 + p", "selectors.html"],
+    ["Source order", "css", "Where a rule appears in the CSS. When everything else ties, the later rule wins.", "", "cascade.html"],
+    ["Specificity", "css", "A score for how targeted a selector is: IDs beat classes, classes beat elements. Higher specificity wins a conflict.", "#nav a  beats  .link", "selectors.html"],
+    ["srcset", "html", "A list of image files at different widths. The browser downloads the smallest one that will still look sharp.", 'srcset="trail-400.jpg 400w, trail-800.jpg 800w"', "responsive-images.html"],
+    ["Stylesheet", "css", "A .css file of rules, linked from the head of each HTML page.", '<link rel="stylesheet" href="style.css">', "css-basics.html"],
+    ["Tag", "html", "The text in angle brackets that marks where an element starts or ends.", "<p>  </p>", "html-syntax.html"],
+    ["Transition", "css", "Smoothly animates a change from one style to another, such as on hover.", "transition: background 0.2s ease;", "transitions.html"],
+    ["Type selector", "css", "A selector that matches every element of one kind by its tag name.", "p  h2  button", "selectors.html"],
+    ["Unit", "css", "What a number measures in, like px, rem, %, vw or s. Most values except 0 need one.", "16px  1.5rem  50%", "colors-units.html"],
+    ["URL", "html", "A web address, like https://example.com/trails/index.html.", "", "links-paths.html"],
+    ["User agent stylesheet", "css", "The browser's built-in default styles, such as margins on headings and blue underlined links.", "", "devtools.html"],
+    ["Validator", "workflow", "A tool that checks HTML or CSS against the official rules and reports errors with line numbers.", "", "validation.html"],
+    ["Value", "css", "The setting given to a property in a declaration.", "navy, 2rem, auto", "css-basics.html"],
+    ["Viewport", "layout", "The visible area of the browser window. vw and vh are percentages of it.", "", "sizing.html"],
+    ["Viewport meta tag", "html", "Tells phones to use the real screen width instead of shrinking a desktop-sized page.", '<meta name="viewport" content="width=device-width, initial-scale=1">', "document-structure.html"],
+    ["Web font", "css", "A font downloaded with the page, for example from Google Fonts, so everyone sees the same typeface.", "", "web-fonts.html"],
+    ["Whitespace", "html", "Spaces, tabs and line breaks. In HTML, any run of whitespace shows as a single space.", "", "html-syntax.html"],
+    ["z-index", "layout", "Controls which positioned elements appear on top when they overlap. Higher numbers come forward.", "z-index: 10;", "positioning.html"],
+    ["Client and server", "workflow", "The browser is the client: it asks for files. The server is the computer that stores the site and sends them back.", "", "how-the-web-works.html"],
+    ["Domain name", "workflow", "The human-friendly name of a server, like github.io. DNS looks up the numeric address behind it.", "trailclub.github.io", "how-the-web-works.html"],
+    ["HTTP status code", "workflow", "A number the server sends back with every response. 200 means OK, 404 means not found.", "404 Not Found", "how-the-web-works.html"],
+    ["Local server", "workflow", "A small web server running on your own computer, like VS Code's Live Server, so you can test pages the way the real web serves them.", "http://127.0.0.1:5500", "how-the-web-works.html"],
+    ["Favicon", "html", "The small icon in the browser tab and bookmarks, linked from the head.", '<link rel="icon" href="favicon.svg">', "head-metadata.html"],
+    ["Meta description", "html", "A one-sentence summary of a page in the head. Search engines may show it under your title.", '<meta name="description" content="…">', "head-metadata.html"],
+    ["Open Graph", "html", "og: meta tags that control the preview card when a link is shared in chats and social posts.", '<meta property="og:image" content="https://…">', "head-metadata.html"],
+    ["Lossy / lossless", "workflow", "Lossy formats like JPG throw away some detail to make files smaller. Lossless formats like PNG keep every pixel.", "", "image-formats.html"],
+    ["SVG", "html", "Scalable Vector Graphics: an image made of shapes described in code, so it stays sharp at any size. Best for logos and icons.", '<img src="logo.svg" alt="Trail Club">', "image-formats.html"],
+    ["WebP", "html", "A modern image format that's usually smaller than JPG or PNG at the same quality, and supports transparency.", "photo.webp", "image-formats.html"],
+    ["iframe", "html", "An element that shows another web page inside yours. Used for YouTube videos, maps and other embeds.", '<iframe src="…" title="Trail map"></iframe>', "embeds.html"],
+    ["Embed", "html", "Content from another site shown on your page, usually with an iframe the other site gives you.", "", "embeds.html"],
+    ["sizes", "html", "Tells the browser how wide an image will display at different window widths, so it can pick the right file from srcset.", 'sizes="(min-width: 700px) 50vw, 100vw"', "picture.html"],
+    ["picture", "html", "Wraps several source elements and an img, so the browser can choose a different crop or format.", '<picture><source …><img …></picture>', "picture.html"],
+    ["Art direction", "html", "Showing a different crop of an image at different screen sizes, not just a smaller copy.", "", "picture.html"],
+    ["Lazy loading", "html", "Waiting to download an image or iframe until the visitor scrolls near it.", 'loading="lazy"', "picture.html"],
+    ["clamp()", "css", "A value that grows with the screen but stays between a minimum and a maximum: clamp(min, preferred, max).", "font-size: clamp(1.75rem, 1rem + 3vw, 3.5rem);", "fluid-sizing.html"],
+    ["min() / max()", "css", "min() uses the smallest of its values, max() the largest. min() works like a max-width.", "width: min(640px, 100% - 2rem);", "fluid-sizing.html"],
+    ["calc()", "css", "Does math with mixed units. The + and - need spaces around them.", "width: calc(100% - 2rem);", "fluid-sizing.html"],
+    ["Transform", "css", "Moves, rotates, scales or skews an element after layout, without moving anything around it.", "transform: rotate(10deg) scale(1.1);", "transforms.html"],
+    ["transform-origin", "css", "The point an element rotates and scales around. The default is its center.", "transform-origin: top left;", "transforms.html"],
+  ];
+  const TITLES = { "how-the-web-works.html": "How the Web Works", "head-metadata.html": "The Head & Metadata", "image-formats.html": "Image Formats", "embeds.html": "Embeds & iframes", "picture.html": "Picture & Lazy Loading", "fluid-sizing.html": "Fluid Sizing", "transforms.html": "Transforms", "accessibility.html": "Accessibility Basics", "backgrounds-borders.html": "Backgrounds & Borders", "box-model.html": "The Box Model", "cascade.html": "Cascade & Inheritance", "colors-units.html": "Colors & Units", "css-basics.html": "How CSS Is Applied", "css-variables.html": "CSS Variables", "devtools.html": "Debugging with DevTools", "display.html": "Display Types", "document-structure.html": "Document Structure", "flexbox.html": "Flexbox", "floats.html": "Floats", "forms.html": "Forms & Inputs", "grid.html": "CSS Grid", "html-syntax.html": "HTML Syntax", "images.html": "Images & Alt Text", "links-paths.html": "Links & Paths", "media-queries.html": "Media Queries", "mobile-first.html": "Mobile-First Workflow", "organizing-css.html": "Organizing CSS", "overflow.html": "Overflow", "positioning.html": "Positioning", "pseudo-classes.html": "Pseudo-classes & States", "pseudo-elements.html": "Pseudo-elements", "publishing.html": "Project Structure & Publishing", "responsive-images.html": "Responsive Images", "selectors.html": "Selectors & Specificity", "semantic-elements.html": "Semantic Elements", "shadows.html": "Shadows & Filters", "sizing.html": "Sizing Items", "text-semantics.html": "Text Semantics", "transitions.html": "Transitions & Animations", "typography.html": "Typography", "validation.html": "Validating Your Code", "web-fonts.html": "Web Fonts" };
+  const CATS = { all: "All", html: "HTML", css: "CSS", layout: "Layout", workflow: "Workflow" };
+  const $ = (id) => document.getElementById(id);
+  const esc = (s) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  const letterOf = (t) => { const c = t.replace(/^[^a-z]+/i, "")[0].toUpperCase(); return c; };
+  T.sort((a, b) => a[0].replace(/^[^a-z]+/i, "").localeCompare(b[0].replace(/^[^a-z]+/i, ""), "en", { sensitivity: "base" }));
+  let cat = "all";
+  $("cats").innerHTML = Object.entries(CATS).map(([k, v]) => `<button class="btn" data-c="${k}">${v}</button>`).join("");
+  $("cats").addEventListener("click", (e) => { const b = e.target.closest("button"); if (b) { cat = b.dataset.c; render(); } });
+  // Highlight matches in the raw text, escaping each piece, so entities never get split.
+  function hi(text, q) {
+    if (!q) return esc(text);
+    const re = new RegExp(q.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "gi");
+    let out = "", last = 0;
+    text.replace(re, (m, idx) => { out += esc(text.slice(last, idx)) + "<mark>" + esc(m) + "</mark>"; last = idx + m.length; return m; });
+    return out + esc(text.slice(last));
+  }
+  function render() {
+    const q = $("q").value.trim();
+    const ql = q.toLowerCase();
+    const items = T.filter(([t, c, d, ex]) => (cat === "all" || c === cat) && (!ql || (t + " " + d + " " + ex).toLowerCase().includes(ql)));
+    const groups = {};
+    items.forEach((it) => (groups[letterOf(it[0])] = groups[letterOf(it[0])] || []).push(it));
+    $("list").innerHTML = Object.keys(groups).sort().map((L) => `<section class="group" id="letter-${L}"><h2>${L}</h2><dl>${groups[L].map(([t, c, d, ex, page]) =>
+      `<div class="entry"><dt>${hi(t, q)}<span class="cat ${c}">${CATS[c]}</span></dt><dd><span>${hi(d, q)}</span>${ex ? `<code class="ex">${hi(ex, q)}</code>` : ""}${page ? `<a class="more" href="${page}">Learn more: ${esc(TITLES[page])} →</a>` : ""}</dd></div>`).join("")}</dl></section>`).join("");
+    $("letters").innerHTML = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("").map((L) => groups[L] ? `<a href="#letter-${L}">${L}</a>` : `<span aria-hidden="true">${L}</span>`).join("");
+    $("count").textContent = `${items.length} of ${T.length} terms`;
+    $("empty").hidden = items.length > 0;
+    document.querySelectorAll("#cats .btn").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.c === cat)));
+  }
+  $("q").addEventListener("input", render);
+  document.addEventListener("keydown", (e) => { if (e.key === "/" && document.activeElement !== $("q")) { e.preventDefault(); $("q").focus(); } });
+  render();
+</script>
+</body>
+</html>

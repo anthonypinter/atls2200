@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>HTML Syntax</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Recursive:slnt,wght,CASL,MONO@-15..0,300..1000,0..1,0..1&display=swap">
+<link rel="stylesheet" href="style.css">
+<style>
+  .anatomy { font: 1.15rem/2.2 var(--font-code); font-variation-settings: "MONO" 1; background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 18px 20px; overflow-x: auto; white-space: nowrap; }
+  .part { border-radius: 4px; cursor: pointer; padding: 1px 1px; }
+  .part:hover { background: var(--stage); }
+  .part.on { background: var(--cobalt-soft); box-shadow: 0 0 0 2px var(--cobalt); }
+  .parts-list { display: flex; flex-wrap: wrap; gap: 6px; }
+  .explain h3 { font-family: var(--font-code); font-variation-settings: "MONO" 1; color: var(--cobalt); }
+  .two { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  @media (max-width: 700px) { .two { grid-template-columns: 1fr; } }
+  .two .panel { display: grid; gap: 8px; align-content: start; min-width: 0; }
+  textarea.src { font: 0.95rem/1.5 var(--font-code); font-variation-settings: "MONO" 1; width: 100%; min-height: 130px; padding: 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--paper); color: var(--ink); resize: vertical; }
+  .rendered { padding: 12px 14px; border-radius: 8px; background: #fff; color: #1d2133; border: 1px solid var(--line); font-family: Georgia, serif; font-size: 1.05rem; overflow-wrap: anywhere; min-height: 60px; }
+  .ent-table { width: 100%; border-collapse: collapse; font-size: 0.92rem; }
+  .ent-table td, .ent-table th { border-bottom: 1px solid var(--line); padding: 6px 8px; text-align: left; }
+  .ent-table th { color: var(--muted); font-weight: 700; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.05em; }
+  .ent-table td:first-child { font-size: 1.2rem; text-align: center; width: 40px; }
+  .voids { display: flex; flex-wrap: wrap; gap: 6px; }
+  .voids code { font-size: 0.9rem; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <nav class="crumbs" aria-label="Site"><a class="crumb" href="index.html">← Field Guide</a><a class="crumb" href="glossary.html">Glossary</a></nav>
+  <header class="page-head">
+    <span class="eyebrow">HTML Foundations · HTML Syntax</span>
+    <h1>HTML Syntax</h1>
+    <p class="lede">HTML is made of elements, and elements are made of tags, attributes and content. Learn the names for each part, then see how the browser treats spaces and special characters.</p>
+  </header>
+
+  <div class="section-title" style="margin-top:0"><span class="eyebrow">Part 1</span><h2>Anatomy of an element</h2><p>Click any part, or pick a name below.</p></div>
+  <section class="playground even">
+    <div class="stage-col">
+      <div class="anatomy" id="el" aria-label="An HTML element"></div>
+      <div class="parts-list" id="names"></div>
+      <div class="panel" style="display:grid;gap:8px"><span class="eyebrow">Empty (void) elements have no closing tag</span>
+        <div class="voids"><code>&lt;img&gt;</code><code>&lt;br&gt;</code><code>&lt;hr&gt;</code><code>&lt;input&gt;</code><code>&lt;meta&gt;</code><code>&lt;link&gt;</code></div>
+        <p class="hint">They can't hold content, so there's nothing to close. Writing <code>&lt;img /&gt;</code> with a slash is allowed but not needed.</p></div>
+    </div>
+    <div class="panel explain" id="explain" aria-live="polite" style="display:grid;gap:8px;align-content:start"></div>
+  </section>
+
+  <div class="section-title"><span class="eyebrow">Part 2</span><h2>Whitespace collapses</h2><p>Type extra spaces, tabs and blank lines. The browser squashes every run of whitespace into a single space.</p></div>
+  <div class="two">
+    <div class="panel"><label class="eyebrow" for="ws">What you type in your HTML</label><textarea class="src" id="ws">Pack     water,
+snacks,
+
+        and a map.</textarea></div>
+    <div class="panel"><span class="eyebrow">What the browser shows</span><div class="rendered" id="ws-out"></div><p class="hint">To start a new paragraph, use a new <code>&lt;p&gt;</code>. Use CSS for spacing, not lots of spaces or <code>&lt;br&gt;</code>s.</p></div>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Part 3</span><h2>Special characters</h2><p>Some characters mean something to HTML, like &lt; which starts a tag. To show them as text, write an <em>entity</em>. Type below to see what needs escaping.</p></div>
+  <div class="two">
+    <div class="panel"><label class="eyebrow" for="ent">Text you want to show</label><textarea class="src" id="ent">Use <p> for paragraphs & "quotes" for attributes. © 2026</textarea>
+      <span class="eyebrow">Write this in your HTML</span><pre class="snippet" id="ent-out"></pre></div>
+    <div class="panel"><span class="eyebrow">Common entities</span>
+      <table class="ent-table"><thead><tr><th>Shows</th><th>Write</th><th>Why</th></tr></thead><tbody>
+        <tr><td>&lt;</td><td><code>&amp;lt;</code></td><td>Would start a tag</td></tr>
+        <tr><td>&gt;</td><td><code>&amp;gt;</code></td><td>Pairs with &amp;lt;</td></tr>
+        <tr><td>&amp;</td><td><code>&amp;amp;</code></td><td>Would start an entity</td></tr>
+        <tr><td>"</td><td><code>&amp;quot;</code></td><td>Inside attribute values</td></tr>
+        <tr><td>©</td><td><code>&amp;copy;</code></td><td>Easier to type</td></tr>
+        <tr><td>&nbsp;</td><td><code>&amp;nbsp;</code></td><td>A space that never breaks the line</td></tr>
+      </tbody></table></div>
+  </div>
+
+  <section class="notes">
+    <div class="panel">
+      <h2>Key ideas</h2>
+      <ul>
+        <li>Elements nest like boxes inside boxes. Close the inner one before the outer one.</li>
+        <li>Attributes go in the opening tag, as <code>name="value"</code>. Always quote the value.</li>
+        <li>Tag and attribute names aren't case-sensitive, but write them in lowercase.</li>
+        <li>Comments look like <code>&lt;!-- like this --&gt;</code> and don't appear on the page.</li>
+      </ul>
+    </div>
+    <div class="panel mistake">
+      <h2>Common mistakes</h2>
+      <ul>
+        <li>Forgetting a closing tag, so everything after it gets the same formatting.</li>
+        <li>Curly "smart quotes" pasted from a word processor around attribute values.</li>
+        <li>Spaces around the equals sign in odd places, or missing quotes around values with spaces.</li>
+        <li>Using lots of <code>&amp;nbsp;</code> or <code>&lt;br&gt;</code> to push things around. That's CSS's job.</li>
+      </ul>
+    </div>
+  </section>
+
+  <footer class="page-foot"><a href="how-the-web-works.html">← How the Web Works</a><a href="document-structure.html">Next: Document Structure →</a></footer>
+</div>
+
+<script>
+  const $ = (id) => document.getElementById(id);
+  const PARTS = {
+    open: ["Opening tag", "Starts the element: a less-than sign, the element's name, any attributes, and a greater-than sign."],
+    name: ["Element name", "Says what kind of element this is. a means anchor, which is a link."],
+    attr: ["Attribute", "Extra information about the element, written inside the opening tag."],
+    aname: ["Attribute name", "Which setting you're giving. href is the link's destination; class is a label for CSS."],
+    aval: ["Attribute value", "The setting itself, inside quotes. Always use quotes."],
+    content: ["Content", "What appears on the page. It can be text or other elements."],
+    close: ["Closing tag", "Ends the element. Same name as the opening tag, with a slash before it."],
+    element: ["Element", "The whole thing: opening tag, content and closing tag together."],
+  };
+  const p = (k, inner) => `<span class="part" data-p="${k}">${inner}</span>`;
+  const attr = (n, v) => p("attr", `${p("aname", `<span class="attr">${n}</span>`)}=${p("aval", `<span class="str">"${v}"</span>`)}`);
+  $("el").innerHTML = p("element", `${p("open", `&lt;${p("name", '<span class="tag-name">a</span>')} ${attr("href", "trails.html")} ${attr("class", "btn")}&gt;`)}${p("content", "See all trails")}${p("close", '&lt;/<span class="tag-name">a</span>&gt;')}`);
+  $("names").innerHTML = Object.entries(PARTS).map(([k, [n]]) => `<button class="btn" data-p="${k}">${n}</button>`).join("");
+  function show(k) {
+    document.querySelectorAll("#el .part").forEach((el) => el.classList.toggle("on", el.dataset.p === k));
+    document.querySelectorAll("#names .btn").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.p === k)));
+    $("explain").innerHTML = `<span class="eyebrow">Selected</span><h3>${PARTS[k][0]}</h3><p>${PARTS[k][1]}</p>`;
+  }
+  const pick = (e) => { const t = e.target.closest("[data-p]"); if (t) { e.stopPropagation(); show(t.dataset.p); } };
+  $("el").addEventListener("click", pick); $("names").addEventListener("click", pick);
+  show("attr");
+
+  const ws = () => ($("ws-out").textContent = $("ws").value);
+  $("ws").addEventListener("input", ws); ws();
+
+  function ent() {
+    const v = $("ent").value;
+    const out = v.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/©/g, "&copy;");
+    $("ent-out").textContent = out;
+  }
+  $("ent").addEventListener("input", ent); ent();
+</script>
+</body>
+</html>

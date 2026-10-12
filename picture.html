@@ -1,0 +1,224 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Picture &amp; Lazy Loading</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Recursive:slnt,wght,CASL,MONO@-15..0,300..1000,0..1,0..1&display=swap">
+<link rel="stylesheet" href="style.css">
+<style>
+  .mock { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 10px; display: grid; gap: 8px; }
+  .mock .cards { display: grid; gap: 8px; }
+  .mock .cards i { display: block; aspect-ratio: 3 / 2; border-radius: 4px; background: linear-gradient(170deg, var(--item-2) 0 45%, var(--item-3) 45%); }
+  .mock .cards i:first-child { outline: 3px solid var(--cobalt); outline-offset: 2px; }
+  .mock .bar { height: 10px; border-radius: 3px; background: var(--line); }
+  .facts { display: grid; grid-template-columns: max-content 1fr; gap: 4px 14px; font: 0.88rem var(--font-code); font-variation-settings: "MONO" 1; }
+  .facts dt { color: var(--muted); } .facts dd { margin: 0; color: var(--ink); }
+  .facts dd.bad { color: var(--bad); } .facts dd.good { color: var(--good); }
+  .cands { display: grid; gap: 6px; }
+  .cand { display: grid; grid-template-columns: 110px 1fr 70px; gap: 10px; align-items: center; padding: 6px 10px; border-radius: 6px; border: 1px solid var(--line); background: var(--panel); font: 0.85rem var(--font-code); font-variation-settings: "MONO" 1; }
+  .cand .bar { height: 8px; border-radius: 3px; background: var(--line); }
+  .cand.pick { border-color: var(--cobalt); box-shadow: inset 4px 0 0 var(--cobalt); } .cand.pick .bar { background: var(--cobalt); }
+  .cand span:last-child { text-align: right; color: var(--muted); }
+
+  .art { display: grid; place-items: center; min-height: 300px; }
+  .art-frame { border: 2px dashed var(--prop); border-radius: 8px; padding: 8px; transition: width 0.2s; max-width: 100%; }
+  .art-frame .lbl { font: 600 0.75rem var(--font-code); font-variation-settings: "MONO" 1; color: var(--prop); display: block; margin-bottom: 6px; }
+  .art-frame svg { display: block; width: 100%; height: auto; border-radius: 4px; }
+  .snippet .on { background: var(--cobalt-soft); outline: 1px solid var(--cobalt); border-radius: 3px; }
+  .snippet .off { opacity: 0.45; }
+
+  .lazy-wrap { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px; }
+  @media (max-width: 760px) { .lazy-wrap { grid-template-columns: 1fr; } }
+  .scroller { height: 340px; overflow-y: auto; background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 10px; display: grid; gap: 10px; align-content: start; }
+  .scroller .lbl { font: 600 0.75rem var(--font-code); font-variation-settings: "MONO" 1; color: var(--muted); }
+  .post { display: grid; grid-template-columns: 120px 1fr; gap: 10px; align-items: center; }
+  .post .ph { aspect-ratio: 3 / 2; border-radius: 4px; background: repeating-linear-gradient(45deg, var(--stage) 0 8px, var(--panel) 8px 16px); border: 1px dashed var(--line); }
+  .post .ph.loaded { border: 0; background: linear-gradient(170deg, var(--c1) 0 45%, var(--c2) 45%); }
+  .post b { display: block; font-size: 0.95rem; } .post small { color: var(--muted); }
+  .netlog { font: 0.85rem var(--font-code); font-variation-settings: "MONO" 1; display: grid; gap: 4px; max-height: 260px; overflow-y: auto; }
+  .total { font: 800 1.4rem var(--font-display); color: var(--cobalt); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <nav class="crumbs" aria-label="Site"><a class="crumb" href="index.html">← Field Guide</a><a class="crumb" href="glossary.html">Glossary</a></nav>
+  <header class="page-head">
+    <span class="eyebrow">Responsive Design · Picture &amp; Lazy Loading</span>
+    <h1>Picture &amp; Lazy Loading</h1>
+    <p class="lede">Three more ways to send the right image: tell the browser how wide it will be with <code>sizes</code>, swap in a different crop with <code>&lt;picture&gt;</code>, and skip images nobody scrolls to with <code>loading="lazy"</code>.</p>
+  </header>
+
+  <div class="section-title" style="margin-top:0"><span class="eyebrow">Part 1</span><h2>Tell the browser the size with sizes</h2><p>The browser picks a file from <code>srcset</code> <em>before</em> your CSS has loaded, so it doesn't know how wide the image will be. Without <code>sizes</code>, it assumes the full window width. This layout shows 1, 2 or 3 cards per row.</p></div>
+  <section class="playground">
+    <div class="panel controls">
+      <div class="control"><label for="vw">window width</label><input id="vw" type="range" min="320" max="1600" step="20" value="1280"><span class="readout" id="vw-out"></span></div>
+      <div class="control"><label for="sz">sizes</label>
+        <select id="sz">
+          <option value="none">(no sizes attribute)</option>
+          <option value="100vw">100vw</option>
+          <option value="2col">(min-width: 700px) 50vw, 100vw</option>
+          <option value="3col" selected>(min-width: 1100px) 33vw, (min-width: 700px) 50vw, 100vw</option>
+        </select></div>
+      <div class="control"><label>screen pixel density</label><div class="seg" id="dpr"><button class="btn" data-d="1" aria-pressed="true">1x</button><button class="btn" data-d="2">2x</button></div></div>
+      <p class="hint">Read <code>sizes</code> left to right: the first media condition that's true wins, and the last value has no condition, so it's the default.</p>
+    </div>
+    <div class="stage-col">
+      <div class="mock" aria-hidden="true"><div class="bar" style="width:40%"></div><div class="cards" id="cards"></div></div>
+      <div class="panel"><dl class="facts" id="facts"></dl></div>
+      <div class="cands" id="cands"></div>
+      <pre class="snippet" id="sz-code"></pre>
+    </div>
+  </section>
+
+  <div class="section-title"><span class="eyebrow">Part 2</span><h2>Change the crop with &lt;picture&gt;</h2><p>Sometimes a smaller copy isn't enough. A wide landscape shrunk onto a phone makes the arch a speck. <code>&lt;picture&gt;</code> lets you send a different crop at different widths. This is called <strong>art direction</strong>.</p></div>
+  <section class="playground">
+    <div class="panel controls">
+      <div class="control"><label for="aw">window width</label><input id="aw" type="range" min="320" max="1200" step="10" value="420"><span class="readout" id="aw-out"></span></div>
+      <p class="hint">The browser checks each <code>&lt;source&gt;</code> in order and uses the first one whose <code>media</code> matches. If none match, it uses the <code>&lt;img&gt;</code>.</p>
+      <p class="hint">The <code>&lt;img&gt;</code> is required. It holds the <code>alt</code> text, and any CSS you write targets the <code>img</code>, not the <code>picture</code>.</p>
+    </div>
+    <div class="stage-col">
+      <div class="stage art"><div class="art-frame" id="art-frame"><span class="lbl" id="art-lbl"></span><div id="art"></div></div></div>
+      <pre class="snippet" id="pic-code"></pre>
+    </div>
+  </section>
+
+  <div class="section-title"><span class="eyebrow">Part 3</span><h2>Skip what nobody sees with loading="lazy"</h2><p>Scroll the page on the left and watch the network log. With lazy loading, images download just before they scroll into view.</p></div>
+  <section class="playground">
+    <div class="panel controls">
+      <div class="control"><label>loading</label><div class="seg" id="mode"><button class="btn" data-m="eager">eager (default)</button><button class="btn" data-m="lazy" aria-pressed="true">lazy</button></div></div>
+      <p class="hint">The first image is above the fold, so it is always loaded right away. Lazy-loading it would only make the page feel slower.</p>
+      <button class="btn" id="reset" style="justify-self:start">Reload the page</button>
+    </div>
+    <div class="lazy-wrap">
+      <div class="scroller" id="scroller" aria-label="Scrollable sample page"><span class="lbl">trailclub.github.io/hikes/</span></div>
+      <div class="panel" style="display:grid;gap:8px;align-content:start"><span class="eyebrow">Downloaded so far</span><span class="total" id="total"></span><div class="netlog" id="netlog" aria-live="polite"></div></div>
+    </div>
+  </section>
+
+  <section class="notes">
+    <div class="panel">
+      <h2>Key ideas</h2>
+      <ul>
+        <li>Use <code>srcset</code> with <code>w</code> widths (<code>trail-800.jpg 800w</code>) plus <code>sizes</code> when the image isn't full-width. Use <code>1x</code>/<code>2x</code> only for images with a fixed size, like a logo.</li>
+        <li><code>sizes</code> describes your layout. If your CSS changes the columns, update <code>sizes</code> to match.</li>
+        <li><code>&lt;picture&gt;</code> with <code>media</code> changes the crop. With <code>type</code> it offers a newer format and falls back: <code>&lt;source type="image/avif" srcset="arch.avif"&gt;</code>.</li>
+        <li>Put <code>loading="lazy"</code> on images and iframes further down the page, and keep <code>width</code> and <code>height</code> so the page doesn't jump when they arrive.</li>
+      </ul>
+    </div>
+    <div class="panel mistake">
+      <h2>Common mistakes</h2>
+      <ul>
+        <li>Leaving out <code>sizes</code> with <code>w</code> descriptors, so a small card image downloads at full-window size.</li>
+        <li>Using <code>&lt;picture&gt;</code> only to switch sizes. <code>srcset</code> and <code>sizes</code> on a plain <code>&lt;img&gt;</code> already do that, and let the browser choose.</li>
+        <li>Forgetting the <code>&lt;img&gt;</code> inside <code>&lt;picture&gt;</code>. Without it, nothing shows.</li>
+        <li>Lazy-loading the big photo at the top of the page. It should load as early as possible.</li>
+      </ul>
+    </div>
+  </section>
+
+  <footer class="page-foot"><a href="responsive-images.html">← Responsive Images</a><a href="mobile-first.html">Next: Mobile-First Workflow →</a></footer>
+</div>
+
+<script>
+  const $ = (id) => document.getElementById(id);
+  const t = (s) => `<span class="tag-name">${s}</span>`, a = (n, v) => `<span class="attr">${n}</span>=<span class="str">"${v}"</span>`;
+
+  // Part 1: srcset + sizes
+  const FILES = [[400, 30], [800, 95], [1200, 190], [1600, 320], [2400, 640]];
+  const SIZES = {
+    none: { text: null, fn: () => 1 },
+    "100vw": { text: "100vw", fn: () => 1 },
+    "2col": { text: "(min-width: 700px) 50vw, 100vw", fn: (w) => (w >= 700 ? 0.5 : 1) },
+    "3col": { text: "(min-width: 1100px) 33vw, (min-width: 700px) 50vw, 100vw", fn: (w) => (w >= 1100 ? 0.33 : w >= 700 ? 0.5 : 1) },
+  };
+  let dpr = 1;
+  function part1() {
+    const w = +$("vw").value, s = SIZES[$("sz").value];
+    $("vw-out").textContent = w + "px";
+    const cols = w >= 1100 ? 3 : w >= 700 ? 2 : 1;
+    $("cards").style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
+    $("cards").innerHTML = "<i></i>".repeat(cols * 2);
+    const actual = Math.round(w / cols), assumed = Math.round(w * s.fn(w));
+    const need = assumed * dpr, needReal = actual * dpr;
+    const pick = FILES.find(([fw]) => fw >= need) || FILES[FILES.length - 1];
+    const ideal = FILES.find(([fw]) => fw >= needReal) || FILES[FILES.length - 1];
+    const waste = pick[1] - ideal[1];
+    $("facts").innerHTML = `<dt>card really shows at</dt><dd>${actual}px</dd><dt>browser assumes</dt><dd class="${Math.abs(assumed - actual) > 20 ? "bad" : "good"}">${assumed}px${s.text ? "" : " (no sizes, so the full window)"}</dd><dt>so it needs</dt><dd>${assumed} × ${dpr} = ${need} pixels</dd><dt>result</dt><dd class="${waste > 0 ? "bad" : "good"}">${waste > 0 ? `${waste} KB wasted on every card` : "the right file"}</dd>`;
+    $("cands").innerHTML = FILES.map(([fw, kb]) => `<div class="cand ${fw === pick[0] ? "pick" : ""}"><span>trail-${fw}.jpg</span><div class="bar" style="width:${(fw / 2400) * 100}%"></div><span>${kb} KB</span></div>`).join("");
+    let code = `${t("&lt;img")} ${a("src", "trail-800.jpg")}\n     ${a("srcset", "trail-400.jpg 400w, trail-800.jpg 800w,")}\n             <span class="str">trail-1200.jpg 1200w, trail-1600.jpg 1600w, trail-2400.jpg 2400w"</span>`;
+    if (s.text) code += `\n     ${a("sizes", s.text)}`;
+    code += `\n     ${a("width", "1200")} ${a("height", "800")} ${a("alt", "Mesa Trail in fall")}${t("&gt;")}`;
+    $("sz-code").innerHTML = code;
+    document.querySelectorAll("#dpr .btn").forEach((b) => b.setAttribute("aria-pressed", String(+b.dataset.d === dpr)));
+  }
+  $("dpr").addEventListener("click", (e) => { const b = e.target.closest("button"); if (b) { dpr = +b.dataset.d; part1(); } });
+  ["vw", "sz"].forEach((id) => $(id).addEventListener("input", part1));
+  part1();
+
+  // Part 2: art direction. One scene, cropped three ways with viewBox.
+  const SCENE = `<defs><linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f4a261"/><stop offset="1" stop-color="#fde2c4"/></linearGradient></defs>
+    <rect width="1600" height="700" fill="url(#sky)"/><circle cx="260" cy="170" r="60" fill="#fff3d6"/>
+    <path d="M0 700 L0 430 L250 330 L480 420 L700 300 L900 380 L1250 260 L1600 400 L1600 700 Z" fill="#8f6a8a"/>
+    <path d="M820 700 L860 420 Q 1000 300 1140 420 L1180 700 L1110 700 L1090 470 Q 1000 390 910 470 L890 700 Z" fill="#a4482a"/>
+    <path d="M0 700 L0 560 L300 520 L620 580 L800 600 L1200 600 L1400 540 L1600 580 L1600 700 Z" fill="#3e4a61"/>
+    <g fill="#1b1f2b"><circle cx="1000" cy="566" r="9"/><rect x="993" y="575" width="14" height="30" rx="3"/></g>`;
+  const CROPS = [
+    { min: 900, file: "arch-wide.jpg", vb: "0 100 1600 600", w: 1600, h: 600, why: "wide crop: the whole valley" },
+    { min: 560, file: "arch-medium.jpg", vb: "500 138 1000 562", w: 1000, h: 562, why: "medium crop: closer on the arch" },
+    { min: 0, file: "arch-square.jpg", vb: "760 220 480 480", w: 480, h: 480, why: "square crop: just the arch and hiker" },
+  ];
+  function part2() {
+    const w = +$("aw").value;
+    $("aw-out").textContent = w + "px";
+    const c = CROPS.find((x) => w >= x.min);
+    $("art-frame").style.width = Math.min(w, 760) + "px";
+    $("art-lbl").textContent = `${w}px window → ${c.file} (${c.why})`;
+    $("art").innerHTML = `<svg viewBox="${c.vb}" width="${c.w}" height="${c.h}" role="img" aria-label="Royal Arch with a hiker beneath it">${SCENE}</svg>`;
+    const cls = (x) => (x === c ? "on" : "off");
+    $("pic-code").innerHTML = `${t("&lt;picture&gt;")}\n  <span class="${cls(CROPS[0])}">${t("&lt;source")} ${a("media", "(min-width: 900px)")} ${a("srcset", "arch-wide.jpg")}${t("&gt;")}</span>\n  <span class="${cls(CROPS[1])}">${t("&lt;source")} ${a("media", "(min-width: 560px)")} ${a("srcset", "arch-medium.jpg")}${t("&gt;")}</span>\n  <span class="${cls(CROPS[2])}">${t("&lt;img")} ${a("src", "arch-square.jpg")} ${a("alt", "Royal Arch with a hiker beneath it")}${t("&gt;")}</span>\n${t("&lt;/picture&gt;")}`;
+  }
+  $("aw").addEventListener("input", part2);
+  part2();
+
+  // Part 3: lazy loading inside a scrolling box
+  const POSTS = ["Royal Arch", "Mesa Trail", "Bear Peak", "Flagstaff Summit", "Green Mountain", "Sanitas Valley", "Walker Ranch", "Heil Valley", "Gross Reservoir", "Eldorado Canyon"];
+  const COLORS = [["--item-2", "--item-3"], ["--item-1", "--item-3"], ["--item-4", "--item-6"], ["--item-5", "--item-1"], ["--item-6", "--item-4"]];
+  let mode = "lazy", obs, bytes = 0;
+  function part3() {
+    if (obs) obs.disconnect();
+    bytes = 0;
+    const sc = $("scroller");
+    sc.scrollTop = 0;
+    sc.querySelectorAll(".post").forEach((p) => p.remove());
+    $("netlog").innerHTML = "";
+    POSTS.forEach((name, i) => {
+      const [c1, c2] = COLORS[i % COLORS.length];
+      sc.insertAdjacentHTML("beforeend", `<div class="post"><div class="ph" data-i="${i}" style="--c1:var(${c1});--c2:var(${c2})"></div><div><b>${name}</b><small>${(2 + i * 0.7).toFixed(1)} miles · ${i < 1 ? "loading=\"eager\"" : `loading="${mode}"`}</small></div></div>`);
+    });
+    const load = (ph) => {
+      if (ph.classList.contains("loaded")) return;
+      ph.classList.add("loaded");
+      const kb = 140 + ((+ph.dataset.i * 37) % 60);
+      bytes += kb;
+      $("netlog").insertAdjacentHTML("beforeend", `<span>200 · ${POSTS[+ph.dataset.i].toLowerCase().replace(/ /g, "-")}.jpg · ${kb} KB</span>`);
+      $("total").textContent = `${(bytes / 1024).toFixed(2)} MB · ${sc.querySelectorAll(".ph.loaded").length} of ${POSTS.length} images`;
+    };
+    const phs = [...sc.querySelectorAll(".ph")];
+    if (mode === "eager") phs.forEach(load);
+    else {
+      load(phs[0]);
+      obs = new IntersectionObserver((entries) => entries.forEach((en) => { if (en.isIntersecting) { load(en.target); obs.unobserve(en.target); } }), { root: sc, rootMargin: "0px 0px 120px 0px" });
+      phs.slice(1).forEach((p) => obs.observe(p));
+    }
+    document.querySelectorAll("#mode .btn").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.m === mode)));
+  }
+  $("mode").addEventListener("click", (e) => { const b = e.target.closest("button"); if (b) { mode = b.dataset.m; part3(); } });
+  $("reset").addEventListener("click", part3);
+  part3();
+</script>
+</body>
+</html>

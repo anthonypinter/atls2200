@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Typography Tester</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Recursive:slnt,wght,CASL,MONO@-15..0,300..1000,0..1,0..1&family=Lora:wght@400..700&display=swap">
+<link rel="stylesheet" href="style.css">
+<style>
+  .reading { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 24px; overflow-x: auto; min-width: 0; }
+  .reading .text { transition: all 0.2s; color: var(--ink); }
+  .reading .text h3 { font-size: 1.6em; margin: 0 0 0.4em; line-height: 1.2; font-family: inherit; font-weight: inherit; }
+  .reading .text p { margin: 0 0 0.9em; max-width: none; }
+  .checks { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+  .checks li { display: flex; gap: 10px; align-items: baseline; font-size: 0.93rem; padding: 8px 10px; border-radius: 6px; background: var(--good-soft); color: var(--good); }
+  .checks li.warn { background: var(--bad-soft); color: var(--bad); }
+  .checks li b { white-space: nowrap; font-family: var(--font-code); font-variation-settings: "MONO" 1; font-size: 0.85rem; }
+  .scale { display: grid; gap: 4px; background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 18px; overflow-x: auto; min-width: 0; }
+  .scale .row { display: grid; grid-template-columns: 110px 1fr; gap: 16px; align-items: baseline; }
+  .scale .tag { font: 0.8rem var(--font-code); font-variation-settings: "MONO" 1; color: var(--muted); white-space: nowrap; }
+  .scale .tag b { color: var(--cobalt); }
+  .scale .sample { font-family: var(--font-display); font-weight: 750; line-height: 1.15; white-space: nowrap; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <nav class="crumbs" aria-label="Site"><a class="crumb" href="index.html">← Field Guide</a><a class="crumb" href="glossary.html">Glossary</a></nav>
+  <header class="page-head">
+    <span class="eyebrow">CSS Basics · Typography</span>
+    <h1>Typography Tester</h1>
+    <p class="lede">Most of a web page is text, so how it reads matters more than almost anything else. Adjust the settings and watch the readability checks respond.</p>
+  </header>
+
+  <section class="playground" id="tester">
+    <div class="panel controls">
+      <div class="control"><label for="ff">font-family</label>
+        <select id="ff">
+          <option value='"Atkinson Hyperlegible", sans-serif'>Atkinson Hyperlegible</option>
+          <option value='"Lora", Georgia, serif'>Lora (serif)</option>
+          <option value='Georgia, serif'>Georgia (serif)</option>
+          <option value='system-ui, sans-serif'>system-ui (your OS font)</option>
+          <option value='Arial, Helvetica, sans-serif'>Arial</option>
+          <option value='"Times New Roman", serif'>Times New Roman</option>
+          <option value='"Recursive", monospace' data-mono>monospace</option>
+        </select></div>
+      <div class="control"><label for="fs">font-size</label><input id="fs" type="range" min="12" max="28" value="18"><span class="readout" id="fs-out"></span></div>
+      <div class="control"><label for="lh">line-height</label><input id="lh" type="range" min="1" max="2.4" step="0.05" value="1.6"><span class="readout" id="lh-out"></span></div>
+      <div class="control"><label for="mw">max-width (line length)</label><input id="mw" type="range" min="25" max="130" value="65"><span class="readout" id="mw-out"></span></div>
+      <div class="control"><label for="fw">font-weight</label>
+        <select id="fw"><option>300</option><option selected>400</option><option>700</option></select></div>
+      <div class="control"><label for="ls">letter-spacing</label><input id="ls" type="range" min="-0.05" max="0.2" step="0.01" value="0"><span class="readout" id="ls-out"></span></div>
+      <div class="control"><label for="ta">text-align</label>
+        <select id="ta"><option>left</option><option>center</option><option>justify</option><option>right</option></select></div>
+    </div>
+    <div class="stage-col">
+      <div class="reading"><div class="text" id="text">
+        <h3>Why the trail closes in spring</h3>
+        <p>Every April, the lower section of the Mesa Trail closes for about six weeks. Snowmelt turns the clay soil into deep mud, and hikers who step around the puddles widen the trail and trample the wildflowers growing at its edges.</p>
+        <p>Rangers reopen the trail once the ground can hold a footprint without sinking. Until then, the upper loop stays open and drains much faster.</p>
+      </div></div>
+      <ul class="checks" id="checks" aria-live="polite"></ul>
+    </div>
+  </section>
+
+  <div class="section-title"><span class="eyebrow">Type scale</span><h2>Heading sizes that belong together</h2><p>Pick a base size and a ratio. Each heading level is the one below it multiplied by the ratio, so the sizes feel related instead of random.</p></div>
+  <section class="playground">
+    <div class="panel controls">
+      <div class="control"><label for="base">base size</label><input id="base" type="range" min="14" max="22" value="16"><span class="readout" id="base-out"></span></div>
+      <div class="control"><label for="ratio">ratio</label>
+        <select id="ratio"><option value="1.125">1.125 (subtle)</option><option value="1.25" selected>1.25 (balanced)</option><option value="1.333">1.333 (clear)</option><option value="1.5">1.5 (bold)</option><option value="1.618">1.618 (dramatic)</option></select></div>
+    </div>
+    <div class="scale" id="scale"></div>
+  </section>
+
+  <section class="notes">
+    <div class="panel">
+      <h2>Key ideas</h2>
+      <ul>
+        <li>Aim for 45 to 75 characters per line. Set <code>max-width</code> in <code>ch</code> on paragraphs.</li>
+        <li>Body text reads best with a <code>line-height</code> between about 1.4 and 1.8, and no unit.</li>
+        <li>Always end a <code>font-family</code> list with a generic fallback like <code>sans-serif</code> or <code>serif</code>.</li>
+        <li>Use two typefaces at most: one for headings, one for body text.</li>
+      </ul>
+    </div>
+    <div class="panel mistake">
+      <h2>Common mistakes</h2>
+      <ul>
+        <li>Lines stretching the full width of a big monitor, so readers lose their place.</li>
+        <li>Centering long paragraphs. Center short headings only.</li>
+        <li>Body text under 16px, which is hard to read on phones.</li>
+        <li>Font names with spaces but no quotes, or a Google Font used without its <code>&lt;link&gt;</code> tag.</li>
+      </ul>
+    </div>
+  </section>
+
+  <footer class="page-foot"><a href="shadows.html">← Shadows &amp; Filters</a><a href="web-fonts.html">Next: Web Fonts →</a></footer>
+</div>
+
+<script>
+  const $ = (id) => document.getElementById(id);
+  function update() {
+    const ff = $("ff").value, fs = +$("fs").value, lh = +$("lh").value, mw = +$("mw").value, fw = $("fw").value, ls = +$("ls").value, ta = $("ta").value;
+    $("fs-out").textContent = fs + "px"; $("lh-out").textContent = lh.toFixed(2); $("mw-out").textContent = mw + "ch"; $("ls-out").textContent = ls.toFixed(2) + "em";
+    Object.assign($("text").style, { fontFamily: ff, fontSize: fs + "px", lineHeight: lh, maxWidth: mw + "ch", fontWeight: fw, letterSpacing: ls + "em", textAlign: ta,
+      fontVariationSettings: $("ff").selectedOptions[0].hasAttribute("data-mono") ? '"MONO" 1' : "normal" });
+
+    const c = [];
+    c.push(mw < 45 ? ["warn", "Line length", `About ${mw} characters per line is short. Eyes jump back too often.`]
+         : mw > 75 ? ["warn", "Line length", `About ${mw} characters per line is long. Readers lose their place.`]
+         : ["", "Line length", `About ${mw} characters per line. Comfortable.`]);
+    c.push(lh < 1.4 ? ["warn", "Line height", "Lines are cramped. Try 1.4 or more for body text."]
+         : lh > 1.9 ? ["warn", "Line height", "Lines are so far apart that paragraphs fall apart."]
+         : ["", "Line height", "Good spacing between lines."]);
+    c.push(fs < 16 ? ["warn", "Font size", `${fs}px is small for body text, especially on phones.`] : ["", "Font size", `${fs}px is a readable size for body text.`]);
+    if (ta === "center" || ta === "right") c.push(["warn", "Alignment", "Long paragraphs are hard to read when every line starts at a different spot."]);
+    else if (ta === "justify") c.push(["warn", "Alignment", "Justified text on the web leaves uneven gaps between words."]);
+    else c.push(["", "Alignment", "Left-aligned text gives every line the same starting point."]);
+    if (Math.abs(ls) > 0.06) c.push(["warn", "Letter spacing", "Large letter-spacing makes words harder to recognize. Save it for short uppercase labels."]);
+    if (fw === "300" && fs < 18) c.push(["warn", "Weight", "Light weights at small sizes get thin and faint."]);
+    $("checks").innerHTML = c.map(([cls, k, t]) => `<li class="${cls}"><b>${cls ? "✗" : "✓"} ${k}</b><span>${t}</span></li>`).join("");
+  }
+  document.querySelectorAll("#tester select, #tester input").forEach((el) => el.addEventListener("input", update));
+  update();
+
+  function scale() {
+    const base = +$("base").value, r = +$("ratio").value;
+    $("base-out").textContent = base + "px";
+    const levels = [["h1", 4], ["h2", 3], ["h3", 2], ["h4", 1], ["body", 0], ["small", -1]];
+    $("scale").innerHTML = levels.map(([n, p]) => {
+      const px = base * r ** p;
+      return `<div class="row"><span class="tag"><b>${n}</b> ${Math.round(px)}px · ${(px / 16).toFixed(2)}rem</span><span class="sample" style="font-size:${px}px;${n === "body" || n === "small" ? "font-family:var(--font-body);font-weight:400" : ""}">Mesa Trail</span></div>`;
+    }).join("");
+  }
+  ["base", "ratio"].forEach((id) => $(id).addEventListener("input", scale));
+  scale();
+</script>
+</body>
+</html>

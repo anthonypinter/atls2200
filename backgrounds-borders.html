@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Backgrounds &amp; Borders</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Recursive:slnt,wght,CASL,MONO@-15..0,300..1000,0..1,0..1&display=swap">
+<link rel="stylesheet" href="style.css">
+<style>
+  .stage.center { display: grid; place-items: center; min-height: 340px; }
+  #card { width: min(100%, 380px); height: 230px; display: grid; align-content: end; padding: 18px; color: #fff; transition: border-radius 0.2s; }
+  #card h3 { font: 800 1.5rem var(--font-display); margin: 0; text-shadow: 0 1px 3px rgba(0,0,0,0.5); }
+  #card p { margin: 0; text-shadow: 0 1px 3px rgba(0,0,0,0.5); }
+  #card.dark-text { color: #1d2133; } #card.dark-text h3, #card.dark-text p { text-shadow: none; }
+  .control input[type="color"] { width: 100%; height: 32px; border: 1px solid var(--line); border-radius: 6px; background: var(--paper); padding: 2px; }
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .check { display: flex; gap: 8px; align-items: center; font-size: 0.92rem; cursor: pointer; }
+  .check input { accent-color: var(--cobalt); }
+  .status { font-size: 0.93rem; padding: 8px 10px; border-radius: 6px; background: var(--stage); }
+  .corner-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <nav class="crumbs" aria-label="Site"><a class="crumb" href="index.html">← Field Guide</a><a class="crumb" href="glossary.html">Glossary</a></nav>
+  <header class="page-head">
+    <span class="eyebrow">CSS Basics · Backgrounds &amp; Borders</span>
+    <h1>Backgrounds &amp; Borders</h1>
+    <p class="lede">Backgrounds can be a color, a gradient, an image, or several layered together. Borders frame a box and <code>border-radius</code> rounds its corners. Build a trail card from the pieces.</p>
+  </header>
+
+  <section class="playground">
+    <div class="panel controls">
+      <span class="eyebrow">Background</span>
+      <div class="control"><label for="bt">type</label>
+        <select id="bt"><option value="color">solid color</option><option value="linear" selected>linear-gradient</option><option value="radial">radial-gradient</option><option value="image">image</option><option value="overlay">image + gradient overlay</option><option value="pattern">repeating image</option></select></div>
+      <div class="two-col">
+        <div class="control"><label for="c1">color 1</label><input id="c1" type="color" value="#0b6b5e"></div>
+        <div class="control"><label for="c2">color 2</label><input id="c2" type="color" value="#2340d9"></div>
+      </div>
+      <div class="control" id="angle-row"><label for="ang">gradient angle</label><input id="ang" type="range" min="0" max="360" step="15" value="135"><span class="readout" id="ang-out"></span></div>
+      <div class="control" id="size-row"><label for="bs">background-size</label><select id="bs"><option>cover</option><option>contain</option><option>auto</option><option>50%</option></select></div>
+      <div class="control" id="pos-row"><label for="bp">background-position</label><select id="bp"><option>center</option><option>top</option><option>bottom</option><option>left</option><option>right</option></select></div>
+      <div class="control" id="rep-row"><label for="br">background-repeat</label><select id="br"><option>no-repeat</option><option>repeat</option><option>repeat-x</option></select></div>
+      <span class="eyebrow" style="margin-top:6px">Border</span>
+      <div class="control"><label for="bw">border-width</label><input id="bw" type="range" min="0" max="16" value="0"><span class="readout" id="bw-out"></span></div>
+      <div class="two-col">
+        <div class="control"><label for="bst">border-style</label><select id="bst"><option>solid</option><option>dashed</option><option>dotted</option><option>double</option><option>groove</option></select></div>
+        <div class="control"><label for="bc">border-color</label><input id="bc" type="color" value="#b4410c"></div>
+      </div>
+      <div class="control"><label for="rad">border-radius</label><input id="rad" type="range" min="0" max="120" step="2" value="14"><span class="readout" id="rad-out"></span></div>
+      <label class="check"><input type="checkbox" id="pill">Only round the top-left and bottom-right corners</label>
+    </div>
+    <div class="stage-col">
+      <div class="stage center"><div id="card"><h3>Mesa Trail</h3><p>6.7 miles · Moderate</p></div></div>
+      <p class="status" id="status" aria-live="polite"></p>
+    </div>
+  </section>
+
+  <section class="notes">
+    <div class="panel">
+      <h2>Key ideas</h2>
+      <ul>
+        <li>Gradients are images, so they go in <code>background-image</code> (or the <code>background</code> shorthand), not <code>background-color</code>.</li>
+        <li>Layer backgrounds with commas. The first one listed is drawn on top.</li>
+        <li>A dark gradient over a photo keeps white text readable.</li>
+        <li><code>border-radius: 50%</code> on a square makes a circle.</li>
+        <li>Background image paths in CSS start from the CSS file's folder.</li>
+      </ul>
+    </div>
+    <div class="panel mistake">
+      <h2>Common mistakes</h2>
+      <ul>
+        <li>A background image that never shows because the element has no height.</li>
+        <li>Using a background image for content that matters. Screen readers can't see it and it has no alt text.</li>
+        <li>White text on a busy photo with no overlay.</li>
+        <li>Setting <code>border-width</code> without <code>border-style</code>. The default style is none, so nothing appears.</li>
+      </ul>
+    </div>
+  </section>
+
+  <footer class="page-foot"><a href="css-variables.html">← CSS Variables</a><a href="shadows.html">Next: Shadows &amp; Filters →</a></footer>
+</div>
+
+<script>
+  const $ = (id) => document.getElementById(id);
+  const PHOTO = `url("data:image/svg+xml,${encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="600" height="300" viewBox="0 0 600 300"><rect width="600" height="300" fill="#f4a261"/><circle cx="460" cy="90" r="40" fill="#fff3d6"/><path d="M0 300 L0 190 L120 120 L240 190 L360 90 L480 170 L600 120 L600 300 Z" fill="#7d5a7a"/><path d="M0 300 L0 240 L200 210 L380 250 L600 200 L600 300 Z" fill="#3e4a61"/></svg>')}")`;
+  const PATTERN = `url("data:image/svg+xml,${encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 40 40"><rect width="40" height="40" fill="#0b6b5e"/><path d="M6 32 L20 10 L34 32 Z" fill="#14907e"/></svg>')}")`;
+  function update() {
+    const t = $("bt").value, c1 = $("c1").value, c2 = $("c2").value, ang = $("ang").value, card = $("card");
+    $("ang-out").textContent = ang + "deg"; $("bw-out").textContent = $("bw").value + "px"; $("rad-out").textContent = $("rad").value + "px";
+    $("angle-row").hidden = !["linear", "overlay"].includes(t);
+    ["size-row", "pos-row", "rep-row"].forEach((r) => ($(r).hidden = !["image", "overlay", "pattern"].includes(t)));
+    card.removeAttribute("style");
+    let msg = "";
+    if (t === "color") { card.style.background = c1; msg = "A single solid color fills the padding box."; }
+    if (t === "linear") { card.style.backgroundImage = `linear-gradient(${ang}deg, ${c1}, ${c2})`; msg = `A gradient from color 1 to color 2, heading toward ${ang}deg (0deg is up, 90deg is right).`; }
+    if (t === "radial") { card.style.backgroundImage = `radial-gradient(circle at 30% 30%, ${c1}, ${c2})`; msg = "A radial gradient spreads out in a circle from one point."; }
+    if (t === "image" || t === "overlay" || t === "pattern") {
+      const img = t === "pattern" ? PATTERN : PHOTO;
+      card.style.backgroundImage = t === "overlay" ? `linear-gradient(${ang}deg, ${c1}cc, transparent 70%), ${img}` : img;
+      card.style.backgroundSize = t === "pattern" ? "40px 40px" : $("bs").value;
+      card.style.backgroundPosition = $("bp").value;
+      card.style.backgroundRepeat = t === "pattern" ? "repeat" : $("br").value;
+      card.style.backgroundColor = "#dfe3ee";
+      if (t === "pattern") msg = "A small 40px image tiled across the card with background-repeat.";
+      else if (t === "overlay") msg = "Two layers: a see-through gradient listed first (on top) and the photo underneath. The text stays readable.";
+      else msg = { cover: "cover: the image fills the card and crops whatever doesn't fit.", contain: "contain: the whole image fits inside, leaving empty space (the gray background color shows).", auto: "auto: the image shows at its real size, 600 × 300.", "50%": "50%: the image is half the card's width." }[$("bs").value];
+      if (t === "image" && $("br").value !== "no-repeat" && $("bs").value !== "cover") msg += " The repeat setting tiles the image to fill the gaps.";
+    }
+    card.classList.toggle("dark-text", false);
+    const bw = +$("bw").value;
+    if (bw) card.style.border = `${bw}px ${$("bst").value} ${$("bc").value}`;
+    const r = $("rad").value + "px";
+    card.style.borderRadius = $("pill").checked ? `${r} 0` : r;
+    if (["groove", "double"].includes($("bst").value) && bw && bw < 4) msg += ` ${$("bst").value} borders need at least 3–4px to show their pattern.`;
+    $("status").textContent = msg;
+  }
+  document.querySelectorAll(".controls select, .controls input").forEach((el) => el.addEventListener("input", update));
+  update();
+</script>
+</body>
+</html>

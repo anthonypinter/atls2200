@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Flexbox vs Grid</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Recursive:slnt,wght,CASL,MONO@-15..0,300..1000,0..1,0..1&display=swap">
+<link rel="stylesheet" href="style.css">
+<style>
+  .scen { display: flex; flex-wrap: wrap; gap: 6px; }
+  .duel { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 16px; }
+  @media (max-width: 760px) { .duel { grid-template-columns: 1fr; } }
+  .pane { display: grid; gap: 10px; align-content: start; min-width: 0; }
+  .pane-head { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+  .pane-head h2 { font-size: 1.15rem; }
+  .verdict-tag { font: 700 0.75rem var(--font-code); font-variation-settings: "MONO" 1; letter-spacing: 0.06em; text-transform: uppercase; padding: 4px 8px; border-radius: 4px; }
+  .verdict-tag.best { background: var(--good-soft); color: var(--good); } .verdict-tag.ok { background: var(--stage); color: var(--muted); } .verdict-tag.meh { background: var(--bad-soft); color: var(--bad); }
+  .box-area { background: var(--stage); border: 2px dashed var(--line); border-radius: var(--radius); padding: 10px; overflow-x: auto; }
+  .demo { margin-inline: auto; transition: width 0.2s; max-width: 100%; }
+  .demo .it { background: var(--item-1); color: #fff; border-radius: 5px; padding: 8px 10px; font: 700 0.85rem var(--font-code); font-variation-settings: "MONO" 1; display: flex; align-items: center; justify-content: center; text-align: center; min-height: 36px; }
+  .pane p.note { font-size: 0.93rem; }
+
+  /* Navbar */
+  .nav.f { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+  .nav.f .links { display: flex; gap: 6px; }
+  .nav.g { display: grid; grid-template-columns: auto 1fr; align-items: center; gap: 8px; }
+  .nav.g .links { display: grid; grid-auto-flow: column; justify-content: end; gap: 6px; }
+  .nav .logo { background: var(--item-3); }
+  .nav .links .it { background: var(--item-1); padding: 6px 8px; min-height: 0; }
+
+  /* Gallery */
+  .gal.f { display: flex; flex-wrap: wrap; gap: 8px; } .gal.f .it { flex: 1 1 110px; min-height: 60px; }
+  .gal.g { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 8px; } .gal.g .it { min-height: 60px; }
+
+  /* Page layout */
+  .lay.f { display: flex; flex-direction: column; gap: 8px; }
+  .lay.f .mid { display: flex; gap: 8px; } .lay.f .side { flex: 0 0 30%; } .lay.f .main { flex: 1; }
+  .lay.g { display: grid; grid-template-columns: 30% 1fr; grid-template-areas: "h h" "s m" "f f"; gap: 8px; }
+  .lay.g .hd { grid-area: h; } .lay.g .side { grid-area: s; } .lay.g .main { grid-area: m; } .lay.g .ft { grid-area: f; }
+  .lay .hd, .lay .ft { background: var(--item-3); } .lay .side { background: var(--item-2); min-height: 110px; } .lay .main { background: var(--item-1); min-height: 110px; }
+  .lay .wrapper-note { outline: 2px dashed var(--prop); outline-offset: 3px; }
+
+  /* Center */
+  .ctr { height: 160px; border: 1px dashed var(--line); border-radius: 6px; }
+  .ctr.f { display: flex; justify-content: center; align-items: center; } .ctr.g { display: grid; place-items: center; }
+  .ctr .it { width: 110px; }
+
+  /* Tags */
+  .tags.f { display: flex; flex-wrap: wrap; gap: 6px; }
+  .tags.g { display: grid; grid-template-columns: repeat(auto-fill, minmax(90px, 1fr)); gap: 6px; }
+  .tags .it { border-radius: 999px; padding: 5px 12px; min-height: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; background: var(--item-4); }
+
+  /* Mosaic */
+  .mos.f { display: flex; flex-wrap: wrap; gap: 8px; } .mos.f .it { flex: 1 1 28%; min-height: 70px; } .mos.f .big { flex-basis: 60%; min-height: 148px; }
+  .mos.g { display: grid; grid-template-columns: repeat(3, 1fr); grid-auto-rows: 70px; gap: 8px; } .mos.g .big { grid-column: span 2; grid-row: span 2; }
+  .mos .big { background: var(--item-2); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <nav class="crumbs" aria-label="Site"><a class="crumb" href="index.html">← Field Guide</a><a class="crumb" href="glossary.html">Glossary</a></nav>
+  <header class="page-head">
+    <span class="eyebrow">Layout · Flexbox vs Grid</span>
+    <h1>Flexbox vs Grid</h1>
+    <p class="lede">Both can build most layouts, but each has a sweet spot. Flexbox arranges items along one line and lets their content decide their size. Grid lays out rows and columns together. Pick a layout and compare.</p>
+  </header>
+
+  <div class="panel" style="display:grid;gap:12px">
+    <div class="scen" id="scen" role="group" aria-label="Layout"></div>
+    <div class="control" style="max-width:420px"><label for="w">container width</label><input id="w" type="range" min="240" max="560" step="10" value="460"><span class="readout" id="w-out"></span></div>
+  </div>
+  <div class="duel">
+    <div class="pane"><div class="pane-head"><h2>Flexbox</h2><span class="verdict-tag" id="tag-f"></span></div><div class="box-area"><div class="demo" id="demo-f"></div></div><p class="note" id="note-f"></p></div>
+    <div class="pane"><div class="pane-head"><h2>Grid</h2><span class="verdict-tag" id="tag-g"></span></div><div class="box-area"><div class="demo" id="demo-g"></div></div><p class="note" id="note-g"></p></div>
+  </div>
+
+  <div class="panel" style="margin-top:20px;display:grid;gap:8px">
+    <span class="eyebrow">Rule of thumb</span>
+    <p><strong>Content out:</strong> if the items' sizes should decide the layout (a row of buttons, tags, a navbar), use Flexbox. <strong>Layout in:</strong> if you want to draw the rows and columns first and drop items into them (a gallery, a page, a dashboard), use Grid. Real sites use both, often nested.</p>
+  </div>
+
+  <section class="notes">
+    <div class="panel">
+      <h2>Key ideas</h2>
+      <ul>
+        <li>Flexbox is one-dimensional: a row <em>or</em> a column. Wrapped lines don't line up with each other.</li>
+        <li>Grid is two-dimensional: columns line up from row to row.</li>
+        <li>Only Grid can make one item span several rows and columns.</li>
+        <li>It's normal to put a flex container inside a grid cell, or a grid inside a flex item.</li>
+      </ul>
+    </div>
+    <div class="panel mistake">
+      <h2>Common mistakes</h2>
+      <ul>
+        <li>Building a card gallery with Flexbox and getting a stretched last row.</li>
+        <li>Adding lots of wrapper divs to fake a two-dimensional layout with Flexbox.</li>
+        <li>Using Grid for a simple row of buttons and fighting fixed column widths.</li>
+        <li>Thinking one is "better." They solve different problems.</li>
+      </ul>
+    </div>
+  </section>
+
+  <footer class="page-foot"><a href="grid.html">← CSS Grid</a><a href="floats.html">Next: Floats →</a></footer>
+</div>
+
+<script>
+  const $ = (id) => document.getElementById(id);
+  const it = (t, c = "") => `<div class="it ${c}">${t}</div>`;
+  const SC = {
+    "Navbar": { cls: "nav",
+      html: () => it("Logo", "logo") + `<div class="links">${["Trails", "Maps", "Gear", "About"].map((x) => it(x)).join("")}</div>`,
+      f: ["best", "One row of items in different sizes. justify-content: space-between pushes the logo and links apart in one line."],
+      g: ["ok", "Works, but you have to set up columns for something that's really just a row."] },
+    "Card gallery": { cls: "gal",
+      html: () => Array.from({ length: 7 }, (_, i) => it("Card " + (i + 1))).join(""),
+      f: ["meh", "The last row stretches to fill the space, so those cards end up a different size. Drag the width slider to see it change."],
+      g: ["best", "Every card lines up in neat columns at every width, including the last row."] },
+    "Page layout": { cls: "lay",
+      html: (mode) => it("header", "hd") + (mode === "f" ? `<div class="mid wrapper-note">${it("sidebar", "side")}${it("main", "main")}</div>` : it("sidebar", "side") + it("main", "main")) + it("footer", "ft"),
+      f: ["ok", "Possible, but it needs an extra wrapper div (dashed) around the sidebar and main, because flex only does one direction at a time."],
+      g: ["best", "grid-template-areas draws the whole page in one place, with no extra wrappers."] },
+    "Center one thing": { cls: "ctr",
+      html: () => it("Centered"),
+      f: ["best", "justify-content and align-items set to center."],
+      g: ["best", "place-items: center does it in one line. Either is fine."] },
+    "Tag list": { cls: "tags",
+      html: () => ["hiking", "dogs ok", "waterfall", "kid friendly", "views", "shade", "loop", "wildflowers in June"].map((x) => it(x)).join(""),
+      f: ["best", "Each tag is as wide as its text, and they wrap naturally like words."],
+      g: ["meh", "Every tag is forced into the same column width, so short ones are stretched and long ones get cut off."] },
+    "Photo mosaic": { cls: "mos",
+      html: () => it("Big photo", "big") + Array.from({ length: 5 }, (_, i) => it("Photo " + (i + 2))).join(""),
+      f: ["meh", "Flexbox can't make one item span two rows, so the small photos can't fill in beside the big one."],
+      g: ["best", "grid-column: span 2 and grid-row: span 2 make the big photo take up a 2×2 block, and the rest fill in around it."] },
+  };
+  let cur = "Card gallery";
+  $("scen").innerHTML = Object.keys(SC).map((k) => `<button class="btn">${k}</button>`).join("");
+  $("scen").addEventListener("click", (e) => { const b = e.target.closest("button"); if (b) { cur = b.textContent; render(); } });
+  const LABEL = { best: "Best fit", ok: "Works", meh: "Awkward" };
+  function render() {
+    const s = SC[cur], w = $("w").value + "px";
+    $("w-out").textContent = w;
+    ["f", "g"].forEach((m) => {
+      const d = $("demo-" + m);
+      d.className = `demo ${s.cls} ${m}`; d.style.width = w; d.innerHTML = s.html(m);
+      $("tag-" + m).className = "verdict-tag " + s[m][0]; $("tag-" + m).textContent = LABEL[s[m][0]];
+      $("note-" + m).textContent = s[m][1];
+    });
+    document.querySelectorAll("#scen button").forEach((b) => b.setAttribute("aria-pressed", String(b.textContent === cur)));
+  }
+  $("w").addEventListener("input", render);
+  render();
+</script>
+</body>
+</html>

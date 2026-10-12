@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Overflow</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Recursive:slnt,wght,CASL,MONO@-15..0,300..1000,0..1,0..1&display=swap">
+<link rel="stylesheet" href="style.css">
+<style>
+  .stage.tall { min-height: 380px; padding: 24px; }
+  #box { width: 260px; border: 3px solid var(--cobalt); border-radius: 8px; background: var(--panel); padding: 12px; display: grid; gap: 8px; align-content: start; }
+  #box h3 { margin: 0; font: 700 1.05rem var(--font-display); }
+  #box h3.ell { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  #box p { margin: 0; font-size: 0.92rem; }
+  #box .url { font: 0.85rem var(--font-code); font-variation-settings: "MONO" 1; color: var(--cobalt); }
+  #box .url.wrap { overflow-wrap: anywhere; }
+  .check { display: flex; gap: 8px; align-items: center; font-size: 0.92rem; cursor: pointer; }
+  .check input { accent-color: var(--cobalt); }
+  .status { font-size: 0.93rem; padding: 8px 10px; border-radius: 6px; }
+  .status.bad { background: var(--bad-soft); color: var(--bad); } .status.good { background: var(--good-soft); color: var(--good); }
+
+  .hunt { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px; }
+  @media (max-width: 760px) { .hunt { grid-template-columns: 1fr; } }
+  .phone { width: 300px; max-width: 100%; height: 360px; border: 8px solid #2b2f3d; border-radius: 24px; overflow: auto; background: #fff; margin-inline: auto; }
+  .fake { padding: 12px; display: grid; gap: 10px; color: #1d2133; font-family: var(--font-body); }
+  .fake > * { border-radius: 6px; cursor: pointer; outline: 2px dashed transparent; outline-offset: 2px; }
+  .fake > *:hover { outline-color: #9aa2bf; }
+  .fake > *.picked { outline-color: #2340d9; }
+  .fake > *.culprit-found { outline: 3px solid #b42318; }
+  .fake .hd { background: #0b6b5e; color: #fff; padding: 10px; font-weight: 700; }
+  .fake .hero { height: 90px; background: linear-gradient(135deg, #f4a261, #7d5a7a); }
+  .fake .table { width: 380px; background: #eef1f8; padding: 8px; font-size: 0.8rem; }
+  .fake .table.fixed { width: auto; overflow-x: auto; }
+  .fake .txt { font-size: 0.9rem; }
+  .fake .btns { display: flex; gap: 6px; } .fake .btns span { background: #2340d9; color: #fff; padding: 6px 10px; border-radius: 6px; font-size: 0.85rem; }
+  .inspect { display: grid; gap: 8px; align-content: start; }
+  .inspect .w { font: 0.95rem var(--font-code); font-variation-settings: "MONO" 1; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <nav class="crumbs" aria-label="Site"><a class="crumb" href="index.html">← Field Guide</a><a class="crumb" href="glossary.html">Glossary</a></nav>
+  <header class="page-head">
+    <span class="eyebrow">CSS Basics · Overflow</span>
+    <h1>Overflow</h1>
+    <p class="lede">Overflow happens when content is bigger than its box. CSS doesn't hide it by default; it lets it spill out so you notice. Here's how to control it, and how to track down the element that makes a whole page scroll sideways.</p>
+  </header>
+
+  <section class="playground">
+    <div class="panel controls">
+      <div class="control"><label for="ov">overflow</label><select id="ov"><option>visible</option><option>hidden</option><option>scroll</option><option selected>auto</option><option>clip</option></select></div>
+      <div class="control"><label for="ht">height</label><input id="ht" type="range" min="80" max="320" step="10" value="150"><span class="readout" id="ht-out"></span></div>
+      <label class="check"><input type="checkbox" id="minh">Use min-height instead of height</label>
+      <label class="check"><input type="checkbox" id="ell">Title: one line with an ellipsis (…)</label>
+      <label class="check"><input type="checkbox" id="wrapurl">Long link: <code>overflow-wrap: anywhere</code></label>
+    </div>
+    <div class="stage-col">
+      <div class="stage tall"><div id="box">
+        <h3 id="title">Chautauqua to Royal Arch via the Bluebell Mesa Trail</h3>
+        <p>Climb through ponderosa pines to a natural sandstone arch with views across Boulder. The last half mile is steep, rocky and has over 200 stone steps.</p>
+        <p class="url" id="url">https://example.org/trails/boulder/royal-arch-via-bluebell-mesa-trail-map</p>
+        <p>Bring water: there's none on the trail.</p>
+      </div></div>
+      <p class="status" id="status" aria-live="polite"></p>
+    </div>
+  </section>
+
+  <div class="section-title"><span class="eyebrow">Practice</span><h2>Find what's making the page scroll sideways</h2><p>This phone-sized page scrolls left and right, which is a classic bug. Click each part of the page to inspect its width, find the one wider than the screen, then fix it.</p></div>
+  <div class="hunt">
+    <div class="phone" id="phone"><div class="fake" id="fake">
+      <div class="hd" data-n="header">Trailhead</div>
+      <div class="hero" data-n="hero image"></div>
+      <div class="txt" data-n="paragraph">Fall hours: trailheads open at 6am. Parking fills by 8am on weekends.</div>
+      <div class="table" data-n="trail table">Trail · Miles · Gain · Difficulty · Dogs · Shade · Water</div>
+      <div class="btns" data-n="button row"><span>Map</span><span>Save</span></div>
+    </div></div>
+    <div class="panel inspect" id="inspect" aria-live="polite"><span class="eyebrow">Inspector</span><p>Click a part of the page on the left.</p></div>
+  </div>
+
+  <section class="notes">
+    <div class="panel">
+      <h2>Key ideas</h2>
+      <ul>
+        <li><code>overflow: auto</code> adds a scrollbar only when needed. It's usually the best choice.</li>
+        <li><code>hidden</code> and <code>clip</code> cut content off. Make sure nothing important is lost.</li>
+        <li>Prefer <code>min-height</code> to <code>height</code> for boxes with text, so they can grow.</li>
+        <li>Long URLs and words don't wrap by themselves. <code>overflow-wrap: anywhere</code> lets them break.</li>
+      </ul>
+    </div>
+    <div class="panel mistake">
+      <h2>Common mistakes</h2>
+      <ul>
+        <li>Fixed pixel widths, like <code>width: 380px</code>, wider than a phone screen.</li>
+        <li>Putting <code>overflow: hidden</code> on <code>body</code> to hide the sideways scroll instead of fixing the cause.</li>
+        <li>Fixed <code>height</code> on a text box that later gets more text, translated text, or larger font settings.</li>
+        <li>Using <code>overflow: scroll</code>, which shows scrollbars even when nothing overflows.</li>
+      </ul>
+    </div>
+  </section>
+
+  <footer class="page-foot"><a href="sizing.html">← Sizing Items</a><a href="colors-units.html">Next: Colors &amp; Units →</a></footer>
+</div>
+
+<script>
+  const $ = (id) => document.getElementById(id);
+  function update() {
+    const box = $("box"), ov = $("ov").value, h = $("ht").value + "px", minh = $("minh").checked;
+    $("ht-out").textContent = $("ht").value + "px";
+    box.style.overflow = ov;
+    box.style.height = minh ? "" : h; box.style.minHeight = minh ? h : "";
+    $("title").classList.toggle("ell", $("ell").checked);
+    $("url").classList.toggle("wrap", $("wrapurl").checked);
+    const overY = box.scrollHeight > box.clientHeight + 1, overX = box.scrollWidth > box.clientWidth + 1;
+    let msg, good = false;
+    if (!overY && !overX) { good = true; msg = minh ? "min-height lets the box grow to fit its content, so nothing overflows." : "Everything fits right now. Try a smaller height."; }
+    else {
+      msg = { visible: "visible (the default): the content spills out of the box and overlaps whatever is below.", hidden: "hidden: the extra content is cut off with no way to reach it.", scroll: "scroll: scrollbars appear, even in directions with nothing to scroll.", auto: "auto: scrollbars appear only where content overflows.", clip: "clip: like hidden, but the box can't be scrolled even by code." }[ov];
+      if (overX && !$("wrapurl").checked) msg += " The long link is also too wide; turn on overflow-wrap.";
+    }
+    const s = $("status"); s.className = "status " + (good ? "good" : ["hidden", "clip", "visible"].includes(ov) ? "bad" : ""); s.textContent = msg;
+  }
+  document.querySelectorAll(".controls select, .controls input").forEach((el) => el.addEventListener("input", update));
+  update();
+
+  let fixed = false;
+  $("fake").addEventListener("click", (e) => {
+    const el = e.target.closest("[data-n]"); if (!el) return;
+    document.querySelectorAll("#fake [data-n]").forEach((x) => x.classList.remove("picked"));
+    el.classList.add("picked");
+    const screen = $("phone").clientWidth, w = Math.round(el.getBoundingClientRect().width), avail = screen - 24;
+    const culprit = el.dataset.n === "trail table";
+    let html = `<span class="eyebrow">Inspector</span><h3>${el.dataset.n}</h3><span class="w">width: ${w}px · screen: ${screen}px</span>`;
+    if (culprit && !fixed) {
+      el.classList.add("culprit-found");
+      html += `<p class="feedback wrong">Found it. It has a fixed width of 380px, which is wider than the ${avail}px of space inside the page.</p><button class="btn" id="fix">Fix it: width auto + overflow-x: auto</button>`;
+    } else if (culprit) html += `<p class="feedback right">Fixed. The table fits, and if its content is ever too wide, it scrolls inside its own box instead of moving the whole page.</p>`;
+    else html += `<p>${w <= avail ? "This fits inside the screen. Keep looking." : "This one is wide too."}</p>`;
+    $("inspect").innerHTML = html;
+    const f = $("fix"); if (f) f.addEventListener("click", () => { fixed = true; el.classList.add("fixed"); el.classList.remove("culprit-found"); $("phone").scrollLeft = 0; el.click(); });
+  });
+</script>
+</body>
+</html>

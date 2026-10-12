@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Semantic Elements</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Recursive:slnt,wght,CASL,MONO@-15..0,300..1000,0..1,0..1&display=swap">
+<link rel="stylesheet" href="style.css">
+<style>
+  .wire { display: grid; gap: 8px; grid-template-columns: 1fr 180px; grid-template-areas: "header header" "main aside" "footer footer"; }
+  @media (max-width: 560px) { .wire { grid-template-columns: 1fr; grid-template-areas: "header" "main" "aside" "footer"; } }
+  .region { position: relative; border: 2px solid var(--line); border-radius: 8px; padding: 26px 10px 10px; background: var(--panel); cursor: pointer; text-align: left; color: var(--ink); font: inherit; display: grid; gap: 8px; align-content: start; }
+  .region:hover { border-color: var(--cobalt); }
+  .region[aria-pressed="true"] { border-color: var(--cobalt); box-shadow: 0 0 0 3px var(--cobalt-soft); }
+  .region > .lbl { position: absolute; top: 4px; left: 8px; font: 700 0.78rem var(--font-code); font-variation-settings: "MONO" 1; color: var(--cobalt); }
+  .soup .region > .lbl { color: var(--muted); }
+  .r-header { grid-area: header; } .r-main { grid-area: main; } .r-aside { grid-area: aside; } .r-footer { grid-area: footer; }
+  .r-nav { padding-top: 24px; }
+  .bar { height: 10px; border-radius: 3px; background: var(--stage); }
+  .bar.h { height: 16px; width: 60%; background: var(--line); }
+  .navlinks { display: flex; gap: 6px; } .navlinks span { width: 46px; height: 10px; border-radius: 3px; background: var(--cobalt-soft); }
+  .info { display: grid; gap: 8px; }
+  .info h3 { font-family: var(--font-code); font-variation-settings: "MONO" 1; color: var(--cobalt); }
+  .sr { font-size: 0.9rem; padding: 8px 10px; border-radius: 6px; background: var(--stage); }
+  .soup-note { font-size: 0.92rem; padding: 10px 12px; border-radius: 6px; background: var(--bad-soft); color: var(--bad); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <nav class="crumbs" aria-label="Site"><a class="crumb" href="index.html">← Field Guide</a><a class="crumb" href="glossary.html">Glossary</a></nav>
+  <header class="page-head">
+    <span class="eyebrow">HTML Foundations · Semantic Elements</span>
+    <h1>Semantic Elements</h1>
+    <p class="lede">Semantic elements describe what content <em>is</em>, not how it looks. They look the same as a plain div, but screen readers, search engines and other developers can tell a navigation menu from a footer.</p>
+  </header>
+
+  <section class="playground even">
+    <div class="stage-col">
+      <div class="seg" role="group" aria-label="Label style">
+        <button class="btn" id="mode-sem" aria-pressed="true">Semantic HTML</button>
+        <button class="btn" id="mode-soup" aria-pressed="false">"Div soup"</button>
+      </div>
+      <div class="wire" id="wire" aria-label="Page layout map"></div>
+      <p class="hint">Click a region to see what it means.</p>
+    </div>
+    <div class="panel info" id="info" aria-live="polite"></div>
+  </section>
+
+  <div class="section-title"><span class="eyebrow">Practice</span><h2>Which element fits?</h2><p>Pick the best element for each piece of content.</p></div>
+  <div class="panel quiz" id="quiz"></div>
+
+  <section class="notes">
+    <div class="panel">
+      <h2>Key ideas</h2>
+      <ul>
+        <li>Use <code>&lt;div&gt;</code> only when no other element describes the content. It means "a box, nothing more."</li>
+        <li>One <code>&lt;main&gt;</code> per page, holding the content that's unique to that page.</li>
+        <li><code>&lt;article&gt;</code> makes sense on its own (a blog post, a product card). <code>&lt;section&gt;</code> is a themed part of something bigger and usually has a heading.</li>
+        <li>Semantic elements don't change how things look. You still style them with CSS.</li>
+      </ul>
+    </div>
+    <div class="panel mistake">
+      <h2>Common mistakes</h2>
+      <ul>
+        <li>Choosing an element for its default look, like <code>&lt;h3&gt;</code> because the text is small. Style the size with CSS instead.</li>
+        <li>Making a clickable <code>&lt;div&gt;</code> instead of a <code>&lt;button&gt;</code>. Keyboards and screen readers can't use it.</li>
+        <li>Wrapping every group of links in <code>&lt;nav&gt;</code>. Save it for major navigation.</li>
+        <li>Skipping heading levels (h1 to h4) to get a smaller font.</li>
+      </ul>
+    </div>
+  </section>
+
+  <footer class="page-foot"><a href="lists.html">← Lists</a><a href="links-paths.html">Next: Links &amp; Paths →</a></footer>
+</div>
+
+<script>
+  const $ = (id) => document.getElementById(id);
+  const REGIONS = {
+    header: { sem: "<header>", soup: '<div class="top">', area: "r-header", inner: '<div class="bar h"></div>',
+      text: "Introductory content for the page or a section: usually the logo, site name and main navigation.", sr: "Announced as the \"banner\" landmark, so screen reader users can jump straight to it." },
+    nav: { sem: "<nav>", soup: '<div class="menu">', area: "r-nav", inner: '<div class="navlinks"><span></span><span></span><span></span><span></span></div>',
+      text: "A block of major navigation links, like the site menu or a table of contents.", sr: "Announced as \"navigation.\" Users can skip past it or jump to it with one key." },
+    main: { sem: "<main>", soup: '<div class="content">', area: "r-main", inner: "",
+      text: "The main content of this page. Only one per page, and it shouldn't include repeated things like the site header or footer.", sr: "Lets users skip all the repeated navigation and go straight to the content." },
+    article: { sem: "<article>", soup: '<div class="post">', area: "", inner: '<div class="bar h"></div><div class="bar"></div><div class="bar"></div><div class="bar" style="width:80%"></div>',
+      text: "A self-contained piece that would make sense on its own: a blog post, a news story, a product card, a comment.", sr: "Helps assistive tech and search engines identify each standalone item." },
+    aside: { sem: "<aside>", soup: '<div class="sidebar">', area: "r-aside", inner: '<div class="bar"></div><div class="bar"></div><div class="bar" style="width:70%"></div>',
+      text: "Content related to the main content but not part of it: a sidebar, related links, a pull quote.", sr: "Announced as \"complementary,\" so users know it's extra." },
+    footer: { sem: "<footer>", soup: '<div class="bottom">', area: "r-footer", inner: '<div class="bar" style="width:40%"></div>',
+      text: "Closing content: copyright, contact info, secondary links.", sr: "Announced as the \"contentinfo\" landmark." },
+  };
+  let mode = "sem", selected = "header";
+  const esc = (s) => s.replace(/</g, "&lt;");
+
+  function region(key, children = "") {
+    const r = REGIONS[key];
+    return `<button class="region ${r.area}" data-k="${key}" aria-pressed="${selected === key}"><span class="lbl">${esc(r[mode])}</span>${r.inner}${children}</button>`;
+  }
+  function render() {
+    $("wire").className = "wire " + (mode === "soup" ? "soup" : "");
+    // Buttons can't nest, so nested regions are drawn as siblings placed inside a grid area wrapper.
+    $("wire").innerHTML =
+      `<div class="r-header" style="display:grid;gap:6px">${region("header")}${region("nav")}</div>` +
+      `<div class="r-main" style="display:grid;gap:6px">${region("main")}${region("article")}</div>` +
+      region("aside") + region("footer");
+    document.querySelectorAll(".region").forEach((b) => b.addEventListener("click", () => { selected = b.dataset.k; render(); }));
+    $("mode-sem").setAttribute("aria-pressed", String(mode === "sem"));
+    $("mode-soup").setAttribute("aria-pressed", String(mode === "soup"));
+    const r = REGIONS[selected];
+    $("info").innerHTML = mode === "sem"
+      ? `<span class="eyebrow">Selected</span><h3>${esc(r.sem)}</h3><p>${r.text}</p><div class="sr"><b>For screen readers:</b> ${r.sr}</div>`
+      : `<span class="eyebrow">Selected</span><h3>${esc(r.soup)}</h3><p>This looks identical on screen, but the browser only knows it's "a box."</p><div class="soup-note">A screen reader user hears nothing special here, and can't jump to it. The class name helps you, but the browser ignores it. Switch back to see the semantic version: <code>${esc(r.sem)}</code>.</div>`;
+  }
+  $("mode-sem").addEventListener("click", () => { mode = "sem"; render(); });
+  $("mode-soup").addEventListener("click", () => { mode = "soup"; render(); });
+  render();
+
+  // Quiz
+  const QUIZ = [
+    { q: "The site's logo and main menu across the top of every page.", opts: ["<header>", "<main>", "<aside>"], a: 0, why: "header holds introductory content like the logo and site navigation." },
+    { q: "A list of links to Home, About, Projects, Contact.", opts: ["<ul> only", "<nav>", "<footer>"], a: 1, why: "nav marks major navigation. You'd usually still put a ul inside it." },
+    { q: "One blog post, with its own title, date and text.", opts: ["<section>", "<article>", "<div>"], a: 1, why: "article fits content that would make sense on its own." },
+    { q: "A \"Related posts\" box beside the blog post.", opts: ["<aside>", "<article>", "<nav>"], a: 0, why: "aside holds content related to, but separate from, the main content." },
+    { q: "A wrapper whose only job is to give a flex layout to some cards.", opts: ["<section>", "<div>", "<main>"], a: 1, why: "When a box exists only for styling, div is the right choice." },
+    { q: "Something users click to open a menu.", opts: ["<div onclick>", "<a>", "<button>"], a: 2, why: "button works with the keyboard and screen readers by default. Use a for links to other pages." },
+  ];
+  let score = 0;
+  $("quiz").innerHTML = `<p class="score" id="score">0 / ${QUIZ.length}</p>` + QUIZ.map((x, i) => `<div class="q"><b>${i + 1}. ${x.q}</b><div class="opts">${x.opts.map((o, j) => `<button class="btn" data-q="${i}" data-o="${j}">${esc(o)}</button>`).join("")}</div><div class="feedback" id="fb${i}"></div></div>`).join("");
+  document.querySelectorAll("#quiz .opts").forEach((group) => group.addEventListener("click", (e) => {
+    const b = e.target.closest("button"); if (!b || group.dataset.done) return;
+    const x = QUIZ[+b.dataset.q], right = +b.dataset.o === x.a;
+    b.classList.add(right ? "right" : "wrong");
+    group.children[x.a].classList.add("right");
+    group.dataset.done = "1";
+    if (right) score++;
+    $("score").textContent = `${score} / ${QUIZ.length}`;
+    const fb = $("fb" + b.dataset.q); fb.className = "feedback " + (right ? "right" : "wrong");
+    fb.textContent = (right ? "Correct. " : "Not quite. ") + x.why;
+  }));
+</script>
+</body>
+</html>

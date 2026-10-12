@@ -1,0 +1,183 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Media Query Lab</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Recursive:slnt,wght,CASL,MONO@-15..0,300..1000,0..1,0..1&display=swap">
+<link rel="stylesheet" href="style.css">
+<style>
+  .lab { display: grid; gap: 16px; }
+  .width-bar { display: flex; flex-wrap: wrap; gap: 12px 20px; align-items: center; }
+  .width-bar input { flex: 1 1 240px; accent-color: var(--cobalt); }
+  .width-num { font: 800 1.6rem var(--font-display); font-variant-numeric: tabular-nums; min-width: 6ch; }
+  .presets { display: flex; gap: 8px; flex-wrap: wrap; }
+  .presets button { font: 600 0.85rem var(--font-code); font-variation-settings: "MONO" 1; background: var(--panel); color: var(--ink); border: 1px solid var(--line); border-radius: 6px; padding: 6px 10px; cursor: pointer; }
+  .presets button[aria-pressed="true"] { background: var(--cobalt); color: var(--panel); border-color: var(--cobalt); }
+
+  /* Ruler showing breakpoints */
+  .ruler { position: relative; height: 28px; border-top: 2px solid var(--line); font: 0.75rem var(--font-code); font-variation-settings: "MONO" 1; color: var(--muted); }
+  .ruler .mark { position: absolute; top: -8px; height: 14px; border-left: 2px solid var(--prop); }
+  .ruler .mark span { position: absolute; top: 14px; left: -2ch; white-space: nowrap; color: var(--prop); }
+  .ruler .now { position: absolute; top: -7px; width: 12px; height: 12px; margin-left: -6px; border-radius: 50%; background: var(--cobalt); transition: left 0.15s; }
+
+  .viewport-outer { background: var(--stage); border: 2px dashed var(--line); border-radius: var(--radius); padding: 12px; overflow: hidden; }
+  .viewport { background: #fff; color: #1d2133; border-radius: 6px; box-shadow: 0 2px 10px rgba(0,0,0,0.12); transform-origin: top left; font-family: var(--font-body); }
+
+  /* The demo site inside the fake viewport. Classes .bp-600 / .bp-900 stand in for real @media rules. */
+  .demo { padding: 16px; display: grid; gap: 14px; }
+  .demo header { display: grid; gap: 10px; }
+  .demo .logo { font: 800 1.2rem var(--font-display); color: #2340d9; }
+  .demo nav { display: grid; gap: 6px; }
+  .demo nav a { background: #eef1f8; color: #1d2133; padding: 8px 10px; border-radius: 4px; text-decoration: none; font-size: 0.95rem; }
+  .demo .layout { display: grid; gap: 14px; }
+  .demo .cards { display: grid; grid-template-columns: 1fr; gap: 12px; }
+  .demo .card { background: #eef1f8; border-radius: 6px; padding: 12px; display: grid; gap: 6px; }
+  .demo .card i { display: block; height: 56px; border-radius: 4px; background: #2340d9; opacity: 0.85; }
+  .demo .card:nth-child(2) i { background: #b4410c; } .demo .card:nth-child(3) i { background: #0b6b5e; }
+  .demo .card b { font-size: 0.95rem; } .demo .card small { color: #5a6280; }
+  .demo aside { background: #fff4ec; border: 1px solid #f2d3bf; border-radius: 6px; padding: 12px; font-size: 0.9rem; }
+  .demo h2 { font-size: 1.3rem; }
+
+  .viewport.bp-600 .demo .cards { grid-template-columns: 1fr 1fr; }
+  .viewport.bp-600 .demo header { grid-template-columns: auto 1fr; align-items: center; }
+  .viewport.bp-600 .demo nav { display: flex; justify-content: flex-end; }
+  .viewport.bp-900 .demo .layout { grid-template-columns: 1fr 240px; }
+  .viewport.bp-900 .demo .cards { grid-template-columns: repeat(3, 1fr); }
+  .viewport.bp-900 .demo h2 { font-size: 1.8rem; }
+
+  /* Code with active / inactive blocks */
+  .bp-list { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
+  .bp-list li { display: grid; gap: 4px; padding: 12px 14px; border-radius: 8px; border: 1px solid var(--line); background: var(--panel); transition: opacity 0.2s, border-color 0.2s; }
+  .bp-list li.on { border-color: var(--cobalt); box-shadow: inset 3px 0 0 var(--cobalt); }
+  .bp-list li.off { opacity: 0.45; }
+  .bp-list .when { font: 600 0.85rem var(--font-code); font-variation-settings: "MONO" 1; color: var(--prop); }
+  .bp-list .state { font: 600 0.7rem/1 var(--font-code); font-variation-settings: "MONO" 1; text-transform: uppercase; letter-spacing: 0.06em; color: var(--cobalt); }
+  .bp-list li.off .state { color: var(--muted); }
+  .bp-list p { font-size: 0.92rem; color: var(--muted); }
+  .real-width { font-size: 0.9rem; color: var(--muted); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <nav class="crumbs" aria-label="Site"><a class="crumb" href="index.html">← Field Guide</a><a class="crumb" href="glossary.html">Glossary</a></nav>
+  <header class="page-head">
+    <span class="eyebrow">Responsive · Media Queries</span>
+    <h1>Media Query Lab</h1>
+    <p class="lede">A media query applies CSS only when a condition is true, usually "the screen is at least this wide." Drag the slider to change the pretend screen width and watch which rules switch on.</p>
+  </header>
+
+  <section class="lab">
+    <div class="panel" style="display:grid;gap:14px">
+      <div class="width-bar">
+        <label for="w" class="eyebrow">Screen width</label>
+        <span class="width-num" id="w-out">375px</span>
+        <input id="w" type="range" min="320" max="1280" step="5" value="375">
+      </div>
+      <div class="ruler" id="ruler" aria-hidden="true"></div>
+      <div class="presets" role="group" aria-label="Device presets">
+        <button data-w="375">Phone · 375</button>
+        <button data-w="768">Tablet · 768</button>
+        <button data-w="1280">Laptop · 1280</button>
+      </div>
+      <p class="real-width" id="real"></p>
+    </div>
+
+    <ul class="bp-list" id="bps" aria-live="polite"></ul>
+    <div>
+      <div class="viewport-outer" id="outer">
+        <div class="viewport" id="vp">
+          <div class="demo">
+            <header><span class="logo">Trailhead</span>
+              <nav><a href="#vp">Trails</a><a href="#vp">Maps</a><a href="#vp">Gear</a></nav></header>
+            <h2>Weekend hikes near you</h2>
+            <div class="layout">
+              <div class="cards">
+                <div class="card"><i></i><b>Royal Arch</b><small>3.4 mi · Hard</small></div>
+                <div class="card"><i></i><b>Mesa Trail</b><small>6.7 mi · Moderate</small></div>
+                <div class="card"><i></i><b>Chautauqua Loop</b><small>1.2 mi · Easy</small></div>
+              </div>
+              <aside><b>Trail conditions</b><br>Muddy below 7,000 ft. Bring layers.</aside>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="notes">
+    <div class="panel">
+      <h2>Key ideas</h2>
+      <ul>
+        <li><strong>Mobile first:</strong> write the phone layout with no media query, then add <code>min-width</code> queries as the screen gets bigger.</li>
+        <li><code>@media (min-width: 600px)</code> means "600px <em>or wider</em>." Both queries are on at 1000px.</li>
+        <li>Later rules win when they conflict, so list queries from smallest to largest.</li>
+        <li>Pick breakpoints where <em>your</em> layout starts to look wrong, not by device names.</li>
+      </ul>
+    </div>
+    <div class="panel mistake">
+      <h2>Common mistakes</h2>
+      <ul>
+        <li>Forgetting <code>&lt;meta name="viewport" content="width=device-width, initial-scale=1"&gt;</code> in the <code>&lt;head&gt;</code>. Phones will ignore your queries without it.</li>
+        <li>Missing the space or parentheses: <code>@media(min-width:600px)</code> is fine, but <code>@media min-width: 600px</code> is not.</li>
+        <li>Putting the media query <em>above</em> the base rules, so the base rules override it.</li>
+        <li>Mixing <code>min-width</code> and <code>max-width</code> queries until nobody can tell which applies.</li>
+      </ul>
+    </div>
+  </section>
+
+  <footer class="page-foot"><a href="positioning.html">← Positioning</a><a href="responsive-images.html">Next: Responsive Images →</a></footer>
+</div>
+
+<script>
+  const $ = (id) => document.getElementById(id);
+  const MIN = 320, MAX = 1280, BPS = [600, 900];
+  const vp = $("vp"), outer = $("outer");
+
+  const BLOCKS = [
+    { min: 0, when: "Base styles", what: "One column of cards. Nav links stacked." },
+    { min: 600, when: "min-width: 600px", what: "Cards in two columns. Nav moves into a row beside the logo." },
+    { min: 900, when: "min-width: 900px", what: "Three card columns plus a sidebar. Bigger heading." },
+  ];
+
+  // Ruler marks
+  const pct = (w) => ((w - MIN) / (MAX - MIN)) * 100 + "%";
+  $("ruler").innerHTML = BPS.map((b) => `<div class="mark" style="left:${pct(b)}"><span>${b}px</span></div>`).join("") + '<div class="now" id="now"></div>';
+
+  function update() {
+    const w = +$("w").value;
+    $("w-out").textContent = w + "px";
+    $("now").style.left = pct(w);
+    vp.classList.toggle("bp-600", w >= 600);
+    vp.classList.toggle("bp-900", w >= 900);
+
+    // Draw the fake viewport at its true width, scaled down to fit the column.
+    vp.style.width = w + "px";
+    const avail = outer.clientWidth - 24;
+    const scale = Math.min(1, avail / w);
+    vp.style.transform = `scale(${scale})`;
+    outer.style.height = vp.offsetHeight * scale + 28 + "px";
+
+    $("bps").innerHTML = BLOCKS.map((b) => {
+      const on = w >= b.min;
+      const state = b.min === 0 ? "Always on" : on ? "Active" : `Off below ${b.min}px`;
+      return `<li class="${on ? "on" : "off"}"><span class="state">${state}</span><span class="when">${b.when}</span><p>${b.what}</p></li>`;
+    }).join("");
+
+    document.querySelectorAll(".presets button").forEach((btn) => btn.setAttribute("aria-pressed", String(+btn.dataset.w === w)));
+  }
+
+  function showReal() {
+    const r = window.innerWidth;
+    $("real").textContent = `Your actual browser window is ${r}px wide, so a real ${r >= 900 ? "900px" : r >= 600 ? "600px" : "base"} layout would apply on this device.`;
+  }
+
+  $("w").addEventListener("input", update);
+  document.querySelectorAll(".presets button").forEach((btn) => btn.addEventListener("click", () => { $("w").value = btn.dataset.w; update(); }));
+  window.addEventListener("resize", () => { update(); showReal(); });
+  update(); showReal();
+</script>
+</body>
+</html>

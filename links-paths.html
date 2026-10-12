@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Links &amp; Paths</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Recursive:slnt,wght,CASL,MONO@-15..0,300..1000,0..1,0..1&display=swap">
+<link rel="stylesheet" href="style.css">
+<style>
+  .tree { list-style: none; margin: 0; padding: 0; font: 0.92rem/1.4 var(--font-code); font-variation-settings: "MONO" 1; display: grid; gap: 2px; }
+  .tree ul { list-style: none; margin: 0; padding-left: 20px; border-left: 1px dashed var(--line); margin-left: 8px; display: grid; gap: 2px; }
+  .tree .folder { color: var(--prop); font-weight: 600; padding: 3px 6px; }
+  .tree button { display: flex; gap: 8px; align-items: center; width: 100%; text-align: left; font: inherit; color: var(--ink); background: none; border: 1px solid transparent; border-radius: 5px; padding: 3px 6px; cursor: pointer; }
+  .tree button:hover { background: var(--stage); }
+  .tree button.from { background: var(--cobalt-soft); border-color: var(--cobalt); }
+  .tree button.to { background: var(--good-soft); border-color: var(--good); }
+  .tree button.landed { outline: 2px dashed var(--bad); }
+  .tree .tag { margin-left: auto; font-size: 0.7rem; padding: 1px 6px; border-radius: 4px; white-space: nowrap; }
+  .tree .from .tag { background: var(--cobalt); color: var(--panel); } .tree .to .tag { background: var(--good); color: var(--panel); }
+  .path-in { font: 1.05rem var(--font-code); font-variation-settings: "MONO" 1; padding: 10px 12px; border: 1px solid var(--line); border-radius: 8px; background: var(--panel); color: var(--val); width: 100%; }
+  .result { padding: 12px 14px; border-radius: 8px; font-size: 0.95rem; }
+  .result.right { background: var(--good-soft); color: var(--good); } .result.wrong { background: var(--bad-soft); color: var(--bad); }
+  .walk { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+  .walk li { display: grid; grid-template-columns: auto 1fr; gap: 10px; align-items: baseline; font-size: 0.95rem; }
+  .walk code { white-space: nowrap; }
+  .kinds { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
+  .kinds .panel { display: grid; gap: 6px; align-content: start; }
+  .kinds h3 { font-size: 1rem; }
+  .kinds code { overflow-wrap: anywhere; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <nav class="crumbs" aria-label="Site"><a class="crumb" href="index.html">← Field Guide</a><a class="crumb" href="glossary.html">Glossary</a></nav>
+  <header class="page-head">
+    <span class="eyebrow">HTML Foundations · Links &amp; Paths</span>
+    <h1>Links &amp; Paths</h1>
+    <p class="lede">A relative path is directions from the file you're writing in to the file you want. Pick where you are, click where you want to go, then try writing the path yourself.</p>
+  </header>
+
+  <section class="playground">
+    <div class="panel controls">
+      <div class="control"><label for="from">I'm writing code in</label>
+        <select id="from"><option>index.html</option><option>projects/trail-app.html</option><option>projects/notes/week1.html</option><option>css/style.css</option></select></div>
+      <span class="eyebrow" style="margin-top:4px">Click a file to link to it</span>
+      <ul class="tree" id="tree" aria-label="Site folder"></ul>
+    </div>
+    <div class="stage-col">
+      <div class="panel" style="display:grid;gap:10px">
+        <label class="eyebrow" for="guess">Type the path you'd write</label>
+        <input class="path-in" id="guess" spellcheck="false" autocomplete="off" placeholder="e.g. images/logo.png">
+        <div class="result" id="result" aria-live="polite"></div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn" id="show">Show the answer</button></div>
+      </div>
+      <div class="panel" id="answer" hidden style="display:grid;gap:10px">
+        <span class="eyebrow">How to read it</span>
+        <ul class="walk" id="walk"></ul>
+      </div>
+    </div>
+  </section>
+
+  <div class="section-title"><span class="eyebrow">Reference</span><h2>Kinds of links</h2></div>
+  <div class="kinds">
+    <div class="panel"><h3>Relative path</h3><code>images/logo.png</code><code>../about.html</code><p class="hint">Starts from the current file's folder. Use this for files in your own site.</p></div>
+    <div class="panel"><h3>Absolute URL</h3><code>https://developer.mozilla.org</code><p class="hint">The full address. Use it for other websites.</p></div>
+    <div class="panel"><h3>Root-relative</h3><code>/images/logo.png</code><p class="hint">Starts at the top of the domain. Breaks on GitHub Pages project sites and when opening files directly, so avoid it in this class.</p></div>
+    <div class="panel"><h3>Same-page anchor</h3><code>#contact</code><p class="hint">Jumps to the element with <code>id="contact"</code> on this page.</p></div>
+    <div class="panel"><h3>Email</h3><code>mailto:you@example.com</code><p class="hint">Opens the visitor's email app, if they have one set up.</p></div>
+  </div>
+
+  <section class="notes">
+    <div class="panel">
+      <h2>Key ideas</h2>
+      <ul>
+        <li><code>../</code> means "go up one folder." Use it once per level you need to climb.</li>
+        <li>A path in a CSS file, like <code>url(...)</code>, starts from the CSS file's folder, not the HTML page's.</li>
+        <li>Link text should say where the link goes. "Read the trail guide" beats "click here."</li>
+        <li>Opening a link in a new tab with <code>target="_blank"</code> is fine for outside sites, but don't do it for every link.</li>
+      </ul>
+    </div>
+    <div class="panel mistake">
+      <h2>Common mistakes</h2>
+      <ul>
+        <li>Wrong capitalization: <code>Trail-Photo.jpg</code> isn't <code>Trail-Photo.JPG</code>. Your laptop may forgive it, but web servers usually won't.</li>
+        <li>Spaces in file names, which turn into <code>%20</code> and break easily. Use dashes.</li>
+        <li>Paths from your own computer, like <code>C:\Users\...</code> or <code>file:///</code>. They only work on your machine.</li>
+        <li>Backslashes. Web paths always use forward slashes <code>/</code>.</li>
+      </ul>
+    </div>
+  </section>
+
+  <footer class="page-foot"><a href="semantic-elements.html">← Semantic Elements</a><a href="tables.html">Next: Tables →</a></footer>
+</div>
+
+<script>
+  const $ = (id) => document.getElementById(id);
+  const FILES = ["index.html", "about.html", "css/style.css", "images/logo.png", "images/Trail-Photo.JPG", "projects/index.html", "projects/trail-app.html", "projects/notes/week1.html"];
+  let target = "images/logo.png", landed = null, revealed = false;
+
+  function buildTree() {
+    const root = {};
+    FILES.forEach((f) => { let node = root; const parts = f.split("/"); parts.forEach((p, i) => { if (i === parts.length - 1) node[p] = f; else node = node[p + "/"] = node[p + "/"] || {}; }); });
+    const from = $("from").value;
+    const draw = (node) => Object.keys(node).sort((a, b) => (b.endsWith("/") - a.endsWith("/")) || a.localeCompare(b)).map((k) => {
+      if (typeof node[k] === "string") {
+        const f = node[k], cls = [f === from ? "from" : "", f === target ? "to" : "", f === landed && f !== target ? "landed" : ""].join(" ");
+        const tag = f === from ? "you are here" : f === target ? "link to" : "";
+        return `<li><button class="${cls}" data-f="${f}">${k}${tag ? `<span class="tag">${tag}</span>` : ""}</button></li>`;
+      }
+      return `<li><span class="folder">${k}</span><ul>${draw(node[k])}</ul></li>`;
+    }).join("");
+    $("tree").innerHTML = `<li><span class="folder">my-site/</span><ul>${draw(root)}</ul></li>`;
+  }
+  $("tree").addEventListener("click", (e) => { const b = e.target.closest("button"); if (b && b.dataset.f !== $("from").value) { target = b.dataset.f; $("guess").value = ""; revealed = false; update(); } });
+
+  const dirOf = (f) => f.split("/").slice(0, -1);
+  function answer(from, to) {
+    const a = dirOf(from), b = to.split("/");
+    let i = 0; while (i < a.length && i < b.length - 1 && a[i] === b[i]) i++;
+    return "../".repeat(a.length - i) + b.slice(i).join("/");
+  }
+  function resolve(from, path) {
+    if (/^[a-z]+:/i.test(path) || path.includes("\\")) return { error: path.includes("\\") ? "Web paths use forward slashes (/), not backslashes." : "That's a full URL or a path on your own computer. For your own files, use a relative path." };
+    let parts = path.startsWith("/") ? [] : dirOf(from);
+    for (const seg of path.replace(/^\//, "").split("/")) {
+      if (seg === "" || seg === ".") continue;
+      if (seg === "..") { if (!parts.length) return { error: "That climbs above the my-site folder. Too many ../" }; parts.pop(); }
+      else parts.push(seg);
+    }
+    return { file: parts.join("/"), root: path.startsWith("/") };
+  }
+
+  function update() {
+    const from = $("from").value;
+    if (target === from) target = FILES.find((f) => f !== from);
+    const g = $("guess").value.trim(), r = $("result");
+    landed = null;
+    if (!g) { r.className = "result"; r.textContent = `Write a path from ${from} to ${target}.`; }
+    else {
+      const res = resolve(from, g);
+      if (res.error) { r.className = "result wrong"; r.textContent = res.error; }
+      else if (res.file === target) {
+        r.className = "result " + (res.root ? "wrong" : "right");
+        r.textContent = res.root ? "That reaches the file from the site's root. It works on some servers but breaks on GitHub Pages project sites. Try a relative path." : "Correct. That path reaches the file.";
+      } else if (res.file.toLowerCase() === target.toLowerCase()) { r.className = "result wrong"; r.textContent = "Close, but the capitalization doesn't match. Servers treat Photo.JPG and photo.jpg as different files."; }
+      else if (FILES.includes(res.file)) { landed = res.file; r.className = "result wrong"; r.textContent = `That path leads to ${res.file}, not ${target}. It's marked in red in the tree.`; }
+      else { r.className = "result wrong"; r.textContent = `That leads to "${res.file || "(the site folder)"}", which doesn't exist. The browser would show a broken link or image.`; }
+    }
+    $("answer").hidden = !revealed;
+    if (revealed) {
+      const ans = answer(from, target), steps = [];
+      steps.push([`start in`, `the folder containing ${from}: <code>${dirOf(from).join("/") || "my-site"}/</code>`]);
+      ans.split("/").forEach((seg, i, arr) => steps.push([`<code>${seg}${i < arr.length - 1 ? "/" : ""}</code>`, seg === ".." ? "go up one folder" : i < arr.length - 1 ? `go into the ${seg} folder` : "that's the file"]));
+      $("walk").innerHTML = `<li><span class="eyebrow">Answer</span><code style="font-size:1.05rem">${ans}</code></li>` + steps.map(([a, b]) => `<li><span>${a}</span><span>${b}</span></li>`).join("");
+    }
+    buildTree();
+  }
+  $("from").addEventListener("input", () => { $("guess").value = ""; revealed = false; update(); });
+  $("guess").addEventListener("input", update);
+  $("show").addEventListener("click", () => { revealed = true; update(); });
+  update();
+</script>
+</body>
+</html>

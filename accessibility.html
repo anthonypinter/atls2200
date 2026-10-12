@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Accessibility Basics</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Recursive:slnt,wght,CASL,MONO@-15..0,300..1000,0..1,0..1&display=swap">
+<link rel="stylesheet" href="style.css">
+<style>
+  /* Sample site, intentionally its own light look so contrast numbers are fixed. */
+  .site { background: #ffffff; color: #1d2133; border: 1px solid var(--line); border-radius: var(--radius); padding: 18px; display: grid; gap: 14px; font-family: var(--font-body); }
+  .site .bar { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+  .site .logo { font: 800 1.15rem var(--font-display); color: #0b6b5e; }
+  .site .menu { font: 700 0.95rem var(--font-body); background: #0b6b5e; color: #fff; border: 0; border-radius: 6px; padding: 8px 14px; cursor: pointer; }
+  .site .fakehead { font-weight: 700; font-size: 1.35rem; }
+  .site h2 { font: 700 1.35rem var(--font-body); margin: 0; color: #1d2133; }
+  .site p { margin: 0; }
+  .site .faint { color: #b8bcc8; }
+  .site a { color: #2340d9; }
+  .site img { display: block; max-width: 100%; height: auto; border-radius: 6px; }
+  .site .signup { display: flex; gap: 8px; flex-wrap: wrap; align-items: end; }
+  .site .signup .f { display: grid; gap: 4px; }
+  .site .signup label { font-weight: 700; font-size: 0.9rem; }
+  .site input { font: inherit; padding: 8px 10px; border: 1.5px solid #c9cedb; border-radius: 6px; background: #fff; color: #1d2133; }
+  .site .go { font: 700 0.95rem var(--font-body); background: #b4410c; color: #fff; border: 0; border-radius: 6px; padding: 9px 16px; cursor: pointer; }
+  .site.broken .go:focus, .site.broken input:focus { outline: none; }
+  .site.fixed :focus-visible { outline: 3px solid #2340d9; outline-offset: 2px; }
+  .site [data-issue] { position: relative; }
+  .site.broken [data-issue]::after { content: attr(data-issue); position: absolute; top: -9px; right: -9px; width: 20px; height: 20px; border-radius: 50%; background: #b42318; color: #fff; font: 700 0.72rem/20px var(--font-code); text-align: center; z-index: 1; }
+
+  .log { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; font: 0.88rem var(--font-code); font-variation-settings: "MONO" 1; max-height: 230px; overflow-y: auto; }
+  .log li { padding: 5px 8px; border-radius: 5px; background: var(--stage); }
+  .log li.bad { background: var(--bad-soft); color: var(--bad); }
+  .issues { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+  .issues li { display: grid; grid-template-columns: 26px 1fr; gap: 10px; align-items: start; padding: 10px; border-radius: 8px; background: var(--panel); border: 1px solid var(--line); font-size: 0.93rem; }
+  .issues .n { width: 22px; height: 22px; border-radius: 50%; display: grid; place-items: center; font: 700 0.72rem var(--font-code); color: #fff; background: var(--bad); }
+  .issues li.ok .n { background: var(--good); }
+  .issues b { display: block; }
+  .checklist { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 10px; }
+  .checklist li { padding: 12px; border-radius: 8px; background: var(--panel); border: 1px solid var(--line); display: grid; gap: 4px; }
+  .checklist b { font-family: var(--font-display); }
+  .checklist span { font-size: 0.92rem; color: var(--muted); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <nav class="crumbs" aria-label="Site"><a class="crumb" href="index.html">← Field Guide</a><a class="crumb" href="glossary.html">Glossary</a></nav>
+  <header class="page-head">
+    <span class="eyebrow">Polish &amp; Workflow · Accessibility Basics</span>
+    <h1>Accessibility Basics</h1>
+    <p class="lede">An accessible site works for people using a keyboard, a screen reader, zoom, or a phone in bright sun. This sample page has seven common problems. Click into it and press Tab to move through it, then compare it with the fixed version.</p>
+  </header>
+
+  <section class="playground even">
+    <div class="stage-col">
+      <div class="seg" role="group" aria-label="Version">
+        <button class="btn" id="v-broken" aria-pressed="true">Broken version</button>
+        <button class="btn" id="v-fixed" aria-pressed="false">Fixed version</button>
+      </div>
+      <div id="site-holder"></div>
+    </div>
+    <div class="stage-col">
+      <div class="panel" style="display:grid;gap:8px">
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:8px"><span class="eyebrow">Keyboard log: what Tab reaches</span><button class="btn" id="clear" style="font-size:0.78rem;padding:4px 8px">Clear</button></div>
+        <ul class="log" id="log" aria-live="polite"><li>Click the sample page, then press Tab.</li></ul>
+      </div>
+      <ul class="issues" id="issues"></ul>
+    </div>
+  </section>
+
+  <div class="section-title"><span class="eyebrow">Your turn</span><h2>Five checks for your own project</h2></div>
+  <ul class="checklist">
+    <li><b>Unplug your mouse</b><span>Use Tab, Shift+Tab, Enter and Space. Can you reach and use everything? Can you always see where you are?</span></li>
+    <li><b>Zoom to 200%</b><span>Press Ctrl or Cmd and + a few times. Nothing should overlap or get cut off.</span></li>
+    <li><b>Check contrast</b><span>Body text needs at least 4.5 : 1 against its background. The Colors &amp; Units page can check it.</span></li>
+    <li><b>Read the headings alone</b><span>Do h1, h2 and h3 make a sensible outline of the page, in order?</span></li>
+    <li><b>Turn images off</b><span>Does the alt text tell you what you'd miss? See the Images &amp; Alt Text page.</span></li>
+  </ul>
+
+  <section class="notes">
+    <div class="panel">
+      <h2>Key ideas</h2>
+      <ul>
+        <li>Use the right HTML element first. Real buttons, links, labels and headings come with accessibility built in.</li>
+        <li>Everything you can do with a mouse should work with a keyboard.</li>
+        <li>Every control needs a name a screen reader can say: label text, button text or alt text.</li>
+        <li>Don't use color alone to show meaning, like red for errors. Add text or an icon.</li>
+      </ul>
+    </div>
+    <div class="panel mistake">
+      <h2>Common mistakes</h2>
+      <ul>
+        <li>Clickable <code>div</code>s and <code>span</code>s. They can't be reached with Tab.</li>
+        <li><code>outline: none</code> with no replacement focus style.</li>
+        <li>Placeholder text used as the only label.</li>
+        <li>Pale gray text because it "looks clean."</li>
+      </ul>
+    </div>
+  </section>
+
+  <footer class="page-foot"><a href="form-styling.html">← Styling Forms</a><a href="organizing-css.html">Next: Organizing CSS →</a></footer>
+</div>
+
+<script>
+  const $ = (id) => document.getElementById(id);
+  const PHOTO = "data:image/svg+xml," + encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="600" height="200" viewBox="0 0 600 200"><rect width="600" height="200" fill="#9cc7ea"/><path d="M0 200 L120 90 L220 150 L330 40 L450 140 L600 70 L600 200 Z" fill="#4d5b73"/><path d="M300 74 L330 40 L362 78 L330 66 Z" fill="#fff"/><path d="M0 200 L150 160 L300 185 L450 150 L600 175 L600 200 Z" fill="#2f5d3a"/></svg>`);
+  const BROKEN = `
+    <div class="bar"><span class="logo">Trailhead</span><div class="menu" data-issue="1">Menu</div></div>
+    <div class="fakehead" data-issue="2">Snow on Longs Peak</div>
+    <span data-issue="3" style="display:block"><img src="${PHOTO}" width="600" height="200"></span>
+    <p class="faint" data-issue="4">Rangers recommend microspikes above 11,000 feet through October.</p>
+    <p>To plan your trip, <a href="#site-holder" data-issue="5">click here</a>.</p>
+    <div class="signup"><span data-issue="6"><input type="email" placeholder="Email"></span><button class="go" type="button" data-issue="7">Sign up</button></div>`;
+  const FIXED = `
+    <div class="bar"><span class="logo">Trailhead</span><button class="menu" type="button">Menu</button></div>
+    <h2>Snow on Longs Peak</h2>
+    <img src="${PHOTO}" width="600" height="200" alt="Longs Peak with fresh snow near the summit">
+    <p>Rangers recommend microspikes above 11,000 feet through October.</p>
+    <p>Read the <a href="#site-holder">Longs Peak trip-planning guide</a>.</p>
+    <div class="signup"><div class="f"><label for="em">Email</label><input type="email" id="em" placeholder="you@example.com"></div><button class="go" type="button">Sign up</button></div>`;
+  const ISSUES = [
+    ["The Menu \"button\" is a div", "It can't be reached with Tab and a screen reader doesn't know it's a button.", "Now a real <button>. Tab reaches it, and Enter and Space activate it."],
+    ["The heading is just bold text", "Screen reader users jump between headings to skim, and this one is invisible to them.", "Now an <h2>, so it shows up in the page outline."],
+    ["The image has no alt text", "A screen reader may read out the file data or skip it with no clue what it was.", "alt describes what the photo shows."],
+    ["Pale gray text", "#b8bcc8 on white is about 1.9 : 1 contrast, far below the 4.5 : 1 minimum.", "Now dark text, about 15 : 1."],
+    ["\"Click here\" link", "Screen reader users often list all the links on a page. A list of \"click here\" says nothing.", "The link text says where it goes."],
+    ["The input has no label", "The placeholder vanishes once you type, and screen readers may announce just \"edit text.\"", "A visible <label> is connected with for and id."],
+    ["Focus outline removed", "Tab to the input or Sign up button: there's no sign of where you are.", "A clear focus ring appears on every focused control."],
+  ];
+  let mode = "broken";
+  function nameOf(el) {
+    if (el.alt !== undefined && el.tagName === "IMG") return el.alt || null;
+    if (el.labels && el.labels.length) return el.labels[0].textContent.trim();
+    if (el.getAttribute("aria-label")) return el.getAttribute("aria-label");
+    if (el.tagName === "INPUT") return null;
+    return el.textContent.trim() || null;
+  }
+  function render() {
+    $("site-holder").innerHTML = `<div class="site ${mode}" id="site">${mode === "broken" ? BROKEN : FIXED}</div>`;
+    $("v-broken").setAttribute("aria-pressed", String(mode === "broken")); $("v-fixed").setAttribute("aria-pressed", String(mode === "fixed"));
+    $("issues").innerHTML = ISSUES.map(([t, bad, good], i) => `<li class="${mode === "fixed" ? "ok" : ""}"><span class="n">${mode === "fixed" ? "✓" : i + 1}</span><div><b>${t.replace(/</g, "&lt;")}</b>${(mode === "fixed" ? good : bad).replace(/</g, "&lt;")}</div></li>`).join("");
+    $("site").addEventListener("focusin", (e) => {
+      const el = e.target, role = el.tagName === "A" ? "link" : el.tagName === "BUTTON" ? "button" : el.tagName === "INPUT" ? "email field" : el.tagName.toLowerCase();
+      const n = nameOf(el), li = document.createElement("li");
+      const noRing = mode === "broken" && el.matches("input, .go");
+      li.textContent = `Tab → ${role}: ${n ? `"${n}"` : "(no name!)"}` + (noRing ? " · no visible focus ring" : "") + (n === "click here" ? " · vague link text" : "");
+      if (!n || noRing || n === "click here") li.className = "bad";
+      if ($("log").firstElementChild && !$("log").firstElementChild.dataset.real) $("log").innerHTML = "";
+      li.dataset.real = "1"; $("log").appendChild(li); $("log").scrollTop = $("log").scrollHeight;
+      if (mode === "broken" && el.tagName === "A" && ![...$("log").children].some((x) => x.dataset.skip)) {
+        const s = document.createElement("li"); s.className = "bad"; s.dataset.real = "1"; s.dataset.skip = "1";
+        s.textContent = "Notice: Tab never stopped on Menu. Keyboard users can't open it."; $("log").appendChild(s);
+      }
+    });
+  }
+  $("v-broken").addEventListener("click", () => { mode = "broken"; clearLog(); render(); });
+  $("v-fixed").addEventListener("click", () => { mode = "fixed"; clearLog(); render(); });
+  function clearLog() { $("log").innerHTML = "<li>Click the sample page, then press Tab.</li>"; }
+  $("clear").addEventListener("click", clearLog);
+  render();
+</script>
+</body>
+</html>

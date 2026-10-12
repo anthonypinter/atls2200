@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Document Structure</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Recursive:slnt,wght,CASL,MONO@-15..0,300..1000,0..1,0..1&display=swap">
+<link rel="stylesheet" href="style.css">
+<style>
+  .doc { display: grid; gap: 2px; padding: 12px; background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); font: 0.92rem/1.5 var(--font-code); font-variation-settings: "MONO" 1; overflow-x: auto; }
+  .ln { display: grid; grid-template-columns: 26px 1fr auto; align-items: center; gap: 8px; padding: 3px 6px; border-radius: 5px; border: 1px solid transparent; background: none; color: var(--ink); font: inherit; text-align: left; cursor: pointer; white-space: pre; }
+  .ln:hover { background: var(--stage); }
+  .ln[aria-current="true"] { border-color: var(--cobalt); background: var(--cobalt-soft); }
+  .ln .num { color: var(--muted); font-size: 0.75rem; text-align: right; }
+  .ln.removed .code { text-decoration: line-through; opacity: 0.4; }
+  .ln .rm { font-size: 0.7rem; color: var(--muted); }
+  .ln.removed .rm { color: var(--bad); }
+
+  .explain { display: grid; gap: 8px; }
+  .explain h3 { font-family: var(--font-code); font-variation-settings: "MONO" 1; color: var(--cobalt); font-size: 1rem; }
+  .explain .rmbtn { justify-self: start; }
+
+  /* Fake browser */
+  .browser { border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; background: var(--panel); }
+  .tabbar { display: flex; align-items: end; gap: 8px; background: var(--stage); padding: 8px 10px 0; }
+  .tab { background: var(--panel); border-radius: 8px 8px 0 0; padding: 7px 14px; font-size: 0.85rem; max-width: 240px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .tab.bad { color: var(--bad); font-family: var(--font-code); font-variation-settings: "MONO" 1; }
+  .previews { display: grid; grid-template-columns: 1fr auto; gap: 16px; padding: 16px; align-items: start; }
+  @media (max-width: 560px) { .previews { grid-template-columns: 1fr; } }
+  .page { font-family: Georgia, serif; color: #1d2133; background: #fff; border-radius: 6px; padding: 14px; border: 1px solid #dfe3ee; min-width: 0; }
+  .page h4 { margin: 0 0 6px; font-size: 1.3rem; }
+  .page p { margin: 0; font-size: 1rem; }
+  .phone { width: 150px; height: 260px; border: 8px solid #2b2f3d; border-radius: 22px; background: #fff; overflow: hidden; position: relative; }
+  .phone .inner { transform-origin: top left; font-family: Georgia, serif; color: #1d2133; padding: 10px; width: 100%; }
+  .phone.zoomed-out .inner { width: 980px; transform: scale(0.137); }
+  .phone .inner h4 { margin: 0 0 4px; font-size: 1.05rem; } .phone .inner p { margin: 0; font-size: 0.85rem; }
+  .cap { font-size: 0.8rem; color: var(--muted); text-align: center; margin-top: 6px; }
+  .issues { display: grid; gap: 6px; padding: 0 16px 16px; margin: 0; list-style: none; }
+  .issues li { font-size: 0.92rem; padding: 8px 10px; border-radius: 6px; background: var(--bad-soft); color: var(--bad); }
+  .issues li.ok { background: var(--good-soft); color: var(--good); }
+
+  .tree { display: grid; gap: 4px; font: 0.9rem var(--font-code); font-variation-settings: "MONO" 1; }
+  .tree div { padding: 6px 10px; border-left: 3px solid var(--cobalt); background: var(--stage); border-radius: 0 6px 6px 0; }
+  .tree .d1 { margin-left: 22px; } .tree .d2 { margin-left: 44px; border-color: var(--prop); }
+  .tree .d2.b { border-color: var(--val); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <nav class="crumbs" aria-label="Site"><a class="crumb" href="index.html">← Field Guide</a><a class="crumb" href="glossary.html">Glossary</a></nav>
+  <header class="page-head">
+    <span class="eyebrow">HTML Foundations · Document Structure</span>
+    <h1>Document Structure</h1>
+    <p class="lede">Every HTML page starts with the same skeleton. Click any line to learn what it does, then remove it to see what breaks.</p>
+  </header>
+
+  <section class="playground even">
+    <div class="stage-col" style="gap:12px">
+      <div class="doc" id="doc" aria-label="HTML skeleton, one button per line"></div>
+      <div class="panel explain" id="explain" aria-live="polite"></div>
+    </div>
+    <div class="stage-col">
+      <div class="browser" aria-label="Browser preview">
+        <div class="tabbar"><div class="tab" id="tab"></div></div>
+        <div class="previews">
+          <div class="page" id="desk"></div>
+          <div><div class="phone" id="phone"><div class="inner" id="phone-inner"></div></div><div class="cap">On a phone</div></div>
+        </div>
+        <ul class="issues" id="issues"></ul>
+      </div>
+      <div class="panel">
+        <span class="eyebrow">How it nests</span>
+        <div class="tree" style="margin-top:10px">
+          <div>&lt;html&gt;</div>
+          <div class="d1">&lt;head&gt; <span class="cmt">info about the page, not shown</span></div>
+          <div class="d2">meta · title · link</div>
+          <div class="d1">&lt;body&gt; <span class="cmt">everything people see</span></div>
+          <div class="d2 b">h1 · p · img · nav · …</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="notes">
+    <div class="panel">
+      <h2>Key ideas</h2>
+      <ul>
+        <li><code>&lt;head&gt;</code> holds information <em>about</em> the page. <code>&lt;body&gt;</code> holds what visitors see.</li>
+        <li>Every element you open, you close, and tags close in the reverse order they opened.</li>
+        <li>Indent nested elements so you can see the structure at a glance.</li>
+        <li>Save the file as <code>index.html</code> for the main page of a site. Servers look for that name first.</li>
+      </ul>
+    </div>
+    <div class="panel mistake">
+      <h2>Common mistakes</h2>
+      <ul>
+        <li>Putting visible content like <code>&lt;h1&gt;</code> inside <code>&lt;head&gt;</code>.</li>
+        <li>Having two <code>&lt;body&gt;</code> elements, or content after <code>&lt;/html&gt;</code>.</li>
+        <li>Leaving out the viewport meta tag, so phones show a tiny zoomed-out page.</li>
+        <li>Linking a stylesheet with the wrong path, like <code>href="style.css"</code> when the file is in a <code>css/</code> folder.</li>
+      </ul>
+    </div>
+  </section>
+
+  <footer class="page-foot"><a href="html-syntax.html">← HTML Syntax</a><a href="head-metadata.html">Next: The Head &amp; Metadata →</a></footer>
+</div>
+
+<script>
+  const $ = (id) => document.getElementById(id);
+  const t = (s) => `<span class="tag-name">${s}</span>`, a = (s) => `<span class="attr">${s}</span>`, v = (s) => `<span class="str">"${s}"</span>`;
+  const LINES = [
+    { id: "doctype", code: `${t("&lt;!DOCTYPE html&gt;")}`, removable: true, title: "<!DOCTYPE html>",
+      text: "Tells the browser this is a modern HTML page. Without it, browsers switch to \"quirks mode\" and copy bugs from the 1990s, so some CSS behaves strangely." },
+    { id: "html", code: `${t("&lt;html")} ${a("lang")}=${v("en")}${t("&gt;")}`, removable: true, title: "<html lang=\"en\">",
+      text: "The root element that wraps everything. The lang attribute tells screen readers which language to pronounce and helps translation tools." },
+    { code: `  ${t("&lt;head&gt;")}`, title: "<head>", text: "Information about the page: its title, character set, and links to CSS. Nothing in the head appears on the page itself." },
+    { id: "charset", code: `    ${t("&lt;meta")} ${a("charset")}=${v("utf-8")}${t("&gt;")}`, removable: true, title: "<meta charset=\"utf-8\">",
+      text: "Tells the browser how to turn the file's bytes into letters. UTF-8 covers accents, symbols and emoji. Without it, characters like é can turn into garbage." },
+    { id: "viewport", code: `    ${t("&lt;meta")} ${a("name")}=${v("viewport")} ${a("content")}=${v("width=device-width, initial-scale=1")}${t("&gt;")}`, removable: true, title: "<meta name=\"viewport\">",
+      text: "Tells phones to use the real screen width. Without it, phones pretend to be a 980px-wide desktop and shrink the whole page down." },
+    { id: "title", code: `    ${t("&lt;title&gt;")}Café Menu${t("&lt;/title&gt;")}`, removable: true, title: "<title>",
+      text: "The text in the browser tab, in bookmarks, and in search results. Every page should have a short, specific title." },
+    { id: "link", code: `    ${t("&lt;link")} ${a("rel")}=${v("stylesheet")} ${a("href")}=${v("style.css")}${t("&gt;")}`, removable: true, title: "<link rel=\"stylesheet\">",
+      text: "Connects your CSS file. The href is a path relative to this HTML file. If the path is wrong, the page shows up unstyled." },
+    { code: `  ${t("&lt;/head&gt;")}`, title: "</head>", text: "Closes the head. Everything after this, inside body, is what people see." },
+    { code: `  ${t("&lt;body&gt;")}`, title: "<body>", text: "Holds all visible content: headings, paragraphs, images, links, forms." },
+    { code: `    ${t("&lt;h1&gt;")}Café Menu${t("&lt;/h1&gt;")}`, title: "<h1>", text: "The main heading. Use one h1 per page that says what the page is about." },
+    { code: `    ${t("&lt;p&gt;")}Fresh crêpes daily.${t("&lt;/p&gt;")}`, title: "<p>", text: "A paragraph of text." },
+    { code: `  ${t("&lt;/body&gt;")}`, title: "</body>", text: "Closes the body." },
+    { code: `${t("&lt;/html&gt;")}`, title: "</html>", text: "Closes the root element. Nothing should come after it." },
+  ];
+  const removed = new Set();
+  let current = 4;
+
+  function mangle(s) { return s.replace(/é/g, "Ã©").replace(/ê/g, "Ãª"); }
+
+  function render() {
+    $("doc").innerHTML = LINES.map((l, i) => `<button class="ln ${removed.has(l.id) ? "removed" : ""}" data-i="${i}" aria-current="${i === current}"><span class="num">${i + 1}</span><span class="code">${l.code}</span><span class="rm">${l.removable ? (removed.has(l.id) ? "removed" : "") : ""}</span></button>`).join("");
+    document.querySelectorAll(".ln").forEach((b) => b.addEventListener("click", () => { current = +b.dataset.i; render(); }));
+
+    const l = LINES[current];
+    const esc = (s) => s.replace(/</g, "&lt;");
+    $("explain").innerHTML = `<h3>${esc(l.title)}</h3><p>${l.text}</p>` + (l.removable ? `<button class="btn rmbtn" id="rmbtn">${removed.has(l.id) ? "Put this line back" : "Remove this line"}</button>` : `<p class="hint">This line is required for the page to make sense, so it can't be removed here.</p>`);
+    if (l.removable) $("rmbtn").addEventListener("click", () => { removed.has(l.id) ? removed.delete(l.id) : removed.add(l.id); render(); });
+
+    // Preview
+    const has = (id) => !removed.has(id);
+    const tab = $("tab");
+    tab.textContent = has("title") ? "Café Menu" : "file:///Users/you/cafe/index.html";
+    tab.classList.toggle("bad", !has("title"));
+    let h = "Café Menu", p = "Fresh crêpes daily.";
+    if (!has("charset")) { h = mangle(h); p = mangle(p); }
+    const styled = has("link");
+    const content = `<h4 style="${styled ? "color:#8a3b12;font-family:Georgia,serif" : "font-family:Times New Roman,serif;color:#000"}">${h}</h4><p style="${styled ? "color:#444" : "color:#000;font-family:Times New Roman,serif"}">${p}</p>`;
+    $("desk").innerHTML = content;
+    $("desk").style.background = styled ? "#fdf6ee" : "#fff";
+    $("phone-inner").innerHTML = content;
+    $("phone").classList.toggle("zoomed-out", !has("viewport"));
+
+    const issues = [];
+    if (!has("doctype")) issues.push("Quirks mode: layout and box sizing may behave inconsistently between browsers.");
+    if (!has("html")) issues.push("No lang attribute: screen readers may guess the wrong language and mispronounce words.");
+    if (!has("charset")) issues.push("Garbled text: é and ê now display as Ã© and Ãª.");
+    if (!has("viewport")) issues.push("Tiny text on phones: the page renders 980px wide and gets shrunk to fit.");
+    if (!has("title")) issues.push("No title: the tab, bookmarks and search results show the file path instead.");
+    if (!has("link")) issues.push("No stylesheet: the page falls back to the browser's plain default styles.");
+    $("issues").innerHTML = issues.length ? issues.map((x) => `<li>${x}</li>`).join("") : `<li class="ok">Everything is in place. Remove a line to see what breaks.</li>`;
+  }
+  render();
+</script>
+</body>
+</html>

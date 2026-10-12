@@ -1,0 +1,175 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tables</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Recursive:slnt,wght,CASL,MONO@-15..0,300..1000,0..1,0..1&display=swap">
+<link rel="stylesheet" href="style.css">
+<style>
+  .table-wrap { overflow-x: auto; background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 14px; }
+  #t { color: var(--ink); font-size: 0.98rem; }
+  #t td, #t th { border: 1px solid var(--muted); cursor: pointer; }
+  #t.collapse { border-collapse: collapse; }
+  #t.padded td, #t.padded th { padding: 8px 14px; }
+  #t.zebra tbody tr:nth-child(even) { background: var(--stage); }
+  #t.nums td.num, #t.nums th.num { text-align: right; font-variant-numeric: tabular-nums; }
+  #t caption { font-weight: 700; text-align: left; padding-bottom: 8px; }
+  #t td.active, #t th.active { outline: 3px solid var(--cobalt); outline-offset: -3px; }
+  #t th[scope] { background: var(--cobalt-soft); }
+  #sched { border-collapse: collapse; color: var(--ink); font-size: 0.95rem; }
+  #sched th, #sched td { border: 1px solid var(--muted); padding: 8px 12px; text-align: left; vertical-align: top; }
+  #sched thead th { background: var(--cobalt-soft); }
+  #sched td.dup { color: var(--bad); font-style: italic; }
+  #sched td.span { background: var(--good-soft); color: var(--good); font-weight: 700; }
+  #sched tfoot td { font-size: 0.88rem; color: var(--muted); background: var(--stage); }
+  #sched col.hl { background: color-mix(in srgb, var(--prop) 12%, transparent); }
+  .span-notes { margin: 0; padding-left: 1.2em; display: grid; gap: 6px; font-size: 0.93rem; }
+  .sr-box { font: 0.95rem/1.5 var(--font-code); font-variation-settings: "MONO" 1; padding: 12px 14px; border-radius: 8px; background: var(--stage); }
+  .sr-box.weak { background: var(--bad-soft); color: var(--bad); }
+  .check { display: flex; gap: 10px; align-items: center; cursor: pointer; font-size: 0.95rem; }
+  .check input { accent-color: var(--cobalt); }
+  .check .tagn { font: 600 0.82rem var(--font-code); font-variation-settings: "MONO" 1; color: var(--prop); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <nav class="crumbs" aria-label="Site"><a class="crumb" href="index.html">← Field Guide</a><a class="crumb" href="glossary.html">Glossary</a></nav>
+  <header class="page-head">
+    <span class="eyebrow">HTML Foundations · Tables</span>
+    <h1>Tables</h1>
+    <p class="lede">Tables are for data with rows and columns, like a schedule or a comparison. Build up this table one feature at a time, and click any cell to hear what a screen reader says.</p>
+  </header>
+
+  <section class="playground">
+    <div class="panel controls">
+      <span class="eyebrow">HTML</span>
+      <label class="check"><input type="checkbox" id="o-th"><span>Header cells use <span class="tagn">&lt;th scope&gt;</span></span></label>
+      <label class="check"><input type="checkbox" id="o-cap"><span>Add a <span class="tagn">&lt;caption&gt;</span></span></label>
+      <span class="eyebrow" style="margin-top:6px">CSS</span>
+      <label class="check"><input type="checkbox" id="o-col"><span><span class="tagn">border-collapse</span> (merge double borders)</span></label>
+      <label class="check"><input type="checkbox" id="o-pad"><span><span class="tagn">padding</span> in cells</span></label>
+      <label class="check"><input type="checkbox" id="o-zeb"><span>Zebra stripes with <span class="tagn">:nth-child(even)</span></span></label>
+      <label class="check"><input type="checkbox" id="o-num"><span>Right-align numbers</span></label>
+      <button class="btn" id="all" style="justify-self:start;margin-top:6px">Turn everything on</button>
+    </div>
+    <div class="stage-col">
+      <div class="table-wrap"><table id="t"></table></div>
+      <div class="sr-box" id="sr" aria-live="polite">Click a cell in the table.</div>
+    </div>
+  </section>
+
+  <div class="section-title"><span class="eyebrow">Part 2</span><h2>Cells that span, footers and column groups</h2><p>Some cells need to stretch across columns or down rows. Turn each feature on to see the problem it solves.</p></div>
+  <section class="playground">
+    <div class="panel controls">
+      <label class="check"><input type="checkbox" id="s-row"><span><span class="tagn">rowspan="2"</span> on the long hike</span></label>
+      <label class="check"><input type="checkbox" id="s-col"><span><span class="tagn">colspan="2"</span> on the closure</span></label>
+      <label class="check"><input type="checkbox" id="s-foot"><span>Add a <span class="tagn">&lt;tfoot&gt;</span></span></label>
+      <label class="check"><input type="checkbox" id="s-cg"><span><span class="tagn">&lt;colgroup&gt;</span> to highlight Sunday</span></label>
+    </div>
+    <div class="stage-col">
+      <div class="table-wrap"><table id="sched"></table></div>
+      <ul class="span-notes" id="span-notes"></ul>
+    </div>
+  </section>
+
+  <div class="section-title"><span class="eyebrow">Practice</span><h2>Table or not?</h2><p>Tables used to be used for page layout. Now they're only for data. Decide for each one.</p></div>
+  <div class="panel quiz" id="quiz"></div>
+
+  <section class="notes">
+    <div class="panel">
+      <h2>Key ideas</h2>
+      <ul>
+        <li>Structure: <code>&lt;table&gt;</code> holds rows (<code>&lt;tr&gt;</code>), and rows hold cells (<code>&lt;td&gt;</code> for data, <code>&lt;th&gt;</code> for headers).</li>
+        <li>Group rows with <code>&lt;thead&gt;</code> and <code>&lt;tbody&gt;</code>.</li>
+        <li><code>scope="col"</code> or <code>scope="row"</code> tells screen readers which cells a header labels.</li>
+        <li><code>colspan</code> and <code>rowspan</code> merge cells. Every row must still add up to the same number of columns.</li>
+        <li>Wrap wide tables in a container with <code>overflow-x: auto</code> so they scroll on phones instead of breaking the page.</li>
+      </ul>
+    </div>
+    <div class="panel mistake">
+      <h2>Common mistakes</h2>
+      <ul>
+        <li>Using a table to lay out a page or a grid of cards. Use Flexbox or Grid.</li>
+        <li>Making header cells bold <code>&lt;td&gt;</code>s instead of real <code>&lt;th&gt;</code>s.</li>
+        <li>A different number of cells in each row, which shifts columns out of line.</li>
+        <li>Putting a <code>border</code> on the table only and expecting the cells to get one too.</li>
+      </ul>
+    </div>
+  </section>
+
+  <footer class="page-foot"><a href="links-paths.html">← Links &amp; Paths</a><a href="forms.html">Next: Forms &amp; Inputs →</a></footer>
+</div>
+
+<script>
+  const $ = (id) => document.getElementById(id);
+  const HEAD = ["Trail", "Distance (mi)", "Elevation gain (ft)", "Difficulty"];
+  const ROWS = [["Royal Arch", "3.4", "1,400", "Hard"], ["Mesa Trail", "6.7", "1,100", "Moderate"], ["Chautauqua Loop", "1.2", "250", "Easy"], ["Bear Peak", "5.3", "2,800", "Hard"], ["Sanitas Valley", "1.6", "450", "Easy"]];
+  const NUM = [false, true, true, false];
+  let active = null;
+
+  function render() {
+    const th = $("o-th").checked, t = $("t");
+    t.className = [$("o-col").checked && "collapse", $("o-pad").checked && "padded", $("o-zeb").checked && "zebra", $("o-num").checked && "nums"].filter(Boolean).join(" ");
+    const cell = (tag, txt, r, c, extra = "") => `<${tag} data-r="${r}" data-c="${c}" class="${NUM[c] ? "num" : ""}${active && active[0] === r && active[1] === c ? " active" : ""}"${extra}>${txt}</${tag}>`;
+    const head = th ? HEAD.map((h, c) => cell("th", h, -1, c, ' scope="col"')).join("") : HEAD.map((h, c) => cell("td", `<b>${h}</b>`, -1, c)).join("");
+    const body = ROWS.map((row, r) => `<tr>${row.map((v, c) => c === 0 && th ? cell("th", v, r, c, ' scope="row"') : cell("td", v, r, c)).join("")}</tr>`).join("");
+    t.innerHTML = ($("o-cap").checked ? "<caption>Boulder-area trails</caption>" : "") + `<thead><tr>${head}</tr></thead><tbody>${body}</tbody>`;
+    speak();
+  }
+  function speak() {
+    const sr = $("sr");
+    if (!active) { sr.className = "sr-box"; sr.textContent = "Click a cell in the table."; return; }
+    const [r, c] = active, th = $("o-th").checked, cap = $("o-cap").checked;
+    const val = r === -1 ? HEAD[c] : ROWS[r][c];
+    const intro = cap ? `"Table: Boulder-area trails, 5 rows, 4 columns." ` : `"Table, 6 rows, 4 columns." `;
+    if (r === -1) { sr.className = th ? "sr-box" : "sr-box weak"; sr.textContent = intro + (th ? `"Column header: ${val}."` : `"${val}." It's read like ordinary data, not as a label for the column.`); return; }
+    if (th) { sr.className = "sr-box"; sr.textContent = intro + (c === 0 ? `"Row header: ${val}."` : `"${ROWS[r][0]}, ${HEAD[c]}: ${val}." The listener knows which trail and column it is.`); }
+    else { sr.className = "sr-box weak"; sr.textContent = intro + `"${val}." Just the value. Which trail? Which column? Turn on <th scope> to fix this.`; }
+  }
+  $("t").addEventListener("click", (e) => { const c = e.target.closest("td, th"); if (c) { active = [+c.dataset.r, +c.dataset.c]; render(); } });
+  const part1Inputs = ["o-th", "o-cap", "o-col", "o-pad", "o-zeb", "o-num"].map((id) => $(id));
+  part1Inputs.forEach((el) => el.addEventListener("input", render));
+  $("all").addEventListener("click", () => { part1Inputs.forEach((el) => (el.checked = true)); render(); });
+  render();
+
+  function sched() {
+    const row = $("s-row").checked, col = $("s-col").checked, foot = $("s-foot").checked, cg = $("s-cg").checked;
+    let h = cg ? '<colgroup><col><col><col class="hl"></colgroup>' : "";
+    h += '<thead><tr><th scope="col">Time</th><th scope="col">Saturday</th><th scope="col">Sunday</th></tr></thead><tbody>';
+    h += `<tr><th scope="row">8:00</th>${row ? '<td rowspan="2" class="span">Bear Peak climb (4 hours)</td>' : "<td>Bear Peak climb (4 hours)</td>"}<td>Wildflower walk</td></tr>`;
+    h += `<tr><th scope="row">10:00</th>${row ? "" : '<td class="dup">Bear Peak climb (still going)</td>'}<td>Birding basics</td></tr>`;
+    h += `<tr><th scope="row">12:00</th>${col ? '<td colspan="2" class="span">Closed for trail work</td>' : '<td class="dup">Closed for trail work</td><td class="dup">Closed for trail work</td>'}</tr>`;
+    h += '<tr><th scope="row">2:00</th><td>Geology talk</td><td>Kids\' nature hike</td></tr></tbody>';
+    if (foot) h += '<tfoot><tr><td colspan="3">All hikes meet at the Chautauqua Ranger Cottage.</td></tr></tfoot>';
+    $("sched").innerHTML = h;
+    const n = [];
+    n.push(row ? "rowspan=\"2\" stretches the hike down two rows, and the 10:00 row leaves out that cell." : "Without rowspan, the long hike has to be repeated in the 10:00 row (in red).");
+    n.push(col ? "colspan=\"2\" makes one cell cover both days, so the closure is said once." : "Without colspan, \"Closed\" is written twice, and a screen reader reads it twice.");
+    n.push(foot ? "tfoot holds notes or totals for the whole table, and it stays with the table." : "Notes about the whole table belong in a tfoot row.");
+    if (cg) n.push("colgroup and col let you style a whole column at once, without adding a class to every cell.");
+    $("span-notes").innerHTML = n.map((x) => `<li>${x}</li>`).join("");
+  }
+  ["s-row", "s-col", "s-foot", "s-cg"].forEach((id) => $(id).addEventListener("input", sched));
+  sched();
+
+  const QUIZ = [
+    { q: "A class schedule with days across the top and times down the side.", a: 0, why: "Rows and columns that both mean something: that's tabular data." },
+    { q: "A grid of six product cards on a shop's home page.", a: 1, why: "That's a layout. Use CSS Grid or Flexbox." },
+    { q: "Comparing three phone plans by price, data and minutes.", a: 0, why: "Each plan is a row and each feature is a column." },
+    { q: "A page with a sidebar on the left and content on the right.", a: 1, why: "Page layout belongs in CSS, not tables." },
+  ];
+  let score = 0;
+  $("quiz").innerHTML = `<p class="score" id="score">0 / ${QUIZ.length}</p>` + QUIZ.map((x, i) => `<div class="q"><b>${i + 1}. ${x.q}</b><div class="opts"><button class="btn" data-q="${i}" data-o="0">Use a table</button><button class="btn" data-q="${i}" data-o="1">Not a table</button></div><div class="feedback" id="fb${i}"></div></div>`).join("");
+  document.querySelectorAll("#quiz .opts").forEach((g) => g.addEventListener("click", (e) => {
+    const b = e.target.closest("button"); if (!b || g.dataset.done) return;
+    const x = QUIZ[+b.dataset.q], right = +b.dataset.o === x.a;
+    b.classList.add(right ? "right" : "wrong"); g.children[x.a].classList.add("right"); g.dataset.done = "1";
+    if (right) score++; $("score").textContent = `${score} / ${QUIZ.length}`;
+    const fb = $("fb" + b.dataset.q); fb.className = "feedback " + (right ? "right" : "wrong"); fb.textContent = (right ? "Correct. " : "Not quite. ") + x.why;
+  }));
+</script>
+</body>
+</html>

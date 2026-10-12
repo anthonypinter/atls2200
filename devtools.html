@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Debugging with DevTools</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Recursive:slnt,wght,CASL,MONO@-15..0,300..1000,0..1,0..1&display=swap">
+<link rel="stylesheet" href="style.css">
+<style id="pvstyle"></style>
+<style>
+  .missions { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+  @media (max-width: 800px) { .missions { grid-template-columns: 1fr; } }
+  .mission { display: grid; gap: 6px; align-content: start; }
+  .mission .st { font: 700 0.72rem var(--font-code); font-variation-settings: "MONO" 1; text-transform: uppercase; letter-spacing: 0.06em; color: var(--bad); }
+  .mission.done { border-color: var(--good); } .mission.done .st { color: var(--good); }
+  .mission .hint-text { font-size: 0.88rem; color: var(--muted); }
+  .mission .btn { justify-self: start; font-size: 0.8rem; padding: 4px 8px; }
+  .lab { display: grid; grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr); gap: 16px; margin-top: 16px; align-items: start; }
+  @media (max-width: 860px) { .lab { grid-template-columns: 1fr; } }
+  .pv-wrap { border: 1px solid var(--line); border-radius: var(--radius); overflow: auto; }
+  .pv-wrap .urlbar { background: var(--stage); padding: 6px 10px; font: 0.75rem var(--font-code); font-variation-settings: "MONO" 1; color: var(--muted); border-bottom: 1px solid var(--line); }
+  #pv [data-hover] { outline: 2px solid rgba(35, 64, 217, 0.6) !important; background-color: rgba(35, 64, 217, 0.08) !important; }
+
+  .dt { border: 1px solid var(--line); border-radius: var(--radius); background: var(--panel); font: 0.82rem/1.5 var(--font-code); font-variation-settings: "MONO" 1; overflow: hidden; min-width: 0; }
+  .dt-tabs { display: flex; gap: 2px; background: var(--stage); border-bottom: 1px solid var(--line); padding: 4px 6px 0; }
+  .dt-tabs span { padding: 5px 10px; border-radius: 6px 6px 0 0; color: var(--muted); }
+  .dt-tabs span.on { background: var(--panel); color: var(--ink); font-weight: 700; }
+  .dt-body { display: grid; grid-template-rows: auto auto; }
+  .tree { padding: 8px; border-bottom: 1px solid var(--line); display: grid; gap: 1px; overflow-x: auto; }
+  .tree button { all: unset; display: block; padding: 1px 6px; border-radius: 4px; cursor: pointer; white-space: pre; }
+  .tree button:hover { background: var(--stage); }
+  .tree button:focus-visible { outline: 2px solid var(--cobalt); }
+  .tree button.sel { background: var(--cobalt-soft); }
+  .styles { padding: 8px 10px; display: grid; gap: 10px; overflow-x: auto; }
+  .rule { display: grid; gap: 1px; }
+  .rule .head { display: flex; justify-content: space-between; gap: 10px; }
+  .rule .src { color: var(--muted); font-size: 0.75rem; white-space: nowrap; }
+  .rule.ua { opacity: 0.85; } .rule.ua .head .sel::after { content: ""; }
+  .decl { display: flex; gap: 6px; align-items: center; padding-left: 14px; white-space: nowrap; }
+  .decl input { margin: 0; accent-color: var(--cobalt); }
+  .decl.over .p, .decl.over .v { text-decoration: line-through; color: var(--muted); }
+  .decl.off .p, .decl.off .v { text-decoration: line-through; color: var(--muted); opacity: 0.7; }
+  .uanote { color: var(--muted); font-style: italic; padding-left: 14px; }
+  .box { display: grid; place-items: center; padding: 10px; }
+  .bm { position: relative; padding: 18px 26px; text-align: center; border-radius: 3px; }
+  .bm > .l { position: absolute; top: 2px; left: 6px; font-size: 0.68rem; }
+  .bm > .n { position: absolute; font-size: 0.72rem; }
+  .bm > .n.t { top: 2px; left: 0; right: 0; } .bm > .n.b { bottom: 1px; left: 0; right: 0; }
+  .bm-m { background: #f9cc9d55; border: 1px dashed #c9945c; } .bm-b { background: #fddd9b88; border: 1px solid #222; } .bm-p { background: #c3d08b88; } .bm-c { background: #8cb6c088; padding: 6px 12px; }
+  .shortcuts { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
+  .shortcuts .panel { display: grid; gap: 4px; align-content: start; }
+  .shortcuts kbd { font: 600 0.85rem var(--font-code); font-variation-settings: "MONO" 1; border: 1px solid var(--line); border-bottom-width: 2px; border-radius: 4px; padding: 0 5px; background: var(--paper); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <nav class="crumbs" aria-label="Site"><a class="crumb" href="index.html">← Field Guide</a><a class="crumb" href="glossary.html">Glossary</a></nav>
+  <header class="page-head">
+    <span class="eyebrow">Polish &amp; Workflow · Debugging with DevTools</span>
+    <h1>Debugging with DevTools</h1>
+    <p class="lede">Every browser has developer tools that show exactly which CSS rules apply to an element and which ones lost. This practice version works like the real Elements panel. Use it to fix three bugs on the trail card.</p>
+  </header>
+
+  <div class="missions" id="missions"></div>
+
+  <div class="lab">
+    <div class="pv-wrap"><div class="urlbar">localhost/trail.html</div><div id="pv"><div class="page"><div class="card"><h2>Royal Arch</h2><p>3.4 miles · Hard · 1,400 ft of gain to a sandstone arch above Boulder.</p><img alt="Royal Arch above the trees" width="220" height="120"><button class="btn" type="button">Save trail</button></div></div></div></div>
+    <div class="dt" aria-label="Simulated developer tools">
+      <div class="dt-tabs"><span class="on">Elements</span><span>Console</span><span>Sources</span><span>Network</span></div>
+      <div class="dt-body">
+        <div class="tree" id="tree"></div>
+        <div class="styles" id="styles"></div>
+        <div class="box" id="box"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">The real thing</span><h2>Opening DevTools in your browser</h2></div>
+  <div class="shortcuts">
+    <div class="panel"><b>Inspect one element</b><span>Right-click it on the page and choose <strong>Inspect</strong>. DevTools opens with that element selected.</span></div>
+    <div class="panel"><b>Open DevTools</b><span><kbd>F12</kbd> or <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>I</kbd> on Windows. <kbd>Cmd</kbd>+<kbd>Option</kbd>+<kbd>I</kbd> on a Mac. In Safari, turn on "Show features for web developers" in Settings first.</span></div>
+    <div class="panel"><b>Test on a phone size</b><span>Click the device toolbar icon (a phone and tablet) at the top of DevTools to preview any screen width.</span></div>
+    <div class="panel"><b>Changes aren't saved</b><span>Edits in DevTools disappear when you reload. Once you've found the fix, copy it into your CSS file.</span></div>
+  </div>
+
+  <section class="notes">
+    <div class="panel">
+      <h2>Key ideas</h2>
+      <ul>
+        <li>The Styles pane lists every rule that matches, with the winning ones at the top.</li>
+        <li>A crossed-out declaration lost to a stronger or later rule. Look above it to find the winner.</li>
+        <li>The file name and line number next to each rule tell you exactly where to fix it.</li>
+        <li>"user agent stylesheet" means the browser's built-in defaults. You can't edit them, but your own CSS can override them.</li>
+        <li>The box model diagram shows an element's real margin, border, padding and size.</li>
+      </ul>
+    </div>
+    <div class="panel mistake">
+      <h2>Common mistakes</h2>
+      <ul>
+        <li>Fixing the problem in DevTools and forgetting to copy the fix into the real file.</li>
+        <li>Searching your CSS for a rule that doesn't exist, when it's the browser's default.</li>
+        <li>Not noticing a rule is missing completely, which usually means a typo in the selector or a stylesheet that didn't load.</li>
+        <li>Debugging the wrong element. Check which element is selected in the tree.</li>
+      </ul>
+    </div>
+  </section>
+
+  <footer class="page-foot"><a href="organizing-css.html">← Organizing CSS</a><a href="validation.html">Next: Validating Your Code →</a></footer>
+</div>
+
+<script>
+  const $ = (id) => document.getElementById(id);
+  document.querySelector("#pv img").src = "data:image/svg+xml," + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="220" height="120" viewBox="0 0 220 120"><rect width="220" height="120" fill="#e9a66b"/><path d="M0 120 L0 70 L50 40 L80 65 L120 20 L170 60 L220 45 L220 120 Z" fill="#8a4f3a"/><path d="M95 75 Q120 30 145 75 L135 75 Q120 48 105 75 Z" fill="#f6e3c9"/><path d="M0 120 L0 100 L220 92 L220 120 Z" fill="#2f5d3a"/></svg>');
+
+  // Declarations: [property, value, enabled]
+  const RULES = [
+    { sel: ".card button", src: "style.css:40", decls: [["color", "#2340d9", true], ["margin-top", "10px", true]] },
+    { sel: ".btn", src: "style.css:31", decls: [["background", "#2340d9", true], ["color", "white", true], ["border", "0", true], ["padding", "8px 14px", true], ["border-radius", "6px", true], ["font", "inherit", true]] },
+    { sel: ".card img", src: "style.css:26", decls: [["display", "block", true], ["width", "400px", true], ["height", "auto", true], ["border-radius", "6px", true]] },
+    { sel: ".card p", src: "style.css:21", decls: [["margin", "0 0 10px", true], ["line-height", "1.5", true]] },
+    { sel: ".card h2", src: "style.css:15", decls: [["font-size", "1.25rem", true], ["color", "#0b6b5e", true], ["margin-top", "0", false], ["margin-bottom", "6px", true]] },
+    { sel: ".card", src: "style.css:8", decls: [["background", "#ffffff", true], ["border", "1px solid #d5d9e4", true], ["border-radius", "10px", true], ["padding", "14px", true], ["max-width", "260px", true]] },
+    { sel: ".page", src: "style.css:1", decls: [["font-family", "system-ui, sans-serif", true], ["background", "#f7f4ef", true], ["color", "#1d2133", true], ["padding", "16px", true]] },
+    { sel: "h2", src: "user agent stylesheet", ua: true, decls: [["display", "block", true], ["font-size", "1.5em", true], ["margin-top", "0.83em", true], ["margin-bottom", "0.83em", true], ["font-weight", "bold", true]] },
+    { sel: "button", src: "user agent stylesheet", ua: true, decls: [["color", "buttontext", true], ["background-color", "buttonface", true], ["padding", "1px 6px", true]] },
+  ];
+  const MISSIONS = [
+    { t: "The Save button's text is invisible", hint: "Select the button. Two rules set its color. Which one wins, and why? Switch off the one that shouldn't.", done: () => !RULES[0].decls[0][2] },
+    { t: "The heading sits too low in the card", hint: "Select the h2 and look at the bottom rule: the browser's own default margin. Your .card h2 rule has a fix waiting; switch it on.", done: () => RULES[4].decls[2][2] },
+    { t: "The photo sticks out of the card", hint: "Select the img. Its width is set in pixels, wider than the card allows. Switch that declaration off.", done: () => !RULES[2].decls[1][2] },
+  ];
+  const shown = {};
+  let selected = null;
+
+  function spec(sel) { const a = (sel.match(/#/g) || []).length, b = (sel.match(/\.|:(?!:)|\[/g) || []).length, c = (sel.replace(/[#.][\w-]+/g, "").match(/[a-z][\w-]*/gi) || []).length; return a * 100 + b * 10 + c; }
+
+  function applyStyles() {
+    let css = "#pv, #pv * { all: revert; }\n";
+    RULES.forEach((r) => { if (r.ua) return; const d = r.decls.filter((x) => x[2]).map(([p, v]) => `${p}: ${v};`).join(" "); if (d) css += `#pv ${r.sel} { ${d} }\n`; });
+    $("pvstyle").textContent = css;
+  }
+  const esc = (s) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;");
+  function label(el) { let s = `<${el.tagName.toLowerCase()}`; if (el.className) s += ` class="${el.className}"`; if (el.tagName === "IMG") s += ` alt="…"`; return s + ">"; }
+  function tree() {
+    const lines = [];
+    const walk = (el, depth) => { lines.push([el, depth]); [...el.children].forEach((c) => walk(c, depth + 1)); };
+    walk(document.querySelector("#pv .page"), 0);
+    $("tree").innerHTML = lines.map(([el, d], i) => `<button data-i="${i}" class="${el === selected ? "sel" : ""}">${"  ".repeat(d)}${esc(label(el))}</button>`).join("");
+    const els = lines.map((l) => l[0]);
+    $("tree").querySelectorAll("button").forEach((b) => {
+      const el = els[+b.dataset.i];
+      b.addEventListener("click", () => { selected = el; render(); });
+      b.addEventListener("mouseenter", () => (el.dataset.hover = ""));
+      b.addEventListener("mouseleave", () => delete el.dataset.hover);
+      b.addEventListener("focus", () => (el.dataset.hover = ""));
+      b.addEventListener("blur", () => delete el.dataset.hover);
+    });
+  }
+  function styles() {
+    if (!selected) { $("styles").innerHTML = '<span class="uanote">Select an element above.</span>'; $("box").innerHTML = ""; return; }
+    const idx = RULES.map((r, i) => i).filter((i) => selected.matches(RULES[i].sel));
+    idx.sort((a, b) => (RULES[a].ua - RULES[b].ua) || (spec(RULES[b].sel) - spec(RULES[a].sel)) || (a - b));
+    const seen = new Set();
+    const norm = (p) => (p === "background-color" ? "background" : p);
+    $("styles").innerHTML = idx.map((i) => {
+      const r = RULES[i];
+      const rows = r.decls.map(([p, v, on], j) => {
+        let cls = on ? "" : "off";
+        if (on) { if (seen.has(norm(p))) cls = "over"; seen.add(norm(p)); }
+        const box = r.ua ? "" : `<input type="checkbox" data-r="${i}" data-d="${j}" ${on ? "checked" : ""} aria-label="Toggle ${p}">`;
+        return `<div class="decl ${cls}">${box}<span class="p prop">${p}</span>: <span class="v val">${v}</span>;</div>`;
+      }).join("");
+      return `<div class="rule ${r.ua ? "ua" : ""}"><div class="head"><span><span class="sel">${r.sel}</span> {</span><span class="src">${r.src}</span></div>${rows}<div>}</div></div>`;
+    }).join("") || '<span class="uanote">No rules from style.css match this element.</span>';
+    const cs = getComputedStyle(selected), n = (p) => Math.round(parseFloat(cs[p]) || 0);
+    const w = Math.round(selected.getBoundingClientRect().width - n("paddingLeft") - n("paddingRight") - n("borderLeftWidth") - n("borderRightWidth"));
+    const h = Math.round(selected.getBoundingClientRect().height - n("paddingTop") - n("paddingBottom") - n("borderTopWidth") - n("borderBottomWidth"));
+    const layer = (cls, l, t, b, inner) => `<div class="bm ${cls}"><span class="l">${l}</span><span class="n t">${t}</span>${inner}<span class="n b">${b}</span></div>`;
+    $("box").innerHTML = layer("bm-m", "margin", n("marginTop"), n("marginBottom"), layer("bm-b", "border", n("borderTopWidth"), n("borderBottomWidth"), layer("bm-p", "padding", n("paddingTop"), n("paddingBottom"), `<div class="bm-c">${w} × ${h}</div>`)));
+  }
+  function missions() {
+    $("missions").innerHTML = MISSIONS.map((m, i) => { const ok = m.done(); return `<div class="panel mission ${ok ? "done" : ""}"><span class="st">${ok ? "Fixed" : `Bug ${i + 1}`}</span><b>${m.t}</b>${shown[i] && !ok ? `<span class="hint-text">${m.hint}</span>` : ""}${ok || shown[i] ? "" : `<button class="btn" data-h="${i}">Show a hint</button>`}</div>`; }).join("");
+  }
+  function render() { applyStyles(); tree(); styles(); missions(); }
+  $("styles").addEventListener("input", (e) => { const t = e.target; if (t.dataset.r !== undefined) { RULES[+t.dataset.r].decls[+t.dataset.d][2] = t.checked; applyStyles(); styles(); missions(); } });
+  $("missions").addEventListener("click", (e) => { const b = e.target.closest("[data-h]"); if (b) { shown[b.dataset.h] = true; missions(); } });
+  document.querySelector("#pv").addEventListener("click", (e) => { const el = e.target.closest("#pv .page, #pv .page *"); if (el) { selected = el; render(); } });
+  selected = document.querySelector("#pv .btn");
+  render();
+</script>
+</body>
+</html>

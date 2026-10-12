@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Project Structure &amp; Publishing</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Recursive:slnt,wght,CASL,MONO@-15..0,300..1000,0..1,0..1&display=swap">
+<link rel="stylesheet" href="style.css">
+<style>
+  .renames { display: grid; gap: 12px; }
+  .rn { display: grid; gap: 8px; padding: 12px; border-radius: 8px; background: var(--panel); border: 1px solid var(--line); }
+  .rn .old { font: 600 0.95rem var(--font-code); font-variation-settings: "MONO" 1; color: var(--bad); }
+  .rn.solved .old { text-decoration: line-through; color: var(--muted); }
+  .rn .opts { display: flex; flex-wrap: wrap; gap: 6px; }
+  .rn .opts .btn { font-size: 0.85rem; }
+  .rn .opts .btn.right { background: var(--good-soft); border-color: var(--good); color: var(--good); }
+  .rn .opts .btn.wrong { background: var(--bad-soft); border-color: var(--bad); color: var(--bad); }
+  .tree { font: 0.95rem/1.7 var(--font-code); font-variation-settings: "MONO" 1; margin: 0; padding: 14px 16px; background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); white-space: pre; overflow-x: auto; }
+  .tree .dir { color: var(--prop); font-weight: 600; }
+  .tree .new { color: var(--good); font-weight: 600; }
+  .tree .messy { color: var(--bad); }
+  .rules { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+  .rules li { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font: 0.88rem var(--font-code); font-variation-settings: "MONO" 1; padding: 6px 8px; border-radius: 6px; background: var(--stage); }
+  .rules .no { color: var(--bad); } .rules .yes { color: var(--good); }
+
+  .gh-steps { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; counter-reset: s; }
+  .gh-steps li { counter-increment: s; display: grid; grid-template-columns: 30px 1fr; gap: 12px; padding: 12px; border-radius: 8px; background: var(--panel); border: 1px solid var(--line); }
+  .gh-steps li::before { content: counter(s); width: 26px; height: 26px; border-radius: 50%; display: grid; place-items: center; background: var(--cobalt); color: var(--panel); font: 700 0.8rem var(--font-code); }
+  .gh-steps b { display: block; }
+  .gh-steps span { font-size: 0.93rem; color: var(--muted); }
+  .url-builder { display: grid; gap: 10px; }
+  .url-builder .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  @media (max-width: 520px) { .url-builder .row2 { grid-template-columns: 1fr; } }
+  .url-builder input { font: 0.95rem var(--font-code); font-variation-settings: "MONO" 1; padding: 8px 10px; border: 1px solid var(--line); border-radius: 6px; background: var(--paper); color: var(--ink); width: 100%; }
+  .url-out { font: 700 1.05rem var(--font-code); font-variation-settings: "MONO" 1; color: var(--cobalt); overflow-wrap: anywhere; }
+  details { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 10px 14px; }
+  details summary { font-weight: 700; cursor: pointer; }
+  details p { margin-top: 8px; font-size: 0.95rem; }
+  .trouble { display: grid; gap: 8px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <nav class="crumbs" aria-label="Site"><a class="crumb" href="index.html">← Field Guide</a><a class="crumb" href="glossary.html">Glossary</a></nav>
+  <header class="page-head">
+    <span class="eyebrow">Polish &amp; Workflow · Project Structure &amp; Publishing</span>
+    <h1>Project Structure &amp; Publishing</h1>
+    <p class="lede">A tidy folder and sensible file names prevent most "it works on my laptop" bugs. Clean up this messy project, then follow the steps to put a site online with GitHub Pages.</p>
+  </header>
+
+  <div class="section-title" style="margin-top:0"><span class="eyebrow">Part 1</span><h2>Clean up a messy project</h2><p>Pick the best new name for each file. The folder on the right updates as you go.</p></div>
+  <section class="playground even">
+    <div class="renames" id="renames"></div>
+    <div class="stage-col">
+      <pre class="tree" id="tree" aria-live="polite"></pre>
+      <div class="panel" style="display:grid;gap:8px">
+        <span class="eyebrow">Naming rules</span>
+        <ul class="rules">
+          <li><span class="no">My Page.html</span><span class="yes">my-page.html</span></li>
+          <li><span class="no">Photo.JPG</span><span class="yes">photo.jpg</span></li>
+          <li><span class="no">final (2).css</span><span class="yes">style.css</span></li>
+          <li><span class="no">IMG_2041.jpg</span><span class="yes">royal-arch.jpg</span></li>
+        </ul>
+        <p class="hint">Lowercase, dashes instead of spaces, no special characters, and names that say what's inside.</p>
+      </div>
+    </div>
+  </section>
+
+  <div class="section-title"><span class="eyebrow">Part 2</span><h2>Publish with GitHub Pages</h2><p>GitHub Pages hosts plain HTML, CSS and JavaScript sites for free.</p></div>
+  <section class="playground even">
+    <ol class="gh-steps">
+      <li><div><b>Make a GitHub account</b><span>Pick your username carefully. It becomes part of your site's address.</span></div></li>
+      <li><div><b>Create a new repository</b><span>Click New, give it a short lowercase name like trail-site, set it to Public, and create it.</span></div></li>
+      <li><div><b>Upload your files</b><span>Click "Add file" then "Upload files." Drag in the <em>contents</em> of your project folder so index.html sits at the top level, then click Commit changes.</span></div></li>
+      <li><div><b>Turn on Pages</b><span>Go to Settings, then Pages. Under "Build and deployment," choose "Deploy from a branch," pick main and / (root), and click Save.</span></div></li>
+      <li><div><b>Wait, then visit</b><span>It takes a minute or two. Refresh the Pages settings to see your link. After each change you upload, give it another minute.</span></div></li>
+    </ol>
+    <div class="stage-col">
+      <div class="panel url-builder">
+        <span class="eyebrow">Where will my site be?</span>
+        <div class="row2">
+          <div class="control"><label for="user">GitHub username</label><input id="user" value="cu-student" spellcheck="false" autocomplete="off"></div>
+          <div class="control"><label for="repo">Repository name</label><input id="repo" value="trail-site" spellcheck="false" autocomplete="off"></div>
+        </div>
+        <span class="url-out" id="url"></span>
+        <p class="hint" id="url-note"></p>
+      </div>
+      <div class="trouble">
+        <span class="eyebrow">If it doesn't work</span>
+        <details><summary>I get a 404 page</summary><p>Make sure there's a file named exactly <code>index.html</code> (all lowercase) at the top of the repository, not inside another folder. Then wait a couple of minutes and refresh.</p></details>
+        <details><summary>The page loads but has no styles or images</summary><p>Check your paths. Capitalization must match exactly, and paths starting with <code>/</code> point to the wrong place on project sites. Use relative paths like <code>css/style.css</code>.</p></details>
+        <details><summary>My changes don't show up</summary><p>Wait a minute after committing, then do a hard refresh (Ctrl+Shift+R, or Cmd+Shift+R on a Mac) so your browser doesn't show an old cached copy.</p></details>
+        <details><summary>It shows my README instead of my site</summary><p>GitHub Pages couldn't find <code>index.html</code>, so it fell back to the README. Check the file name and that it's at the top level.</p></details>
+      </div>
+    </div>
+  </section>
+
+  <section class="notes">
+    <div class="panel">
+      <h2>Key ideas</h2>
+      <ul>
+        <li>The home page is always named <code>index.html</code>. Servers open it automatically.</li>
+        <li>Group files by type: <code>css/</code>, <code>images/</code>, and subfolders for big sections.</li>
+        <li>Keep one project in one folder, and open that folder in your code editor.</li>
+        <li>Test the published site, not just your local copy. Servers are stricter about file names.</li>
+      </ul>
+    </div>
+    <div class="panel mistake">
+      <h2>Common mistakes</h2>
+      <ul>
+        <li>Uploading the project folder itself, so the site ends up at <code>/my-project/index.html</code> one level too deep.</li>
+        <li>Image paths that point to your Desktop or Downloads folder.</li>
+        <li>Two copies of a file, like <code>style.css</code> and <code>style (1).css</code>, and editing the wrong one.</li>
+        <li>Making the repository private on a free account, which turns Pages off.</li>
+      </ul>
+    </div>
+  </section>
+
+  <footer class="page-foot"><a href="validation.html">← Validating Your Code</a><a href="index.html">All topics →</a></footer>
+</div>
+
+<script>
+  const $ = (id) => document.getElementById(id);
+  const FILES = [
+    { old: "Index.HTML", opts: ["Index.html", "index.html", "home.HTML"], a: 1, why: "The home page must be index.html, all lowercase." },
+    { old: "my about page.html", opts: ["about.html", "my_about_page.HTML", "My-About-Page.html"], a: 0, why: "Short, lowercase, no spaces." },
+    { old: "style (1).css", opts: ["style(1).css", "css/style.css", "Styles Final.css"], a: 1, why: "One stylesheet with a plain name, in a css folder." },
+    { old: "IMG_2041.JPG", opts: ["images/IMG_2041.JPG", "royal arch.jpg", "images/royal-arch.jpg"], a: 2, why: "In the images folder, with a name that says what it shows and a lowercase extension." },
+    { old: "Final FINAL project v2.html", opts: ["projects/trail-app.html", "final-final.html", "project v2.html"], a: 0, why: "Names describe the content, not the version. Version history belongs in Git." },
+  ];
+  const picks = {};
+  function renderFiles() {
+    $("renames").innerHTML = FILES.map((f, i) => {
+      const p = picks[i], solved = p !== undefined;
+      return `<div class="rn ${solved ? "solved" : ""}"><span class="old">${f.old}</span><div class="opts">${f.opts.map((o, j) => `<button class="btn ${solved && j === f.a ? "right" : solved && j === p ? "wrong" : ""}" data-i="${i}" data-j="${j}">${o}</button>`).join("")}</div>${solved ? `<span class="feedback ${p === f.a ? "right" : "wrong"}">${p === f.a ? "Good choice. " : "Not quite. "}${f.why}</span>` : ""}</div>`;
+    }).join("");
+    const names = FILES.map((f, i) => picks[i] !== undefined ? { n: f.opts[f.a], fresh: true } : { n: f.old, fresh: false });
+    const root = [], dirs = {};
+    names.forEach(({ n, fresh }) => { const parts = n.split("/"); if (parts.length > 1) (dirs[parts[0]] = dirs[parts[0]] || []).push({ n: parts[1], fresh }); else root.push({ n, fresh }); });
+    const line = (prefix, f) => `${prefix}<span class="${f.fresh ? "new" : "messy"}">${f.n}</span>`;
+    const entries = [...Object.keys(dirs).sort().map((d) => ({ d })), ...root.sort((a, b) => a.n.localeCompare(b.n))];
+    let out = '<span class="dir">my-project/</span>\n';
+    entries.forEach((e, i) => {
+      const last = i === entries.length - 1, branch = last ? "└── " : "├── ", cont = last ? "    " : "│   ";
+      if (e.d) { out += `${branch}<span class="dir">${e.d}/</span>\n`; dirs[e.d].forEach((f, j) => (out += line(cont + (j === dirs[e.d].length - 1 ? "└── " : "├── "), f) + "\n")); }
+      else out += line(branch, e) + "\n";
+    });
+    if (Object.keys(picks).length === FILES.length) out += '\n<span class="new">Organized. Every path is predictable now.</span>';
+    $("tree").innerHTML = out;
+  }
+  $("renames").addEventListener("click", (e) => { const b = e.target.closest("button"); if (!b || picks[b.dataset.i] !== undefined) return; picks[b.dataset.i] = +b.dataset.j; renderFiles(); });
+  renderFiles();
+
+  function url() {
+    const u = $("user").value.trim().toLowerCase() || "username", r = $("repo").value.trim() || "repo";
+    const userSite = r.toLowerCase() === `${u}.github.io`;
+    $("url").textContent = userSite ? `https://${u}.github.io/` : `https://${u}.github.io/${r.replace(/\s+/g, "-")}/`;
+    const notes = [];
+    if (userSite) notes.push("A repository named username.github.io is your main user site, so it lives at the root address.");
+    else notes.push("This is a project site, so it lives in a folder named after the repository. That's why paths starting with / break here.");
+    if (/\s/.test(r)) notes.push("GitHub will replace the spaces in the repository name with dashes.");
+    if (/[A-Z]/.test(r)) notes.push("Tip: lowercase repository names are easier to type and share.");
+    $("url-note").textContent = notes.join(" ");
+  }
+  ["user", "repo"].forEach((id) => $(id).addEventListener("input", url));
+  url();
+</script>
+</body>
+</html>

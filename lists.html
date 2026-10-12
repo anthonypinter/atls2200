@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lists</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Recursive:slnt,wght,CASL,MONO@-15..0,300..1000,0..1,0..1&display=swap">
+<link rel="stylesheet" href="style.css">
+<style>
+  .demo { background: #fff; color: #1d2133; border: 1px solid var(--line); border-radius: var(--radius); padding: 16px 18px; font: 1rem/1.6 Georgia, serif; min-width: 0; }
+  .demo * { all: revert; font-family: inherit; }
+  .demo dt { font-weight: 700; }
+  .kind-note { font-size: 0.95rem; }
+  .ol-opts { display: grid; gap: 10px; }
+  .check { display: flex; gap: 8px; align-items: center; font-size: 0.92rem; cursor: pointer; }
+  .check input { accent-color: var(--cobalt); }
+  #styled { padding: 16px 18px; }
+  #styled ul { margin: 0; transition: all 0.2s; }
+  #styled.marker ul li::marker { color: #b4410c; font-weight: 700; }
+  #styled.nav ul { display: flex; flex-wrap: wrap; gap: 6px; }
+  #styled.nav ul li a { display: block; padding: 8px 14px; background: #eef1f8; border-radius: 6px; text-decoration: none; color: #1d2133; }
+  #styled.nav ul li a:hover { background: #2340d9; color: #fff; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <nav class="crumbs" aria-label="Site"><a class="crumb" href="index.html">← Field Guide</a><a class="crumb" href="glossary.html">Glossary</a></nav>
+  <header class="page-head">
+    <span class="eyebrow">HTML Foundations · Lists</span>
+    <h1>Lists</h1>
+    <p class="lede">HTML has three kinds of list. Choose the one that matches your content, then use CSS to change how the markers look, or remove them to build a menu.</p>
+  </header>
+
+  <div class="section-title" style="margin-top:0"><span class="eyebrow">Part 1</span><h2>Pick the right list</h2></div>
+  <section class="playground">
+    <div class="panel controls">
+      <div class="seg" id="kind" role="group" aria-label="List type">
+        <button class="btn" data-k="ul" aria-pressed="true">&lt;ul&gt;</button><button class="btn" data-k="ol">&lt;ol&gt;</button><button class="btn" data-k="dl">&lt;dl&gt;</button>
+      </div>
+      <p class="kind-note" id="kind-note"></p>
+      <div class="ol-opts" id="ol-opts" hidden>
+        <span class="eyebrow">&lt;ol&gt; attributes</span>
+        <div class="control"><label for="start">start</label><input id="start" type="range" min="1" max="10" value="1"><span class="readout" id="start-out"></span></div>
+        <div class="control"><label for="type">type</label><select id="type"><option value="1">1, 2, 3</option><option value="a">a, b, c</option><option value="A">A, B, C</option><option value="i">i, ii, iii</option><option value="I">I, II, III</option></select></div>
+        <label class="check"><input type="checkbox" id="rev">reversed</label>
+      </div>
+      <label class="check" id="nest-row"><input type="checkbox" id="nest" checked>Include a nested list</label>
+    </div>
+    <div class="demo" id="demo"></div>
+  </section>
+
+  <div class="section-title"><span class="eyebrow">Part 2</span><h2>Style the markers</h2><p>The same unordered list, restyled with CSS. The last option turns it into a navigation menu, which is how most site menus are built.</p></div>
+  <section class="playground">
+    <div class="panel controls">
+      <div class="control"><label for="lst">list-style-type</label>
+        <select id="lst"><option>disc</option><option>circle</option><option>square</option><option>decimal</option><option>lower-alpha</option><option>upper-roman</option><option value='"→  "'>"→ " (any text)</option><option>none</option></select></div>
+      <div class="control"><label for="lsp">list-style-position</label><select id="lsp"><option>outside</option><option>inside</option></select></div>
+      <div class="control"><label for="pl">padding-left</label><input id="pl" type="range" min="0" max="60" step="4" value="40"><span class="readout" id="pl-out"></span></div>
+      <label class="check"><input type="checkbox" id="mk">Color the markers with <code>::marker</code></label>
+      <label class="check"><input type="checkbox" id="nav">Turn it into a menu</label>
+    </div>
+    <div class="stage-col">
+      <div class="demo" id="styled"><ul><li><a href="#styled">Trails</a></li><li><a href="#styled">Maps</a></li><li><a href="#styled">Conditions</a></li><li><a href="#styled">Gear checklist</a></li></ul></div>
+      <p class="hint" id="style-note"></p>
+    </div>
+  </section>
+
+  <section class="notes">
+    <div class="panel">
+      <h2>Key ideas</h2>
+      <ul>
+        <li><code>&lt;ul&gt;</code> when order doesn't matter, <code>&lt;ol&gt;</code> when it does, <code>&lt;dl&gt;</code> for terms and their descriptions.</li>
+        <li>A list's only direct children are <code>&lt;li&gt;</code>s (or <code>&lt;dt&gt;</code>/<code>&lt;dd&gt;</code> in a dl).</li>
+        <li>To nest a list, put the inner list <em>inside</em> an <code>&lt;li&gt;</code>, after its text.</li>
+        <li>Navigation menus are usually a <code>&lt;ul&gt;</code> inside a <code>&lt;nav&gt;</code>, with bullets removed.</li>
+      </ul>
+    </div>
+    <div class="panel mistake">
+      <h2>Common mistakes</h2>
+      <ul>
+        <li>Putting a nested <code>&lt;ul&gt;</code> directly inside the outer <code>&lt;ul&gt;</code> instead of inside an <code>&lt;li&gt;</code>.</li>
+        <li>Typing your own numbers or dashes into list items.</li>
+        <li>Removing bullets but not the default <code>padding-left</code>, leaving a mysterious indent.</li>
+        <li>Using <code>&lt;br&gt;</code> between lines instead of real list items.</li>
+      </ul>
+    </div>
+  </section>
+
+  <footer class="page-foot"><a href="text-semantics.html">← Text Semantics</a><a href="semantic-elements.html">Next: Semantic Elements →</a></footer>
+</div>
+
+<script>
+  const $ = (id) => document.getElementById(id);
+  let kind = "ul";
+  const NOTE = {
+    ul: "Unordered list: the order doesn't matter, like a packing list. Shows bullets by default.",
+    ol: "Ordered list: the order matters, like directions or a ranking. Shows numbers by default.",
+    dl: "Description list: pairs of terms (dt) and descriptions (dd), like a glossary or trail facts.",
+  };
+  function part1() {
+    const nest = $("nest").checked;
+    $("kind-note").textContent = NOTE[kind];
+    $("ol-opts").hidden = kind !== "ol";
+    $("nest-row").hidden = kind === "dl";
+    $("start-out").textContent = $("start").value;
+    document.querySelectorAll("#kind .btn").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.k === kind)));
+    if (kind === "dl") {
+      $("demo").innerHTML = "<dl><dt>Distance</dt><dd>6.7 miles round trip</dd><dt>Elevation gain</dt><dd>1,100 feet</dd><dt>Dogs</dt><dd>Allowed on a leash</dd></dl>";
+      return;
+    }
+    const inner = nest ? (kind === "ul" ? "<ul><li>Rain jacket</li><li>Warm hat</li></ul>" : "<ol><li>Turn left at the junction</li><li>Cross the creek</li></ol>") : "";
+    if (kind === "ul") $("demo").innerHTML = `<ul><li>Water</li><li>Layers${inner}</li><li>Snacks</li><li>Map</li></ul>`;
+    else {
+      const attrs = `start="${$("start").value}" type="${$("type").value}"${$("rev").checked ? " reversed" : ""}`;
+      $("demo").innerHTML = `<ol ${attrs}><li>Park at the trailhead</li><li>Follow the Mesa Trail south${inner}</li><li>Climb to the saddle</li><li>Return the same way</li></ol>`;
+    }
+  }
+  $("kind").addEventListener("click", (e) => { const b = e.target.closest("button"); if (b) { kind = b.dataset.k; part1(); } });
+  ["start", "type", "rev", "nest"].forEach((id) => $(id).addEventListener("input", part1));
+  part1();
+
+  function part2() {
+    const nav = $("nav").checked, ul = $("styled").querySelector("ul");
+    $("pl-out").textContent = $("pl").value + "px";
+    ul.style.listStyleType = nav ? "none" : $("lst").value;
+    ul.style.listStylePosition = $("lsp").value;
+    ul.style.paddingLeft = (nav ? 0 : $("pl").value) + "px";
+    $("styled").classList.toggle("marker", $("mk").checked);
+    $("styled").classList.toggle("nav", nav);
+    let note = "";
+    if (nav) note = "Menu mode: list-style none, padding-left 0, and display: flex on the ul. Each link becomes a padded block. It's still a list underneath, so screen readers announce \"list, 4 items.\"";
+    else if ($("lst").value === "none" && +$("pl").value > 0) note = "The bullets are gone, but the default padding-left still indents the list. Set it to 0.";
+    else if (+$("pl").value === 0 && $("lsp").value === "outside") note = "With no padding and outside markers, the bullets hang off the left edge and can get cut off.";
+    else if ($("lsp").value === "inside") note = "Inside markers sit within the text block, so long lines wrap under the marker instead of lining up with the text.";
+    $("style-note").textContent = note;
+  }
+  ["lst", "lsp", "pl", "mk", "nav"].forEach((id) => $(id).addEventListener("input", part2));
+  part2();
+</script>
+</body>
+</html>

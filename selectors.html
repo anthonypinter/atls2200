@@ -1,0 +1,234 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Selectors &amp; Specificity</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Recursive:slnt,wght,CASL,MONO@-15..0,300..1000,0..1,0..1&display=swap">
+<link rel="stylesheet" href="style.css">
+<style>
+  .sel-input { display: grid; gap: 6px; }
+  .sel-input input { font: 1.05rem var(--font-code); font-variation-settings: "MONO" 1; color: var(--cobalt); padding: 10px 12px; border: 1px solid var(--line); border-radius: 8px; background: var(--panel); width: 100%; }
+  .sel-input input.invalid { border-color: var(--bad); color: var(--bad); }
+  .presets { display: flex; flex-wrap: wrap; gap: 6px; }
+  .presets .btn { font-size: 0.82rem; padding: 5px 9px; }
+  .count { font: 700 0.95rem var(--font-code); font-variation-settings: "MONO" 1; color: var(--cobalt); }
+  .count.none { color: var(--muted); } .count.err { color: var(--bad); }
+
+  /* The sample DOM: every element is drawn as a labeled box. */
+  .dom { display: grid; gap: 10px; }
+  .dom * { display: block; position: relative; margin: 0; padding: 22px 8px 8px; border: 1.5px solid var(--line); border-radius: 6px; background: var(--panel); color: var(--ink); font: 0.95rem var(--font-body); text-decoration: none; list-style: none; transition: background 0.15s, border-color 0.15s; }
+  .dom *::before { content: attr(data-label); position: absolute; top: 3px; left: 7px; font: 600 0.72rem var(--font-code); font-variation-settings: "MONO" 1; color: var(--muted); white-space: nowrap; }
+  .dom p, .dom ul { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+  .dom span, .dom li { display: inline-block; }
+  .dom [data-hit] { background: var(--cobalt-soft); border-color: var(--cobalt); box-shadow: 0 0 0 2px var(--cobalt); }
+  .dom [data-hit]::before { color: var(--cobalt); }
+
+  .ref-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 14px; }
+  @media (max-width: 380px) { .ref-grid { grid-template-columns: 1fr; } }
+  .ref-grid .panel { display: grid; gap: 8px; align-content: start; overflow-x: auto; }
+  .ref { border-collapse: collapse; font-size: 0.9rem; width: 100%; }
+  .ref td { padding: 6px 8px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  .ref td:nth-child(2) { color: var(--muted); white-space: nowrap; }
+  .calc { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  @media (max-width: 700px) { .calc { grid-template-columns: 1fr; } }
+  .rule { display: grid; gap: 10px; }
+  .rule input { font: 1rem var(--font-code); font-variation-settings: "MONO" 1; padding: 9px 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--paper); color: var(--ink); width: 100%; }
+  .score3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+  .score3 div { display: grid; justify-items: center; padding: 8px 4px; border-radius: 6px; background: var(--stage); }
+  .score3 b { font: 800 1.6rem var(--font-display); font-variant-numeric: tabular-nums; }
+  .score3 small { font-size: 0.72rem; color: var(--muted); text-align: center; }
+  .rule.win { outline: 3px solid var(--good); }
+  .verdict { margin-top: 16px; padding: 14px 16px; border-radius: var(--radius); background: var(--panel); border: 1px solid var(--line); display: flex; flex-wrap: wrap; gap: 10px 20px; align-items: center; }
+  .verdict .sample { font: 800 1.4rem var(--font-display); }
+  .swatch { display: inline-block; width: 12px; height: 12px; border-radius: 3px; vertical-align: middle; margin-right: 4px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <nav class="crumbs" aria-label="Site"><a class="crumb" href="index.html">← Field Guide</a><a class="crumb" href="glossary.html">Glossary</a></nav>
+  <header class="page-head">
+    <span class="eyebrow">CSS Basics · Selectors &amp; Specificity</span>
+    <h1>Selectors &amp; Specificity</h1>
+    <p class="lede">A selector picks which elements a rule applies to. Type one below and the matching elements light up. When two rules disagree, specificity decides which one wins.</p>
+  </header>
+
+  <section class="playground">
+    <div class="panel controls">
+      <div class="sel-input"><label class="eyebrow" for="sel">Selector</label><input id="sel" value=".card .tag" spellcheck="false" autocomplete="off"></div>
+      <div class="count" id="count" aria-live="polite"></div>
+      <span class="eyebrow" style="margin-top:6px">Try these</span>
+      <div class="presets" id="presets"></div>
+      <p class="hint" id="explain"></p>
+    </div>
+    <div class="stage">
+      <div class="dom" id="dom">
+        <div class="card" id="featured">
+          <h2 class="title">Mesa Trail</h2>
+          <p class="meta">6.7 miles <span class="tag">Moderate</span></p>
+          <ul class="gear"><li>Water</li><li class="warn">Bear spray</li><li>Map</li></ul>
+          <a class="btn" href="#sel">Details</a>
+          <a class="dl" href="trail-map.pdf">PDF map</a>
+        </div>
+        <div class="card">
+          <h2 class="title">Royal Arch</h2>
+          <p class="meta">3.4 miles <span class="tag hard">Hard</span></p>
+          <a class="btn" href="#sel">Details</a>
+        </div>
+        <p class="note">Trail data updated <span>Tuesday</span></p>
+      </div>
+    </div>
+  </section>
+
+  <div class="section-title"><span class="eyebrow">Reference</span><h2>Combinators and attribute selectors</h2><p>Each of these is in the "Try these" list above.</p></div>
+  <div class="ref-grid">
+    <div class="panel"><span class="eyebrow">Combinators: how elements relate</span>
+      <table class="ref"><tbody>
+        <tr><td><code>.card p</code></td><td>space</td><td>Descendant: a p anywhere inside .card</td></tr>
+        <tr><td><code>.card &gt; a</code></td><td>&gt;</td><td>Child: an a directly inside .card</td></tr>
+        <tr><td><code>h2 + p</code></td><td>+</td><td>Adjacent sibling: the p right after an h2</td></tr>
+        <tr><td><code>h2 ~ a</code></td><td>~</td><td>General sibling: any a after an h2, same parent</td></tr>
+      </tbody></table></div>
+    <div class="panel"><span class="eyebrow">Attribute selectors</span>
+      <table class="ref"><tbody>
+        <tr><td><code>[href]</code></td><td>has the attribute</td></tr>
+        <tr><td><code>[type="email"]</code></td><td>exactly equals</td></tr>
+        <tr><td><code>[href^="https"]</code></td><td>starts with</td></tr>
+        <tr><td><code>[href$=".pdf"]</code></td><td>ends with</td></tr>
+        <tr><td><code>[class*="card"]</code></td><td>contains anywhere</td></tr>
+      </tbody></table></div>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Specificity</span><h2>Which rule wins?</h2><p>Both rules below try to color the same heading. The browser compares their scores column by column, from left to right. If the scores tie, the rule written later wins.</p></div>
+  <div class="calc">
+    <div class="panel rule" id="ra"><label class="eyebrow" for="a"><span class="swatch" style="background:var(--prop)"></span>Rule A (written first)</label><input id="a" value="#featured h2" spellcheck="false"><div class="score3" id="sa"></div></div>
+    <div class="panel rule" id="rb"><label class="eyebrow" for="b"><span class="swatch" style="background:var(--cobalt)"></span>Rule B (written second)</label><input id="b" value=".card .title" spellcheck="false"><div class="score3" id="sb"></div></div>
+  </div>
+  <div class="verdict" aria-live="polite"><span class="sample" id="sample">Mesa Trail</span><span id="verdict"></span></div>
+
+  <section class="notes">
+    <div class="panel">
+      <h2>Key ideas</h2>
+      <ul>
+        <li>A space means "inside, at any depth." <code>&gt;</code> means "a direct child only."</li>
+        <li>No space between parts means "both at once": <code>.tag.hard</code> is an element with both classes.</li>
+        <li>A comma makes a list: <code>h2, .btn</code> matches either one.</li>
+        <li><code>+</code> and <code>~</code> only look <em>forward</em> at later siblings, never back up or into children.</li>
+        <li>Score order: IDs beat classes, classes beat elements. One ID outranks any number of classes.</li>
+        <li>Inline <code>style=""</code> beats all selectors, and <code>!important</code> beats that. Avoid both when you can.</li>
+      </ul>
+    </div>
+    <div class="panel mistake">
+      <h2>Common mistakes</h2>
+      <ul>
+        <li>Forgetting the dot: <code>card</code> looks for a &lt;card&gt; element, not <code>class="card"</code>.</li>
+        <li>Writing <code>.card.title</code> when you meant <code>.card .title</code>. One space changes everything.</li>
+        <li>Styling with IDs everywhere, then needing even stronger selectors to override them.</li>
+        <li>Reaching for <code>!important</code> instead of finding out why a rule is losing.</li>
+      </ul>
+    </div>
+  </section>
+
+  <footer class="page-foot"><a href="css-basics.html">← How CSS Is Applied</a><a href="pseudo-classes.html">Next: Pseudo-classes &amp; States →</a></footer>
+</div>
+
+<script>
+  const $ = (id) => document.getElementById(id);
+  const dom = $("dom");
+  const PRESETS = {
+    "p": "Every p element, wherever it is.",
+    ".title": "Every element with class=\"title\".",
+    "#featured": "The one element with id=\"featured\".",
+    ".card .tag": "A .tag anywhere inside a .card. The Tuesday span isn't a .tag, so it's left out.",
+    ".card > a": "An a that is a direct child of a .card.",
+    ".tag.hard": "Elements that have both classes at once.",
+    "li:first-child": "An li that is the first child of its parent.",
+    "ul li:nth-child(2)": "The second li inside a ul.",
+    "h2, .btn": "A list: every h2 and every .btn.",
+    "p span": "Any span inside a p, including the one in the note.",
+    "#featured .btn": "The .btn inside the element with id=\"featured\" only.",
+    "[href]": "Any element with an href attribute.",
+    "[href$=\".pdf\"]": "Attribute ends with: links whose href ends in .pdf.",
+    "[href^=\"#\"]": "Attribute starts with: same-page links whose href starts with #.",
+    "[class*=\"ta\"]": "Attribute contains: any class attribute containing the letters ta anywhere, so .tag and .meta both match.",
+    "h2 + p": "Adjacent sibling: a p that comes straight after an h2, with the same parent.",
+    "h2 ~ a": "General sibling: every a that comes anywhere after an h2, with the same parent.",
+    "li + li": "Every li with another li right before it, so all but the first. Handy for dividers between items.",
+  };
+
+  // Label each sample element with its tag, id and classes.
+  dom.querySelectorAll("*").forEach((el) => {
+    let l = el.tagName.toLowerCase();
+    if (el.id) l += "#" + el.id;
+    if (el.classList.length) l += "." + [...el.classList].join(".");
+    if (el.getAttribute("href")) l += `[href="${el.getAttribute("href")}"]`;
+    el.dataset.label = l;
+  });
+
+  dom.addEventListener("click", (e) => { if (e.target.closest("a")) e.preventDefault(); });
+  $("presets").innerHTML = Object.keys(PRESETS).map((p) => `<button class="btn">${p}</button>`).join("");
+  $("presets").addEventListener("click", (e) => { const b = e.target.closest("button"); if (b) { $("sel").value = b.textContent; test(); } });
+
+  function test() {
+    const s = $("sel").value.trim();
+    dom.querySelectorAll("[data-hit]").forEach((el) => delete el.dataset.hit);
+    const count = $("count");
+    $("explain").textContent = PRESETS[s] || "";
+    $("sel").classList.remove("invalid");
+    if (!s) { count.className = "count none"; count.textContent = "Type a selector."; return; }
+    let hits;
+    try { hits = dom.querySelectorAll(s); }
+    catch (e) { $("sel").classList.add("invalid"); count.className = "count err"; count.textContent = "That isn't a valid selector yet."; return; }
+    hits.forEach((el) => (el.dataset.hit = ""));
+    count.className = "count" + (hits.length ? "" : " none");
+    count.textContent = hits.length ? `Matches ${hits.length} element${hits.length > 1 ? "s" : ""}` : "Matches nothing";
+  }
+  $("sel").addEventListener("input", test);
+  test();
+
+  // Specificity: [ids, classes/attributes/pseudo-classes, elements/pseudo-elements]
+  function specificity(sel) {
+    let s = sel.split(",")[0];
+    s = s.replace(/:where\([^)]*\)/g, "");
+    s = s.replace(/:(?:is|not|has)\(([^)]*)\)/g, " $1 ");
+    let a = 0, b = 0, c = 0;
+    s = s.replace(/::[\w-]+/g, () => { c++; return " "; });
+    s = s.replace(/#[\w-]+/g, () => { a++; return " "; });
+    s = s.replace(/\.[\w-]+/g, () => { b++; return " "; });
+    s = s.replace(/\[[^\]]*\]/g, () => { b++; return " "; });
+    s = s.replace(/:[\w-]+(\([^)]*\))?/g, () => { b++; return " "; });
+    (s.match(/[a-zA-Z][\w-]*/g) || []).forEach(() => c++);
+    return [a, b, c];
+  }
+  const valid = (s) => { try { document.querySelector(s); return !!s.trim(); } catch (e) { return false; } };
+  function box(sc) {
+    return [["IDs", sc[0]], ["classes, attributes, :pseudo", sc[1]], ["elements", sc[2]]].map(([l, n]) => `<div><b>${n}</b><small>${l}</small></div>`).join("");
+  }
+  function compare() {
+    const A = $("a").value, B = $("b").value;
+    if (!valid(A) || !valid(B)) {
+      $("sa").innerHTML = valid(A) ? box(specificity(A)) : ""; $("sb").innerHTML = valid(B) ? box(specificity(B)) : "";
+      $("verdict").textContent = "Type a valid selector in both boxes."; $("ra").classList.remove("win"); $("rb").classList.remove("win"); return;
+    }
+    const sa = specificity(A), sb = specificity(B);
+    $("sa").innerHTML = box(sa); $("sb").innerHTML = box(sb);
+    let winner = "B", why = "The scores tie, so the rule written later (B) wins.";
+    for (let i = 0; i < 3; i++) {
+      if (sa[i] !== sb[i]) {
+        winner = sa[i] > sb[i] ? "A" : "B";
+        const col = ["IDs", "classes", "elements"][i];
+        why = `Rule ${winner} wins: it has more ${col} (${Math.max(sa[i], sb[i])} vs ${Math.min(sa[i], sb[i])})` + (i > 0 ? `, and the columns to the left tied.` : ".");
+        break;
+      }
+    }
+    $("ra").classList.toggle("win", winner === "A"); $("rb").classList.toggle("win", winner === "B");
+    $("sample").style.color = winner === "A" ? "var(--prop)" : "var(--cobalt)";
+    $("verdict").textContent = why;
+  }
+  $("a").addEventListener("input", compare); $("b").addEventListener("input", compare);
+  compare();
+</script>
+</body>
+</html>

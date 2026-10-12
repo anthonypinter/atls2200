@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sizing Items</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Recursive:slnt,wght,CASL,MONO@-15..0,300..1000,0..1,0..1&display=swap">
+<link rel="stylesheet" href="style.css">
+<style>
+  .parent { border: 2px dashed var(--prop); border-radius: 8px; padding: 10px; display: grid; gap: 10px; max-width: 100%; }
+  .parent > .lbl { font: 600 0.75rem var(--font-code); font-variation-settings: "MONO" 1; color: var(--prop); }
+  .sbox { background: color-mix(in srgb, var(--cobalt) 18%, transparent); border: 2px solid var(--cobalt); border-radius: 6px; padding: 8px 10px; display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap; font: 0.85rem var(--font-code); font-variation-settings: "MONO" 1; min-width: 0; }
+  .sbox b { color: var(--cobalt); } .sbox span { color: var(--muted); font-variant-numeric: tabular-nums; }
+  .sbox.inline { display: inline-flex; }
+  .grow-demo { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  @media (max-width: 640px) { .grow-demo { grid-template-columns: 1fr; } }
+  .gbox { border: 2px solid var(--cobalt); border-radius: 8px; padding: 10px; background: var(--panel); font-size: 0.9rem; }
+  .gbox p { margin: 0 0 6px; }
+  .gwrap { display: grid; gap: 6px; align-content: start; }
+  .gwrap .cap { font: 600 0.8rem var(--font-code); font-variation-settings: "MONO" 1; }
+  .after { padding: 6px 8px; border-radius: 6px; background: var(--stage); font-size: 0.85rem; color: var(--muted); }
+  #ar { background: linear-gradient(135deg, var(--item-2), var(--item-4)); border-radius: 8px; color: #fff; display: grid; place-items: center; font: 700 1rem var(--font-code); max-width: 100%; }
+  #vh { background: var(--cobalt-soft); border: 2px solid var(--cobalt); border-radius: 8px; display: grid; place-items: center; font: 600 0.9rem var(--font-code); font-variation-settings: "MONO" 1; color: var(--cobalt); text-align: center; padding: 8px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <nav class="crumbs" aria-label="Site"><a class="crumb" href="index.html">← Field Guide</a><a class="crumb" href="glossary.html">Glossary</a></nav>
+  <header class="page-head">
+    <span class="eyebrow">CSS Basics · Sizing Items</span>
+    <h1>Sizing Items</h1>
+    <p class="lede">Without a set size, a block fills the width it's given and is as tall as its content. Set sizes with care: fixed pixels break on small screens, while percentages and min/max limits adapt.</p>
+  </header>
+
+  <div class="section-title" style="margin-top:0"><span class="eyebrow">Part 1</span><h2>Width: fixed, flexible and limited</h2><p>Drag the parent's width and compare how each box responds. The numbers are measured live.</p></div>
+  <section class="playground">
+    <div class="panel controls">
+      <div class="control"><label for="pw">parent width</label><input id="pw" type="range" min="200" max="700" step="10" value="520"><span class="readout" id="pw-out"></span></div>
+      <p class="hint">Watch the 400px box when the parent gets narrower than 400px.</p>
+    </div>
+    <div class="stage" style="overflow-x:auto"><div class="parent" id="parent"><span class="lbl" id="plbl"></span>
+      <div class="sbox" data-w=""><b>no width (auto)</b><span></span></div>
+      <div class="sbox" data-w="50%"><b>width: 50%</b><span></span></div>
+      <div class="sbox" data-w="400px"><b>width: 400px</b><span></span></div>
+      <div class="sbox" data-w="max"><b>width: 100%; max-width: 400px</b><span></span></div>
+      <div class="sbox" data-w="min"><b>width: 30%; min-width: 180px</b><span></span></div>
+      <div><div class="sbox inline" data-w="inline"><b>fit-content</b><span></span></div></div>
+    </div></div>
+  </section>
+
+  <div class="section-title"><span class="eyebrow">Part 2</span><h2>height vs min-height</h2><p>Add more text and see which box copes.</p></div>
+  <section class="playground">
+    <div class="panel controls">
+      <div class="control"><label for="paras">paragraphs of text</label><input id="paras" type="range" min="1" max="4" value="2"><span class="readout" id="paras-out"></span></div>
+    </div>
+    <div class="grow-demo">
+      <div class="gwrap"><span class="cap prop">height: 120px</span><div class="gbox" id="g1" style="height:120px"></div><div class="after">Content below the box</div></div>
+      <div class="gwrap"><span class="cap prop">min-height: 120px</span><div class="gbox" id="g2" style="min-height:120px"></div><div class="after">Content below the box</div></div>
+    </div>
+  </section>
+
+  <div class="section-title"><span class="eyebrow">Part 3</span><h2>aspect-ratio and viewport units</h2></div>
+  <section class="playground">
+    <div class="panel controls">
+      <div class="control"><label for="ratio">aspect-ratio</label><select id="ratio"><option>16 / 9</option><option>4 / 3</option><option>1 / 1</option><option>3 / 4</option></select></div>
+      <div class="control"><label for="aw">width</label><input id="aw" type="range" min="120" max="460" step="10" value="320"><span class="readout" id="aw-out"></span></div>
+      <div class="control"><label for="vhv">height in vh</label><input id="vhv" type="range" min="10" max="60" step="5" value="25"><span class="readout" id="vhv-out"></span></div>
+    </div>
+    <div class="stage-col">
+      <div id="ar"></div>
+      <div id="vh"></div>
+    </div>
+  </section>
+
+  <section class="notes">
+    <div class="panel">
+      <h2>Key ideas</h2>
+      <ul>
+        <li><code>width: 100%; max-width: 600px;</code> is the go-to pattern: full width on phones, capped on big screens.</li>
+        <li>Percentage widths are a share of the parent's width.</li>
+        <li>Let height come from the content. Reach for <code>min-height</code> if you need a minimum.</li>
+        <li><code>aspect-ratio</code> keeps a box's shape as its width changes, great for video and image placeholders.</li>
+        <li><code>vh</code> is a percentage of the browser window's height. <code>100vh</code> is the full screen.</li>
+      </ul>
+    </div>
+    <div class="panel mistake">
+      <h2>Common mistakes</h2>
+      <ul>
+        <li>Big fixed widths like <code>width: 1000px</code> that overflow on phones.</li>
+        <li>A percentage <code>height</code> that does nothing because the parent has no set height.</li>
+        <li>Fixed heights on text boxes, so text spills out.</li>
+        <li>Using <code>100vh</code> on phones, where browser toolbars make it slightly too tall. <code>100dvh</code> adjusts for them.</li>
+      </ul>
+    </div>
+  </section>
+
+  <footer class="page-foot"><a href="display.html">← Display Types</a><a href="overflow.html">Next: Overflow →</a></footer>
+</div>
+
+<script>
+  const $ = (id) => document.getElementById(id);
+  function part1() {
+    const pw = +$("pw").value, parent = $("parent");
+    $("pw-out").textContent = pw + "px"; parent.style.width = pw + "px";
+    const actual = Math.round(parent.getBoundingClientRect().width);
+    $("plbl").textContent = `parent · ${actual}px wide (minus 10px padding each side)`;
+    parent.querySelectorAll(".sbox").forEach((b) => {
+      const w = b.dataset.w;
+      b.style.width = ""; b.style.maxWidth = ""; b.style.minWidth = "";
+      if (w === "50%" || w === "400px") b.style.width = w;
+      if (w === "max") { b.style.width = "100%"; b.style.maxWidth = "400px"; }
+      if (w === "min") { b.style.width = "30%"; b.style.minWidth = "180px"; }
+      const real = Math.round(b.getBoundingClientRect().width), inner = actual - 24;
+      let note = `${real}px`;
+      if (w === "400px" && real > inner) note += " · overflowing!";
+      if (w === "max") note += real >= 400 ? " · capped" : " · shrinking";
+      if (w === "min") note += real <= 182 ? " · held at minimum" : "";
+      b.querySelector("span").textContent = note;
+    });
+  }
+  $("pw").addEventListener("input", part1); window.addEventListener("resize", part1); part1();
+
+  const TEXT = ["Royal Arch climbs 1,400 feet in 1.7 miles.", "The last section has over 200 stone steps.", "Start early in summer, because afternoon storms are common.", "The arch frames a view of Boulder and the plains beyond."];
+  function part2() {
+    const n = +$("paras").value; $("paras-out").textContent = n;
+    const html = TEXT.slice(0, n).map((t) => `<p>${t}</p>`).join("");
+    $("g1").innerHTML = html; $("g2").innerHTML = html;
+  }
+  $("paras").addEventListener("input", part2); part2();
+
+  function part3() {
+    const ar = $("ar"), w = $("aw").value;
+    ar.style.width = w + "px"; ar.style.aspectRatio = $("ratio").value;
+    $("aw-out").textContent = w + "px";
+    requestAnimationFrame(() => { ar.textContent = `${Math.round(ar.getBoundingClientRect().width)} × ${Math.round(ar.getBoundingClientRect().height)}px`; });
+    const v = $("vhv").value; $("vhv-out").textContent = v + "vh";
+    $("vh").style.height = v + "vh";
+    $("vh").textContent = `height: ${v}vh = ${Math.round(innerHeight * v / 100)}px in your ${innerHeight}px-tall window`;
+  }
+  ["ratio", "aw", "vhv"].forEach((id) => $(id).addEventListener("input", part3)); window.addEventListener("resize", part3); part3();
+</script>
+</body>
+</html>

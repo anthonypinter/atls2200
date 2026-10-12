@@ -1,0 +1,180 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Validating Your Code</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Recursive:slnt,wght,CASL,MONO@-15..0,300..1000,0..1,0..1&display=swap">
+<link rel="stylesheet" href="style.css">
+<style>
+  .tools { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px; }
+  .tools .panel { display: grid; gap: 8px; align-content: start; }
+  .tools ol { margin: 0; padding-left: 1.3em; display: grid; gap: 4px; font-size: 0.95rem; }
+  .bar { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 14px; }
+  .ex-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(330px, 1fr)); gap: 14px; }
+  @media (max-width: 400px) { .ex-list { grid-template-columns: 1fr; } }
+  .ex { display: grid; gap: 10px; align-content: start; min-width: 0; }
+  .ex h3 { font-size: 1rem; }
+  .code { display: grid; background: var(--paper); border: 1px solid var(--line); border-radius: 8px; padding: 6px; overflow-x: auto; }
+  .code button { display: grid; grid-template-columns: 22px 1fr; gap: 8px; text-align: left; font: 0.88rem/1.5 var(--font-code); font-variation-settings: "MONO" 1; color: var(--ink); background: none; border: 1px solid transparent; border-radius: 4px; padding: 2px 6px; cursor: pointer; white-space: pre; }
+  .code button:hover { background: var(--stage); }
+  .code button .ln { color: var(--muted); text-align: right; font-size: 0.75rem; }
+  .code button.right { background: var(--good-soft); border-color: var(--good); }
+  .code button.wrong { background: var(--bad-soft); border-color: var(--bad); }
+  .code.done button { cursor: default; }
+  .msg { display: grid; gap: 6px; font-size: 0.92rem; }
+  .parse-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 12px; }
+  @media (max-width: 700px) { .parse-grid { grid-template-columns: 1fr; } }
+  .parse-note { margin-top: 12px; font-size: 0.95rem; max-width: none; }
+  #parse-pick { margin-top: 4px; }
+  .vmsg { font: 0.85rem/1.5 var(--font-code); font-variation-settings: "MONO" 1; padding: 8px 10px; border-radius: 6px; background: var(--bad-soft); color: var(--bad); }
+  .vmsg::before { content: "The validator says something like: "; font-weight: 700; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <nav class="crumbs" aria-label="Site"><a class="crumb" href="index.html">← Field Guide</a><a class="crumb" href="glossary.html">Glossary</a></nav>
+  <header class="page-head">
+    <span class="eyebrow">Polish &amp; Workflow · Validating Your Code</span>
+    <h1>Validating Your Code</h1>
+    <p class="lede">Browsers quietly guess their way around mistakes, so broken code often looks fine until it suddenly doesn't. A validator reads your code like a strict teacher and lists every problem with a line number.</p>
+  </header>
+
+  <div class="tools">
+    <div class="panel"><span class="eyebrow">HTML</span><h3><a href="https://validator.w3.org/#validate_by_input">W3C Markup Validator</a></h3>
+      <ol><li>Choose "Validate by Direct Input."</li><li>Paste your whole HTML file.</li><li>Click Check.</li></ol></div>
+    <div class="panel"><span class="eyebrow">CSS</span><h3><a href="https://jigsaw.w3.org/css-validator/#validate_by_input">W3C CSS Validator</a></h3>
+      <ol><li>Choose "By direct input."</li><li>Paste your stylesheet.</li><li>Click Check.</li></ol></div>
+    <div class="panel"><span class="eyebrow">How to read the results</span>
+      <ol><li>Fix the <strong>first</strong> error first. One missing bracket can cause ten more errors below it.</li><li>Go to the line number it gives, then look at the line just above it too.</li><li>Check again after each fix.</li></ol></div>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Practice</span><h2>Spot the error</h2><p>Each snippet has exactly one line with a mistake. Click the line you think is wrong.</p></div>
+  <div class="bar">
+    <div class="seg" role="group" aria-label="Language"><button class="btn" id="t-html" aria-pressed="true">HTML</button><button class="btn" id="t-css" aria-pressed="false">CSS</button></div>
+    <span class="score" id="score"></span>
+  </div>
+  <div class="ex-list" id="exs"></div>
+
+  <div class="section-title"><span class="eyebrow">Debugging HTML</span><h2>What the browser actually built</h2><p>When HTML is broken, the browser silently repairs it, sometimes in surprising ways. DevTools' Elements panel shows the repaired version, not your file. Pick a snippet: the right side is your own browser's real result.</p></div>
+  <div class="seg" id="parse-pick" role="group" aria-label="Snippet"></div>
+  <div class="parse-grid">
+    <div class="panel" style="display:grid;gap:8px;align-content:start;min-width:0"><span class="eyebrow">Your HTML file</span><pre class="snippet" id="src"></pre></div>
+    <div class="panel" style="display:grid;gap:8px;align-content:start;min-width:0"><span class="eyebrow">What the Elements panel shows</span><pre class="snippet" id="dom"></pre></div>
+  </div>
+  <p class="panel parse-note" id="parse-note" aria-live="polite"></p>
+  <div class="panel" style="display:grid;gap:6px;margin-top:14px"><span class="eyebrow">To see this in your own project</span><p>Right-click the problem area and choose <strong>Inspect</strong>. In the Elements panel, compare the tree to your file. Wherever they differ, that's where your HTML has an error.</p></div>
+
+  <section class="notes">
+    <div class="panel">
+      <h2>Key ideas</h2>
+      <ul>
+        <li>Validate before you hand in work, and whenever something looks wrong and you can't see why.</li>
+        <li>"Errors" must be fixed. "Warnings" are suggestions worth reading.</li>
+        <li>Indenting your code consistently makes missing closing tags and braces much easier to spot.</li>
+        <li>Your code editor's highlighting is a validator too: if colors suddenly look wrong partway down, the mistake is just above.</li>
+      </ul>
+    </div>
+    <div class="panel mistake">
+      <h2>Common mistakes</h2>
+      <ul>
+        <li>Fixing errors from the bottom of the list up.</li>
+        <li>Assuming code is fine because it looks right in one browser.</li>
+        <li>Validating a single section instead of the whole file, which creates fake errors about missing tags.</li>
+        <li>Ignoring the CSS validator because "CSS just skips bad lines." That skipping is exactly the bug.</li>
+      </ul>
+    </div>
+  </section>
+
+  <footer class="page-foot"><a href="devtools.html">← Debugging with DevTools</a><a href="publishing.html">Next: Project Structure &amp; Publishing →</a></footer>
+</div>
+
+<script>
+  const $ = (id) => document.getElementById(id);
+  const EX = {
+    html: [
+      { t: "Nesting", lines: ["<article>", "  <h2>Mesa Trail</h2>", "  <p>Pack <em>water and <strong>snacks</em></strong>.</p>", "</article>"], bug: 2,
+        why: "Tags must close in the reverse order they opened. strong opened inside em, so </strong> has to come before </em>.", v: "End tag \"em\" violates nesting rules." },
+      { t: "Images", lines: ['<img src="arch.jpg" alt="Royal Arch">', '<img src="mesa.jpg">', '<img src="divider.png" alt="">'], bug: 1,
+        why: "Every img needs an alt attribute. alt=\"\" is allowed for decorative images, but leaving it out is an error.", v: "An img element must have an alt attribute, except under certain conditions." },
+      { t: "IDs", lines: ['<label for="email">Email</label>', '<input id="email" type="email">', '<label for="name">Name</label>', '<input id="email" type="text">'], bug: 3,
+        why: "IDs must be unique. This one should be id=\"name\", or the Name label points at the wrong input.", v: "Duplicate ID \"email\"." },
+      { t: "Lists", lines: ["<ul>", "  <li>Trails</li>", '  <a href="maps.html">Maps</a>', "  <li>Gear</li>", "</ul>"], bug: 2,
+        why: "A ul can only contain li elements directly. Put the link inside an li.", v: "Element \"a\" not allowed as child of element \"ul\" in this context." },
+      { t: "Quotes", lines: ["<nav>", '  <a href="index.html">Home</a>', '  <a href="about.html>About</a>', '  <a href="gear.html">Gear</a>', "</nav>"], bug: 2,
+        why: "The closing quote after about.html is missing, so the browser thinks the attribute keeps going into the next tag.", v: "Bad value for attribute \"href\" on element \"a\"." },
+    ],
+    css: [
+      { t: "Punctuation", lines: [".card {", "  padding: 16px", "  border: 1px solid gray;", "}"], bug: 1,
+        why: "The missing semicolon joins two lines into one broken declaration, so neither the padding nor the border is applied.", v: "Parse error on line 2. Value error: padding." },
+      { t: "Units", lines: ["h1 {", "  font-size: 32;", "  line-height: 1.2;", "}"], bug: 1,
+        why: "Sizes need a unit: 32px or 2rem. line-height is fine without one because it's a multiplier.", v: "Value error: font-size. 32 is not a font-size value." },
+      { t: "Spelling", lines: [".btn {", "  colour: white;", "  background: navy;", "}"], bug: 1,
+        why: "CSS uses American spelling: color. An unknown property is silently ignored by the browser.", v: "Property \"colour\" doesn't exist." },
+      { t: "Braces", lines: [".nav {", "  display: flex;", "  justify-content: center;", ".nav a {", "  color: white;", "}"], bug: 3,
+        why: "The first rule is never closed. Add } before .nav a starts, or the browser reads the next rule as part of this one.", v: "Parse error. Unexpected { on line 4." },
+      { t: "Syntax", lines: [".hero {", "  width = 100%;", "  max-width: 900px;", "}"], bug: 1,
+        why: "CSS uses a colon between a property and its value, never an equals sign.", v: "Parse error: = 100%." },
+    ],
+  };
+  let lang = "html";
+  const state = { html: {}, css: {} };
+  const esc = (s) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;");
+  function render() {
+    $("t-html").setAttribute("aria-pressed", String(lang === "html")); $("t-css").setAttribute("aria-pressed", String(lang === "css"));
+    $("exs").innerHTML = EX[lang].map((ex, i) => {
+      const pick = state[lang][i];
+      const done = pick !== undefined;
+      const lines = ex.lines.map((l, j) => `<button data-e="${i}" data-l="${j}" class="${done && j === ex.bug ? "right" : done && j === pick ? "wrong" : ""}" ${done ? 'tabindex="-1"' : ""}><span class="ln">${j + 1}</span><span>${esc(l)}</span></button>`).join("");
+      const msg = done ? `<div class="msg"><span class="feedback ${pick === ex.bug ? "right" : "wrong"}">${pick === ex.bug ? "Found it." : `Not that one. It's line ${ex.bug + 1}.`}</span><span>${esc(ex.why)}</span><span class="vmsg">${esc(ex.v)}</span></div>` : "";
+      return `<div class="panel ex"><h3>${i + 1}. ${ex.t}</h3><div class="code ${done ? "done" : ""}">${lines}</div>${msg}</div>`;
+    }).join("");
+    const all = [...Object.entries(state.html).map(([i, p]) => p === EX.html[i].bug), ...Object.entries(state.css).map(([i, p]) => p === EX.css[i].bug)];
+    $("score").textContent = `${all.filter(Boolean).length} / ${all.length} found · ${EX.html.length + EX.css.length - all.length} left`;
+  }
+  $("exs").addEventListener("click", (e) => {
+    const b = e.target.closest("button[data-e]"); if (!b) return;
+    const i = +b.dataset.e; if (state[lang][i] !== undefined) return;
+    state[lang][i] = +b.dataset.l; render();
+  });
+  $("t-html").addEventListener("click", () => { lang = "html"; render(); });
+  $("t-css").addEventListener("click", () => { lang = "css"; render(); });
+  render();
+
+  // Real parsing with DOMParser
+  const SNIPS = {
+    "div inside p": { src: "<p>Trail notes:\n  <div>Closed Monday</div>\n</p>", why: "A p can't contain a div, so the browser closes the paragraph before the div starts. Your closing </p> then creates a second, empty paragraph." },
+    "unclosed <b>": { src: "<p><b>Warning: ice</p>\n<p>Bring spikes.</p>", why: "The b was never closed, so the browser carries the bold into the next paragraph too. One missing tag can restyle half a page." },
+    "div inside table": { src: "<table>\n  <div>Trail list</div>\n  <tr><td>Mesa</td></tr>\n</table>", why: "Only table parts are allowed directly in a table. The div gets moved out in front of the table, and a tbody is added for the row." },
+    "stray closing tag": { src: "<p>Bring water</span> and snacks.</p>", why: "There's no open span to close, so the browser simply ignores </span>. Harmless here, but a sign of a typo nearby." },
+    "missing </li>": { src: "<ul>\n  <li>Water\n  <li>Map\n</ul>", why: "This one is actually allowed: the browser knows a new li ends the previous one. Still, closing every tag is clearer." },
+  };
+  let snip = "div inside p";
+  $("parse-pick").innerHTML = Object.keys(SNIPS).map((k) => `<button class="btn">${esc(k)}</button>`).join("");
+  $("parse-pick").addEventListener("click", (e) => { const b = e.target.closest("button"); if (b) { snip = b.textContent; parse(); } });
+  function pretty(node, depth = 0) {
+    const pad = "  ".repeat(depth); let out = "";
+    node.childNodes.forEach((n) => {
+      if (n.nodeType === 3) { const t = n.textContent.trim(); if (t) out += pad + JSON.stringify(t).slice(1, -1).replace(/\\"/g, '"') + "\n"; }
+      else if (n.nodeType === 1) {
+        const tag = n.tagName.toLowerCase(), attrs = [...n.attributes].map((a) => ` ${a.name}="${a.value}"`).join("");
+        if (!n.childNodes.length) out += `${pad}<${tag}${attrs}></${tag}>\n`;
+        else out += `${pad}<${tag}${attrs}>\n${pretty(n, depth + 1)}${pad}</${tag}>\n`;
+      }
+    });
+    return out;
+  }
+  function parse() {
+    const sn = SNIPS[snip];
+    const doc = new DOMParser().parseFromString(`<!doctype html><body>${sn.src}</body>`, "text/html");
+    $("src").textContent = sn.src;
+    $("dom").textContent = pretty(doc.body).trimEnd();
+    $("parse-note").textContent = sn.why;
+    document.querySelectorAll("#parse-pick button").forEach((b) => b.setAttribute("aria-pressed", String(b.textContent === snip)));
+  }
+  parse();
+</script>
+</body>
+</html>

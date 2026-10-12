@@ -1,0 +1,173 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Embeds &amp; iframes</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Recursive:slnt,wght,CASL,MONO@-15..0,300..1000,0..1,0..1&display=swap">
+<link rel="stylesheet" href="style.css">
+<style>
+  .stage.scroll { overflow-x: auto; min-height: 0; }
+  .host { border: 2px dashed var(--prop); border-radius: 8px; padding: 8px; background: var(--panel); transition: width 0.2s; }
+  .host .lbl { font: 600 0.75rem var(--font-code); font-variation-settings: "MONO" 1; color: var(--prop); display: block; margin-bottom: 6px; }
+  .host p { font-size: 0.9rem; margin: 0 0 8px; }
+  .frame { display: block; border: 0; border-radius: 4px; overflow: hidden; position: relative; }
+  .frame.video { background: #0f0f0f; color: #fff; }
+  .frame.video .play { position: absolute; inset: 0; margin: auto; width: 64px; height: 44px; border-radius: 12px; background: #e62117; }
+  .frame.video .play::after { content: ""; position: absolute; left: 26px; top: 13px; border: 9px solid transparent; border-left: 15px solid #fff; border-right: 0; }
+  .frame.video .vt { position: absolute; top: 10px; left: 12px; right: 12px; font: 600 0.9rem system-ui, sans-serif; }
+  .frame.video .vbar { position: absolute; left: 12px; right: 12px; bottom: 12px; height: 4px; background: rgba(255,255,255,0.35); border-radius: 2px; }
+  .frame.map { background: #e8eae2; }
+  .frame.map::before { content: ""; position: absolute; inset: 0; background: linear-gradient(28deg, transparent 47%, #fff 47% 50%, transparent 50%), linear-gradient(110deg, transparent 60%, #fde293 60% 63%, transparent 63%), radial-gradient(circle at 30% 70%, #c8e6c9 0 18%, transparent 19%), radial-gradient(circle at 75% 30%, #aadaff 0 12%, transparent 13%); }
+  .frame.map .pin { position: absolute; left: 52%; top: 40%; width: 22px; height: 22px; background: #ea4335; border-radius: 50% 50% 50% 0; transform: rotate(-45deg); }
+  .frame.map .mt { position: absolute; left: 10px; top: 10px; background: #fff; color: #222; font: 600 0.8rem system-ui; padding: 5px 8px; border-radius: 4px; box-shadow: 0 1px 3px rgba(0,0,0,0.2); }
+  .frame.pen { background: #1e1f26; color: #ddd; font: 0.8rem/1.5 var(--font-code); font-variation-settings: "MONO" 1; display: grid; grid-template-columns: 1fr 1fr; }
+  .frame.pen pre { margin: 0; padding: 10px; overflow: hidden; }
+  .frame.pen div { background: #fdf6ee; display: grid; place-items: center; color: #7a3b12; font: 800 1.2rem system-ui; }
+  .status-list { display: grid; gap: 6px; margin: 0; padding: 0; list-style: none; }
+  .status-list li { font-size: 0.92rem; padding: 7px 10px; border-radius: 6px; }
+  .status-list .good { background: var(--good-soft); color: var(--good); } .status-list .bad { background: var(--bad-soft); color: var(--bad); }
+
+  .iso { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 14px; }
+  @media (max-width: 700px) { .iso { grid-template-columns: 1fr; } }
+  .iso .box { border: 2px solid var(--line); border-radius: 8px; padding: 12px; background: var(--panel); display: grid; gap: 8px; align-content: start; }
+  .iso iframe { width: 100%; height: 120px; border: 2px dashed var(--cobalt); border-radius: 6px; background: #fff; }
+  #host-page.loud p, #host-page.loud h3 { color: var(--bad); font-family: Georgia, serif; text-transform: uppercase; }
+  .steps { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 14px; }
+  .steps .panel { display: grid; gap: 8px; align-content: start; }
+  .steps ol { margin: 0; padding-left: 1.2em; display: grid; gap: 4px; font-size: 0.95rem; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <nav class="crumbs" aria-label="Site"><a class="crumb" href="index.html">← Field Guide</a><a class="crumb" href="glossary.html">Glossary</a></nav>
+  <header class="page-head">
+    <span class="eyebrow">HTML Foundations · Embeds &amp; iframes</span>
+    <h1>Embeds &amp; iframes</h1>
+    <p class="lede">An <code>&lt;iframe&gt;</code> is a window in your page that shows another web page. It's how you put a YouTube video, a Google Map or a CodePen demo on your site without hosting it yourself.</p>
+  </header>
+
+  <div class="section-title" style="margin-top:0"><span class="eyebrow">Part 1</span><h2>Build an embed</h2><p>Sites hand you embed code with a fixed width and height. Make the page narrow like a phone, then fix the embed so it fits and is accessible.</p></div>
+  <section class="playground">
+    <div class="panel controls" aria-label="Embed settings">
+      <div class="control"><label for="kind">embed</label>
+        <select id="kind"><option value="video">YouTube video</option><option value="map">Google Map</option><option value="pen">CodePen demo</option></select></div>
+      <div class="control"><label for="pw">page width</label><input id="pw" type="range" min="300" max="760" step="10" value="360"><span class="readout" id="pw-out"></span></div>
+      <span class="eyebrow" style="margin-top:6px">fix it</span>
+      <label class="control row" for="o-title" style="cursor:pointer"><span class="prop" style="font:600 0.85rem var(--font-code);font-variation-settings:'MONO' 1">title="…"</span><input id="o-title" type="checkbox"></label>
+      <label class="control row" for="o-resp" style="cursor:pointer"><span class="prop" style="font:600 0.85rem var(--font-code);font-variation-settings:'MONO' 1">responsive CSS</span><input id="o-resp" type="checkbox"></label>
+      <label class="control row" for="o-lazy" style="cursor:pointer"><span class="prop" style="font:600 0.85rem var(--font-code);font-variation-settings:'MONO' 1">loading="lazy"</span><input id="o-lazy" type="checkbox"></label>
+      <p class="hint">The embeds here are pictures of the real thing, so this page works offline.</p>
+    </div>
+    <div class="stage-col">
+      <div class="stage scroll"><div class="host" id="host"><span class="lbl" id="host-lbl"></span><p>Hike of the week: Royal Arch</p><div class="frame" id="frame" role="img"></div></div></div>
+      <ul class="status-list" id="status" aria-live="polite"></ul>
+      <div class="code-box"><pre id="code"></pre><button class="copy" id="copy">Copy</button></div>
+    </div>
+  </section>
+
+  <div class="section-title"><span class="eyebrow">Part 2</span><h2>A page inside a page</h2><p>An iframe holds a completely separate document. Your CSS doesn't reach inside it, and its CSS doesn't leak out. Style the outer page and watch.</p></div>
+  <section class="iso">
+    <div class="box" id="host-page">
+      <span class="eyebrow">your page</span>
+      <h3>Trail Club</h3>
+      <p>This paragraph is on your page.</p>
+      <iframe title="Example embedded page" srcdoc="<!doctype html><html lang='en'><body style='font:15px/1.5 system-ui,sans-serif;margin:12px;color:#222'><h3 style='margin:0 0 4px'>Embedded page</h3><p style='margin:0'>This paragraph lives in a different document, inside the iframe.</p></body></html>"></iframe>
+    </div>
+    <div class="box">
+      <button class="btn" id="loud" aria-pressed="false" style="justify-self:start">Apply p, h3 { color: red; text-transform: uppercase }</button>
+      <p id="iso-note" aria-live="polite">Click the button to add a rule to your page's stylesheet.</p>
+      <p class="hint">This is why you can't restyle a YouTube player with your own CSS. You can only size and position the iframe box itself.</p>
+    </div>
+  </section>
+
+  <div class="section-title"><span class="eyebrow">Part 3</span><h2>Where to get the code</h2></div>
+  <section class="steps">
+    <div class="panel"><h3>YouTube</h3><ol><li>Open the video and click <b>Share</b>.</li><li>Choose <b>Embed</b> and copy the code.</li><li>Paste it into your HTML, then add a <code>title</code> and the responsive CSS.</li></ol></div>
+    <div class="panel"><h3>Google Maps</h3><ol><li>Search for the place and click <b>Share</b>.</li><li>Pick the <b>Embed a map</b> tab and copy the HTML.</li><li>It already has <code>loading="lazy"</code>. Change the title and remove the fixed width.</li></ol></div>
+    <div class="panel"><h3>When embedding is refused</h3><p>Many sites, including most banks, social sites and Google Search, tell browsers not to show them inside iframes. You'll see a blank box or "refused to connect." Link to them instead.</p></div>
+  </section>
+
+  <section class="notes">
+    <div class="panel">
+      <h2>Key ideas</h2>
+      <ul>
+        <li>Give every iframe a <code>title</code> that says what's in it. Screen readers announce it so people can decide whether to go in.</li>
+        <li>To make an embed responsive, set <code>width: 100%</code>, <code>height: auto</code> and an <code>aspect-ratio</code> that matches the content, like <code>16 / 9</code> for video.</li>
+        <li><code>loading="lazy"</code> waits until the visitor scrolls near the embed. A YouTube player downloads close to 1 MB before anyone presses play.</li>
+        <li>Each embed is a full web page with its own scripts and tracking. Use them where they add real value.</li>
+      </ul>
+    </div>
+    <div class="panel mistake">
+      <h2>Common mistakes</h2>
+      <ul>
+        <li>Pasting the code with <code>width="560"</code> and never testing on a phone, so the video sticks out of the page.</li>
+        <li>Pasting the page address (<code>youtube.com/watch?v=…</code>) as the <code>src</code>. It must be the embed address (<code>youtube.com/embed/…</code>).</li>
+        <li>Trying to style what's inside the iframe with your own CSS.</li>
+        <li>Embedding a video you could simply host yourself with <a href="video-audio.html"><code>&lt;video&gt;</code></a>, or vice versa: uploading a huge video file to GitHub Pages instead of YouTube.</li>
+      </ul>
+    </div>
+  </section>
+
+  <footer class="page-foot"><a href="video-audio.html">← Video &amp; Audio</a><a href="css-basics.html">Next: How CSS Is Applied →</a></footer>
+</div>
+
+<script>
+  const $ = (id) => document.getElementById(id);
+  const KINDS = {
+    video: { w: 560, h: 315, ratio: "16 / 9", src: "https://www.youtube.com/embed/aBc123XyZ", title: "Video: Hiking to Royal Arch in Boulder", extra: ` <span class="attr">allow</span>=<span class="str">"fullscreen; picture-in-picture"</span>`, kb: "about 900 KB",
+      html: `<span class="vt">Hiking to Royal Arch · Boulder, CO</span><span class="play"></span><span class="vbar"></span>`, label: "YouTube video player" },
+    map: { w: 600, h: 450, ratio: "4 / 3", src: "https://www.google.com/maps/embed?pb=…", title: "Map: Chautauqua Trailhead, Boulder", extra: "", kb: "about 600 KB",
+      html: `<span class="mt">Chautauqua Trailhead</span><span class="pin"></span>`, label: "Map of the trailhead" },
+    pen: { w: 640, h: 300, ratio: "2 / 1", src: "https://codepen.io/you/embed/xYzAbC", title: "CodePen: Trail card hover effect", extra: "", kb: "about 400 KB",
+      html: `<pre>.card:hover {\n  transform:\n    translateY(-4px);\n}</pre><div>Trail card</div>`, label: "CodePen demo" },
+  };
+
+  function update() {
+    const k = KINDS[$("kind").value], pw = +$("pw").value;
+    const title = $("o-title").checked, resp = $("o-resp").checked, lazy = $("o-lazy").checked;
+    $("pw-out").textContent = pw + "px";
+    $("host").style.width = pw + "px";
+    $("host-lbl").textContent = `your page · ${pw}px`;
+    const f = $("frame");
+    f.className = "frame " + $("kind").value;
+    f.innerHTML = k.html;
+    f.setAttribute("aria-label", k.label);
+    if (resp) Object.assign(f.style, { width: "100%", height: "auto", aspectRatio: k.ratio });
+    else Object.assign(f.style, { width: k.w + "px", height: k.h + "px", aspectRatio: "" });
+
+    const inner = pw - 20, over = !resp && k.w > inner;
+    const items = [
+      over ? ["bad", `The embed is ${k.w}px wide but the page only has ${inner}px. It sticks out ${k.w - inner}px and the whole page scrolls sideways.`]
+           : ["good", resp ? `It fills the page width and keeps its ${k.ratio.replace(/ /g, "")} shape at any size.` : "It fits at this width. Try a phone width."],
+      title ? ["good", `A screen reader says "${k.title}, frame".`] : ["bad", "No title: a screen reader just says \"frame\", with no clue what's inside."],
+      lazy ? ["good", "Loads only when the visitor scrolls near it."] : ["bad", `Loads right away, ${k.kb}, even if nobody scrolls down to it.`],
+    ];
+    $("status").innerHTML = items.map(([c, t]) => `<li class="${c}">${t}</li>`).join("");
+
+    const a = (n, v) => ` <span class="attr">${n}</span>=<span class="str">"${v}"</span>`;
+    let code = `<span class="tag-name">&lt;iframe</span>${a("src", k.src)}`;
+    code += resp ? "" : `\n       ${a("width", k.w).trim()}${a("height", k.h)}`;
+    if (title) code += `\n       ${a("title", k.title).trim()}`;
+    if (lazy) code += `\n       ${a("loading", "lazy").trim()}`;
+    if (k.extra) code += `\n      ${k.extra}`;
+    code += `<span class="tag-name">&gt;&lt;/iframe&gt;</span>`;
+    if (resp) code += `\n\n<span class="sel">iframe</span> {\n  <span class="prop">width</span>: <span class="val">100%</span>;\n  <span class="prop">height</span>: <span class="val">auto</span>;\n  <span class="prop">aspect-ratio</span>: <span class="val">${k.ratio}</span>;\n  <span class="prop">border</span>: <span class="val">0</span>;\n}`;
+    $("code").innerHTML = code;
+  }
+  document.querySelectorAll("select, input").forEach((el) => el.addEventListener("input", update));
+  $("copy").addEventListener("click", () => {
+    navigator.clipboard.writeText($("code").textContent).then(() => { $("copy").textContent = "Copied"; setTimeout(() => ($("copy").textContent = "Copy"), 1200); }).catch(() => {});
+  });
+  update();
+
+  $("loud").addEventListener("click", () => {
+    const on = $("host-page").classList.toggle("loud");
+    $("loud").setAttribute("aria-pressed", String(on));
+    $("iso-note").textContent = on ? "Your page's heading and paragraph changed. The text inside the iframe didn't, because it's a separate document with its own styles." : "Click the button to add a rule to your page's stylesheet.";
+  });
+</script>
+</body>
+</html>

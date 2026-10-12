@@ -1,0 +1,218 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Image Formats</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Recursive:slnt,wght,CASL,MONO@-15..0,300..1000,0..1,0..1&display=swap">
+<link rel="stylesheet" href="style.css">
+<style>
+  .views { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); gap: 16px; align-items: start; }
+  @media (max-width: 760px) { .views { grid-template-columns: 1fr; } }
+  .views figure { margin: 0; display: grid; gap: 6px; }
+  .views figcaption { font: 600 0.75rem var(--font-code); font-variation-settings: "MONO" 1; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
+  .views img, .views canvas { width: 100%; height: auto; display: block; border-radius: 6px; border: 1px solid var(--line); background: #fff; }
+  #zoom { image-rendering: pixelated; }
+  .sizes { display: grid; gap: 8px; }
+  .size { display: grid; grid-template-columns: 64px 1fr 84px; gap: 10px; align-items: center; padding: 8px 10px; border-radius: 6px; border: 1px solid var(--line); background: var(--panel); font: 0.88rem var(--font-code); font-variation-settings: "MONO" 1; cursor: pointer; text-align: left; color: var(--ink); }
+  .size .bar { height: 10px; border-radius: 3px; background: var(--line); }
+  .size[aria-pressed="true"] { border-color: var(--cobalt); box-shadow: inset 4px 0 0 var(--cobalt); }
+  .size[aria-pressed="true"] .bar { background: var(--cobalt); }
+  .size span:last-child { text-align: right; color: var(--muted); font-variant-numeric: tabular-nums; }
+  .size:disabled { cursor: default; opacity: 0.6; }
+  .status { font-size: 0.93rem; padding: 8px 10px; border-radius: 6px; background: var(--panel); border: 1px solid var(--line); }
+  .formats { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 14px; }
+  .formats .panel { display: grid; gap: 8px; align-content: start; }
+  .formats h3 { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+  .formats h3 small { font: 600 0.75rem var(--font-code); font-variation-settings: "MONO" 1; color: var(--muted); }
+  .formats .use { font-size: 0.92rem; } .formats .use b { color: var(--good); } .formats .avoid b { color: var(--bad); }
+  .formats p { font-size: 0.95rem; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <nav class="crumbs" aria-label="Site"><a class="crumb" href="index.html">← Field Guide</a><a class="crumb" href="glossary.html">Glossary</a></nav>
+  <header class="page-head">
+    <span class="eyebrow">HTML Foundations · Image Formats</span>
+    <h1>Image Formats</h1>
+    <p class="lede">The same picture can be a 30 KB file or a 900 KB file depending on its format. Photos, logos and screenshots each have a format that suits them best.</p>
+  </header>
+
+  <div class="section-title" style="margin-top:0"><span class="eyebrow">Part 1</span><h2>Same image, different files</h2><p>Your browser is really encoding these images right now, so the file sizes are real. Pick a kind of image, then compare the formats. The zoom shows the damage compression does.</p></div>
+  <section class="playground">
+    <div class="panel controls">
+      <div class="control"><label>kind of image</label><div class="seg" id="kind">
+        <button class="btn" data-k="photo" aria-pressed="true">photo</button><button class="btn" data-k="logo">logo</button><button class="btn" data-k="shot">screenshot</button></div></div>
+      <div class="control"><label for="q">quality (JPG and WebP)</label><input id="q" type="range" min="10" max="100" step="5" value="75"><span class="readout" id="q-out"></span></div>
+      <p class="hint">PNG is <strong>lossless</strong>: it keeps every pixel exactly. JPG and WebP are <strong>lossy</strong>: they throw away detail you probably won't notice, and lower quality throws away more.</p>
+      <span class="eyebrow">file size · 400 × 250 px</span>
+      <div class="sizes" id="sizes" role="group" aria-label="Formats"></div>
+    </div>
+    <div class="stage-col">
+      <div class="views">
+        <figure><figcaption id="cap-full">Full image</figcaption><img id="full" alt="The test image, encoded in the selected format" width="400" height="250"></figure>
+        <figure><figcaption>Zoomed in 4×</figcaption><canvas id="zoom" width="400" height="248" aria-label="Zoomed-in detail of the selected format"></canvas></figure>
+      </div>
+      <div class="status" id="status" aria-live="polite"></div>
+    </div>
+  </section>
+
+  <div class="section-title"><span class="eyebrow">Cheat sheet</span><h2>Which format, when</h2></div>
+  <section class="formats">
+    <div class="panel"><h3>JPG <small>.jpg · lossy</small></h3><p class="use"><b>Use for</b> photos.</p><p class="avoid"><b>Avoid for</b> logos, text and anything needing a transparent background. JPG has no transparency.</p></div>
+    <div class="panel"><h3>PNG <small>.png · lossless</small></h3><p class="use"><b>Use for</b> screenshots, flat graphics with text, and images with transparent backgrounds.</p><p class="avoid"><b>Avoid for</b> photos. They come out 5–10× bigger than a JPG.</p></div>
+    <div class="panel"><h3>WebP <small>.webp · either</small></h3><p class="use"><b>Use for</b> almost anything. Usually 25–35% smaller than JPG or PNG at the same quality, and supports transparency.</p><p class="avoid"><b>Note</b> Every current browser supports it. Some older desktop apps can't open it.</p></div>
+    <div class="panel"><h3>AVIF <small>.avif · either</small></h3><p class="use"><b>Use for</b> photos when you want the smallest file. Often half the size of a JPG.</p><p class="avoid"><b>Note</b> Slower to export, and not every editor can save it yet. Offer a JPG fallback with <a href="picture.html"><code>&lt;picture&gt;</code></a>.</p></div>
+    <div class="panel"><h3>SVG <small>.svg · vector</small></h3><p class="use"><b>Use for</b> logos, icons and simple illustrations. It's math, not pixels, so it stays sharp at any size and is often tiny.</p><p class="avoid"><b>Avoid for</b> photos. They can't be drawn as shapes.</p></div>
+    <div class="panel"><h3>GIF <small>.gif · old</small></h3><p class="use"><b>Use for</b> almost nothing now. Only 256 colors.</p><p class="avoid"><b>Instead</b> for an animation, use a short muted MP4 in a <a href="video-audio.html"><code>&lt;video&gt;</code></a>. It's often 10× smaller.</p></div>
+  </section>
+
+  <div class="section-title"><span class="eyebrow">Part 2</span><h2>Pick the format</h2></div>
+  <section class="panel quiz" id="quiz"></section>
+
+  <section class="notes">
+    <div class="panel">
+      <h2>Key ideas</h2>
+      <ul>
+        <li>Resize before you upload. Export about twice the width the image appears on screen, so it stays sharp on high-density screens. A photo shown 600px wide needs about 1200px, not the 4000px from your phone.</li>
+        <li>Then compress it. Free tools like Squoosh (squoosh.app) and ImageOptim let you compare quality settings side by side. Quality 70–80 is usually indistinguishable from 100.</li>
+        <li>A good target for a large photo is under 200 KB. Most icons and logos should be a few KB.</li>
+        <li>An SVG can go in an <code>&lt;img&gt;</code> like any other image, or be pasted into the HTML directly so CSS can recolor it.</li>
+      </ul>
+    </div>
+    <div class="panel mistake">
+      <h2>Common mistakes</h2>
+      <ul>
+        <li>Saving a logo as JPG, which leaves blurry smudges around the letters and a white box instead of transparency.</li>
+        <li>Saving a photo as PNG "for quality," and getting a file several times bigger with no visible difference.</li>
+        <li>Renaming <code>photo.png</code> to <code>photo.jpg</code>. That changes the name, not the format. Re-export it instead.</li>
+        <li>Re-saving the same JPG over and over. Each save loses a little more detail. Keep an original and export copies.</li>
+      </ul>
+    </div>
+  </section>
+
+  <footer class="page-foot"><a href="images.html">← Images &amp; Alt Text</a><a href="video-audio.html">Next: Video &amp; Audio →</a></footer>
+</div>
+
+<script>
+  const $ = (id) => document.getElementById(id);
+  const W = 400, H = 250;
+  const src = document.createElement("canvas"); src.width = W; src.height = H;
+  const ctx = src.getContext("2d");
+
+  // Small seeded random so the photo grain is the same every time.
+  function rng(seed) { return () => ((seed = (seed * 16807) % 2147483647) / 2147483647); }
+
+  const LOGO_SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="400" height="250" viewBox="0 0 400 250"><rect width="400" height="250" fill="#fff"/><circle cx="110" cy="125" r="70" fill="#2340d9"/><path d="M60 160 L100 95 L125 130 L140 110 L165 160 Z" fill="#fff"/><text x="200" y="118" font-family="Arial,sans-serif" font-weight="700" font-size="38" fill="#161a2b">TRAIL</text><text x="200" y="162" font-family="Arial,sans-serif" font-weight="700" font-size="38" fill="#b4410c">CLUB</text></svg>`;
+
+  const SCENES = {
+    photo() {
+      const sky = ctx.createLinearGradient(0, 0, 0, H); sky.addColorStop(0, "#f4a261"); sky.addColorStop(1, "#fde2c4");
+      ctx.fillStyle = sky; ctx.fillRect(0, 0, W, H);
+      ctx.fillStyle = "#fff3d6"; ctx.beginPath(); ctx.arc(80, 70, 26, 0, Math.PI * 2); ctx.fill();
+      const ridge = (pts, a, b) => { const g = ctx.createLinearGradient(0, 90, 0, H); g.addColorStop(0, a); g.addColorStop(1, b); ctx.fillStyle = g; ctx.beginPath(); ctx.moveTo(0, H); pts.forEach(([x, y]) => ctx.lineTo(x, y)); ctx.lineTo(W, H); ctx.fill(); };
+      ridge([[0, 165], [70, 125], [130, 160], [200, 100], [260, 140], [320, 95], [400, 145]], "#8f6a8a", "#5d4560");
+      ridge([[0, 200], [100, 180], [190, 205], [280, 165], [320, 160], [400, 190]], "#4b5873", "#2b3346");
+      ctx.fillStyle = "#1b1f2b"; ctx.beginPath(); ctx.arc(310, 131, 5, 0, Math.PI * 2); ctx.fill(); ctx.fillRect(306, 136, 8, 18);
+      // Film grain: real photos are full of tiny random variation, which is what makes them big as PNGs.
+      const img = ctx.getImageData(0, 0, W, H), d = img.data, r = rng(7);
+      for (let i = 0; i < d.length; i += 4) { const n = (r() - 0.5) * 22; d[i] += n; d[i + 1] += n; d[i + 2] += n; }
+      ctx.putImageData(img, 0, 0);
+    },
+    logo() {
+      ctx.fillStyle = "#fff"; ctx.fillRect(0, 0, W, H);
+      ctx.fillStyle = "#2340d9"; ctx.beginPath(); ctx.arc(110, 125, 70, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = "#fff"; ctx.beginPath(); ctx.moveTo(60, 160); ctx.lineTo(100, 95); ctx.lineTo(125, 130); ctx.lineTo(140, 110); ctx.lineTo(165, 160); ctx.fill();
+      ctx.font = "700 38px Arial, sans-serif"; ctx.fillStyle = "#161a2b"; ctx.fillText("TRAIL", 200, 118); ctx.fillStyle = "#b4410c"; ctx.fillText("CLUB", 200, 162);
+    },
+    shot() {
+      ctx.fillStyle = "#fff"; ctx.fillRect(0, 0, W, H);
+      ctx.fillStyle = "#eef1f8"; ctx.fillRect(0, 0, W, 30);
+      ctx.fillStyle = "#161a2b"; ctx.font = "600 13px Arial, sans-serif"; ctx.fillText("Trail conditions · updated 7:40 am", 12, 20);
+      const rows = [["Mesa Trail", "Open", "#1a7f37"], ["Royal Arch", "Icy above 7,000 ft", "#b4410c"], ["Bear Peak", "Closed for nesting", "#b42318"], ["Flagstaff", "Open", "#1a7f37"], ["Green Mtn", "Muddy", "#b4410c"]];
+      rows.forEach(([name, s, c], i) => {
+        const y = 58 + i * 34;
+        ctx.fillStyle = "#161a2b"; ctx.font = "13px Arial, sans-serif"; ctx.fillText(name, 14, y);
+        ctx.fillStyle = c; ctx.fillRect(150, y - 11, 8, 8); ctx.fillStyle = "#333"; ctx.fillText(s, 166, y);
+        ctx.fillStyle = "#d9deeb"; ctx.fillRect(12, y + 12, 376, 1);
+      });
+    },
+  };
+  const ZOOM = { photo: [270, 110], logo: [195, 90], shot: [140, 70] };
+  const NOTES = {
+    photo: { jpg: "JPG handles the photo well. Drop the quality to 30 and look for blocky squares in the zoom.", png: "Lossless means the grain is stored pixel by pixel, so the file is huge for no visible gain.", webp: "Smaller than the JPG at the same quality setting.", svg: "Not possible: a photo isn't made of shapes." },
+    logo: { jpg: "Look at the edges of the letters in the zoom: JPG leaves fuzzy, dirty pixels around sharp edges.", png: "Crisp edges and a small file, because large areas are one flat color.", webp: "Smaller, but at lower quality the edges still get fuzzy. Lossless WebP or PNG keeps them sharp.", svg: "The smallest file, and the only one that stays sharp when the logo is shown huge on a big screen." },
+    shot: { jpg: "Small text turns smudgy. Screenshots are the worst case for JPG.", png: "Text stays readable and the file is small, because most of the image is plain white.", webp: "Close to PNG here. Fine, as long as the quality isn't too low.", svg: "Not useful: a screenshot is pixels, not shapes." },
+  };
+
+  let kind = "photo", fmt = "jpg", results = {}, job = 0;
+  const encode = (type, q) => new Promise((res) => src.toBlob((b) => res(b), type, q));
+
+  async function run() {
+    const my = ++job, q = +$("q").value / 100;
+    $("q-out").textContent = Math.round(q * 100);
+    SCENES[kind]();
+    const [jpg, png, webp] = await Promise.all([encode("image/jpeg", q), encode("image/png"), encode("image/webp", q)]);
+    if (my !== job) return;
+    results = { jpg, png, webp: webp && webp.type === "image/webp" ? webp : null, svg: kind === "logo" ? new Blob([LOGO_SVG], { type: "image/svg+xml" }) : null };
+    if (!results[fmt]) fmt = "jpg";
+    draw();
+  }
+
+  function draw() {
+    const max = Math.max(...Object.values(results).filter(Boolean).map((b) => b.size));
+    const names = { jpg: "JPG", png: "PNG", webp: "WebP", svg: "SVG" };
+    $("sizes").innerHTML = Object.keys(names).map((k) => {
+      const b = results[k];
+      if (!b) return `<button class="size" disabled><span>${names[k]}</span><div></div><span>${k === "webp" ? "unsupported" : "n/a"}</span></button>`;
+      return `<button class="size" data-f="${k}" aria-pressed="${k === fmt}"><span>${names[k]}</span><div class="bar" style="width:${Math.max(2, (b.size / max) * 100)}%"></div><span>${(b.size / 1024).toFixed(1)} KB</span></button>`;
+    }).join("");
+    const blob = results[fmt];
+    const url = URL.createObjectURL(blob);
+    const img = $("full");
+    img.onload = () => {
+      const z = $("zoom").getContext("2d"), [x, y] = ZOOM[kind];
+      z.imageSmoothingEnabled = false;
+      z.clearRect(0, 0, 400, 248);
+      z.drawImage(img, x * (img.naturalWidth / W), y * (img.naturalHeight / H), 100 * (img.naturalWidth / W), 62 * (img.naturalHeight / H), 0, 0, 400, 248);
+      URL.revokeObjectURL(url);
+    };
+    img.src = url;
+    $("cap-full").textContent = `Full image · ${names[fmt]}`;
+    $("status").textContent = NOTES[kind][fmt];
+  }
+
+  $("kind").addEventListener("click", (e) => { const b = e.target.closest("button"); if (!b) return; kind = b.dataset.k; document.querySelectorAll("#kind .btn").forEach((x) => x.setAttribute("aria-pressed", String(x === b))); run(); });
+  $("sizes").addEventListener("click", (e) => { const b = e.target.closest("button[data-f]"); if (b) { fmt = b.dataset.f; draw(); } });
+  let t; $("q").addEventListener("input", () => { clearTimeout(t); $("q-out").textContent = $("q").value; t = setTimeout(run, 120); });
+  run();
+
+  // Part 2: quiz
+  const OPTS = ["JPG", "PNG", "SVG", "WebP", "MP4"];
+  const QS = [
+    ["A wide photo of the Flatirons for the top of your home page.", ["JPG", "WebP"], "A photo, so a lossy format. WebP will be a bit smaller than JPG."],
+    ["The club logo you drew in Illustrator or Figma.", ["SVG"], "It was drawn as shapes, so export it as SVG. It stays sharp at every size."],
+    ["A screenshot of a trail map app, with small labels you need to read.", ["PNG"], "PNG keeps the small text crisp. JPG would smudge it."],
+    ["A photo of a backpack cut out on a transparent background.", ["PNG", "WebP"], "It needs transparency, which JPG can't do. WebP will usually be smaller than PNG."],
+    ["A three-second looping clip of a waterfall.", ["MP4"], "A GIF would be several MB. A muted, looping MP4 video is a fraction of the size."],
+    ["A 24px tent icon next to each campsite name.", ["SVG"], "Icons are simple shapes. SVG is tiny and can even change color with CSS."],
+  ];
+  let score = 0, answered = 0;
+  $("quiz").innerHTML = `<span class="score" id="score">0 / ${QS.length}</span>` + QS.map(([q], i) => `<div class="q"><p><strong>${i + 1}.</strong> ${q}</p><div class="opts" data-i="${i}">${OPTS.map((o) => `<button class="btn">${o}</button>`).join("")}</div><p class="feedback" id="fb${i}" aria-live="polite"></p></div>`).join("");
+  $("quiz").addEventListener("click", (e) => {
+    const b = e.target.closest(".opts button"); if (!b) return;
+    const box = b.parentElement, i = +box.dataset.i; if (box.dataset.done) return;
+    const [, right, why] = QS[i], ok = right.includes(b.textContent);
+    box.dataset.done = "1";
+    box.querySelectorAll("button").forEach((x) => { if (right.includes(x.textContent)) x.classList.add("right"); });
+    if (!ok) b.classList.add("wrong");
+    $("fb" + i).className = "feedback " + (ok ? "right" : "wrong");
+    $("fb" + i).textContent = (ok ? "Yes. " : "Not quite. ") + why;
+    if (ok) score++; answered++;
+    $("score").textContent = `${score} / ${QS.length}` + (answered === QS.length ? " · done" : "");
+  });
+</script>
+</body>
+</html>

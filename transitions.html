@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Transitions &amp; Animations</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Recursive:slnt,wght,CASL,MONO@-15..0,300..1000,0..1,0..1&display=swap">
+<link rel="stylesheet" href="style.css">
+<style>
+  .track { position: relative; height: 130px; background: var(--stage); border: 2px dashed var(--line); border-radius: var(--radius); overflow: hidden; }
+  .track .ghost { position: absolute; top: 35px; width: 60px; height: 60px; border-radius: 10px; border: 2px dashed var(--muted); opacity: 0.5; }
+  .track .ghost.a { left: 20px; } .track .ghost.b { right: 20px; }
+  #mover { position: absolute; top: 35px; left: 20px; width: 60px; height: 60px; border-radius: 10px; background: var(--item-1); }
+  #mover.go.k-move { left: calc(100% - 80px); }
+  #mover.go.k-color { background: var(--item-2); border-radius: 50%; }
+  #mover.go.k-size { width: 120px; height: 90px; top: 20px; }
+  #mover.go.k-rotate { transform: rotate(180deg); }
+  .row-btns { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+  .curve { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 10px; display: grid; gap: 4px; }
+  .curve svg { width: 100%; max-width: 260px; height: auto; display: block; }
+  .curve .cap { font-size: 0.85rem; color: var(--muted); }
+  .hover-card { display: grid; place-items: center; height: 90px; border-radius: 10px; background: var(--panel); border: 1px solid var(--line); font-weight: 700; cursor: pointer; }
+  .hover-card:hover, .hover-card:focus-visible { transform: translateY(-6px) scale(1.03); box-shadow: 0 12px 24px rgba(0,0,0,0.15); border-color: var(--cobalt); color: var(--cobalt); }
+  .motion-note { padding: 10px 12px; border-radius: 8px; background: var(--cobalt-soft); font-size: 0.93rem; }
+
+  .anim-stage { display: grid; place-items: center; height: 200px; background: var(--stage); border: 2px dashed var(--line); border-radius: var(--radius); overflow: hidden; }
+  #anim { width: 70px; height: 70px; border-radius: 12px; background: var(--item-3); display: grid; place-items: center; color: #fff; font: 700 0.85rem var(--font-code); }
+  @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.25); } }
+  @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+  @keyframes slide-in { from { transform: translateX(-160px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+  @keyframes shake { 0%, 100% { transform: translateX(0); } 20%, 60% { transform: translateX(-12px); } 40%, 80% { transform: translateX(12px); } }
+  @keyframes bounce { 0%, 100% { transform: translateY(0); } 40% { transform: translateY(-60px); } 60% { transform: translateY(-60px); } 80% { transform: translateY(-10px); } }
+  .kf { font: 0.88rem/1.6 var(--font-code); font-variation-settings: "MONO" 1; color: var(--muted); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <nav class="crumbs" aria-label="Site"><a class="crumb" href="index.html">← Field Guide</a><a class="crumb" href="glossary.html">Glossary</a></nav>
+  <header class="page-head">
+    <span class="eyebrow">Polish &amp; Workflow · Transitions &amp; Animations</span>
+    <h1>Transitions &amp; Animations</h1>
+    <p class="lede">A transition smooths the change between two states, like on hover. An animation runs a sequence of keyframes by itself. Small, quick motion helps people notice changes; too much distracts.</p>
+  </header>
+  <p class="motion-note" id="motion-note" hidden>Your device is set to reduce motion. This page plays its demos anyway so you can learn from them, but the rest of this site turns motion off for you. Your own sites should do the same with a <code>prefers-reduced-motion</code> media query.</p>
+
+  <div class="section-title"><span class="eyebrow">Part 1</span><h2>Transitions</h2></div>
+  <section class="playground">
+    <div class="panel controls">
+      <div class="control"><label for="kind">what changes</label>
+        <select id="kind"><option value="move">position (left)</option><option value="color">color and shape</option><option value="size">size</option><option value="rotate">rotation (transform)</option></select></div>
+      <div class="control"><label for="dur">transition-duration</label><input id="dur" type="range" min="0" max="3" step="0.1" value="0.6"><span class="readout" id="dur-out"></span></div>
+      <div class="control"><label for="ease">transition-timing-function</label>
+        <select id="ease"><option>ease</option><option>linear</option><option>ease-in</option><option>ease-out</option><option>ease-in-out</option><option value="cubic-bezier(.68,-0.6,.32,1.6)">back (overshoot)</option><option value="steps(5)">steps(5)</option></select></div>
+      <div class="control"><label for="delay">transition-delay</label><input id="delay" type="range" min="0" max="1.5" step="0.1" value="0"><span class="readout" id="delay-out"></span></div>
+    </div>
+    <div class="stage-col">
+      <div class="track"><div class="ghost a"></div><div class="ghost b"></div><div id="mover"></div></div>
+      <div class="row-btns"><button class="btn" id="play" aria-pressed="false">Change state</button><span class="hint" id="dur-hint"></span></div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px">
+        <div class="curve"><span class="eyebrow">Speed curve</span><svg id="svg" viewBox="0 0 200 200" role="img" aria-label="Easing curve"></svg><span class="cap" id="curve-cap"></span></div>
+        <div style="display:grid;gap:6px;align-content:start"><span class="eyebrow">Same timing on hover</span><div class="hover-card" id="hover" tabindex="0">Hover or Tab to me</div></div>
+      </div>
+    </div>
+  </section>
+
+  <div class="section-title"><span class="eyebrow">Part 2</span><h2>Keyframe animations</h2></div>
+  <section class="playground">
+    <div class="panel controls">
+      <div class="control"><label for="name">animation-name</label>
+        <select id="name"><option>pulse</option><option>spin</option><option>slide-in</option><option>shake</option><option>bounce</option></select></div>
+      <div class="control"><label for="adur">animation-duration</label><input id="adur" type="range" min="0.2" max="3" step="0.1" value="1"><span class="readout" id="adur-out"></span></div>
+      <div class="control"><label for="count">animation-iteration-count</label>
+        <select id="count"><option>1</option><option selected>3</option><option>infinite</option></select></div>
+      <div class="control"><label for="dir">animation-direction</label>
+        <select id="dir"><option>normal</option><option>alternate</option><option>reverse</option></select></div>
+      <button class="btn" id="aplay" style="justify-self:start">Play animation</button>
+    </div>
+    <div class="stage-col">
+      <div class="anim-stage"><div id="anim">box</div></div>
+      <p class="kf" id="kf"></p>
+    </div>
+  </section>
+
+  <section class="notes">
+    <div class="panel">
+      <h2>Key ideas</h2>
+      <ul>
+        <li>Put <code>transition</code> on the element's normal state, not the <code>:hover</code> state, so it animates both ways.</li>
+        <li>Most interface motion should take 150–400ms. Longer feels sluggish.</li>
+        <li><code>transform</code> and <code>opacity</code> animate smoothly. Animating <code>width</code>, <code>top</code> or <code>left</code> makes the browser redo layout every frame.</li>
+        <li>Wrap big motion in <code>@media (prefers-reduced-motion: no-preference)</code> so people who get motion sick are spared.</li>
+      </ul>
+    </div>
+    <div class="panel mistake">
+      <h2>Common mistakes</h2>
+      <ul>
+        <li>Trying to transition <code>display: none</code>. It can't fade; use <code>opacity</code> instead.</li>
+        <li>Writing <code>transition: all</code> and animating things you didn't mean to.</li>
+        <li>Forgetting the unit: <code>transition-duration: 300</code> does nothing. Write <code>300ms</code> or <code>0.3s</code>.</li>
+        <li>Infinite animations on content people are trying to read.</li>
+      </ul>
+    </div>
+  </section>
+
+  <footer class="page-foot"><a href="transforms.html">← Transforms</a><a href="form-styling.html">Next: Styling Forms →</a></footer>
+</div>
+
+<script>
+  const $ = (id) => document.getElementById(id);
+  // The shared stylesheet disables motion for reduced-motion users with !important; demos opt back in inline.
+  const imp = (el, prop, val) => el.style.setProperty(prop, val, "important");
+  try { if (matchMedia("(prefers-reduced-motion: reduce)").matches) $("motion-note").hidden = false; } catch (e) {}
+
+  const CURVES = { "ease": [.25, .1, .25, 1], "linear": [0, 0, 1, 1], "ease-in": [.42, 0, 1, 1], "ease-out": [0, 0, .58, 1], "ease-in-out": [.42, 0, .58, 1], "cubic-bezier(.68,-0.6,.32,1.6)": [.68, -.6, .32, 1.6] };
+  const CAPS = { "ease": "Starts quickly, slows at the end. The default.", "linear": "Same speed the whole way. Feels mechanical.", "ease-in": "Starts slow, speeds up. Good for things leaving.", "ease-out": "Starts fast, slows down. Good for things arriving.", "ease-in-out": "Slow at both ends.", "cubic-bezier(.68,-0.6,.32,1.6)": "Pulls back first, then overshoots and settles.", "steps(5)": "Jumps in 5 steps with no motion between them." };
+  const X = (x) => 30 + x * 150, Y = (y) => 135 - y * 80;
+  function drawCurve(e) {
+    let path;
+    if (e.startsWith("steps")) {
+      const n = 5; let d = `M${X(0)} ${Y(0)}`;
+      for (let i = 1; i <= n; i++) d += ` H${X(i / n)} V${Y(i / n)}`;
+      path = `<path d="${d}" fill="none" stroke="var(--cobalt)" stroke-width="3"/>`;
+    } else {
+      const [a, b, c, d] = CURVES[e];
+      path = `<path d="M${X(0)} ${Y(0)} C${X(a)} ${Y(b)} ${X(c)} ${Y(d)} ${X(1)} ${Y(1)}" fill="none" stroke="var(--cobalt)" stroke-width="3"/>`;
+    }
+    $("svg").innerHTML = `<line x1="${X(0)}" y1="${Y(0)}" x2="${X(1)}" y2="${Y(0)}" stroke="var(--line)"/><line x1="${X(0)}" y1="${Y(0)}" x2="${X(0)}" y2="${Y(1)}" stroke="var(--line)"/><line x1="${X(0)}" y1="${Y(1)}" x2="${X(1)}" y2="${Y(1)}" stroke="var(--line)" stroke-dasharray="4 4"/>
+      <text x="${X(0.5)}" y="197" text-anchor="middle" font-size="11" fill="var(--muted)">time →</text><text x="14" y="${Y(0.5)}" text-anchor="middle" font-size="11" fill="var(--muted)" transform="rotate(-90 14 ${Y(0.5)})">progress →</text>${path}`;
+    $("curve-cap").textContent = CAPS[e];
+  }
+  function trans() {
+    const d = $("dur").value, e = $("ease").value, dl = $("delay").value;
+    $("dur-out").textContent = d + "s"; $("delay-out").textContent = dl + "s";
+    const t = `all ${d}s ${e} ${dl}s`;
+    imp($("mover"), "transition", t); imp($("hover"), "transition", t);
+    $("mover").className = ($("play").getAttribute("aria-pressed") === "true" ? "go " : "") + "k-" + $("kind").value;
+    $("dur-hint").textContent = d > 0.6 ? "Over 0.6s starts to feel slow for buttons and menus." : d == 0 ? "0s means no transition: it just jumps." : "A comfortable speed for interface motion.";
+    drawCurve(e);
+  }
+  $("play").addEventListener("click", () => { const p = $("play").getAttribute("aria-pressed") !== "true"; $("play").setAttribute("aria-pressed", String(p)); trans(); });
+  ["dur", "ease", "delay", "kind"].forEach((id) => $(id).addEventListener("input", trans));
+  trans();
+
+  const KF = {
+    pulse: "@keyframes pulse: 0% and 100% at normal size, 50% scaled up to 1.25.",
+    spin: "@keyframes spin: from rotate(0deg) to rotate(360deg).",
+    "slide-in": "@keyframes slide-in: from 160px to the left and invisible, to its normal spot and fully visible.",
+    shake: "@keyframes shake: left and right by 12px at 20%, 40%, 60% and 80%.",
+    bounce: "@keyframes bounce: up 60px at 40%, hold until 60%, a small hop at 80%, then back down.",
+  };
+  function anim() {
+    const a = $("anim"), n = $("name").value;
+    $("adur-out").textContent = $("adur").value + "s";
+    $("kf").textContent = KF[n];
+    imp(a, "animation", "none");
+    void a.offsetWidth; // restart the animation
+    imp(a, "animation", `${n} ${$("adur").value}s ease-in-out 0s ${$("count").value} ${$("dir").value}`);
+  }
+  $("aplay").addEventListener("click", anim);
+  ["name", "adur", "count", "dir"].forEach((id) => $(id).addEventListener("input", anim));
+  $("kf").textContent = KF.pulse;
+</script>
+</body>
+</html>

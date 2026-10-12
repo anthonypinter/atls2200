@@ -1,0 +1,180 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Fluid Sizing</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Recursive:slnt,wght,CASL,MONO@-15..0,300..1000,0..1,0..1&display=swap">
+<link rel="stylesheet" href="style.css">
+<style>
+  .rows { display: grid; gap: 10px; }
+  .row-demo { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; display: grid; gap: 4px; overflow: hidden; }
+  .row-demo code { justify-self: start; }
+  .row-demo .sample { font-family: var(--font-display); font-weight: 800; line-height: 1.1; white-space: nowrap; color: var(--c); }
+  .row-demo .px { font: 0.8rem var(--font-code); font-variation-settings: "MONO" 1; color: var(--muted); }
+  .row-demo .px.bad { color: var(--bad); }
+  .chart { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 8px; }
+  .chart svg { display: block; width: 100%; height: auto; }
+  .chart text { font: 11px var(--font-code); fill: var(--muted); }
+  .legend { display: flex; flex-wrap: wrap; gap: 6px 16px; font: 0.8rem var(--font-code); font-variation-settings: "MONO" 1; padding: 4px 6px 0; }
+  .legend span { display: inline-flex; gap: 6px; align-items: center; } .legend i { width: 14px; height: 3px; background: var(--c); }
+
+  .stage.scroll { overflow-x: auto; min-height: 0; }
+  .page { border: 2px dashed var(--prop); border-radius: 8px; background: var(--panel); transition: width 0.2s; position: relative; }
+  .page .lbl { font: 600 0.75rem var(--font-code); font-variation-settings: "MONO" 1; color: var(--prop); display: block; padding: 6px 8px 0; }
+  .col { background: var(--cobalt-soft); border: 2px solid var(--cobalt); border-radius: 6px; margin: 8px auto 12px; padding: 10px; display: grid; gap: 6px; box-sizing: border-box; }
+  .col i { display: block; height: 6px; border-radius: 3px; background: var(--muted); opacity: 0.45; }
+  .col i:nth-child(3n) { width: 70%; }
+  .col .w { font: 600 0.8rem var(--font-code); font-variation-settings: "MONO" 1; color: var(--cobalt); }
+  .status { font-size: 0.93rem; padding: 8px 10px; border-radius: 6px; }
+  .status.good { background: var(--good-soft); color: var(--good); } .status.bad { background: var(--bad-soft); color: var(--bad); }
+
+  .recipes { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 14px; }
+  .recipes .panel { display: grid; gap: 8px; align-content: start; }
+  .recipes .code-box pre { padding-right: 70px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <nav class="crumbs" aria-label="Site"><a class="crumb" href="index.html">← Field Guide</a><a class="crumb" href="glossary.html">Glossary</a></nav>
+  <header class="page-head">
+    <span class="eyebrow">Responsive Design · Fluid Sizing</span>
+    <h1>Fluid Sizing</h1>
+    <p class="lede">Media queries change things in jumps. <code>clamp()</code>, <code>min()</code>, <code>max()</code> and <code>calc()</code> let sizes change smoothly with the screen, inside limits you set, often with no media query at all.</p>
+  </header>
+
+  <div class="section-title" style="margin-top:0"><span class="eyebrow">Part 1</span><h2>Headings that grow with clamp()</h2><p><code>clamp(MIN, PREFERRED, MAX)</code> uses the preferred value, but never goes below the minimum or above the maximum. Drag the window width and compare three ways to size a heading.</p></div>
+  <section class="playground">
+    <div class="panel controls">
+      <div class="control"><label for="vw">window width</label><input id="vw" type="range" min="320" max="1600" step="10" value="390"><span class="readout" id="vw-out"></span></div>
+      <span class="eyebrow" style="margin-top:6px">clamp( min, preferred, max )</span>
+      <div class="control"><label for="cmin">min</label><input id="cmin" type="range" min="1" max="3" step="0.25" value="1.75"><span class="readout" id="cmin-out"></span></div>
+      <div class="control"><label for="cvw">preferred: 1rem + ?vw</label><input id="cvw" type="range" min="1" max="8" step="0.5" value="3"><span class="readout" id="cvw-out"></span></div>
+      <div class="control"><label for="cmax">max</label><input id="cmax" type="range" min="2" max="5" step="0.25" value="3.5"><span class="readout" id="cmax-out"></span></div>
+      <p class="hint">1rem is 16px here. Keeping a rem in the preferred value means the heading still grows when someone zooms in.</p>
+    </div>
+    <div class="stage-col">
+      <div class="rows" id="rows"></div>
+      <div class="chart"><svg id="chart" viewBox="0 0 520 220" role="img" aria-label="Font size in pixels plotted against window width for the three methods"></svg>
+        <div class="legend"><span style="--c:var(--item-2)"><i></i>fixed rem</span><span style="--c:var(--item-4)"><i></i>vw only</span><span style="--c:var(--item-1)"><i></i>clamp()</span></div></div>
+    </div>
+  </section>
+
+  <div class="section-title"><span class="eyebrow">Part 2</span><h2>Columns that fit with min() and max()</h2><p><code>min()</code> picks the smallest of its values, <code>max()</code> the largest. They're perfect for "this wide, but never wider than the screen" and "at least this much padding."</p></div>
+  <section class="playground">
+    <div class="panel controls">
+      <div class="control"><label for="pw">page width</label><input id="pw" type="range" min="300" max="1000" step="10" value="360"><span class="readout" id="pw-out"></span></div>
+      <div class="control"><label for="cw">.column { … }</label>
+        <select id="cw">
+          <option value="fixed">width: 640px</option>
+          <option value="max">max-width: 640px</option>
+          <option value="min" selected>width: min(640px, 100% - 32px)</option>
+        </select></div>
+      <div class="control"><label for="pad">padding</label>
+        <select id="pad"><option value="fixed">10px</option><option value="max" selected>max(10px, 4vw)</option></select></div>
+    </div>
+    <div class="stage-col">
+      <div class="stage scroll"><div class="page" id="page"><span class="lbl" id="page-lbl"></span><div class="col" id="col"><span class="w" id="col-w"></span><i></i><i></i><i></i><i></i><i></i><i></i></div></div></div>
+      <div class="status" id="status2" aria-live="polite"></div>
+    </div>
+  </section>
+
+  <div class="section-title"><span class="eyebrow">Part 3</span><h2>Recipes worth keeping</h2><p>Copy these into your own stylesheet. Each one replaces a media query or two.</p></div>
+  <section class="recipes" id="recipes"></section>
+
+  <section class="notes">
+    <div class="panel">
+      <h2>Key ideas</h2>
+      <ul>
+        <li><code>clamp(1.75rem, 1rem + 3vw, 3.5rem)</code> means: grow with the window, but stay between 28px and 56px.</li>
+        <li><code>calc()</code> mixes units: <code>calc(100% - 2rem)</code> is "full width, minus 32px." Inside <code>clamp()</code>, <code>min()</code> and <code>max()</code> you can do math without writing <code>calc</code>.</li>
+        <li><code>min()</code> sets an upper limit (like <code>max-width</code>), <code>max()</code> sets a lower limit (like <code>min-width</code>). The names feel backwards at first.</li>
+        <li>These work anywhere a length works: font sizes, widths, padding, gap and grid tracks.</li>
+      </ul>
+    </div>
+    <div class="panel mistake">
+      <h2>Common mistakes</h2>
+      <ul>
+        <li>Leaving out the spaces: <code>calc(100%-2rem)</code> is ignored. The <code>+</code> and <code>-</code> need a space on each side.</li>
+        <li>Sizing text in <code>vw</code> alone. It's tiny on phones, huge on big monitors, and doesn't grow when people zoom.</li>
+        <li>Putting the values in the wrong order. <code>clamp()</code> is always min, preferred, max.</li>
+        <li>Using <code>vw</code> for widths inside a page that has a scrollbar. <code>100vw</code> includes the scrollbar, so it causes sideways scrolling. Use <code>100%</code>.</li>
+      </ul>
+    </div>
+  </section>
+
+  <footer class="page-foot"><a href="mobile-first.html">← Mobile-First Workflow</a><a href="transforms.html">Next: Transforms →</a></footer>
+</div>
+
+<script>
+  const $ = (id) => document.getElementById(id);
+  const REM = 16;
+
+  // Part 1
+  function sizes(w) {
+    const mn = +$("cmin").value * REM, mx = +$("cmax").value * REM, pref = REM + (+$("cvw").value / 100) * w;
+    return { fixed: 2.5 * REM, vw: 0.06 * w, clamp: Math.min(mx, Math.max(mn, pref)), pref };
+  }
+  function part1() {
+    const w = +$("vw").value, cmin = $("cmin").value, cvw = $("cvw").value, cmax = $("cmax").value;
+    $("vw-out").textContent = w + "px"; $("cmin-out").textContent = cmin + "rem"; $("cvw-out").textContent = cvw + "vw"; $("cmax-out").textContent = cmax + "rem";
+    const s = sizes(w);
+    const row = (c, code, px, note) => `<div class="row-demo" style="--c:var(${c})"><code>${code}</code><span class="sample" style="font-size:${px}px">Weekend Hikes</span><span class="px ${note ? "bad" : ""}">${Math.round(px)}px${note ? " · " + note : ""}</span></div>`;
+    $("rows").innerHTML =
+      row("--item-2", "font-size: 2.5rem", s.fixed, w < 480 ? "big for a phone: long words won't fit" : "") +
+      row("--item-4", "font-size: 6vw", s.vw, s.vw < 24 ? "too small for a heading" : s.vw > 72 ? "far too big" : "") +
+      row("--item-1", `font-size: clamp(${cmin}rem, 1rem + ${cvw}vw, ${cmax}rem)`, s.clamp, "");
+
+    // Chart: window 320..1600 on x, 0..100px on y
+    const X = (v) => 40 + ((v - 320) / 1280) * 465, Y = (v) => 195 - (Math.min(v, 100) / 100) * 180;
+    const path = (key) => { let d = ""; for (let v = 320; v <= 1600; v += 20) d += (d ? " L" : "M") + X(v).toFixed(1) + " " + Y(sizes(v)[key]).toFixed(1); return d; };
+    let g = "";
+    [0, 25, 50, 75, 100].forEach((v) => (g += `<line x1="40" x2="505" y1="${Y(v)}" y2="${Y(v)}" stroke="var(--line)"/><text x="34" y="${Y(v) + 4}" text-anchor="end">${v}</text>`));
+    [320, 640, 960, 1280, 1600].forEach((v) => (g += `<text x="${X(v)}" y="212" text-anchor="middle">${v}</text>`));
+    g += `<path d="${path("fixed")}" fill="none" stroke="var(--item-2)" stroke-width="2.5"/><path d="${path("vw")}" fill="none" stroke="var(--item-4)" stroke-width="2.5"/><path d="${path("clamp")}" fill="none" stroke="var(--item-1)" stroke-width="3.5"/>`;
+    g += `<line x1="${X(w)}" x2="${X(w)}" y1="10" y2="195" stroke="var(--ink)" stroke-dasharray="3 3"/><circle cx="${X(w)}" cy="${Y(s.clamp)}" r="5" fill="var(--item-1)"/>`;
+    $("chart").innerHTML = g;
+  }
+  ["vw", "cmin", "cvw", "cmax"].forEach((id) => $(id).addEventListener("input", part1));
+  part1();
+
+  // Part 2
+  function part2() {
+    const pw = +$("pw").value, mode = $("cw").value, pad = $("pad").value;
+    $("pw-out").textContent = pw + "px";
+    $("page").style.width = pw + "px";
+    $("page-lbl").textContent = `page · ${pw}px`;
+    const avail = pw - 4;
+    const p = pad === "max" ? Math.max(10, pw * 0.04) : 10;
+    let w;
+    if (mode === "fixed") w = 640; else if (mode === "max") w = Math.min(640, avail); else w = Math.min(640, avail - 32);
+    Object.assign($("col").style, { width: w + "px", padding: p + "px" });
+    $("col-w").textContent = `${Math.round(w)}px wide · ${Math.round(p)}px padding`;
+    const s = $("status2");
+    if (w > avail) { s.className = "status bad"; s.textContent = `The column is ${w}px but the page is ${avail}px, so it sticks out and the page scrolls sideways.`; }
+    else if (mode === "max" && avail < 640) { s.className = "status bad"; s.textContent = "It fits, but it touches the edges of the screen. Text right against the glass is hard to read on a phone."; }
+    else { s.className = "status good"; s.textContent = avail < 672 ? "min() picked 100% - 32px, leaving a 16px gutter on each side." : "min() picked 640px because the page has room. One line, no media query."; }
+  }
+  ["pw", "cw", "pad"].forEach((id) => $(id).addEventListener("input", part2));
+  part2();
+
+  // Part 3
+  const P = (p, v) => `  <span class="prop">${p}</span>: <span class="val">${v}</span>;`;
+  const RECIPES = [
+    ["Fluid heading", "Grows smoothly between a phone size and a desktop size.", `<span class="sel">h1</span> {\n${P("font-size", "clamp(1.75rem, 1rem + 3vw, 3.5rem)")}\n}`],
+    ["Readable column", "Never wider than about 65 characters, always with a gutter.", `<span class="sel">main</span> {\n${P("width", "min(65ch, 100% - 2rem)")}\n${P("margin-inline", "auto")}\n}`],
+    ["Spacing that breathes", "More padding on big screens, never cramped on small ones.", `<span class="sel">section</span> {\n${P("padding-block", "clamp(2rem, 6vw, 5rem)")}\n}`],
+    ["A grid that never overflows", "Cards at least 250px wide, unless the screen is narrower than that.", `<span class="sel">.cards</span> {\n${P("display", "grid")}\n${P("grid-template-columns", "\n    repeat(auto-fit, minmax(min(250px, 100%), 1fr))")}\n}`],
+    ["Fill the screen under a header", "A hero that fills the rest of the screen below a 64px header.", `<span class="sel">.hero</span> {\n${P("min-height", "calc(100dvh - 64px)")}\n}`],
+    ["Minimum tap target", "Buttons stay at least 44px tall even with small text.", `<span class="sel">button</span> {\n${P("min-height", "max(44px, 2.5em)")}\n}`],
+  ];
+  $("recipes").innerHTML = RECIPES.map(([h, p, code], i) => `<div class="panel"><h3>${h}</h3><p class="hint">${p}</p><div class="code-box"><pre id="r${i}">${code}</pre><button class="copy" data-i="${i}">Copy</button></div></div>`).join("");
+  $("recipes").addEventListener("click", (e) => {
+    const b = e.target.closest(".copy"); if (!b) return;
+    navigator.clipboard.writeText($("r" + b.dataset.i).textContent).then(() => { b.textContent = "Copied"; setTimeout(() => (b.textContent = "Copy"), 1200); }).catch(() => {});
+  });
+</script>
+</body>
+</html>

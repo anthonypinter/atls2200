@@ -1,0 +1,188 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cascade &amp; Inheritance</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Recursive:slnt,wght,CASL,MONO@-15..0,300..1000,0..1,0..1&family=Lora:ital@0;1&display=swap">
+<link rel="stylesheet" href="style.css">
+<style>
+  .seg-list { display: grid; gap: 6px; }
+  .seg-list .btn { text-align: left; }
+  #art { border: 2px dashed var(--prop); border-radius: 8px; padding: 14px; display: grid; gap: 10px; position: relative; color: var(--ink); background: var(--panel); }
+  #art > .who, .kid-wrap .who { font: 600 0.72rem var(--font-code); font-variation-settings: "MONO" 1; }
+  #art > .who { color: var(--prop); }
+  .kid-wrap { display: grid; grid-template-columns: 1fr auto; gap: 10px; align-items: center; padding: 8px 10px; border-radius: 6px; border: 1px solid var(--line); }
+  .kid-wrap .who { display: block; color: var(--muted); margin-bottom: 4px; }
+  .badge { font: 600 0.75rem var(--font-code); font-variation-settings: "MONO" 1; padding: 3px 8px; border-radius: 4px; white-space: nowrap; }
+  .badge.yes { background: var(--good-soft); color: var(--good); } .badge.no { background: var(--bad-soft); color: var(--bad); } .badge.see { background: var(--stage); color: var(--muted); }
+  #art h3 { margin: 0; font: inherit; font-weight: 700; font-size: 1.2em; }
+  #art p { margin: 0; }
+  #art a { color: inherit; }
+  #art button, #art input { padding: 6px 10px; }
+  #art.fix button, #art.fix input { font: inherit; color: inherit; }
+  .why { font-size: 0.92rem; }
+
+  .rules { display: grid; gap: 10px; }
+  .rulecard { display: grid; grid-template-columns: auto 1fr auto; gap: 12px; align-items: center; padding: 12px; border-radius: 8px; border: 1px solid var(--line); background: var(--panel); }
+  .rulecard.win { border-color: var(--good); box-shadow: inset 4px 0 0 var(--good); }
+  .rulecard .order { display: grid; gap: 4px; }
+  .rulecard .order button { font-size: 0.8rem; padding: 2px 8px; }
+  .rulecard .body { display: grid; gap: 6px; min-width: 0; }
+  .rulecard select { font: 0.92rem var(--font-code); font-variation-settings: "MONO" 1; color: var(--cobalt); background: var(--paper); border: 1px solid var(--line); border-radius: 6px; padding: 5px; max-width: 100%; }
+  .decl { font: 0.92rem var(--font-code); font-variation-settings: "MONO" 1; }
+  .rulecard:not(.win) .decl { text-decoration: line-through; color: var(--muted); }
+  .rulecard .imp { display: flex; gap: 6px; align-items: center; font: 0.8rem var(--font-code); font-variation-settings: "MONO" 1; color: var(--bad); cursor: pointer; white-space: nowrap; }
+  .sw { display: inline-block; width: 12px; height: 12px; border-radius: 3px; vertical-align: middle; margin-right: 4px; }
+  .result-row { display: flex; flex-wrap: wrap; gap: 12px 20px; align-items: center; margin-top: 14px; padding: 14px 16px; border-radius: var(--radius); background: var(--panel); border: 1px solid var(--line); }
+  .result-row .sample { font: 800 1.5rem var(--font-display); }
+  @media (max-width: 520px) { .rulecard { grid-template-columns: 1fr; } .rulecard .order { grid-auto-flow: column; justify-content: start; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <nav class="crumbs" aria-label="Site"><a class="crumb" href="index.html">← Field Guide</a><a class="crumb" href="glossary.html">Glossary</a></nav>
+  <header class="page-head">
+    <span class="eyebrow">CSS Basics · Cascade &amp; Inheritance</span>
+    <h1>Cascade &amp; Inheritance</h1>
+    <p class="lede">Some styles pass down from parent to child automatically, and some don't. When several rules disagree, the cascade decides which one wins.</p>
+  </header>
+
+  <div class="section-title" style="margin-top:0"><span class="eyebrow">Part 1</span><h2>What gets inherited?</h2><p>Set a property on the article. The badges read what the browser actually computed for each child.</p></div>
+  <section class="playground">
+    <div class="panel controls">
+      <span class="eyebrow">Set on article</span>
+      <div class="seg-list" id="props"></div>
+      <label class="check" style="display:flex;gap:8px;align-items:center;margin-top:8px;cursor:pointer"><input type="checkbox" id="fix"><span style="font:600 0.85rem var(--font-code);font-variation-settings:'MONO' 1;color:var(--prop)">button, input { font: inherit; color: inherit }</span></label>
+    </div>
+    <div class="stage-col">
+      <article id="art">
+        <span class="who">article</span>
+        <div class="kid-wrap"><div><span class="who">h3</span><h3 data-kid>Mesa Trail</h3></div><span class="badge" data-badge></span></div>
+        <div class="kid-wrap"><div><span class="who">p</span><p data-kid>Rolling foothills with views of the Flatirons.</p></div><span class="badge" data-badge></span></div>
+        <div class="kid-wrap"><div><span class="who">a</span><a href="#art" data-kid>Trail map</a></div><span class="badge" data-badge></span></div>
+        <div class="kid-wrap"><div><span class="who">button</span><button type="button" data-kid>Save trail</button></div><span class="badge" data-badge></span></div>
+        <div class="kid-wrap"><div><span class="who">input</span><input data-kid value="Search trails" aria-label="Search trails"></div><span class="badge" data-badge></span></div>
+      </article>
+      <p class="why" id="why"></p>
+    </div>
+  </section>
+
+  <div class="section-title"><span class="eyebrow">Part 2</span><h2>Which rule wins?</h2><p>Three rules all try to color the same heading, <code>&lt;h3 class="title" id="top"&gt;</code>. Change the selectors, reorder the rules, or add <code>!important</code>.</p></div>
+  <div class="rules" id="rules"></div>
+  <div class="result-row" aria-live="polite"><span class="sample" id="sample">Mesa Trail</span><span id="verdict"></span></div>
+  <div class="panel" style="margin-top:14px">
+    <span class="eyebrow">The browser checks in this order</span>
+    <ul style="margin:8px 0 0;padding-left:1.2em;display:grid;gap:4px">
+      <li><code>!important</code> beats everything without it.</li>
+      <li>Then higher specificity wins (IDs, then classes, then elements).</li>
+      <li>If it's still a tie, the rule that comes later in the CSS wins.</li>
+    </ul>
+  </div>
+
+  <section class="notes">
+    <div class="panel">
+      <h2>Key ideas</h2>
+      <ul>
+        <li>Text properties inherit: <code>color</code>, <code>font-*</code>, <code>line-height</code>, <code>text-align</code>.</li>
+        <li>Box properties don't: <code>border</code>, <code>padding</code>, <code>margin</code>, <code>background</code>, <code>width</code>.</li>
+        <li>Set your fonts and text color once on <code>body</code> and let everything inherit them.</li>
+        <li>Any property can be forced to inherit with the value <code>inherit</code>.</li>
+      </ul>
+    </div>
+    <div class="panel mistake">
+      <h2>Common mistakes</h2>
+      <ul>
+        <li>Wondering why buttons and inputs ignore your font and color. They don't inherit them unless you add <code>font: inherit</code> and <code>color: inherit</code>.</li>
+        <li>Thinking a background was inherited. Children are transparent, so you're seeing the parent through them.</li>
+        <li>Fixing a losing rule with <code>!important</code> instead of checking order and specificity in DevTools.</li>
+        <li>Linking two stylesheets in the wrong order, so the general one overrides the specific one.</li>
+      </ul>
+    </div>
+  </section>
+
+  <footer class="page-foot"><a href="pseudo-elements.html">← Pseudo-elements</a><a href="box-model.html">Next: The Box Model →</a></footer>
+</div>
+
+<script>
+  const $ = (id) => document.getElementById(id);
+  const PROPS = {
+    "color: firebrick": ["color", "firebrick", "color"],
+    "font-family: Lora, serif": ["fontFamily", '"Lora", serif', "font-family"],
+    "font-style: italic": ["fontStyle", "italic", "font-style"],
+    "text-align: center": ["textAlign", "center", "text-align"],
+    "border: 3px solid": ["border", "3px solid", "border-top-width"],
+    "padding: 20px": ["padding", "20px", "padding-top"],
+    "background: lightyellow": ["background", "lightyellow", "background-color"],
+  };
+  let current = "color: firebrick";
+  $("props").innerHTML = Object.keys(PROPS).map((k) => `<button class="btn" data-k="${k}">${k}</button>`).join("");
+  $("props").addEventListener("click", (e) => { const b = e.target.closest("button"); if (b) { current = b.dataset.k; inherit(); } });
+  $("fix").addEventListener("input", inherit);
+
+  function inherit() {
+    const art = $("art"), [js, val, cssProp] = PROPS[current];
+    art.removeAttribute("style");
+    art.style[js] = val;
+    art.classList.toggle("fix", $("fix").checked);
+    const parentVal = getComputedStyle(art).getPropertyValue(cssProp);
+    const kids = [...art.querySelectorAll("[data-kid]")], badges = [...art.querySelectorAll("[data-badge]")];
+    let formNote = false;
+    kids.forEach((k, i) => {
+      const v = getComputedStyle(k).getPropertyValue(cssProp), b = badges[i];
+      if (cssProp === "background-color" && v === "rgba(0, 0, 0, 0)" && !/^(BUTTON|INPUT)$/.test(k.tagName)) { b.className = "badge see"; b.textContent = "transparent (see-through)"; }
+      else if (v === parentVal) { b.className = "badge yes"; b.textContent = "inherited"; }
+      else { b.className = "badge no"; b.textContent = "not inherited"; if (/^(BUTTON|INPUT)$/.test(k.tagName)) formNote = true; }
+    });
+    document.querySelectorAll("#props .btn").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.k === current)));
+    const inheritable = ["color", "font-family", "font-style", "text-align"].includes(cssProp);
+    let why = inheritable ? `${current.split(":")[0]} is a text property, so it inherits.` : `${current.split(":")[0]} is a box property, so it stays on the article only.`;
+    if (formNote && cssProp !== "text-align") why += " Buttons and inputs are the exception: the browser gives them their own font and color. Turn on the checkbox to make them inherit.";
+    if (cssProp === "background-color") why += " The children look yellow only because their backgrounds are transparent.";
+    $("why").textContent = why;
+  }
+  inherit();
+
+  // Cascade
+  const SELECTORS = ["h3", ".title", "#top", "article h3", "article .title", "h3.title"];
+  const COLORS = [["var(--prop)", "orange"], ["var(--cobalt)", "blue"], ["var(--val)", "teal"]];
+  let rules = [{ sel: "h3", color: 0, imp: false }, { sel: ".title", color: 1, imp: false }, { sel: "h3.title", color: 2, imp: false }];
+  function specificity(s) {
+    let a = 0, b = 0, c = 0;
+    s = s.replace(/#[\w-]+/g, () => { a++; return " "; }).replace(/\.[\w-]+/g, () => { b++; return " "; });
+    (s.match(/[a-z][\w-]*/gi) || []).forEach(() => c++);
+    return [a, b, c];
+  }
+  function cmp(x, y) { if (x.imp !== y.imp) return x.imp ? 1 : -1; const sx = specificity(x.sel), sy = specificity(y.sel); for (let i = 0; i < 3; i++) if (sx[i] !== sy[i]) return sx[i] - sy[i]; return 0; }
+  function cascade() {
+    let win = 0;
+    rules.forEach((r, i) => { if (i > 0 && cmp(r, rules[win]) >= 0) win = i; });
+    $("rules").innerHTML = rules.map((r, i) => `<div class="rulecard ${i === win ? "win" : ""}">
+      <div class="order"><button class="btn" data-up="${i}" ${i === 0 ? "disabled" : ""} aria-label="Move up">↑</button><button class="btn" data-down="${i}" ${i === rules.length - 1 ? "disabled" : ""} aria-label="Move down">↓</button></div>
+      <div class="body"><span class="eyebrow">Rule ${i + 1} · specificity ${specificity(r.sel).join("-")}</span>
+        <div><select data-sel="${i}" aria-label="Selector for rule ${i + 1}">${SELECTORS.map((s) => `<option ${s === r.sel ? "selected" : ""}>${s}</option>`).join("")}</select> <span class="decl">{ color: <span class="sw" style="background:${COLORS[r.color][0]}"></span>${COLORS[r.color][1]}${r.imp ? " !important" : ""}; }</span></div></div>
+      <label class="imp"><input type="checkbox" data-imp="${i}" ${r.imp ? "checked" : ""}>!important</label></div>`).join("");
+    $("sample").style.color = COLORS[rules[win].color][0];
+    const w = rules[win], others = rules.filter((_, i) => i !== win);
+    let why;
+    if (w.imp && others.every((o) => !o.imp)) why = "it's the only !important one.";
+    else if (others.every((o) => { const c = cmp(w, o); return c > 0; })) why = "its specificity is the highest.";
+    else why = "it ties with another rule and comes later.";
+    $("verdict").textContent = `Rule ${win + 1} (${COLORS[w.color][1]}) wins because ${why}`;
+  }
+  $("rules").addEventListener("click", (e) => {
+    const up = e.target.closest("[data-up]"), down = e.target.closest("[data-down]");
+    if (up) { const i = +up.dataset.up; [rules[i - 1], rules[i]] = [rules[i], rules[i - 1]]; cascade(); }
+    if (down) { const i = +down.dataset.down; [rules[i + 1], rules[i]] = [rules[i], rules[i + 1]]; cascade(); }
+  });
+  $("rules").addEventListener("input", (e) => {
+    if (e.target.dataset.sel !== undefined) rules[+e.target.dataset.sel].sel = e.target.value;
+    if (e.target.dataset.imp !== undefined) rules[+e.target.dataset.imp].imp = e.target.checked;
+    cascade();
+  });
+  cascade();
+</script>
+</body>
+</html>

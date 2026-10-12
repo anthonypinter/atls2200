@@ -1,0 +1,178 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Colors &amp; Units</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Recursive:slnt,wght,CASL,MONO@-15..0,300..1000,0..1,0..1&display=swap">
+<link rel="stylesheet" href="style.css">
+<style>
+  .swatch-big { border-radius: var(--radius); min-height: 180px; display: grid; grid-template-columns: 1fr 1fr; overflow: hidden; border: 1px solid var(--line); }
+  .swatch-big div { display: grid; place-items: center; padding: 16px; font: 800 1.5rem var(--font-display); text-align: center; }
+  .formats { display: grid; gap: 8px; }
+  .fmt { display: grid; grid-template-columns: 60px 1fr; gap: 10px; align-items: baseline; font: 0.95rem var(--font-code); font-variation-settings: "MONO" 1; }
+  .fmt span:first-child { color: var(--muted); font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.06em; }
+  .fmt span:last-child { color: var(--val); overflow-wrap: anywhere; }
+  .contrast { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .contrast div { padding: 10px; border-radius: 8px; background: var(--stage); display: grid; gap: 2px; }
+  .contrast b { font: 800 1.3rem var(--font-display); font-variant-numeric: tabular-nums; }
+  .pass { color: var(--good); font-weight: 700; font-size: 0.85rem; } .fail { color: var(--bad); font-weight: 700; font-size: 0.85rem; }
+  .named { display: flex; flex-wrap: wrap; gap: 6px; }
+  .named button { display: inline-flex; align-items: center; gap: 6px; }
+  .named i { width: 12px; height: 12px; border-radius: 3px; display: inline-block; }
+  .hue-track { background: linear-gradient(90deg, red, yellow, lime, cyan, blue, magenta, red); height: 8px; border-radius: 4px; }
+
+  .units-wrap { overflow-x: auto; }
+  .parent { border: 2px dashed var(--prop); border-radius: 8px; padding: 10px; position: relative; display: grid; gap: 10px; }
+  .parent > .lbl { font: 600 0.75rem var(--font-code); font-variation-settings: "MONO" 1; color: var(--prop); }
+  .ubar { display: grid; gap: 3px; }
+  .ubar .meta { display: flex; justify-content: space-between; gap: 10px; font: 0.85rem var(--font-code); font-variation-settings: "MONO" 1; white-space: nowrap; }
+  .ubar .meta b { color: var(--cobalt); }
+  .ubar .meta span { color: var(--muted); font-variant-numeric: tabular-nums; }
+  .ubar .fill { height: 18px; border-radius: 4px; background: var(--cobalt); transition: width 0.2s; }
+  .ubar.over .fill { background: var(--bad); }
+  .ubar p { font-size: 0.85rem; color: var(--muted); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <nav class="crumbs" aria-label="Site"><a class="crumb" href="index.html">← Field Guide</a><a class="crumb" href="glossary.html">Glossary</a></nav>
+  <header class="page-head">
+    <span class="eyebrow">CSS Basics · Colors &amp; Units</span>
+    <h1>Colors &amp; Units</h1>
+    <p class="lede">CSS gives you several ways to write the same color and many units for size. Mix a color with the sliders, then see how each unit turns into real pixels.</p>
+  </header>
+
+  <div class="section-title" style="margin-top:0"><span class="eyebrow">Part 1</span><h2>Mixing colors with HSL</h2><p>HSL stands for hue, saturation and lightness. It's the easiest format to adjust by hand: keep the hue and change the lightness to get a darker or lighter shade of the same color.</p></div>
+  <section class="playground">
+    <div class="panel controls">
+      <div class="control"><label for="h">hue (the color wheel)</label><div class="hue-track"></div><input id="h" type="range" min="0" max="360" value="225"><span class="readout" id="h-out"></span></div>
+      <div class="control"><label for="s">saturation (gray → vivid)</label><input id="s" type="range" min="0" max="100" value="72"><span class="readout" id="s-out"></span></div>
+      <div class="control"><label for="l">lightness (black → white)</label><input id="l" type="range" min="0" max="100" value="50"><span class="readout" id="l-out"></span></div>
+      <span class="eyebrow" style="margin-top:6px">Named colors</span>
+      <div class="named" id="named"></div>
+    </div>
+    <div class="stage-col">
+      <div class="swatch-big" id="big"><div id="on-white">Aa on white</div><div id="on-black">Aa on black</div></div>
+      <div class="panel formats">
+        <span class="eyebrow">The same color, written three ways</span>
+        <div class="fmt"><span>hex</span><span id="hex"></span></div>
+        <div class="fmt"><span>rgb</span><span id="rgb"></span></div>
+        <div class="fmt"><span>hsl</span><span id="hsl"></span></div>
+      </div>
+      <div class="panel" style="display:grid;gap:10px">
+        <span class="eyebrow">Contrast for text (needs 4.5 : 1 or more)</span>
+        <div class="contrast" id="contrast"></div>
+      </div>
+    </div>
+  </section>
+
+  <div class="section-title"><span class="eyebrow">Part 2</span><h2>Units: how big is "12"?</h2><p>Each bar below is the same number with a different unit. Change the settings and watch which bars move.</p></div>
+  <section class="playground">
+    <div class="panel controls">
+      <div class="control"><label for="root">html font-size (sets rem)</label><input id="root" type="range" min="10" max="24" value="16"><span class="readout" id="root-out"></span></div>
+      <div class="control"><label for="pf">parent font-size (sets em)</label><input id="pf" type="range" min="10" max="32" value="16"><span class="readout" id="pf-out"></span></div>
+      <div class="control"><label for="pw">parent width (sets %)</label><input id="pw" type="range" min="200" max="700" step="10" value="480"><span class="readout" id="pw-out"></span></div>
+      <p class="hint" id="vw-note"></p>
+    </div>
+    <div class="stage units-wrap"><div class="parent" id="parent"><span class="lbl" id="plabel"></span><div id="bars" style="display:grid;gap:12px"></div></div></div>
+  </section>
+
+  <section class="notes">
+    <div class="panel">
+      <h2>Key ideas</h2>
+      <ul>
+        <li>Hex like <code>#2340d9</code> is pairs of red, green and blue, from 00 to ff.</li>
+        <li>Add transparency with a fourth value: <code>rgb(35 64 217 / 50%)</code>.</li>
+        <li>Use <code>rem</code> for font sizes so text grows when someone sets a larger default size in their browser.</li>
+        <li>Use <code>%</code>, <code>fr</code> or <code>max-width</code> for widths so layouts can shrink on phones.</li>
+        <li><code>em</code> depends on the parent, so nested <code>em</code> sizes multiply. That's why most people prefer <code>rem</code>.</li>
+      </ul>
+    </div>
+    <div class="panel mistake">
+      <h2>Common mistakes</h2>
+      <ul>
+        <li>Light gray text on white. It looks sleek and fails contrast, so many people can't read it.</li>
+        <li>Forgetting the <code>#</code> on a hex color, or the unit on a size: <code>width: 200</code> does nothing.</li>
+        <li>Setting <code>width: 100vw</code>, which ignores the scrollbar and causes sideways scrolling.</li>
+        <li>Using <code>px</code> for everything, so the page ignores the user's font size setting.</li>
+      </ul>
+    </div>
+  </section>
+
+  <footer class="page-foot"><a href="overflow.html">← Overflow</a><a href="css-variables.html">Next: CSS Variables →</a></footer>
+</div>
+
+<script>
+  const $ = (id) => document.getElementById(id);
+  function hslToRgb(h, s, l) {
+    s /= 100; l /= 100;
+    const k = (n) => (n + h / 30) % 12, a = s * Math.min(l, 1 - l);
+    const f = (n) => l - a * Math.max(-1, Math.min(k(n) - 3, Math.min(9 - k(n), 1)));
+    return [f(0), f(8), f(4)].map((x) => Math.round(x * 255));
+  }
+  function rgbToHsl(r, g, b) {
+    r /= 255; g /= 255; b /= 255;
+    const max = Math.max(r, g, b), min = Math.min(r, g, b), l = (max + min) / 2;
+    let h = 0, s = 0;
+    if (max !== min) {
+      const d = max - min; s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+      h = max === r ? (g - b) / d + (g < b ? 6 : 0) : max === g ? (b - r) / d + 2 : (r - g) / d + 4; h *= 60;
+    }
+    return [Math.round(h), Math.round(s * 100), Math.round(l * 100)];
+  }
+  const lum = ([r, g, b]) => { const c = [r, g, b].map((v) => { v /= 255; return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4; }); return 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2]; };
+  const ratio = (l1, l2) => (Math.max(l1, l2) + 0.05) / (Math.min(l1, l2) + 0.05);
+
+  const NAMED = { tomato: [255, 99, 71], steelblue: [70, 130, 180], rebeccapurple: [102, 51, 153], seagreen: [46, 139, 87], goldenrod: [218, 165, 32], lightgray: [211, 211, 211] };
+  $("named").innerHTML = Object.entries(NAMED).map(([n, c]) => `<button class="btn" data-n="${n}"><i style="background:rgb(${c.join(",")})"></i>${n}</button>`).join("");
+  $("named").addEventListener("click", (e) => {
+    const b = e.target.closest("button"); if (!b) return;
+    const [h, s, l] = rgbToHsl(...NAMED[b.dataset.n]);
+    $("h").value = h; $("s").value = s; $("l").value = l; color();
+  });
+
+  function color() {
+    const h = +$("h").value, s = +$("s").value, l = +$("l").value;
+    $("h-out").textContent = h + "°"; $("s-out").textContent = s + "%"; $("l-out").textContent = l + "%";
+    const rgb = hslToRgb(h, s, l);
+    const hex = "#" + rgb.map((v) => v.toString(16).padStart(2, "0")).join("");
+    $("hex").textContent = hex; $("rgb").textContent = `rgb(${rgb.join(" ")})`; $("hsl").textContent = `hsl(${h} ${s}% ${l}%)`;
+    const css = `rgb(${rgb.join(",")})`;
+    Object.assign($("on-white").style, { background: "#fff", color: css });
+    Object.assign($("on-black").style, { background: "#000", color: css });
+    const L = lum(rgb), w = ratio(L, 1), k = ratio(L, 0);
+    const cell = (name, r) => `<div><span class="hint">vs ${name}</span><b>${r.toFixed(1)} : 1</b><span class="${r >= 4.5 ? "pass" : "fail"}">${r >= 4.5 ? "Readable as text" : "Too low for text"}</span></div>`;
+    $("contrast").innerHTML = cell("white", w) + cell("black", k);
+  }
+  ["h", "s", "l"].forEach((id) => $(id).addEventListener("input", color));
+  color();
+
+  function units() {
+    const root = +$("root").value, pf = +$("pf").value, pw = +$("pw").value, vw = window.innerWidth;
+    $("root-out").textContent = root + "px"; $("pf-out").textContent = pf + "px"; $("pw-out").textContent = pw + "px";
+    $("vw-note").textContent = `vw uses your real browser window, which is ${vw}px wide. Resize the window to change it.`;
+    $("parent").style.width = pw + "px";
+    $("plabel").textContent = `parent: ${pw}px wide, font-size ${pf}px`;
+    const inner = pw - 24;
+    const BARS = [
+      ["200px", 200, "Always exactly 200 pixels."],
+      ["12rem", 12 * root, `12 × the html font-size (${root}px).`],
+      ["12em", 12 * pf, `12 × the parent's font-size (${pf}px).`],
+      ["50%", pw * 0.5, `Half of the parent's width (${pw}px).`],
+      ["30vw", vw * 0.3, `30% of the browser window's width (${vw}px).`],
+      ["20ch", 20 * pf * 0.5, "About 20 characters wide in the current font."],
+    ];
+    $("bars").innerHTML = BARS.map(([u, px, why]) => {
+      const over = px > inner;
+      return `<div class="ubar ${over ? "over" : ""}"><div class="meta"><b>width: ${u}</b><span>= ${Math.round(px)}px</span></div><div class="fill" style="width:${px}px"></div><p>${why}${over ? " Wider than the parent, so it overflows." : ""}</p></div>`;
+    }).join("");
+  }
+  ["root", "pf", "pw"].forEach((id) => $(id).addEventListener("input", units));
+  window.addEventListener("resize", units);
+  units();
+</script>
+</body>
+</html>

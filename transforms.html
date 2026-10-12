@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Transforms Playground</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Recursive:slnt,wght,CASL,MONO@-15..0,300..1000,0..1,0..1&display=swap">
+<link rel="stylesheet" href="style.css">
+<style>
+  .t-stage { display: flex; gap: 14px; align-items: center; justify-content: center; min-height: 320px; overflow: hidden; }
+  .slot { position: relative; width: 120px; height: 120px; flex: none; }
+  .ghost { position: absolute; inset: 0; border: 2px dashed var(--muted); border-radius: 8px; }
+  .slot .item { position: absolute; inset: 0; padding: 0; font-size: 1rem; transition: transform 0.25s ease; }
+  .sib { width: 90px; height: 120px; flex: none; opacity: 0.85; font-size: 0.85rem; padding: 0; }
+  .origin-dot { position: absolute; width: 12px; height: 12px; margin: -6px 0 0 -6px; border-radius: 50%; background: var(--ink); border: 2px solid var(--panel); z-index: 2; pointer-events: none; }
+  .slot .item { font-variation-settings: "MONO" 1; }
+
+  .order { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px; }
+  @media (max-width: 760px) { .order { grid-template-columns: 1fr; } }
+  .order .panel { display: grid; gap: 10px; }
+  .o-stage { position: relative; height: 230px; background: var(--stage); border-radius: 8px; overflow: hidden; }
+  .o-stage .ghost, .o-stage .item { position: absolute; left: 30px; top: 40px; width: 60px; height: 60px; padding: 0; }
+  .o-stage .item { transition: transform 0.6s ease; }
+
+  .uses { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 14px; }
+  .uses .panel { display: grid; gap: 10px; align-content: start; }
+  .demo { background: var(--stage); border-radius: 8px; min-height: 130px; position: relative; display: grid; place-items: center; padding: 12px; }
+  .center-box { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: var(--item-3); color: #fff; padding: 8px 12px; border-radius: 6px; font: 600 0.85rem var(--font-code); font-variation-settings: "MONO" 1; }
+  .lift { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 14px 18px; transition: transform 0.2s, box-shadow 0.2s; cursor: pointer; font-weight: 700; }
+  .lift:hover, .lift:focus-visible { transform: translateY(-6px); box-shadow: 0 10px 20px rgb(0 0 0 / 15%); }
+  .demo details summary { cursor: pointer; list-style: none; display: flex; gap: 8px; align-items: center; font-weight: 700; }
+  .demo details summary::-webkit-details-marker { display: none; }
+  .demo details summary::before { content: "›"; display: inline-block; font-size: 1.4rem; line-height: 1; transition: transform 0.2s; }
+  .demo details[open] summary::before { transform: rotate(90deg); }
+  .demo details p { font-size: 0.9rem; margin-top: 6px; }
+  .flip { display: flex; gap: 16px; font-size: 2rem; }
+  .flip span:last-child { transform: scaleX(-1); display: inline-block; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <nav class="crumbs" aria-label="Site"><a class="crumb" href="index.html">← Field Guide</a><a class="crumb" href="glossary.html">Glossary</a></nav>
+  <header class="page-head">
+    <span class="eyebrow">Polish &amp; Workflow · Transforms</span>
+    <h1>Transforms Playground</h1>
+    <p class="lede"><code>transform</code> moves, turns, resizes or slants an element <em>after</em> the page is laid out. The element looks different, but the space it takes up doesn't change, so nothing around it moves.</p>
+  </header>
+
+  <section class="playground">
+    <div class="panel controls" aria-label="Transform settings">
+      <span class="eyebrow">#box { transform }</span>
+      <div class="control"><label for="tx">translateX</label><input id="tx" type="range" min="-120" max="120" step="5" value="0"><span class="readout" id="tx-out"></span></div>
+      <div class="control"><label for="ty">translateY</label><input id="ty" type="range" min="-120" max="120" step="5" value="0"><span class="readout" id="ty-out"></span></div>
+      <div class="control"><label for="rot">rotate</label><input id="rot" type="range" min="-180" max="180" step="5" value="15"><span class="readout" id="rot-out"></span></div>
+      <div class="control"><label for="sc">scale</label><input id="sc" type="range" min="0.25" max="2" step="0.05" value="1"><span class="readout" id="sc-out"></span></div>
+      <div class="control"><label for="sk">skewX</label><input id="sk" type="range" min="-45" max="45" step="5" value="0"><span class="readout" id="sk-out"></span></div>
+      <div class="control"><label for="origin">transform-origin</label>
+        <select id="origin"><option>center</option><option>top left</option><option>top right</option><option>bottom left</option><option>bottom center</option></select></div>
+      <button class="btn" id="reset" style="justify-self:start">Reset</button>
+    </div>
+    <div class="stage-col">
+      <div class="stage t-stage" id="stage" aria-label="Live transform example">
+        <div class="item sib">sibling</div>
+        <div class="slot"><div class="ghost" aria-hidden="true"></div><div class="item" id="box">#box</div><span class="origin-dot" id="dot" aria-hidden="true"></span></div>
+        <div class="item sib">sibling</div>
+      </div>
+      <div class="code-box"><pre id="code"></pre><button class="copy" id="copy">Copy</button></div>
+    </div>
+  </section>
+
+  <div class="section-title"><span class="eyebrow">Order matters</span><h2>Same functions, different order</h2><p>Transform functions run from right to left, and each one changes the direction the next one uses. Rotate first and "move right" points somewhere else.</p></div>
+  <section class="order">
+    <div class="panel"><code>transform: translateX(140px) rotate(45deg);</code><div class="o-stage"><div class="ghost"></div><div class="item" id="o1">A</div></div><p class="hint">Turn in place, then slide 140px right along the page.</p></div>
+    <div class="panel"><code>transform: rotate(45deg) translateX(140px);</code><div class="o-stage"><div class="ghost"></div><div class="item" id="o2">B</div></div><p class="hint">Turn first, so "right" is now tilted 45° downward, and it slides along that tilted line.</p></div>
+  </section>
+  <button class="btn" id="play" style="margin-top:12px">Play both</button>
+
+  <div class="section-title"><span class="eyebrow">In real sites</span><h2>Four everyday uses</h2></div>
+  <section class="uses">
+    <div class="panel"><h3>Center anything</h3><div class="demo"><span class="center-box">centered</span></div><pre class="snippet"><span class="sel">.badge</span> {
+  <span class="prop">position</span>: <span class="val">absolute</span>;
+  <span class="prop">top</span>: <span class="val">50%</span>; <span class="prop">left</span>: <span class="val">50%</span>;
+  <span class="prop">transform</span>: <span class="val">translate(-50%, -50%)</span>;
+}</pre><p class="hint"><code>top</code>/<code>left: 50%</code> puts the corner in the middle. The translate pulls it back by half its own size.</p></div>
+    <div class="panel"><h3>Lift on hover</h3><div class="demo"><div class="lift" tabindex="0">Hover or Tab to me</div></div><pre class="snippet"><span class="sel">.card</span> { <span class="prop">transition</span>: <span class="val">transform 0.2s</span>; }
+<span class="sel">.card:hover</span> {
+  <span class="prop">transform</span>: <span class="val">translateY(-6px)</span>;
+}</pre></div>
+    <div class="panel"><h3>Turn an arrow</h3><div class="demo"><details><summary>Trail conditions</summary><p>Icy above 7,000 feet.</p></details></div><pre class="snippet"><span class="sel">details[open] summary::before</span> {
+  <span class="prop">transform</span>: <span class="val">rotate(90deg)</span>;
+}</pre></div>
+    <div class="panel"><h3>Mirror an icon</h3><div class="demo"><div class="flip" aria-hidden="true"><span>➜</span><span>➜</span></div></div><pre class="snippet"><span class="sel">.icon-back</span> {
+  <span class="prop">transform</span>: <span class="val">scaleX(-1)</span>;
+}</pre><p class="hint">One arrow icon serves as both "next" and "back."</p></div>
+  </section>
+
+  <section class="notes">
+    <div class="panel">
+      <h2>Key ideas</h2>
+      <ul>
+        <li>Transforms don't affect layout. Neighbors stay where they were, which is why they're perfect for hover effects and animation.</li>
+        <li>List several functions in one <code>transform</code>, separated by spaces. A second <code>transform</code> declaration replaces the first entirely.</li>
+        <li><code>transform-origin</code> is the pin the element spins and scales around. The default is the center.</li>
+        <li><code>translate</code> percentages are a percentage of the element's own size, not its parent's.</li>
+        <li>Transforms are smooth to animate. See <a href="transitions.html">Transitions &amp; Animations</a>.</li>
+      </ul>
+    </div>
+    <div class="panel mistake">
+      <h2>Common mistakes</h2>
+      <ul>
+        <li>Writing <code>transform: rotate(10deg);</code> and later <code>transform: scale(1.1);</code> on hover, and losing the rotation. Repeat both: <code>rotate(10deg) scale(1.1)</code>.</li>
+        <li>Transforming an inline element like a <code>span</code>. It's ignored: make it <code>inline-block</code>.</li>
+        <li>Forgetting the unit: <code>rotate(45)</code> does nothing. Write <code>45deg</code>.</li>
+        <li>Using <code>translate</code> to build a layout. The original space stays reserved, so you get gaps and overlaps.</li>
+      </ul>
+    </div>
+  </section>
+
+  <footer class="page-foot"><a href="fluid-sizing.html">← Fluid Sizing</a><a href="transitions.html">Next: Transitions &amp; Animations →</a></footer>
+</div>
+
+<script>
+  const $ = (id) => document.getElementById(id);
+  const DEF = { tx: 0, ty: 0, rot: 15, sc: 1, sk: 0, origin: "center" };
+  const ORIGINS = { "center": [50, 50], "top left": [0, 0], "top right": [100, 0], "bottom left": [0, 100], "bottom center": [50, 100] };
+
+  function update() {
+    const v = { tx: +$("tx").value, ty: +$("ty").value, rot: +$("rot").value, sc: +$("sc").value, sk: +$("sk").value, origin: $("origin").value };
+    $("tx-out").textContent = v.tx + "px"; $("ty-out").textContent = v.ty + "px"; $("rot-out").textContent = v.rot + "deg";
+    $("sc-out").textContent = v.sc; $("sk-out").textContent = v.sk + "deg";
+    const parts = [];
+    if (v.tx || v.ty) parts.push(`translate(${v.tx}px, ${v.ty}px)`);
+    if (v.rot) parts.push(`rotate(${v.rot}deg)`);
+    if (v.sc !== 1) parts.push(`scale(${v.sc})`);
+    if (v.sk) parts.push(`skewX(${v.sk}deg)`);
+    const tf = parts.join(" ") || "none";
+    Object.assign($("box").style, { transform: tf, transformOrigin: v.origin });
+    const [ox, oy] = ORIGINS[v.origin];
+    Object.assign($("dot").style, { left: ox + "%", top: oy + "%" });
+    let code = `<span class="sel">#box</span> {\n  <span class="prop">transform</span>: <span class="val">${tf}</span>;`;
+    if (v.origin !== "center") code += `\n  <span class="prop">transform-origin</span>: <span class="val">${v.origin}</span>;`;
+    $("code").innerHTML = code + "\n}";
+  }
+  document.querySelectorAll(".controls select, .controls input").forEach((el) => el.addEventListener("input", update));
+  $("reset").addEventListener("click", () => { Object.entries(DEF).forEach(([k, val]) => ($(k).value = val)); update(); });
+  $("copy").addEventListener("click", () => {
+    navigator.clipboard.writeText($("code").textContent).then(() => { $("copy").textContent = "Copied"; setTimeout(() => ($("copy").textContent = "Copy"), 1200); }).catch(() => {});
+  });
+  update();
+
+  // Order demo: snap back, then animate to the final transform. Set inline with !important so it plays even with reduced motion,
+  // matching how the Transitions page handles its demos.
+  let on = false;
+  $("play").addEventListener("click", () => {
+    on = !on;
+    const set = (el, tf) => { el.style.setProperty("transition", "transform 0.6s ease", "important"); el.style.transform = tf; };
+    set($("o1"), on ? "translateX(140px) rotate(45deg)" : "none");
+    set($("o2"), on ? "rotate(45deg) translateX(140px)" : "none");
+    $("play").textContent = on ? "Reset both" : "Play both";
+  });
+</script>
+</body>
+</html>

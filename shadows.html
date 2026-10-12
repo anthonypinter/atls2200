@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Shadows &amp; Filters</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Recursive:slnt,wght,CASL,MONO@-15..0,300..1000,0..1,0..1&display=swap">
+<link rel="stylesheet" href="style.css">
+<style>
+  .light-stage { display: grid; place-items: center; min-height: 300px; background: #eef1f6; border-radius: var(--radius); border: 1px solid var(--line); padding: 30px; }
+  #sh-card { width: min(100%, 260px); padding: 20px; border-radius: 12px; background: #fff; color: #1d2133; display: grid; gap: 6px; }
+  #sh-card h3 { margin: 0; font: 800 1.2rem var(--font-display); }
+  #sh-card p { margin: 0; font-size: 0.92rem; color: #5a6280; }
+  .presets { display: flex; flex-wrap: wrap; gap: 6px; }
+  .presets .btn { font-size: 0.82rem; padding: 5px 9px; }
+  .check { display: flex; gap: 8px; align-items: center; font-size: 0.92rem; cursor: pointer; }
+  .check input { accent-color: var(--cobalt); }
+  .control input[type="color"] { width: 100%; height: 32px; border: 1px solid var(--line); border-radius: 6px; background: var(--paper); padding: 2px; }
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .status { font-size: 0.93rem; padding: 8px 10px; border-radius: 6px; background: var(--stage); }
+  .photo-stage { position: relative; min-height: 220px; border-radius: var(--radius); overflow: hidden; display: grid; place-items: center; padding: 20px;
+    background: linear-gradient(180deg, #9cc7ea, #f6e3c9 55%, #7d5a7a 56%, #3e4a61); }
+  .photo-stage.busy { background: repeating-linear-gradient(45deg, #f6e3c9 0 14px, #9cc7ea 14px 28px, #fff 28px 42px); }
+  #ts { font: 800 clamp(1.6rem, 6vw, 2.6rem) var(--font-display); color: #fff; text-align: center; }
+  .compare { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  @media (max-width: 560px) { .compare { grid-template-columns: 1fr; } }
+  .compare .panel { display: grid; gap: 8px; justify-items: center; text-align: center; }
+  .icon-wrap { display: grid; place-items: center; height: 150px; width: 100%; background: #eef1f6; border-radius: 8px; }
+  .icon-wrap img { width: 110px; height: 110px; }
+  .filters img { width: 100%; max-width: 360px; border-radius: 8px; display: block; margin-inline: auto; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <nav class="crumbs" aria-label="Site"><a class="crumb" href="index.html">← Field Guide</a><a class="crumb" href="glossary.html">Glossary</a></nav>
+  <header class="page-head">
+    <span class="eyebrow">CSS Basics · Shadows &amp; Filters</span>
+    <h1>Shadows &amp; Filters</h1>
+    <p class="lede">Shadows make flat boxes look lifted off the page, and filters change how an element is drawn, like a photo editor. A little goes a long way: soft, subtle shadows look the most natural.</p>
+  </header>
+
+  <div class="section-title" style="margin-top:0"><span class="eyebrow">Part 1</span><h2>box-shadow</h2><p>A shadow has an x offset, a y offset, a blur, a spread and a color. Try the presets, then adjust them yourself.</p></div>
+  <section class="playground">
+    <div class="panel controls">
+      <div class="presets" id="presets"></div>
+      <div class="two-col">
+        <div class="control"><label for="x">x offset</label><input id="x" type="range" min="-30" max="30" value="0"><span class="readout" id="x-out"></span></div>
+        <div class="control"><label for="y">y offset</label><input id="y" type="range" min="-30" max="40" value="8"><span class="readout" id="y-out"></span></div>
+        <div class="control"><label for="b">blur</label><input id="b" type="range" min="0" max="60" value="24"><span class="readout" id="b-out"></span></div>
+        <div class="control"><label for="s">spread</label><input id="s" type="range" min="-20" max="20" value="-4"><span class="readout" id="s-out"></span></div>
+      </div>
+      <div class="two-col">
+        <div class="control"><label for="c">color</label><input id="c" type="color" value="#1d2133"></div>
+        <div class="control"><label for="o">opacity</label><input id="o" type="range" min="0" max="100" value="18"><span class="readout" id="o-out"></span></div>
+      </div>
+      <label class="check"><input type="checkbox" id="inset"><code>inset</code> (shadow inside the box)</label>
+      <label class="check"><input type="checkbox" id="layer">Add a second, tighter shadow layer</label>
+    </div>
+    <div class="stage-col">
+      <div class="light-stage"><div id="sh-card"><h3>Mesa Trail</h3><p>6.7 miles · Moderate · Dogs on leash</p></div></div>
+      <p class="status" id="status" aria-live="polite"></p>
+    </div>
+  </section>
+
+  <div class="section-title"><span class="eyebrow">Part 2</span><h2>text-shadow for readable text on images</h2></div>
+  <section class="playground">
+    <div class="panel controls">
+      <div class="control"><label for="tb">blur</label><input id="tb" type="range" min="0" max="20" value="0"><span class="readout" id="tb-out"></span></div>
+      <div class="control"><label for="to">shadow darkness</label><input id="to" type="range" min="0" max="100" value="0"><span class="readout" id="to-out"></span></div>
+      <label class="check"><input type="checkbox" id="busy" checked>Busy background</label>
+    </div>
+    <div class="stage-col">
+      <div class="photo-stage busy" id="pstage"><span id="ts">Above Treeline</span></div>
+      <p class="status" id="ts-status" aria-live="polite"></p>
+    </div>
+  </section>
+
+  <div class="section-title"><span class="eyebrow">Part 3</span><h2>box-shadow vs filter: drop-shadow()</h2><p>box-shadow always follows the element's rectangle. The drop-shadow filter follows the actual shape, including transparent parts of an image.</p></div>
+  <div class="compare">
+    <div class="panel"><span class="eyebrow">box-shadow</span><div class="icon-wrap"><img id="i1" alt="Mountain icon" width="110" height="110"></div><p class="hint">The shadow outlines the image's square box.</p></div>
+    <div class="panel"><span class="eyebrow">filter: drop-shadow()</span><div class="icon-wrap"><img id="i2" alt="Mountain icon" width="110" height="110"></div><p class="hint">The shadow traces the mountain's shape.</p></div>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Part 4</span><h2>Other filters</h2></div>
+  <section class="playground filters">
+    <div class="panel controls">
+      <div class="control"><label for="fname">filter</label><select id="fname"><option value="none">none</option><option value="grayscale(1)">grayscale(1)</option><option value="sepia(1)">sepia(1)</option><option value="blur(4px)">blur(4px)</option><option value="brightness(0.6)">brightness(0.6)</option><option value="contrast(1.6)">contrast(1.6)</option><option value="saturate(2)">saturate(2)</option><option value="hue-rotate(120deg)">hue-rotate(120deg)</option></select></div>
+      <p class="hint">A common use: show photos in grayscale and bring the color back on hover.</p>
+    </div>
+    <div class="stage"><img id="fimg" alt="Sunset over the Flatirons" width="360" height="200"></div>
+  </section>
+
+  <section class="notes">
+    <div class="panel">
+      <h2>Key ideas</h2>
+      <ul>
+        <li>Use a semi-transparent shadow color like <code>rgb(0 0 0 / 15%)</code>. Solid black looks harsh.</li>
+        <li>Shadows coming slightly <em>down</em> (positive y) look natural, like light from above.</li>
+        <li>Stack shadows with commas: a tight dark one plus a wide soft one looks realistic.</li>
+        <li>Shadows don't take up space or move other elements. They're painted on top.</li>
+      </ul>
+    </div>
+    <div class="panel mistake">
+      <h2>Common mistakes</h2>
+      <ul>
+        <li>Heavy black shadows on everything, so nothing stands out.</li>
+        <li>Relying on a shadow alone to separate a card from a similar background. Add a border too.</li>
+        <li>Text shadows on body text. Save them for big text on images.</li>
+        <li>Animating <code>box-shadow</code> on many elements, which can make scrolling choppy.</li>
+      </ul>
+    </div>
+  </section>
+
+  <footer class="page-foot"><a href="backgrounds-borders.html">← Backgrounds &amp; Borders</a><a href="typography.html">Next: Typography →</a></footer>
+</div>
+
+<script>
+  const $ = (id) => document.getElementById(id);
+  const hexA = (hex, a) => { const n = parseInt(hex.slice(1), 16); return `rgb(${n >> 16} ${(n >> 8) & 255} ${n & 255} / ${a}%)`; };
+  const PRESETS = {
+    "None": [0, 0, 0, 0, 0, false, false],
+    "Subtle": [0, 2, 6, 0, 12, false, false],
+    "Raised": [0, 8, 24, -4, 18, false, true],
+    "Floating": [0, 24, 50, -10, 28, false, true],
+    "Inset": [0, 3, 8, 0, 20, true, false],
+    "Hard retro": [8, 8, 0, 0, 100, false, false],
+  };
+  $("presets").innerHTML = Object.keys(PRESETS).map((k) => `<button class="btn">${k}</button>`).join("");
+  $("presets").addEventListener("click", (e) => {
+    const b = e.target.closest("button"); if (!b) return;
+    const [x, y, bl, s, o, ins, lay] = PRESETS[b.textContent];
+    Object.entries({ x, y, b: bl, s, o }).forEach(([k, v]) => ($(k).value = v));
+    $("inset").checked = ins; $("layer").checked = lay; shadow();
+  });
+  function shadow() {
+    const [x, y, b, s, o] = ["x", "y", "b", "s", "o"].map((k) => +$(k).value), ins = $("inset").checked;
+    ["x", "y", "b", "s"].forEach((k) => ($(k + "-out").textContent = $(k).value + "px")); $("o-out").textContent = o + "%";
+    const col = hexA($("c").value, o);
+    let v = `${ins ? "inset " : ""}${x}px ${y}px ${b}px ${s}px ${col}`;
+    if ($("layer").checked && !ins) v = `0 1px 2px ${hexA($("c").value, Math.min(100, o + 6))}, ` + v;
+    $("sh-card").style.boxShadow = o === 0 ? "none" : v;
+    let msg;
+    if (o === 0 || (b === 0 && x === 0 && y === 0 && s <= 0)) msg = "No visible shadow. The card blends into the background.";
+    else if (ins) msg = "An inset shadow is drawn inside the box, so it looks pressed in. Good for input fields and wells.";
+    else if (o > 50 && b === 0) msg = "No blur and full opacity gives a hard, graphic shadow: a deliberate retro look, not a realistic one.";
+    else if (o > 40) msg = "That's a heavy shadow. Try lowering the opacity; real shadows are faint.";
+    else msg = "A soft shadow lifts the card off the page." + ($("layer").checked ? " The second tight layer adds a crisp edge right under the card." : "");
+    $("status").textContent = msg;
+  }
+  document.querySelectorAll("#x, #y, #b, #s, #c, #o, #inset, #layer").forEach((el) => el.addEventListener("input", shadow));
+  shadow();
+
+  function textShadow() {
+    const b = +$("tb").value, o = +$("to").value;
+    $("tb-out").textContent = b + "px"; $("to-out").textContent = o + "%";
+    $("pstage").classList.toggle("busy", $("busy").checked);
+    $("ts").style.textShadow = o ? `0 2px ${b}px rgb(0 0 0 / ${o}%)` : "none";
+    $("ts-status").textContent = o < 30 ? "White text gets lost against the light parts of the background. Raise the darkness and add some blur." : b < 4 ? "Readable, but a sharp shadow looks like a smudged copy. A little blur softens it." : "A soft, dark glow behind the letters keeps them readable on any background.";
+  }
+  ["tb", "to", "busy"].forEach((id) => $(id).addEventListener("input", textShadow));
+  textShadow();
+
+  const ICON = "data:image/svg+xml," + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="110" height="110" viewBox="0 0 110 110"><path d="M5 95 L40 30 L58 60 L72 40 L105 95 Z" fill="#0b6b5e"/><path d="M33 43 L40 30 L47 43 L40 39 Z" fill="#fff"/></svg>');
+  $("i1").src = ICON; $("i2").src = ICON;
+  $("i1").style.boxShadow = "6px 8px 10px rgb(0 0 0 / 35%)";
+  $("i2").style.filter = "drop-shadow(6px 8px 6px rgb(0 0 0 / 35%))";
+
+  $("fimg").src = "data:image/svg+xml," + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="360" height="200" viewBox="0 0 360 200"><defs><linearGradient id="g" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ff7b54"/><stop offset="1" stop-color="#ffd56b"/></linearGradient></defs><rect width="360" height="200" fill="url(#g)"/><circle cx="270" cy="120" r="34" fill="#fff3d6"/><path d="M0 200 L0 120 L50 70 L80 110 L120 50 L160 115 L200 80 L240 140 L360 120 L360 200 Z" fill="#8a4f3a"/><path d="M0 200 L0 170 L360 160 L360 200 Z" fill="#2f5d3a"/></svg>');
+  $("fname").addEventListener("input", () => ($("fimg").style.filter = $("fname").value));
+</script>
+</body>
+</html>

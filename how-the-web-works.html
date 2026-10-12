@@ -1,0 +1,210 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>How the Web Works</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Recursive:slnt,wght,CASL,MONO@-15..0,300..1000,0..1,0..1&display=swap">
+<link rel="stylesheet" href="style.css">
+<style>
+  .url { display: flex; flex-wrap: wrap; font: 600 clamp(0.9rem, 2.4vw, 1.2rem) var(--font-code); font-variation-settings: "MONO" 1; background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 14px 16px; gap: 0; }
+  .url button { font: inherit; font-variation-settings: inherit; border: 0; background: transparent; padding: 4px 1px; border-bottom: 3px solid transparent; cursor: pointer; color: var(--c); }
+  .url button[aria-pressed="true"] { border-bottom-color: var(--c); background: color-mix(in srgb, var(--c) 12%, transparent); }
+  .part-info { display: grid; gap: 6px; }
+  .part-info b { font: 700 1rem var(--font-code); font-variation-settings: "MONO" 1; }
+  .parsed { display: grid; grid-template-columns: max-content 1fr; gap: 6px 14px; font: 0.9rem var(--font-code); font-variation-settings: "MONO" 1; }
+  .parsed dt { color: var(--prop); } .parsed dd { margin: 0; color: var(--val); overflow-wrap: anywhere; }
+  .url-input { font: 0.95rem var(--font-code); font-variation-settings: "MONO" 1; width: 100%; padding: 8px 10px; border: 1px solid var(--line); border-radius: 6px; background: var(--paper); color: var(--ink); }
+
+  .net { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: 16px; }
+  @media (max-width: 760px) { .net { grid-template-columns: 1fr; } }
+  .log { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; font: 0.85rem var(--font-code); font-variation-settings: "MONO" 1; }
+  .log li { display: grid; grid-template-columns: 44px 1fr auto; gap: 8px; align-items: center; padding: 6px 8px; border-radius: 6px; background: var(--paper); border: 1px solid var(--line); }
+  .log li.note { grid-template-columns: 1fr; color: var(--muted); background: transparent; border-style: dashed; font-family: var(--font-body); font-size: 0.85rem; }
+  .log .code { font-weight: 700; } .log .ok { color: var(--good); } .log .err { color: var(--bad); } .log .slow { color: var(--prop); }
+  .log .t { color: var(--muted); }
+  .browser { border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; background: #fff; color: #111; min-height: 260px; }
+  .browser .bar { background: var(--stage); color: var(--muted); font: 0.8rem var(--font-code); font-variation-settings: "MONO" 1; padding: 6px 10px; border-bottom: 1px solid var(--line); }
+  .browser .view { padding: 14px; font: 16px/1.4 Times, serif; }
+  .browser .view.styled { font: 15px/1.5 system-ui, sans-serif; background: #fdf6ee; }
+  .browser .view.styled h1 { font: 800 1.5rem system-ui, sans-serif; color: #7a3b12; margin: 0 0 6px; }
+  .browser .view h1 { margin: 0 0 6px; font-size: 1.6rem; }
+  .browser .view p { margin: 0 0 10px; max-width: none; }
+  .browser .photo { height: 110px; border-radius: 4px; background: linear-gradient(170deg, #f4a261 0 40%, #7d5a7a 40% 70%, #3e4a61 70%); }
+  .browser .photo.loading { background: repeating-linear-gradient(45deg, #eee 0 10px, #f6f6f6 10px 20px); }
+  .browser .photo.broken { background: #fff; border: 1px dashed #bbb; display: grid; place-items: center; font: 0.8rem system-ui; color: #888; }
+  .setup { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 14px; }
+  .setup .panel { display: grid; gap: 8px; align-content: start; }
+  .setup .num { font: 800 1.4rem var(--font-display); color: var(--cobalt); }
+  .addr { overflow-x: auto; }
+  .addr table { border-collapse: collapse; width: 100%; font-size: 0.95rem; min-width: 520px; }
+  .addr th, .addr td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  .addr th { font: 600 0.8rem var(--font-code); font-variation-settings: "MONO" 1; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <nav class="crumbs" aria-label="Site"><a class="crumb" href="index.html">← Field Guide</a><a class="crumb" href="glossary.html">Glossary</a></nav>
+  <header class="page-head">
+    <span class="eyebrow">HTML Foundations · How the Web Works</span>
+    <h1>How the Web Works</h1>
+    <p class="lede">A website is a folder of files on someone else's computer. Your browser asks for those files one at a time and puts the page together. Knowing that explains most "it worked on my laptop" problems.</p>
+  </header>
+
+  <div class="section-title" style="margin-top:0"><span class="eyebrow">Part 1</span><h2>Read a URL</h2><p>Every address has the same parts. Click each part to see what it does.</p></div>
+  <section class="playground even">
+    <div class="panel" style="display:grid;gap:14px">
+      <div class="url" id="url" role="group" aria-label="Parts of a URL"></div>
+      <div class="part-info" id="part-info" aria-live="polite"></div>
+    </div>
+    <div class="panel" style="display:grid;gap:12px;align-content:start">
+      <label class="eyebrow" for="own">Take apart any URL</label>
+      <input class="url-input" id="own" type="text" value="https://www.nps.gov/romo/planyourvisit/hiking.htm?season=fall#maps" spellcheck="false">
+      <dl class="parsed" id="parsed"></dl>
+      <p class="hint">This uses the same URL parser your browser uses.</p>
+    </div>
+  </section>
+
+  <div class="section-title"><span class="eyebrow">Part 2</span><h2>One page, many requests</h2><p>Load the page and watch the log. The browser gets the HTML first, reads it, and only then discovers the CSS, images and fonts it also needs. Break something to see what happens.</p></div>
+  <section class="playground">
+    <div class="panel controls">
+      <button class="btn" id="load" style="justify-self:start">Load the page</button>
+      <span class="eyebrow" style="margin-top:6px">Break something</span>
+      <label class="control row" for="b-css" style="cursor:pointer"><span>The HTML links <code>Style.css</code>, but the file is <code>style.css</code></span><input id="b-css" type="checkbox"></label>
+      <label class="control row" for="b-img" style="cursor:pointer"><span>The photo is a 5 MB file straight off a phone</span><input id="b-img" type="checkbox"></label>
+      <label class="control row" for="b-index" style="cursor:pointer"><span>The home page is named <code>Home.html</code>, not <code>index.html</code></span><input id="b-index" type="checkbox"></label>
+      <p class="hint">Request times are made up, but the order is real. Open DevTools and its Network tab on any site to see the real list.</p>
+    </div>
+    <div class="net">
+      <div class="panel" style="display:grid;gap:10px;align-content:start"><span class="eyebrow">Network log</span><ol class="log" id="log" aria-live="polite"></ol></div>
+      <div class="browser" aria-label="What the visitor sees"><div class="bar" id="addr">trailclub.github.io/</div><div class="view" id="view"></div></div>
+    </div>
+  </section>
+
+  <div class="section-title"><span class="eyebrow">Part 3</span><h2>Set up your computer</h2><p>You don't need a server to start. A text editor and a browser are enough.</p></div>
+  <section class="setup">
+    <div class="panel"><span class="num">1</span><h3>Install a code editor</h3><p>VS Code is free and works on every computer. It colors your code and closes tags for you. Don't use Word or TextEdit's rich text mode: they add hidden formatting.</p></div>
+    <div class="panel"><span class="num">2</span><h3>Make one project folder</h3><p>Put every file for the site inside it, with <code>index.html</code> at the top level. Open the whole folder in your editor (File → Open Folder), not single files.</p></div>
+    <div class="panel"><span class="num">3</span><h3>Open the page in a browser</h3><p>Double-click <code>index.html</code>, or drag it into a browser window. Save in the editor, then refresh the browser to see each change.</p></div>
+    <div class="panel"><span class="num">4</span><h3>Optional: a local server</h3><p>The VS Code extension Live Server serves your folder at <code>http://127.0.0.1:5500</code> and refreshes the page every time you save. It behaves more like the real web than double-clicking.</p></div>
+  </section>
+
+  <div class="panel addr" style="margin-top:16px">
+    <table>
+      <thead><tr><th>Address bar starts with</th><th>Where the files come from</th><th>Watch out for</th></tr></thead>
+      <tbody>
+        <tr><td><code>file:///Users/you/site/</code></td><td>Straight from your own disk. No server involved.</td><td>Paths starting with <code>/</code> point to the root of your hard drive, so they break.</td></tr>
+        <tr><td><code>http://127.0.0.1:5500/</code></td><td>A small server running on your own computer (<code>127.0.0.1</code> always means "this computer").</td><td>Only you can see it. It stops when you close the editor.</td></tr>
+        <tr><td><code>https://you.github.io/site/</code></td><td>A real web server anyone can reach.</td><td>File names are case-sensitive here, even if they weren't on your laptop.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <section class="notes">
+    <div class="panel">
+      <h2>Key ideas</h2>
+      <ul>
+        <li>The browser is the <strong>client</strong>. The computer holding the files is the <strong>server</strong>. The browser sends a request, and the server sends back a response with a status code.</li>
+        <li><code>200</code> means OK. <code>404</code> means the server has no file at that path. <code>301</code> means it moved.</li>
+        <li>Each file is its own request. The HTML arrives first, and the browser finds the rest by reading it.</li>
+        <li>A domain name like <code>github.io</code> is a human-friendly label. DNS looks up the server's numeric address behind it.</li>
+        <li>When a URL ends in a folder (<code>/hikes/</code>), the server sends that folder's <code>index.html</code>.</li>
+        <li><code>https</code> encrypts the connection. Modern browsers warn visitors about plain <code>http</code> sites.</li>
+      </ul>
+    </div>
+    <div class="panel mistake">
+      <h2>Common mistakes</h2>
+      <ul>
+        <li>Editing a file, forgetting to save, and wondering why the browser hasn't changed.</li>
+        <li>Opening a single file in the editor instead of the project folder, then saving new files in the wrong place.</li>
+        <li>Testing only with <code>file://</code>, then finding broken images online because of capital letters in file names.</li>
+        <li>Thinking the page is one file. If the CSS or an image fails to load, the HTML still shows up without it.</li>
+      </ul>
+    </div>
+  </section>
+
+  <footer class="page-foot"><a href="index.html">← All topics</a><a href="html-syntax.html">Next: HTML Syntax →</a></footer>
+</div>
+
+<script>
+  const $ = (id) => document.getElementById(id);
+
+  // Part 1: anatomy of a URL
+  const PARTS = [
+    ["https://", "--item-1", "Protocol (scheme)", "How to talk to the server. https is the encrypted version of http. Local files use file://."],
+    ["trailclub.github.io", "--item-2", "Domain (host)", "Which server to ask. DNS turns this name into the server's numeric IP address, like a phone book."],
+    ["/hikes/", "--item-3", "Path: folders", "Which folder on the server, exactly like folders on your computer. These are case-sensitive on most servers."],
+    ["royal-arch.html", "--item-4", "Path: file name", "Which file to send. Leave it off (end in /) and the server sends that folder's index.html."],
+    ["?season=fall", "--item-5", "Query string", "Extra information for the server, as name=value pairs after a ?. Forms using method=\"get\" put their data here."],
+    ["#map", "--item-6", "Fragment (anchor)", "Never sent to the server. The browser scrolls to the element with id=\"map\" after the page loads."],
+  ];
+  let partIdx = 1;
+  function drawUrl() {
+    $("url").innerHTML = PARTS.map(([t, c], i) => `<button style="--c:var(${c})" data-i="${i}" aria-pressed="${i === partIdx}">${t}</button>`).join("");
+    const [t, c, name, text] = PARTS[partIdx];
+    $("part-info").innerHTML = `<b style="color:var(${c})">${name}</b><p>${text}</p>`;
+  }
+  $("url").addEventListener("click", (e) => { const b = e.target.closest("button"); if (b) { partIdx = +b.dataset.i; drawUrl(); } });
+  drawUrl();
+
+  function parse() {
+    const v = $("own").value.trim();
+    const esc = (s) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;");
+    try {
+      const u = new URL(v);
+      const rows = [["protocol", u.protocol], ["domain", u.hostname || "(none)"], ["path", u.pathname], ["query", u.search || "(none)"], ["fragment", u.hash || "(none)"]];
+      if (u.port) rows.splice(2, 0, ["port", u.port]);
+      $("parsed").innerHTML = rows.map(([k, val]) => `<dt>${k}</dt><dd>${esc(val)}</dd>`).join("");
+    } catch (e) {
+      $("parsed").innerHTML = `<dt>error</dt><dd style="color:var(--bad)">Not a full URL. It needs a protocol, like https://</dd>`;
+    }
+  }
+  $("own").addEventListener("input", parse);
+  parse();
+
+  // Part 2: simulated request waterfall
+  let timers = [];
+  function view(state) {
+    const v = $("view");
+    if (state.notFound) {
+      v.className = "view";
+      v.innerHTML = `<h1 style="font:700 1.3rem system-ui">404</h1><p style="font:0.95rem system-ui">There isn't a GitHub Pages site here.</p>`;
+      return;
+    }
+    if (!state.html) { v.className = "view"; v.innerHTML = `<p style="color:#888;font:0.9rem system-ui">Waiting…</p>`; return; }
+    v.className = "view" + (state.css ? " styled" : "");
+    const photo = state.img === "done" ? `<div class="photo" role="img" aria-label="Royal Arch"></div>` : state.img === "broken" ? `<div class="photo broken">image</div>` : `<div class="photo loading"></div>`;
+    v.innerHTML = `<h1>Trail Club</h1><p>Weekend hikes around Boulder. This week: Royal Arch.</p>${photo}`;
+  }
+  function load() {
+    timers.forEach(clearTimeout); timers = [];
+    const css = $("b-css").checked, big = $("b-img").checked, noIndex = $("b-index").checked;
+    const log = $("log"); log.innerHTML = "";
+    const state = { html: false, css: false, img: "wait", notFound: false };
+    view(state);
+    const steps = [];
+    steps.push([0, `<li class="note">DNS: trailclub.github.io → 185.199.108.153</li>`]);
+    if (noIndex) {
+      steps.push([400, `<li><span class="code err">404</span><span>GET /</span><span class="t">90 ms</span></li>`, () => { state.notFound = true; }]);
+      steps.push([500, `<li class="note">The URL ends in /, so the server looked for index.html. Home.html is there, but the server won't guess. Rename it index.html.</li>`]);
+    } else {
+      steps.push([400, `<li><span class="code ok">200</span><span>GET /index.html</span><span class="t">90 ms</span></li>`, () => { state.html = true; }]);
+      steps.push([700, `<li class="note">The browser reads the HTML and finds a &lt;link&gt; and an &lt;img&gt;. It asks for both at once.</li>`]);
+      steps.push([1100, css
+        ? `<li><span class="code err">404</span><span>GET /Style.css</span><span class="t">60 ms</span></li>`
+        : `<li><span class="code ok">200</span><span>GET /style.css</span><span class="t">60 ms</span></li>`, () => { state.css = !css; }]);
+      if (css) steps.push([1200, `<li class="note">The file is style.css. The server treats S and s as different, so the page shows with browser default styles.</li>`]);
+      steps.push([1500, `<li><span class="code ok">200</span><span>GET /fonts/hike.woff2</span><span class="t">120 ms</span></li>`]);
+      steps.push([big ? 4200 : 1800, `<li><span class="code ok">200</span><span>GET /images/royal-arch.jpg</span><span class="t ${big ? "slow" : ""}">${big ? "5.1 MB · 3,100 ms" : "180 KB · 140 ms"}</span></li>`, () => { state.img = "done"; }]);
+      if (big) steps.push([4300, `<li class="note">On a phone connection that one photo took longer than everything else combined. Resize it before uploading.</li>`]);
+    }
+    steps.forEach(([t, html, fn]) => timers.push(setTimeout(() => { log.insertAdjacentHTML("beforeend", html); if (fn) fn(); view(state); }, t)));
+  }
+  $("load").addEventListener("click", load);
+  ["b-css", "b-img", "b-index"].forEach((id) => $(id).addEventListener("change", load));
+  load();
+</script>
+</body>
+</html>

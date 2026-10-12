@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>How CSS Is Applied</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Recursive:slnt,wght,CASL,MONO@-15..0,300..1000,0..1,0..1&display=swap">
+<link rel="stylesheet" href="style.css">
+<style>
+  .anatomy { font: 1.25rem/2 var(--font-code); font-variation-settings: "MONO" 1; background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 18px 20px; overflow-x: auto; white-space: pre; }
+  .part { border-radius: 4px; cursor: pointer; padding: 1px 2px; transition: background 0.15s, box-shadow 0.15s; }
+  .part:hover { background: var(--stage); }
+  .part.on { background: var(--cobalt-soft); box-shadow: 0 0 0 2px var(--cobalt); }
+  .part:focus-visible { outline: 3px solid var(--cobalt); }
+  .parts-list { display: flex; flex-wrap: wrap; gap: 6px; }
+  .explain h3 { font-family: var(--font-code); font-variation-settings: "MONO" 1; color: var(--cobalt); }
+
+  .ways { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+  @media (max-width: 760px) { .ways { grid-template-columns: 1fr; } }
+  .way { display: grid; gap: 8px; align-content: start; }
+  .way.off { opacity: 0.5; }
+  .way .top { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+  .way .swatch { display: inline-block; width: 12px; height: 12px; border-radius: 3px; margin-right: 6px; vertical-align: middle; }
+  .way label { display: flex; gap: 6px; align-items: center; font-size: 0.85rem; cursor: pointer; white-space: nowrap; }
+  .pro { font-size: 0.9rem; color: var(--muted); }
+  .result { display: flex; flex-wrap: wrap; gap: 12px 24px; align-items: center; margin-top: 14px; padding: 16px; border-radius: var(--radius); background: var(--panel); border: 1px solid var(--line); }
+  .result .h { font: 800 1.6rem var(--font-display); }
+  .order-row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-top: 12px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <nav class="crumbs" aria-label="Site"><a class="crumb" href="index.html">← Field Guide</a><a class="crumb" href="glossary.html">Glossary</a></nav>
+  <header class="page-head">
+    <span class="eyebrow">CSS Basics · How CSS Is Applied</span>
+    <h1>How CSS Is Applied</h1>
+    <p class="lede">A CSS rule picks some elements and gives them styles. Learn the names for each part of a rule, then see the three places CSS can live and which one wins when they disagree.</p>
+  </header>
+
+  <div class="section-title" style="margin-top:0"><span class="eyebrow">Part 1</span><h2>Anatomy of a rule</h2><p>Click any part of the rule, or pick a name below.</p></div>
+  <section class="playground even">
+    <div class="stage-col">
+      <div class="anatomy" id="rule" aria-label="A CSS rule"></div>
+      <div class="parts-list" id="names"></div>
+    </div>
+    <div class="panel explain" id="explain" aria-live="polite" style="display:grid;gap:8px;align-content:start"></div>
+  </section>
+
+  <div class="section-title"><span class="eyebrow">Part 2</span><h2>Three places to put CSS</h2><p>All three below try to color the same heading. Turn them on and off and swap the order of the two in the head.</p></div>
+  <div class="ways" id="ways"></div>
+  <div class="order-row"><span class="hint">In the &lt;head&gt;, the</span><button class="btn" id="swap">Swap order</button><span class="hint" id="order-text"></span></div>
+  <div class="result" aria-live="polite"><span class="h" id="h">Trail Report</span><span id="verdict"></span></div>
+
+  <section class="notes">
+    <div class="panel">
+      <h2>Key ideas</h2>
+      <ul>
+        <li>Use an external stylesheet for real projects. One file can style every page of the site.</li>
+        <li>Each declaration ends with a semicolon. The last one technically doesn't need it, but always add it.</li>
+        <li>Comments look like <code>/* like this */</code>. Use them to label sections of your stylesheet.</li>
+        <li>CSS ignores extra spaces and line breaks, so format rules one declaration per line for readability.</li>
+      </ul>
+    </div>
+    <div class="panel mistake">
+      <h2>Common mistakes</h2>
+      <ul>
+        <li>A <code>&lt;link&gt;</code> with the wrong path, so no styles load at all. Check the Network tab in DevTools.</li>
+        <li>Writing CSS inside the <code>&lt;body&gt;</code> without a <code>&lt;style&gt;</code> tag, so it shows up as text on the page.</li>
+        <li>Using inline <code>style=""</code> everywhere, which is hard to change and beats your stylesheet.</li>
+        <li>HTML-style comments (<code>&lt;!-- --&gt;</code>) inside a CSS file.</li>
+      </ul>
+    </div>
+  </section>
+
+  <footer class="page-foot"><a href="embeds.html">← Embeds &amp; iframes</a><a href="selectors.html">Next: Selectors &amp; Specificity →</a></footer>
+</div>
+
+<script>
+  const $ = (id) => document.getElementById(id);
+  const PARTS = {
+    selector: ["Selector", "Picks which elements the rule applies to. Here: every h1 on the page."],
+    open: ["Opening brace", "Starts the declaration block."],
+    decl: ["Declaration", "One property paired with one value. A rule can have as many as you need."],
+    prop: ["Property", "The thing you want to change, like color or font-size."],
+    colon: ["Colon", "Separates the property from its value. Never an equals sign."],
+    value: ["Value", "What to set the property to. Each property accepts certain kinds of values."],
+    semi: ["Semicolon", "Ends a declaration. Forget it and the next declaration breaks too."],
+    close: ["Closing brace", "Ends the declaration block. A missing brace breaks every rule after it."],
+    block: ["Declaration block", "Everything between the braces: all the declarations for this selector."],
+    rule: ["Rule (or ruleset)", "The whole thing: a selector plus its declaration block."],
+  };
+  const p = (k, inner, cls = "") => `<span class="part ${cls}" data-p="${k}" tabindex="0">${inner}</span>`;
+  const d = (prop, val) => p("decl", `${p("prop", `<span class="prop">${prop}</span>`)}${p("colon", ":")} ${p("value", `<span class="val">${val}</span>`)}${p("semi", ";")}`);
+  $("rule").innerHTML = p("rule", `${p("selector", '<span class="sel">h1</span>')} ${p("block", `${p("open", "{")}\n  ${d("color", "navy")}\n  ${d("font-size", "2rem")}\n${p("close", "}")}`)}`);
+  $("names").innerHTML = Object.entries(PARTS).map(([k, [n]]) => `<button class="btn" data-p="${k}">${n}</button>`).join("");
+  let cur = "selector";
+  function show(k) {
+    cur = k;
+    document.querySelectorAll("#rule .part").forEach((el) => el.classList.toggle("on", el.dataset.p === k));
+    document.querySelectorAll("#names .btn").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.p === k)));
+    $("explain").innerHTML = `<span class="eyebrow">Selected</span><h3>${PARTS[k][0]}</h3><p>${PARTS[k][1]}</p>`;
+  }
+  const pick = (e) => { const t = e.target.closest("[data-p]"); if (t) { e.stopPropagation(); show(t.dataset.p); } };
+  $("rule").addEventListener("click", pick);
+  $("rule").addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); pick(e); } });
+  $("names").addEventListener("click", pick);
+  show("selector");
+
+  const esc = (s) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;");
+  const WAYS = {
+    external: { name: "External stylesheet", color: "var(--val)", cname: "teal", snippet: '<link rel="stylesheet" href="style.css">', where: "In the head, pointing to a separate .css file.", pro: "Best for real sites: one file styles every page, and browsers cache it." },
+    internal: { name: "Internal <style>", color: "var(--cobalt)", cname: "blue", snippet: "<style>\n  h1 { color: blue; }\n</style>", where: "In the head, inside a style element.", pro: "Fine for a single-page experiment. Doesn't carry over to other pages." },
+    inline: { name: "Inline style=\"\"", color: "var(--prop)", cname: "orange", snippet: '<h1 style="color: orange;">', where: "Right on the element, as an attribute.", pro: "Beats almost everything, which makes it hard to override. Avoid it." },
+  };
+  const on = { external: true, internal: true, inline: false };
+  let headOrder = ["external", "internal"];
+  function ways() {
+    $("ways").innerHTML = ["external", "internal", "inline"].map((k) => {
+      const w = WAYS[k];
+      return `<div class="panel way ${on[k] ? "" : "off"}"><div class="top"><b><span class="swatch" style="background:${w.color}"></span>${esc(w.name)}</b><label><input type="checkbox" data-k="${k}" ${on[k] ? "checked" : ""}> On</label></div><pre class="snippet">${esc(w.snippet)}</pre><p class="hint">${w.where}</p><p class="pro">${w.pro}</p></div>`;
+    }).join("");
+    $("order-text").textContent = `${WAYS[headOrder[0]].name} comes first, then the ${WAYS[headOrder[1]].name}.`;
+    let win = null, why = "";
+    if (on.inline) { win = "inline"; why = "Inline styles beat stylesheet rules, no matter the order."; }
+    else {
+      const active = headOrder.filter((k) => on[k]);
+      if (active.length) { win = active[active.length - 1]; why = active.length === 2 ? "Both use the same selector, so the one that comes later in the head wins." : "It's the only one turned on."; }
+    }
+    $("h").style.color = win ? WAYS[win].color : "var(--ink)";
+    $("verdict").textContent = win ? `${WAYS[win].cname} from the ${WAYS[win].name}. ${why}` : "No CSS at all, so the browser's default black text shows.";
+  }
+  $("ways").addEventListener("input", (e) => { const k = e.target.dataset.k; if (k) { on[k] = e.target.checked; ways(); } });
+  $("swap").addEventListener("click", () => { headOrder.reverse(); ways(); });
+  ways();
+</script>
+</body>
+</html>

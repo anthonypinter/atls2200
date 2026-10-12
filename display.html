@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Display Types</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Recursive:slnt,wght,CASL,MONO@-15..0,300..1000,0..1,0..1&display=swap">
+<link rel="stylesheet" href="style.css">
+<style>
+  .flow { font-size: 1.05rem; line-height: 1.7; color: var(--ink); background: var(--panel); border-radius: 8px; padding: 16px; }
+  .flow .box { background: color-mix(in srgb, var(--cobalt) 22%, transparent); outline: 2px solid var(--cobalt); color: var(--ink); font-weight: 700; transition: all 0.2s; }
+  .flow .box.b2 { background: color-mix(in srgb, var(--prop) 22%, transparent); outline-color: var(--prop); }
+  .flow .box.b3 { background: color-mix(in srgb, var(--val) 22%, transparent); outline-color: var(--val); }
+  .applies { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+  .applies li { display: grid; grid-template-columns: 110px 1fr; gap: 10px; font-size: 0.92rem; align-items: baseline; }
+  .applies li b { font: 600 0.85rem var(--font-code); font-variation-settings: "MONO" 1; }
+  .applies li.yes b { color: var(--good); } .applies li.no b { color: var(--bad); }
+  .applies li.no span { color: var(--muted); }
+  .summary { font-size: 0.98rem; }
+  .hide-row { display: flex; gap: 8px; align-items: center; padding: 12px; background: var(--panel); border-radius: 8px; flex-wrap: wrap; }
+  .hide-row .card { width: 90px; height: 70px; border-radius: 6px; display: grid; place-items: center; color: #fff; font: 700 0.95rem var(--font-code); font-variation-settings: "MONO" 1; }
+  .hide-row .card:nth-child(1) { background: var(--item-1); } .hide-row .card:nth-child(2) { background: var(--item-2); } .hide-row .card:nth-child(3) { background: var(--item-3); }
+  .cmp { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  @media (max-width: 640px) { .cmp { grid-template-columns: 1fr; } }
+  .cmp div { padding: 10px; border-radius: 6px; background: var(--stage); font-size: 0.88rem; display: grid; gap: 2px; }
+  .cmp div.cur { outline: 2px solid var(--cobalt); }
+  .cmp b { font: 600 0.85rem var(--font-code); font-variation-settings: "MONO" 1; color: var(--cobalt); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <nav class="crumbs" aria-label="Site"><a class="crumb" href="index.html">← Field Guide</a><a class="crumb" href="glossary.html">Glossary</a></nav>
+  <header class="page-head">
+    <span class="eyebrow">CSS Basics · Display Types</span>
+    <h1>Display Types</h1>
+    <p class="lede">Every element is either <em>block</em> (starts on a new line, fills the width) or <em>inline</em> (flows inside text like a word). That's why <code>width</code> works on a div and does nothing on a span.</p>
+  </header>
+
+  <section class="playground">
+    <div class="panel controls">
+      <span class="eyebrow">.box (three of them)</span>
+      <div class="control"><label for="d">display</label>
+        <select id="d"><option>inline</option><option>block</option><option selected>inline-block</option></select></div>
+      <div class="control"><label for="w">width</label><input id="w" type="range" min="60" max="260" step="10" value="140"><span class="readout" id="w-out"></span></div>
+      <div class="control"><label for="h">height</label><input id="h" type="range" min="20" max="100" step="5" value="44"><span class="readout" id="h-out"></span></div>
+      <div class="control"><label for="mv">margin (top and bottom)</label><input id="mv" type="range" min="0" max="30" step="2" value="10"><span class="readout" id="mv-out"></span></div>
+      <div class="control"><label for="p">padding</label><input id="p" type="range" min="0" max="20" step="2" value="6"><span class="readout" id="p-out"></span></div>
+    </div>
+    <div class="stage-col">
+      <div class="stage"><p class="flow">Pack <span class="box b1">water</span> and <span class="box b2">snacks</span> before you set out, and check the <span class="box b3">forecast</span> because afternoon storms roll in fast above treeline.</p></div>
+      <div class="panel" style="display:grid;gap:10px">
+        <p class="summary" id="summary"></p>
+        <ul class="applies" id="applies"></ul>
+      </div>
+    </div>
+  </section>
+
+  <div class="section-title"><span class="eyebrow">Hiding things</span><h2>display: none vs visibility: hidden vs opacity: 0</h2><p>All three make card 2 invisible. Watch what happens to the space it took up.</p></div>
+  <section class="playground even">
+    <div class="stage-col">
+      <div class="seg" id="hide" role="group" aria-label="How to hide card 2">
+        <button class="btn" data-v="show" aria-pressed="true">Visible</button><button class="btn" data-v="none">display: none</button><button class="btn" data-v="hidden">visibility: hidden</button><button class="btn" data-v="opacity">opacity: 0</button>
+      </div>
+      <div class="hide-row"><div class="card">1</div><div class="card" id="c2">2</div><div class="card">3</div></div>
+    </div>
+    <div class="cmp" id="cmp">
+      <div data-v="none"><b>display: none</b>Gone completely. The space closes up and screen readers skip it.</div>
+      <div data-v="hidden"><b>visibility: hidden</b>Invisible, but its space stays. Screen readers skip it.</div>
+      <div data-v="opacity"><b>opacity: 0</b>Invisible but still there: it keeps its space, can be clicked, and screen readers still read it.</div>
+    </div>
+  </section>
+
+  <section class="notes">
+    <div class="panel">
+      <h2>Key ideas</h2>
+      <ul>
+        <li>Block by default: <code>div</code>, <code>p</code>, <code>h1</code>–<code>h6</code>, <code>ul</code>, <code>section</code>. Inline by default: <code>span</code>, <code>a</code>, <code>strong</code>, <code>em</code>, <code>img</code>.</li>
+        <li><code>inline-block</code> flows like a word but accepts width, height and vertical margins. It's handy for buttons and badges.</li>
+        <li><code>display: flex</code> and <code>grid</code> change how an element's <em>children</em> are laid out. The element itself acts like a block.</li>
+        <li>Changing <code>display</code> never changes what an element means. A span with display: block is still a span.</li>
+      </ul>
+    </div>
+    <div class="panel mistake">
+      <h2>Common mistakes</h2>
+      <ul>
+        <li>Setting <code>width</code> or <code>height</code> on a link or span and wondering why nothing happens.</li>
+        <li>Adding top margin to an inline element to push it down. It's ignored.</li>
+        <li>Putting a <code>div</code> inside a <code>p</code>. The browser closes the paragraph early and breaks your layout.</li>
+        <li>Mysterious small gaps between inline-block items. That's the space character between them in the HTML.</li>
+      </ul>
+    </div>
+  </section>
+
+  <footer class="page-foot"><a href="box-model.html">← The Box Model</a><a href="sizing.html">Next: Sizing Items →</a></footer>
+</div>
+
+<script>
+  const $ = (id) => document.getElementById(id);
+  const SUM = {
+    inline: "Inline boxes flow inside the sentence like words. They're as wide as their text, and only side spacing pushes other words away.",
+    block: "Block boxes break the sentence apart: each starts on a new line and takes the full width unless you set one.",
+    "inline-block": "Inline-block boxes sit in the line like words but respect width, height and all margins. Notice how the line grows taller to fit them.",
+  };
+  function update() {
+    const d = $("d").value, w = $("w").value, h = $("h").value, mv = $("mv").value, p = $("p").value;
+    $("w-out").textContent = w + "px"; $("h-out").textContent = h + "px"; $("mv-out").textContent = mv + "px"; $("p-out").textContent = p + "px";
+    document.querySelectorAll(".flow .box").forEach((b) => Object.assign(b.style, { display: d, width: w + "px", height: h + "px", marginTop: mv + "px", marginBottom: mv + "px", padding: p + "px", marginInline: "4px" }));
+    $("summary").textContent = SUM[d];
+    const inl = d === "inline";
+    const rows = [
+      ["width", !inl, inl ? "Ignored. Inline boxes are as wide as their content." : "Applied."],
+      ["height", !inl, inl ? "Ignored. Height comes from the line of text." : "Applied."],
+      ["margin top/bottom", !inl, inl ? "Ignored. Lines don't move apart." : "Applied: pushes other content away."],
+      ["padding", true, inl ? "Drawn, but top and bottom padding overlap the lines above and below instead of pushing them." : "Applied."],
+      ["new line?", d === "block", d === "block" ? "Yes. Each box gets its own line." : "No. It stays in the flow of text."],
+    ];
+    $("applies").innerHTML = rows.map(([k, ok, t]) => `<li class="${ok ? "yes" : "no"}"><b>${ok ? "✓" : "✗"} ${k}</b><span>${t}</span></li>`).join("");
+  }
+  document.querySelectorAll(".controls select, .controls input").forEach((el) => el.addEventListener("input", update));
+  update();
+
+  $("hide").addEventListener("click", (e) => {
+    const b = e.target.closest("button"); if (!b) return;
+    const v = b.dataset.v, c = $("c2");
+    c.style.display = v === "none" ? "none" : ""; c.style.visibility = v === "hidden" ? "hidden" : ""; c.style.opacity = v === "opacity" ? "0" : "";
+    document.querySelectorAll("#hide button").forEach((x) => x.setAttribute("aria-pressed", String(x === b)));
+    document.querySelectorAll("#cmp div").forEach((x) => x.classList.toggle("cur", x.dataset.v === v));
+  });
+</script>
+</body>
+</html>

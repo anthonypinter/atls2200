@@ -1,0 +1,224 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Organizing CSS</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Recursive:slnt,wght,CASL,MONO@-15..0,300..1000,0..1,0..1&display=swap">
+<link rel="stylesheet" href="style.css">
+<style>
+  .steps { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+  @media (max-width: 640px) { .steps { grid-template-columns: 1fr 1fr; } }
+  .step { display: grid; gap: 4px; text-align: left; padding: 10px 12px; border-radius: 8px; border: 1px solid var(--line); background: var(--panel); color: var(--ink); font: inherit; cursor: pointer; }
+  .step .n { font: 700 0.75rem var(--font-code); font-variation-settings: "MONO" 1; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; }
+  .step[aria-current="true"] { border-color: var(--cobalt); box-shadow: inset 0 -3px 0 var(--cobalt); }
+  .sheet-grid { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); gap: 16px; margin-top: 14px; align-items: start; }
+  @media (max-width: 800px) { .sheet-grid { grid-template-columns: 1fr; } }
+  .sheet { margin: 0; background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 14px 16px; font: 0.86rem/1.6 var(--font-code); font-variation-settings: "MONO" 1; overflow-x: auto; white-space: pre; }
+  .sheet .hex { background: var(--bad-soft); color: var(--bad); border-radius: 3px; }
+  .sheet .var { background: var(--good-soft); color: var(--good); border-radius: 3px; }
+  .sheet .look { text-decoration: underline wavy var(--bad); text-underline-offset: 3px; }
+  .stats { display: grid; gap: 10px; align-content: start; }
+  .stat { display: grid; grid-template-columns: auto 1fr; gap: 10px; align-items: baseline; }
+  .stat b { font: 800 1.5rem var(--font-display); font-variant-numeric: tabular-nums; min-width: 2ch; text-align: right; }
+  .stat.good b { color: var(--good); } .stat.bad b { color: var(--bad); }
+  .stat span { font-size: 0.92rem; }
+  .what { display: grid; gap: 6px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <nav class="crumbs" aria-label="Site"><a class="crumb" href="index.html">← Field Guide</a><a class="crumb" href="glossary.html">Glossary</a></nav>
+  <header class="page-head">
+    <span class="eyebrow">Polish &amp; Workflow · Organizing CSS</span>
+    <h1>Organizing CSS</h1>
+    <p class="lede">A stylesheet that works today can still be a nightmare to change next week. Watch one messy stylesheet get cleaned up in four steps. It styles exactly the same page at every step; only how easy it is to work with changes.</p>
+  </header>
+
+  <div class="steps" id="steps" role="group" aria-label="Cleanup steps"></div>
+  <div class="sheet-grid">
+    <pre class="sheet" id="sheet" aria-label="Stylesheet"></pre>
+    <div class="stats">
+      <div class="panel what" id="what" aria-live="polite"></div>
+      <div class="panel stats" id="stats"></div>
+    </div>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Practice</span><h2>Where does this rule go?</h2><p>A common order for a stylesheet: <strong>base</strong> styles for plain elements, then <strong>layout</strong>, then <strong>components</strong>, then small <strong>utility</strong> classes.</p></div>
+  <div class="panel quiz" id="quiz1"></div>
+
+  <div class="section-title"><span class="eyebrow">Practice</span><h2>Pick the better class name</h2><p>Name classes for what something <em>is</em>, not how it looks. Looks change; purpose rarely does.</p></div>
+  <div class="panel quiz" id="quiz2"></div>
+
+  <section class="notes">
+    <div class="panel">
+      <h2>Key ideas</h2>
+      <ul>
+        <li>Group rules into sections with comment headings, always in the same order.</li>
+        <li>Name classes after their purpose: <code>.trail-card</code>, not <code>.blue-box</code>.</li>
+        <li>BEM is a popular naming pattern: <code>.block</code>, <code>.block__element</code>, <code>.block--variation</code>, like <code>.card__title</code> and <code>.btn--large</code>.</li>
+        <li>Any color or size you type more than twice should probably be a CSS variable.</li>
+        <li>Prefer classes over IDs and long chains of selectors. Low, even specificity is easier to override.</li>
+      </ul>
+    </div>
+    <div class="panel mistake">
+      <h2>Common mistakes</h2>
+      <ul>
+        <li>Adding every new rule to the bottom of the file.</li>
+        <li>Names like <code>.box2</code>, <code>.new</code> or <code>.left</code> that stop making sense later.</li>
+        <li>The same rule written twice in different places, with slightly different values.</li>
+        <li>Leaving old, unused rules in "just in case." Delete them; that's what version control is for.</li>
+      </ul>
+    </div>
+  </section>
+
+  <footer class="page-foot"><a href="accessibility.html">← Accessibility Basics</a><a href="devtools.html">Next: Debugging with DevTools →</a></footer>
+</div>
+
+<script>
+  const $ = (id) => document.getElementById(id);
+  const SHEETS = [
+`.box2 { padding: 16px; background: #fff; border-radius: 10px; }
+h1 { color: #0b6b5e; font-size: 2rem; }
+.blue { background: #2340d9; color: white; padding: 8px 16px; }
+body { margin: 0; font-family: Georgia, serif; color: #1d2133; }
+.box2 h3 { color: #0b6b5e; }
+.wrapper { max-width: 960px; margin: 0 auto; padding: 16px; }
+.blue:hover { background: #1a2fa8; }
+* { box-sizing: border-box; }
+.thing { display: flex; gap: 16px; }
+a { color: #2340d9; }`,
+`/* ===== Base ===== */
+* { box-sizing: border-box; }
+body { margin: 0; font-family: Georgia, serif; color: #1d2133; }
+h1 { color: #0b6b5e; font-size: 2rem; }
+a { color: #2340d9; }
+
+/* ===== Layout ===== */
+.wrapper { max-width: 960px; margin: 0 auto; padding: 16px; }
+.thing { display: flex; gap: 16px; }
+
+/* ===== Components ===== */
+/* Trail card */
+.box2 { padding: 16px; background: #fff; border-radius: 10px; }
+.box2 h3 { color: #0b6b5e; }
+
+/* Button */
+.blue { background: #2340d9; color: white; padding: 8px 16px; }
+.blue:hover { background: #1a2fa8; }`,
+`/* ===== Base ===== */
+* { box-sizing: border-box; }
+body { margin: 0; font-family: Georgia, serif; color: #1d2133; }
+h1 { color: #0b6b5e; font-size: 2rem; }
+a { color: #2340d9; }
+
+/* ===== Layout ===== */
+.container { max-width: 960px; margin: 0 auto; padding: 16px; }
+.card-row { display: flex; gap: 16px; }
+
+/* ===== Components ===== */
+/* Trail card */
+.trail-card { padding: 16px; background: #fff; border-radius: 10px; }
+.trail-card__title { color: #0b6b5e; }
+
+/* Button */
+.btn { background: #2340d9; color: white; padding: 8px 16px; }
+.btn:hover { background: #1a2fa8; }`,
+`/* ===== Variables ===== */
+:root {
+  --brand: #2340d9;
+  --brand-dark: #1a2fa8;
+  --green: #0b6b5e;
+  --text: #1d2133;
+  --space: 16px;
+}
+
+/* ===== Base ===== */
+* { box-sizing: border-box; }
+body { margin: 0; font-family: Georgia, serif; color: var(--text); }
+h1 { color: var(--green); font-size: 2rem; }
+a { color: var(--brand); }
+
+/* ===== Layout ===== */
+.container { max-width: 960px; margin: 0 auto; padding: var(--space); }
+.card-row { display: flex; gap: var(--space); }
+
+/* ===== Components ===== */
+/* Trail card */
+.trail-card { padding: var(--space); background: #fff; border-radius: 10px; }
+.trail-card__title { color: var(--green); }
+
+/* Button */
+.btn { background: var(--brand); color: white; padding: 8px var(--space); }
+.btn:hover { background: var(--brand-dark); }`,
+  ];
+  const STEPS = [
+    ["Messy", "Rules were added wherever there was room. To change the button you'd have to hunt for .blue in two places, and nobody remembers what .box2 or .thing are."],
+    ["Sections", "The same rules, sorted into Base, Layout and Components, with comment headings. Related rules now sit together, so the button's styles are in one spot."],
+    ["Names", "Class names now describe what things are. .blue would be wrong the day the button turns green; .btn never will. The card uses a BEM-style name for its title."],
+    ["Variables", "Colors and spacing used more than once are now CSS variables in one place at the top. Changing the brand color is a one-line edit."],
+  ];
+  const LOOK = /\.(blue|box2|thing|wrapper)\b/g;
+  let step = 0;
+  $("steps").innerHTML = STEPS.map(([t], i) => `<button class="step" data-i="${i}"><span class="n">Step ${i + 1}</span><b>${t}</b></button>`).join("");
+  $("steps").addEventListener("click", (e) => { const b = e.target.closest("button"); if (b) { step = +b.dataset.i; render(); } });
+  const esc = (s) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;");
+  function hl(line) {
+    if (/^\s*\/\*/.test(line)) return `<span class="cmt">${esc(line)}</span>`;
+    const m = line.match(/^(\s*)([^{]+?)(\s*\{)(.*?)(\}?)$/);
+    if (!m) {
+      const d = line.match(/^(\s*)(--[\w-]+)(:\s*)(.+)(;)$/);
+      return d ? `${d[1]}<span class="prop">${d[2]}</span>${d[3]}<span class="var">${esc(d[4])}</span>${d[5]}` : esc(line);
+    }
+    let sel = esc(m[2]).replace(LOOK, (x) => `<span class="look">${x}</span>`);
+    const body = esc(m[4]).replace(/([\w-]+)(:\s*)([^;]+)(;)/g, (_, p, c, v, s) => `<span class="prop">${p}</span>${c}${v.replace(/#[0-9a-f]{3,6}\b/gi, (h) => `<span class="hex">${h}</span>`).replace(/var\([^)]+\)/g, (x) => `<span class="var">${x}</span>`)}${s}`);
+    return `${m[1]}<span class="sel">${sel}</span>${m[3]}${body}${m[5]}`;
+  }
+  function render() {
+    const css = SHEETS[step];
+    $("sheet").innerHTML = css.split("\n").map(hl).join("\n");
+    document.querySelectorAll(".step").forEach((b, i) => b.setAttribute("aria-current", String(i === step)));
+    $("what").innerHTML = `<span class="eyebrow">Step ${step + 1} of 4</span><h2>${STEPS[step][0]}</h2><p>${STEPS[step][1]}</p>`;
+    const body = css.replace(/:root\s*\{[\s\S]*?\}/, "");
+    const hexes = (body.match(/#[0-9a-f]{3,6}\b/gi) || []).length;
+    const looks = new Set(css.match(LOOK) || []).size;
+    const sections = (css.match(/\/\* =====/g) || []).length;
+    const btnSpots = css.split("\n").filter((l) => /\.(blue|btn)\b/.test(l)).length;
+    const stat = (n, t, good) => `<div class="stat ${good ? "good" : "bad"}"><b>${n}</b><span>${t}</span></div>`;
+    $("stats").innerHTML = '<span class="eyebrow">Health check</span>' +
+      stat(hexes, "hard-coded colors outside :root (red)", hexes <= 1) +
+      stat(looks, "unclear class names (wavy underline)", looks === 0) +
+      stat(sections, "labeled sections", sections >= 3) +
+      stat(btnSpots === 2 && step > 0 ? "✓" : "✗", step > 0 ? "button styles are next to each other" : "button styles are scattered", step > 0);
+  }
+  render();
+
+  function quiz(el, Q, opts) {
+    let score = 0;
+    $(el).innerHTML = `<p class="score" id="${el}-s">0 / ${Q.length}</p>` + Q.map((x, i) => `<div class="q"><b>${i + 1}. ${x.q}</b><div class="opts">${(x.opts || opts).map((o, j) => `<button class="btn" data-q="${i}" data-o="${j}">${esc(o)}</button>`).join("")}</div><div class="feedback" id="${el}-fb${i}"></div></div>`).join("");
+    $(el).querySelectorAll(".opts").forEach((g) => g.addEventListener("click", (e) => {
+      const b = e.target.closest("button"); if (!b || g.dataset.done) return;
+      const x = Q[+b.dataset.q], right = +b.dataset.o === x.a;
+      b.classList.add(right ? "right" : "wrong"); g.children[x.a].classList.add("right"); g.dataset.done = "1";
+      if (right) score++; $(el + "-s").textContent = `${score} / ${Q.length}`;
+      const fb = $(`${el}-fb${b.dataset.q}`); fb.className = "feedback " + (right ? "right" : "wrong"); fb.textContent = (right ? "Correct. " : "Not quite. ") + x.why;
+    }));
+  }
+  quiz("quiz1", [
+    { q: "body { font-family: Georgia, serif; }", a: 0, why: "It styles a plain element for the whole site: base." },
+    { q: ".container { max-width: 960px; margin: 0 auto; }", a: 1, why: "It controls the page's overall structure: layout." },
+    { q: ".trail-card { padding: 16px; border-radius: 10px; }", a: 2, why: "It styles one reusable piece of the interface: a component." },
+    { q: ".text-center { text-align: center; }", a: 3, why: "A tiny single-purpose class you can add anywhere: a utility." },
+    { q: "a:hover { text-decoration: none; }", a: 0, why: "It's about plain links everywhere, so it belongs with base styles." },
+  ], ["Base", "Layout", "Components", "Utilities"]);
+  quiz("quiz2", [
+    { q: "A message that tells the user their password is wrong.", opts: [".red-text", ".error-message"], a: 1, why: "If the design changes to orange, .red-text becomes a lie." },
+    { q: "The box that shows one trail's details.", opts: [".box1", ".trail-card"], a: 1, why: ".box1 says nothing about what's inside." },
+    { q: "The title inside that trail card, using BEM.", opts: [".trail-card__title", ".trailCardTitleBig"], a: 0, why: "block__element shows it belongs to .trail-card." },
+    { q: "A larger version of the normal button.", opts: [".btn--large", ".big-blue-btn"], a: 0, why: "BEM modifiers (--) describe a variation without baking in colors." },
+  ]);
+</script>
+</body>
+</html>

@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Text Semantics</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Recursive:slnt,wght,CASL,MONO@-15..0,300..1000,0..1,0..1&display=swap">
+<link rel="stylesheet" href="style.css">
+<style>
+  .art { background: #fff; color: #1d2133; border: 1px solid var(--line); border-radius: var(--radius); padding: 20px; font: 1.02rem/1.65 Georgia, serif; display: grid; gap: 12px; min-width: 0; }
+  .art * { all: revert; font-family: inherit; }
+  .art h1, .art h2, .art h3, .art h4 { margin: 0; line-height: 1.2; }
+  .art p, .art blockquote, .art address { margin: 0; }
+  .art blockquote { border-left: 4px solid #c9cedb; padding-left: 14px; margin-left: 0; font-style: italic; }
+  .art code, .art kbd { font-family: var(--font-code); font-size: 0.9em; }
+  .art kbd { border: 1px solid #9aa2bf; border-bottom-width: 2px; border-radius: 4px; padding: 0 4px; }
+  .art [data-t] { cursor: pointer; border-radius: 3px; }
+  .art [data-t]:hover { background: #eef1f8; }
+  .art [data-t].sel { background: #e6eaff; box-shadow: 0 0 0 2px #2340d9; }
+  .art.tags [data-t]::before { content: "<" attr(data-t) ">"; font: 600 0.65rem var(--font-code); color: #2340d9; background: #e6eaff; border-radius: 3px; padding: 0 3px; margin-right: 3px; vertical-align: 2px; font-style: normal; }
+  .info { display: grid; gap: 8px; align-content: start; }
+  .info h3 { font-family: var(--font-code); font-variation-settings: "MONO" 1; color: var(--cobalt); }
+  .pair { font-size: 0.92rem; padding: 8px 10px; border-radius: 6px; background: var(--stage); }
+  .outline { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; font-size: 0.93rem; }
+  .outline li { padding: 4px 8px; border-left: 3px solid var(--cobalt); background: var(--stage); border-radius: 0 4px 4px 0; }
+  .outline li.skip { border-color: var(--bad); background: var(--bad-soft); color: var(--bad); }
+  .outline .lv { font: 600 0.75rem var(--font-code); font-variation-settings: "MONO" 1; margin-right: 6px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <nav class="crumbs" aria-label="Site"><a class="crumb" href="index.html">← Field Guide</a><a class="crumb" href="glossary.html">Glossary</a></nav>
+  <header class="page-head">
+    <span class="eyebrow">HTML Foundations · Text Semantics</span>
+    <h1>Text Semantics</h1>
+    <p class="lede">Elements like <code>&lt;strong&gt;</code> and <code>&lt;em&gt;</code> say what text <em>means</em>, and the look comes from that meaning. Click any highlighted text in this trail report to see which element it uses and why.</p>
+  </header>
+
+  <section class="playground even">
+    <div class="stage-col">
+      <div class="seg"><button class="btn" id="show-tags" aria-pressed="false">Show the tags</button><button class="btn" id="break" aria-pressed="false">Break the headings</button></div>
+      <article class="art" id="art"></article>
+    </div>
+    <div class="stage-col">
+      <div class="panel info" id="info" aria-live="polite"></div>
+      <div class="panel" style="display:grid;gap:8px"><span class="eyebrow">Heading outline (what screen reader users skim)</span><ul class="outline" id="outline"></ul><p class="hint" id="outline-note"></p></div>
+    </div>
+  </section>
+
+  <div class="section-title"><span class="eyebrow">Practice</span><h2>Which element?</h2></div>
+  <div class="panel quiz" id="quiz"></div>
+
+  <section class="notes">
+    <div class="panel">
+      <h2>Key ideas</h2>
+      <ul>
+        <li>One <code>&lt;h1&gt;</code> per page, then <code>&lt;h2&gt;</code> for sections and <code>&lt;h3&gt;</code> inside those. Don't skip levels.</li>
+        <li><code>&lt;strong&gt;</code> means important and <code>&lt;em&gt;</code> means stressed. <code>&lt;b&gt;</code> and <code>&lt;i&gt;</code> only change the look.</li>
+        <li>Pick elements for meaning, then change the look with CSS. A heading can be small; strong text doesn't have to be bold.</li>
+        <li>Use <code>&lt;p&gt;</code> for each paragraph instead of <code>&lt;br&gt;&lt;br&gt;</code> between them.</li>
+      </ul>
+    </div>
+    <div class="panel mistake">
+      <h2>Common mistakes</h2>
+      <ul>
+        <li>Picking <code>&lt;h4&gt;</code> because you want smaller text.</li>
+        <li>Making a fake heading with bold text in a <code>&lt;p&gt;</code>.</li>
+        <li>Using <code>&lt;blockquote&gt;</code> just to indent something.</li>
+        <li>Wrapping whole paragraphs in <code>&lt;strong&gt;</code>. When everything is important, nothing is.</li>
+      </ul>
+    </div>
+  </section>
+
+  <footer class="page-foot"><a href="head-metadata.html">← The Head &amp; Metadata</a><a href="lists.html">Next: Lists →</a></footer>
+</div>
+
+<script>
+  const $ = (id) => document.getElementById(id);
+  const INFO = {
+    h1: ["The page's main heading. Use exactly one.", "Size comes from the browser's default styles. You can change it with CSS without changing the level."],
+    h2: ["A section heading under the h1.", "Screen reader users jump between headings like a table of contents."],
+    h3: ["A subsection inside an h2 section.", "Levels show structure, not size."],
+    h4: ["A fourth-level heading. Here it's been used only because it looks smaller.", "That breaks the outline. Keep the right level and change the size with CSS."],
+    p: ["A paragraph.", "Browsers add space between paragraphs automatically."],
+    strong: ["Strong importance: a warning or something the reader must not miss.", "Compare with <b>, which only makes text bold for style, with no extra meaning."],
+    em: ["Stress emphasis: the word you'd say louder. It can change the meaning of a sentence.", "Compare with <i>, for text set apart without stress, like a species name or a foreign word."],
+    abbr: ["An abbreviation. The title attribute gives the full form.", "Hover it to see the full name."],
+    time: ["A date or time. The datetime attribute gives a machine-readable version.", "Calendars and search engines can read it."],
+    mark: ["Highlighted text that's relevant right now, like a search match.", "Not for general decoration."],
+    blockquote: ["A longer quotation set apart from the text. cite can link to the source.", "Use <q> for a short quote inside a sentence."],
+    q: ["A short inline quote. Browsers add the quotation marks for you.", "Don't type your own quotes as well."],
+    cite: ["The title of a work, like a book, article or film.", "Not for the person's name."],
+    code: ["A piece of computer code.", "Shown in a monospace font by default."],
+    kbd: ["Keys the user should press.", "Good for instructions like press Ctrl + F."],
+    sup: ["Superscript: raised text, as in 14,259 ft² or a footnote marker.", "Only for real superscripts, not for styling."],
+    sub: ["Subscript: lowered text, as in H₂O.", "Only for real subscripts."],
+    small: ["Side comments and fine print, like legal notes.", "It means fine print, not just smaller text."],
+    address: ["Contact information for the page or article's author.", "Not for every postal address on the page."],
+    del: ["Text that has been removed, shown crossed out.", "Pair it with <ins> for the replacement."],
+    ins: ["Text that has been added.", "Usually underlined by default."],
+  };
+  let broken = false, selected = "strong";
+  function render() {
+    const H = (n, txt) => broken ? `<h${n === 2 ? 4 : n} data-t="h${n === 2 ? 4 : n}">${txt}</h${n === 2 ? 4 : n}>` : `<h${n} data-t="h${n}">${txt}</h${n}>`;
+    $("art").innerHTML = `
+      <h1 data-t="h1">Longs Peak Trail Report</h1>
+      <p data-t="p">Updated <time data-t="time" datetime="2026-10-09">October 9</time> by the <abbr data-t="abbr" title="Rocky Mountain National Park">RMNP</abbr> ranger team.</p>
+      ${H(2, "Conditions")}
+      <p data-t="p"><strong data-t="strong">The Keyhole route is closed until further notice.</strong> Ice covers the Ledges, and you <em data-t="em">must</em> carry traction devices above treeline.</p>
+      <p data-t="p">The summit is 14,259 ft above sea level, and the air holds about 60% of the O<sub data-t="sub">2</sub> you'd get at sea level.</p>
+      ${H(3, "From the trail log")}
+      <blockquote data-t="blockquote"><p>Windy above the Boulder Field. Turned back at 12,800 feet and glad we did.</p></blockquote>
+      <p data-t="p">As one guidebook, <cite data-t="cite">Rocky Mountain Hikes</cite>, puts it: <q data-t="q">the mountain will be there tomorrow.</q></p>
+      ${H(2, "Before you go")}
+      <p data-t="p">Search the <mark data-t="mark">closures</mark> page, or press <kbd data-t="kbd">Ctrl</kbd> + <kbd data-t="kbd">F</kbd> and type <code data-t="code">Keyhole</code>. Parking: <del data-t="del">$25</del> <ins data-t="ins">$30</ins> per vehicle.</p>
+      <p data-t="p"><small data-t="small">Conditions change quickly. This report is not a guarantee of safety.</small></p>
+      <address data-t="address">Questions? Call the Longs Peak ranger station.</address>`;
+    $("art").classList.toggle("tags", $("show-tags").getAttribute("aria-pressed") === "true");
+    $("art").querySelectorAll(`[data-t="${selected}"]`).forEach((el) => el.classList.add("sel"));
+    const [what, more] = INFO[selected] || INFO.h2;
+    $("info").innerHTML = `<span class="eyebrow">Selected</span><h3>&lt;${selected}&gt;</h3><p>${what}</p><div class="pair">${more.replace(/</g, "&lt;")}</div>`;
+    let prev = 0, skipped = false;
+    $("outline").innerHTML = [...$("art").querySelectorAll("h1, h2, h3, h4, h5, h6")].map((h) => {
+      const lv = +h.tagName[1], skip = prev && lv > prev + 1; if (skip) skipped = true; prev = lv;
+      return `<li class="${skip ? "skip" : ""}" style="margin-left:${(lv - 1) * 16}px"><span class="lv">h${lv}</span>${h.textContent}${skip ? " · skipped a level" : ""}</li>`;
+    }).join("");
+    $("outline-note").textContent = skipped ? "The outline now jumps from h1 to h4, so it looks like sections are missing. Someone chose h4 because it's smaller. Use h2 and shrink it with CSS instead." : "Each level is one deeper than its parent, so the outline makes sense.";
+  }
+  $("art").addEventListener("click", (e) => { const t = e.target.closest("[data-t]"); if (t) { selected = t.dataset.t; render(); } });
+  $("show-tags").addEventListener("click", (e) => { e.currentTarget.setAttribute("aria-pressed", String(e.currentTarget.getAttribute("aria-pressed") !== "true")); render(); });
+  $("break").addEventListener("click", (e) => { broken = !broken; e.currentTarget.setAttribute("aria-pressed", String(broken)); render(); });
+  render();
+
+  const QUIZ = [
+    { q: "A warning: \"Do not feed the wildlife.\"", opts: ["<b>", "<strong>", "<h3>"], a: 1, why: "It's important, not just bold-looking." },
+    { q: "The name of the book \"Walden.\"", opts: ["<cite>", "<q>", "<em>"], a: 0, why: "cite marks the title of a work." },
+    { q: "The scientific name Pinus ponderosa.", opts: ["<em>", "<i>", "<strong>"], a: 1, why: "It's set apart, but you wouldn't stress it when speaking. That's i." },
+    { q: "\"You need this permit\" where the word need is stressed.", opts: ["<em>", "<mark>", "<i>"], a: 0, why: "em marks stress emphasis that changes how it's read." },
+    { q: "A three-paragraph quote from a park ranger.", opts: ["<q>", "<blockquote>", "<p> with quote marks"], a: 1, why: "Long, standalone quotes go in blockquote." },
+  ];
+  const esc = (s) => s.replace(/</g, "&lt;");
+  let score = 0;
+  $("quiz").innerHTML = `<p class="score" id="score">0 / ${QUIZ.length}</p>` + QUIZ.map((x, i) => `<div class="q"><b>${i + 1}. ${x.q}</b><div class="opts">${x.opts.map((o, j) => `<button class="btn" data-q="${i}" data-o="${j}">${esc(o)}</button>`).join("")}</div><div class="feedback" id="fb${i}"></div></div>`).join("");
+  document.querySelectorAll("#quiz .opts").forEach((g) => g.addEventListener("click", (e) => {
+    const b = e.target.closest("button"); if (!b || g.dataset.done) return;
+    const x = QUIZ[+b.dataset.q], right = +b.dataset.o === x.a;
+    b.classList.add(right ? "right" : "wrong"); g.children[x.a].classList.add("right"); g.dataset.done = "1";
+    if (right) score++; $("score").textContent = `${score} / ${QUIZ.length}`;
+    const fb = $("fb" + b.dataset.q); fb.className = "feedback " + (right ? "right" : "wrong"); fb.textContent = (right ? "Correct. " : "Not quite. ") + x.why;
+  }));
+</script>
+</body>
+</html>
