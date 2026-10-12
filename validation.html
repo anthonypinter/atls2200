@@ -168,7 +168,7 @@
   }
   function parse() {
     const sn = SNIPS[snip];
-    const doc = new DOMParser().parseFromString(`<!doctype html><body>${sn.src}</body>`, "text/html");
+    const doc = new DOMParser().parseFromString(`<!doctype html><body>${sn.src}<\/body>`, "text/html");
     $("src").textContent = sn.src;
     $("dom").textContent = pretty(doc.body).trimEnd();
     $("parse-note").textContent = sn.why;

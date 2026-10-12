@@ -124,12 +124,12 @@
       text: "The text in the browser tab, in bookmarks, and in search results. Every page should have a short, specific title." },
     { id: "link", code: `    ${t("&lt;link")} ${a("rel")}=${v("stylesheet")} ${a("href")}=${v("style.css")}${t("&gt;")}`, removable: true, title: "<link rel=\"stylesheet\">",
       text: "Connects your CSS file. The href is a path relative to this HTML file. If the path is wrong, the page shows up unstyled." },
-    { code: `  ${t("&lt;/head&gt;")}`, title: "</head>", text: "Closes the head. Everything after this, inside body, is what people see." },
+    { code: `  ${t("&lt;/head&gt;")}`, title: "<\/head>", text: "Closes the head. Everything after this, inside body, is what people see." },
     { code: `  ${t("&lt;body&gt;")}`, title: "<body>", text: "Holds all visible content: headings, paragraphs, images, links, forms." },
     { code: `    ${t("&lt;h1&gt;")}Café Menu${t("&lt;/h1&gt;")}`, title: "<h1>", text: "The main heading. Use one h1 per page that says what the page is about." },
     { code: `    ${t("&lt;p&gt;")}Fresh crêpes daily.${t("&lt;/p&gt;")}`, title: "<p>", text: "A paragraph of text." },
-    { code: `  ${t("&lt;/body&gt;")}`, title: "</body>", text: "Closes the body." },
-    { code: `${t("&lt;/html&gt;")}`, title: "</html>", text: "Closes the root element. Nothing should come after it." },
+    { code: `  ${t("&lt;/body&gt;")}`, title: "<\/body>", text: "Closes the body." },
+    { code: `${t("&lt;/html&gt;")}`, title: "<\/html>", text: "Closes the root element. Nothing should come after it." },
   ];
   const removed = new Set();
   let current = 4;
