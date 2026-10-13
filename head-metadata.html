@@ -12,7 +12,7 @@
   .text-in { font: 0.95rem var(--font-body); width: 100%; padding: 7px 9px; border: 1px solid var(--line); border-radius: 6px; background: var(--paper); color: var(--ink); resize: vertical; }
   .count { font: 0.8rem var(--font-code); font-variation-settings: "MONO" 1; }
   .count.good { color: var(--good); } .count.bad { color: var(--bad); }
-  .previews { display: grid; gap: 16px; }
+  .previews { display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; }
   .pv-label { font: 600 0.75rem var(--font-code); font-variation-settings: "MONO" 1; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); margin-bottom: 6px; display: block; }
 
   .tabs { background: #dfe3ea; border-radius: 8px 8px 0 0; padding: 8px 8px 0; display: flex; gap: 4px; }

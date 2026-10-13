@@ -14,7 +14,7 @@
   #art { border: 2px dashed var(--prop); border-radius: 8px; padding: 14px; display: grid; gap: 10px; position: relative; color: var(--ink); background: var(--panel); }
   #art > .who, .kid-wrap .who { font: 600 0.72rem var(--font-code); font-variation-settings: "MONO" 1; }
   #art > .who { color: var(--prop); }
-  .kid-wrap { display: grid; grid-template-columns: 1fr auto; gap: 10px; align-items: center; padding: 8px 10px; border-radius: 6px; border: 1px solid var(--line); }
+  .kid-wrap { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 10px; align-items: center; padding: 8px 10px; border-radius: 6px; border: 1px solid var(--line); }
   .kid-wrap .who { display: block; color: var(--muted); margin-bottom: 4px; }
   .badge { font: 600 0.75rem var(--font-code); font-variation-settings: "MONO" 1; padding: 3px 8px; border-radius: 4px; white-space: nowrap; }
   .badge.yes { background: var(--good-soft); color: var(--good); } .badge.no { background: var(--bad-soft); color: var(--bad); } .badge.see { background: var(--stage); color: var(--muted); }

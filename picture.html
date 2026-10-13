@@ -23,7 +23,7 @@
   .cand.pick { border-color: var(--cobalt); box-shadow: inset 4px 0 0 var(--cobalt); } .cand.pick .bar { background: var(--cobalt); }
   .cand span:last-child { text-align: right; color: var(--muted); }
 
-  .art { display: grid; place-items: center; min-height: 300px; }
+  .art { display: grid; grid-template-columns: minmax(0, 1fr); place-items: center; min-height: 300px; }
   .art-frame { border: 2px dashed var(--prop); border-radius: 8px; padding: 8px; transition: width 0.2s; max-width: 100%; }
   .art-frame .lbl { font: 600 0.75rem var(--font-code); font-variation-settings: "MONO" 1; color: var(--prop); display: block; margin-bottom: 6px; }
   .art-frame svg { display: block; width: 100%; height: auto; border-radius: 4px; }

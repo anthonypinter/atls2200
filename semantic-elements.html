@@ -9,14 +9,14 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Recursive:slnt,wght,CASL,MONO@-15..0,300..1000,0..1,0..1&display=swap">
 <link rel="stylesheet" href="style.css">
 <style>
-  .wire { display: grid; gap: 8px; grid-template-columns: 1fr 180px; grid-template-areas: "header header" "main aside" "footer footer"; }
-  @media (max-width: 560px) { .wire { grid-template-columns: 1fr; grid-template-areas: "header" "main" "aside" "footer"; } }
+  .wire { display: grid; gap: 8px; grid-template-columns: minmax(0, 1fr) 180px; grid-template-areas: "header header" "main aside" "footer footer"; }
+  @media (max-width: 560px) { .wire { grid-template-columns: minmax(0, 1fr); grid-template-areas: "header" "main" "aside" "footer"; } }
   .region { position: relative; border: 2px solid var(--line); border-radius: 8px; padding: 26px 10px 10px; background: var(--panel); cursor: pointer; text-align: left; color: var(--ink); font: inherit; display: grid; gap: 8px; align-content: start; }
   .region:hover { border-color: var(--cobalt); }
   .region[aria-pressed="true"] { border-color: var(--cobalt); box-shadow: 0 0 0 3px var(--cobalt-soft); }
   .region > .lbl { position: absolute; top: 4px; left: 8px; font: 700 0.78rem var(--font-code); font-variation-settings: "MONO" 1; color: var(--cobalt); }
   .soup .region > .lbl { color: var(--muted); }
-  .r-header { grid-area: header; } .r-main { grid-area: main; } .r-aside { grid-area: aside; } .r-footer { grid-area: footer; }
+  .wire > .r-header { grid-area: header; } .wire > .r-main { grid-area: main; } .wire > .r-aside { grid-area: aside; } .wire > .r-footer { grid-area: footer; }
   .r-nav { padding-top: 24px; }
   .bar { height: 10px; border-radius: 3px; background: var(--stage); }
   .bar.h { height: 16px; width: 60%; background: var(--line); }

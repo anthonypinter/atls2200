@@ -88,7 +88,7 @@ code, pre, .mono { font-family: var(--font-code); font-variation-settings: "MONO
 .control.row { grid-template-columns: 1fr auto; align-items: center; }
 .hint { font-size: 0.85rem; color: var(--muted); }
 
-.stage-col { display: grid; gap: 16px; min-width: 0; }
+.stage-col { display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; min-width: 0; }
 .stage { background: var(--stage); border: 2px dashed var(--line); border-radius: var(--radius); padding: 12px; min-height: 260px; transition: all 0.25s ease; }
 .item {
   color: #fff; font: 700 1.1rem var(--font-code); font-variation-settings: "MONO" 1;
