@@ -1,0 +1,259 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Loops</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Recursive:slnt,wght,CASL,MONO@-15..0,300..1000,0..1,0..1&display=swap">
+<link rel="stylesheet" href="style.css">
+<style>
+  .lines { display: grid; grid-template-columns: minmax(0, 1fr); background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 8px 0; overflow-x: auto; }
+  .line { padding: 2px 14px; font: 0.92rem/1.7 var(--font-code); font-variation-settings: "MONO" 1; white-space: pre; border-left: 3px solid transparent; min-width: max-content; }
+  .line.now { background: var(--cobalt-soft); border-left-color: var(--cobalt); }
+  .line mark { background: none; color: inherit; border-radius: 3px; padding: 1px 0; }
+  .line mark.on { background: var(--cobalt); color: var(--panel); padding: 1px 3px; }
+  .line mark.on * { color: var(--panel) !important; }
+  .line.bugline { color: var(--bad); }
+  .stepper { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+  .stepper .count { font: 600 0.85rem var(--font-code); font-variation-settings: "MONO" 1; color: var(--muted); }
+  .watch { display: flex; flex-wrap: wrap; gap: 8px; min-height: 40px; }
+  .watch > span { font: 600 0.95rem var(--font-code); font-variation-settings: "MONO" 1; background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 6px 10px; }
+  .watch .k { color: var(--muted); }
+  .say { font-size: 0.95rem; min-height: 3em; }
+  .say.err { color: var(--bad); }
+
+  .flow { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; }
+  .row-arr { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+  .row-arr .lbl { font: 600 0.8rem var(--font-code); font-variation-settings: "MONO" 1; color: var(--muted); width: 100%; }
+  .cell { font: 600 0.95rem var(--font-code); font-variation-settings: "MONO" 1; padding: 8px 10px; border-radius: 6px; background: var(--panel); border: 2px solid var(--line); min-width: 52px; text-align: center; }
+  .cell.out { border-color: var(--good); color: var(--good); }
+  .cell.dropped { opacity: 0.35; text-decoration: line-through; }
+  .cell.found { border-color: var(--cobalt); background: var(--cobalt-soft); color: var(--cobalt); }
+  .arrow { color: var(--muted); font: 600 0.85rem var(--font-code); font-variation-settings: "MONO" 1; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <nav class="crumbs" aria-label="Site"><a class="crumb" href="index.html">← Field Guide</a><a class="crumb" href="glossary.html">Glossary</a></nav>
+  <header class="page-head">
+    <span class="eyebrow">JavaScript Basics · Loops</span>
+    <h1>Loops</h1>
+    <p class="lede">A loop runs the same code again and again, usually once for each item in a list. Step through each kind of loop to see exactly what runs, and in what order.</p>
+  </header>
+
+  <section class="playground">
+    <div class="panel controls">
+      <div class="control"><label for="mode">Loop</label>
+        <select id="mode">
+          <option value="for">for (classic)</option>
+          <option value="of">for...of</option>
+          <option value="while">while</option>
+          <option value="forbug">for with &lt;= (bug)</option>
+          <option value="whilebug">while without i++ (bug)</option>
+        </select>
+      </div>
+      <p class="hint" id="mode-why"></p>
+    </div>
+    <div class="stage-col">
+      <div class="stepper">
+        <button class="btn run" id="step">Step ▸</button>
+        <button class="btn" id="play" aria-pressed="false">Auto-play</button>
+        <button class="btn" id="restart">Restart</button>
+        <span class="count" id="count"></span>
+      </div>
+      <div class="lines" id="lines" aria-label="Code"></div>
+      <div class="watch" id="watch" aria-label="Variables"></div>
+      <p class="say" id="say" aria-live="polite"></p>
+      <ol class="console" id="out" aria-label="Console output"></ol>
+    </div>
+  </section>
+
+  <div class="section-title"><span class="eyebrow">Part 2</span><h2>map() and filter()</h2><p>Arrays have methods that do the looping for you. You pass in a small function, and the method calls it once for each item.</p></div>
+  <section class="playground">
+    <div class="panel controls"><div class="seg" id="arrm" role="group" aria-label="Array method"></div><p class="hint" id="arrm-why"></p></div>
+    <div class="stage-col"><pre class="snippet" id="arrm-code"></pre><div class="stage flow" id="flow"></div></div>
+  </section>
+
+  <div class="section-title"><span class="eyebrow">Try it</span><h2>break and continue</h2><p><code>break</code> stops the loop completely. <code>continue</code> skips the rest of this pass and moves on to the next item.</p></div>
+  <div class="runner"><textarea aria-label="Code editor">const trails = ["Mesa", "Royal Arch", "Flagstaff", "Chautauqua", "Bear Peak"];
+
+// continue: skip short names
+for (const trail of trails) {
+  if (trail.length < 6) {
+    continue;
+  }
+  console.log("Long name:", trail);
+}
+
+// break: stop as soon as we find it
+for (let i = 0; i < trails.length; i++) {
+  console.log("Checking", trails[i]);
+  if (trails[i] === "Flagstaff") {
+    console.log(`Found it at index ${i}`);
+    break;
+  }
+}</textarea></div>
+
+  <div class="section-title"><span class="eyebrow">Practice</span><h2>Predict the output</h2></div>
+  <div class="panel quiz" id="quiz"></div>
+
+  <section class="notes">
+    <div class="panel">
+      <h2>Key ideas</h2>
+      <ul>
+        <li><b><code>for...of</code></b> is the simplest way to go through every item: <code>for (const trail of trails) { … }</code>. Use it when you don't need the index.</li>
+        <li>A classic <b><code>for</code></b> loop has three parts: <code>(initializer; condition; final-expression)</code>. Use it when you need to count, or need the index.</li>
+        <li><b><code>while</code></b> repeats as long as its condition is true. Good when you don't know in advance how many times to repeat.</li>
+        <li><code>map()</code> makes a new array of changed items. <code>filter()</code> makes a new array of only the items that pass a test.</li>
+        <li><code>querySelectorAll()</code> results work with <code>for...of</code> too. That's how you add a listener to every button on a page.</li>
+      </ul>
+    </div>
+    <div class="panel mistake">
+      <h2>Common mistakes</h2>
+      <ul>
+        <li><code>i &lt;= arr.length</code> runs one time too many and reads <code>undefined</code>. Use <code>&lt;</code>.</li>
+        <li>Forgetting to change the counter in a <code>while</code> loop. The condition never becomes false, and the page freezes.</li>
+        <li>Using <code>const</code> for a classic loop counter: <code>for (const i = 0; …; i++)</code> fails because <code>i++</code> reassigns it. (<code>const</code> is fine in <code>for...of</code>.)</li>
+        <li>Forgetting to <code>return</code> in a <code>map()</code> function that uses curly braces, which gives an array of <code>undefined</code>.</li>
+      </ul>
+    </div>
+    <div class="panel mdn">
+      <h2>On MDN</h2>
+      <ul>
+        <li><a href="https://developer.mozilla.org/en-US/docs/Learn_web_development/Core/Scripting/Loops">Looping code</a><span class="hint">for...of, map, filter, for, while, break and continue.</span></li>
+        <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/map">Array.prototype.map()</a> and <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/filter">filter()</a><span class="hint">Full reference.</span></li>
+      </ul>
+    </div>
+  </section>
+
+  <footer class="page-foot"><a href="js-conditionals.html">← Conditionals</a><a href="js-functions.html">Next: Functions →</a></footer>
+</div>
+
+<script src="runner.js"></script>
+<script>
+  const $ = (id) => document.getElementById(id);
+  const T = ["Mesa", "Royal Arch", "Flagstaff"];
+  const DECL = [[['const trails = ["Mesa", "Royal Arch", "Flagstaff"];']]];
+  const q = (s) => JSON.stringify(s);
+  const WHY = {
+    for: "The initializer runs once. Then: check the condition, run the body, run the final expression, and repeat until the condition is false.",
+    of: "for...of hands you each item in turn. No counter, no condition, nothing to get wrong. MDN recommends it for going through a collection.",
+    while: "Same steps as a for loop, but spread out: the counter is set before the loop and updated inside it.",
+    forbug: "<= lets i reach 3, but the last index is 2. The extra pass reads trails[3], which doesn't exist.",
+    whilebug: "Nothing inside the loop changes i, so the condition is true forever.",
+  };
+
+  // Builds { lines, events } for a loop type. Each line is a list of [text, part?] segments.
+  // Each event: { l: line index, p: part to highlight, say, vars, out, err }.
+  function build(mode) {
+    const ev = [];
+    let lines;
+    ev.push({ l: 0, say: "Create the array of trail names.", vars: {} });
+    if (mode === "for" || mode === "forbug") {
+      const cond = mode === "for" ? "i < trails.length" : "i <= trails.length";
+      const test = (i) => (mode === "for" ? i < T.length : i <= T.length);
+      lines = [DECL[0], [["for ("], ["let i = 0", "init"], ["; "], [cond, "cond"], ["; "], ["i++", "upd"], [") {"]], [["  console.log(trails[i]);"]], [["}"]], [['console.log("Done");']]];
+      let i = 0;
+      ev.push({ l: 1, p: "init", say: "Initializer: runs once, before the loop starts. i is 0.", vars: { i } });
+      for (let guard = 0; guard < 10; guard++) {
+        const ok = test(i);
+        ev.push({ l: 1, p: "cond", say: `Condition: is ${i} ${mode === "for" ? "<" : "<="} 3? ${ok ? "Yes (true), so the body runs." : "No (false), so the loop ends."}`, vars: { i } });
+        if (!ok) break;
+        const v = T[i];
+        ev.push({ l: 2, say: v === undefined ? `trails[${i}] doesn't exist: the last index is 2. It logs undefined.` : `Body: trails[${i}] is ${q(v)}.`, vars: { i }, out: v === undefined ? "undefined" : v, err: v === undefined });
+        i++;
+        ev.push({ l: 1, p: "upd", say: `Final expression: i++ adds 1, so i is now ${i}.`, vars: { i } });
+      }
+      ev.push({ l: 4, say: "The loop is finished, so the code after it runs.", vars: { i: "(gone)" }, out: "Done" });
+    } else if (mode === "of") {
+      lines = [DECL[0], [["for ("], ["const trail of trails", "of"], [") {"]], [["  console.log(trail);"]], [["}"]], [['console.log("Done");']]];
+      for (const t of T) {
+        ev.push({ l: 1, p: "of", say: `Next item: trail is ${q(t)}.`, vars: { trail: q(t) } });
+        ev.push({ l: 2, say: "Body runs with this item.", vars: { trail: q(t) }, out: t });
+      }
+      ev.push({ l: 1, p: "of", say: "No items left, so the loop ends.", vars: {} });
+      ev.push({ l: 4, say: "The code after the loop runs.", vars: {}, out: "Done" });
+    } else {
+      const bug = mode === "whilebug";
+      lines = [DECL[0], [["let i = 0;", "init"]], [["while ("], ["i < trails.length", "cond"], [") {"]], [["  console.log(trails[i]);"]], bug ? [["  // i++ was forgotten", "bug"]] : [["  "], ["i++;", "upd"]], [["}"]], [['console.log("Done");']]];
+      let i = 0;
+      ev.push({ l: 1, p: "init", say: "Set the counter before the loop.", vars: { i } });
+      for (let guard = 0; guard < (bug ? 6 : 10); guard++) {
+        const ok = i < T.length;
+        ev.push({ l: 2, p: "cond", say: `Condition: is ${i} < 3? ${ok ? "Yes, so the body runs." : "No, so the loop ends."}`, vars: { i } });
+        if (!ok) break;
+        ev.push({ l: 3, say: `trails[${i}] is ${q(T[i])}.`, vars: { i }, out: T[i] });
+        if (!bug) { i++; ev.push({ l: 4, p: "upd", say: `i++ makes i ${i}.`, vars: { i } }); }
+        else ev.push({ l: 4, say: "Nothing changes i. It's still 0.", vars: { i } });
+      }
+      if (bug) ev.push({ l: 2, p: "cond", say: "Infinite loop: i stays at 0, so 0 < 3 is always true. A real page would freeze here. The loop was stopped for you.", vars: { i }, err: true, stop: true });
+      else ev.push({ l: 6, say: "The loop is finished, so the code after it runs.", vars: { i }, out: "Done" });
+    }
+    return { lines, ev };
+  }
+
+  let prog, at, timer = null;
+  function reset() { stop(); prog = build($("mode").value); at = 0; $("mode-why").textContent = WHY[$("mode").value]; render(); }
+  function render() {
+    const e = at > 0 ? prog.ev[at - 1] : null;
+    $("lines").innerHTML = prog.lines.map((segs, li) => `<div class="line ${e && e.l === li ? "now" : ""} ${segs.some((s) => s[1] === "bug") ? "bugline" : ""}">${segs.map(([t, p]) => p && p !== "bug" ? `<mark class="${e && e.l === li && e.p === p ? "on" : ""}">${hlJS(t)}</mark>` : hlJS(t)).join("")}</div>`).join("");
+    const vars = e ? e.vars : {};
+    $("watch").innerHTML = Object.keys(vars).length ? Object.entries(vars).map(([k, v]) => `<span><span class="k">${k} =</span> ${v}</span>`).join("") : `<span class="k" style="border:0;background:none">No loop variables yet</span>`;
+    $("say").textContent = e ? e.say : "Press Step to run the code one piece at a time.";
+    $("say").className = "say" + (e && e.err ? " err" : "");
+    const outs = prog.ev.slice(0, at).filter((x) => x.out !== undefined);
+    $("out").innerHTML = outs.length ? outs.map((x) => `<li class="${x.err ? "warn" : "log"}"></li>`).join("") : `<li class="muted">Nothing logged yet.</li>`;
+    $("out").querySelectorAll("li").forEach((li, i) => { if (outs[i]) li.textContent = outs[i].out; });
+    $("count").textContent = `${at} / ${prog.ev.length}`;
+    $("step").disabled = at >= prog.ev.length;
+  }
+  function step() { if (at < prog.ev.length) { at++; render(); } if (at >= prog.ev.length) stop(); }
+  function stop() { clearInterval(timer); timer = null; $("play").setAttribute("aria-pressed", "false"); $("play").textContent = "Auto-play"; }
+  $("step").addEventListener("click", step);
+  $("play").addEventListener("click", () => {
+    if (timer) { stop(); return; }
+    if (at >= prog.ev.length) { at = 0; }
+    $("play").setAttribute("aria-pressed", "true"); $("play").textContent = "Pause";
+    step(); if (at < prog.ev.length) timer = setInterval(step, 800);
+  });
+  $("restart").addEventListener("click", reset);
+  $("mode").addEventListener("change", reset);
+
+  // Part 2
+  const MILES = [3.4, 6.7, 1.2, 8.1, 2.5];
+  const ARRM = [
+    { k: "map()", code: "const km = miles.map((m) => m * 1.6);", why: "map() always returns an array with the same number of items. Each new item is whatever the function returns.", out: () => MILES.map((m) => +(m * 1.6).toFixed(2)), kind: "map" },
+    { k: "filter()", code: "const short = miles.filter((m) => m < 5);", why: "filter() keeps the items where the function returns true. The new array can be shorter.", keep: (m) => m < 5, kind: "filter" },
+    { k: "find()", code: "const firstLong = miles.find((m) => m > 5);", why: "find() returns the first matching item itself (not an array), or undefined if none match.", kind: "find" },
+    { k: "forEach()", code: "miles.forEach((m) => console.log(m));", why: "forEach() just runs the function for each item. It returns undefined, so use it for side effects like logging or updating the page.", kind: "each" },
+  ];
+  let am = 0;
+  $("arrm").innerHTML = ARRM.map((x, i) => `<button class="btn" data-i="${i}">${x.k}</button>`).join("");
+  $("arrm").addEventListener("click", (e) => { const b = e.target.closest("button"); if (b) { am = +b.dataset.i; renderArr(); } });
+  function renderArr() {
+    const x = ARRM[am];
+    document.querySelectorAll("#arrm button").forEach((b) => b.setAttribute("aria-pressed", String(+b.dataset.i === am)));
+    $("arrm-code").innerHTML = hlJS("const miles = [3.4, 6.7, 1.2, 8.1, 2.5];\n" + x.code);
+    $("arrm-why").textContent = x.why;
+    const src = (cls) => `<div class="row-arr"><span class="lbl">miles</span>${MILES.map((m, i) => `<span class="cell ${cls(m, i)}">${m}</span>`).join("")}</div>`;
+    let html;
+    if (x.kind === "map") html = src(() => "") + `<span class="arrow">↓ each item × 1.6</span><div class="row-arr"><span class="lbl">km (new array)</span>${x.out().map((v) => `<span class="cell out">${v}</span>`).join("")}</div>`;
+    else if (x.kind === "filter") html = src((m) => (x.keep(m) ? "" : "dropped")) + `<span class="arrow">↓ keep where m &lt; 5 is true</span><div class="row-arr"><span class="lbl">short (new array)</span>${MILES.filter(x.keep).map((v) => `<span class="cell out">${v}</span>`).join("")}</div>`;
+    else if (x.kind === "find") { const idx = MILES.findIndex((m) => m > 5); html = src((m, i) => (i === idx ? "found" : i > idx ? "dropped" : "")) + `<span class="arrow">↓ stops at the first m &gt; 5; later items aren't checked</span><div class="row-arr"><span class="lbl">firstLong</span><span class="cell out">${MILES[idx]}</span></div>`; }
+    else html = src(() => "") + `<span class="arrow">↓ logs each one; the return value is undefined</span><ol class="console">${MILES.map((m) => `<li class="log">${m}</li>`).join("")}</ol>`;
+    $("flow").innerHTML = html;
+  }
+
+  makeQuiz($("quiz"), [
+    { q: "How many lines does this log?", pre: "for (let i = 0; i < 4; i++) {\n  console.log(i);\n}", opts: ["3", "4", "5"], a: 1, why: "It logs 0, 1, 2 and 3. When i reaches 4, the condition is false." },
+    { q: "What is the last value logged?", pre: "const colors = [\"red\", \"blue\"];\nfor (let i = 0; i <= colors.length; i++) {\n  console.log(colors[i]);\n}", opts: ["\"blue\"", "undefined", "An error"], a: 1, why: "<= runs one extra time, and colors[2] is undefined." },
+    { q: "What does this log?", pre: "const nums = [1, 2, 3, 4];\nconsole.log(nums.filter((n) => n % 2 === 0));", opts: ["[2, 4]", "[1, 3]", "[false, true, false, true]"], a: 0, why: "filter keeps the items where the test is true: the even numbers." },
+    { q: "What does this log?", pre: "const nums = [1, 2, 3];\nconsole.log(nums.map((n) => n * 10));", opts: ["[1, 2, 3]", "60", "[10, 20, 30]"], a: 2, why: "map builds a new array from whatever the function returns for each item." },
+  ]);
+
+  reset(); renderArr();
+</script>
+</body>
+</html>

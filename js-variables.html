@@ -1,0 +1,220 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Variables &amp; Data Types</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Recursive:slnt,wght,CASL,MONO@-15..0,300..1000,0..1,0..1&display=swap">
+<link rel="stylesheet" href="style.css">
+<style>
+  .steps { display: grid; grid-template-columns: minmax(0, 1fr); background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 8px 0; overflow-x: auto; }
+  .step { display: grid; grid-template-columns: 26px 1fr; gap: 8px; padding: 2px 14px 2px 6px; font: 0.88rem/1.6 var(--font-code); font-variation-settings: "MONO" 1; white-space: pre; border-left: 3px solid transparent; min-width: max-content; }
+  .step .n { text-align: right; color: var(--muted); }
+  .step.done { opacity: 0.55; }
+  .step.now { background: var(--cobalt-soft); border-left-color: var(--cobalt); opacity: 1; }
+  .step.now.err { background: var(--bad-soft); border-left-color: var(--bad); }
+  .stepper { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+  .stepper .count { font: 600 0.85rem var(--font-code); font-variation-settings: "MONO" 1; color: var(--muted); }
+  .memory { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; align-content: start; align-items: start; min-height: 150px; }
+  .memory .empty { color: var(--muted); font-size: 0.9rem; grid-column: 1 / -1; align-self: center; text-align: center; }
+  .var { background: var(--panel); border: 2px solid var(--line); border-radius: 8px; padding: 8px 10px; display: grid; gap: 4px; min-width: 0; transition: border-color 0.2s, box-shadow 0.2s; }
+  .var.changed { border-color: var(--cobalt); box-shadow: 0 0 0 3px var(--cobalt-soft); }
+  .var.refused { border-color: var(--bad); box-shadow: 0 0 0 3px var(--bad-soft); }
+  .var .top { display: flex; justify-content: space-between; gap: 6px; align-items: baseline; }
+  .var .name { font: 700 0.95rem var(--font-code); font-variation-settings: "MONO" 1; overflow-wrap: anywhere; }
+  .var .kind { font: 600 0.68rem var(--font-code); font-variation-settings: "MONO" 1; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); }
+  .var .kind.const { color: var(--prop); }
+  .var .value { font: 0.95rem var(--font-code); font-variation-settings: "MONO" 1; background: var(--stage); border-radius: 4px; padding: 4px 8px; overflow-wrap: anywhere; }
+  .var .type { font-size: 0.8rem; color: var(--muted); }
+  .type-number { color: var(--prop); } .type-string { color: var(--val); } .type-boolean { color: var(--cobalt); } .type-undefined { color: var(--muted); font-style: italic; } .type-object { color: var(--item-4); }
+  .explain { font-size: 0.95rem; min-height: 3em; }
+  .explain.err { color: var(--bad); }
+
+  .namer { display: grid; gap: 10px; }
+  .namer input { font: 1.05rem var(--font-code); font-variation-settings: "MONO" 1; padding: 8px 12px; border: 1px solid var(--line); border-radius: 8px; background: var(--panel); color: var(--ink); width: 100%; }
+  .chipset { display: flex; flex-wrap: wrap; gap: 6px; }
+  .chipset .btn { font-size: 0.8rem; padding: 4px 9px; }
+  .verdicts { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+  .verdicts li { padding: 8px 12px; border-radius: 8px; font-size: 0.95rem; }
+  .verdicts .ok { background: var(--good-soft); color: var(--good); }
+  .verdicts .no { background: var(--bad-soft); color: var(--bad); }
+  .verdicts .meh { background: var(--stage); color: var(--prop); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <nav class="crumbs" aria-label="Site"><a class="crumb" href="index.html">← Field Guide</a><a class="crumb" href="glossary.html">Glossary</a></nav>
+  <header class="page-head">
+    <span class="eyebrow">JavaScript Basics · Variables &amp; Data Types</span>
+    <h1>Variables &amp; Data Types</h1>
+    <p class="lede">A variable is a labeled box that holds a value. <code>let</code> boxes can be refilled; <code>const</code> boxes can't. Step through the code and watch the boxes change.</p>
+  </header>
+
+  <section class="playground even">
+    <div class="stage-col">
+      <div class="stepper">
+        <button class="btn" id="back">◂ Back</button>
+        <button class="btn run" id="next">Run next line ▸</button>
+        <button class="btn" id="restart">Restart</button>
+        <span class="count" id="count"></span>
+      </div>
+      <div class="steps" id="steps" aria-label="Code"></div>
+    </div>
+    <div class="stage-col">
+      <span class="eyebrow">Variables in memory</span>
+      <div class="stage memory" id="memory" aria-live="polite"></div>
+      <p class="explain" id="explain"></p>
+    </div>
+  </section>
+
+  <div class="section-title"><span class="eyebrow">Part 2</span><h2>Name checker</h2><p>Some names break your code, and others just make it hard to read. Type a variable name, or try one of the examples.</p></div>
+  <section class="playground">
+    <div class="panel namer">
+      <label class="eyebrow" for="name">Variable name</label>
+      <input id="name" value="myAge" autocomplete="off" autocapitalize="off" spellcheck="false">
+      <div class="chipset" id="chips"></div>
+    </div>
+    <div class="stage-col">
+      <pre class="snippet" id="name-code"></pre>
+      <ul class="verdicts" id="verdicts" aria-live="polite"></ul>
+    </div>
+  </section>
+
+  <div class="section-title"><span class="eyebrow">Try it</span><h2>typeof</h2><p><code>typeof</code> tells you what type a value is. Quotes always make a string, even when the value looks like a number. Change the values and run it again.</p></div>
+  <div class="runner"><textarea aria-label="Code editor">let zip = "80302";
+console.log(typeof zip);
+
+zip = 80302;
+console.log(typeof zip);
+
+const isOpen = false;
+const trails = ["Mesa", "Royal Arch"];
+const hike = { name: "Mesa", miles: 6.7 };
+console.log(typeof isOpen, typeof trails, typeof hike);
+
+let notSetYet;
+console.log(notSetYet);</textarea></div>
+
+  <div class="section-title"><span class="eyebrow">Practice</span><h2>Check yourself</h2></div>
+  <div class="panel quiz" id="quiz"></div>
+
+  <section class="notes">
+    <div class="panel">
+      <h2>Key ideas</h2>
+      <ul>
+        <li><b>Use <code>const</code> when you can, and <code>let</code> when you have to.</b> Use <code>let</code> only when the value needs to change, such as a score or a counter.</li>
+        <li>Declare a variable once with <code>let</code> or <code>const</code>, then use just its name afterward.</li>
+        <li>The main types: <b>number</b> (<code>42</code>, <code>3.4</code>), <b>string</b> (<code>"text"</code>), <b>boolean</b> (<code>true</code>/<code>false</code>), plus <b>arrays</b> and <b>objects</b> for groups of values.</li>
+        <li>JavaScript is dynamically typed: the value decides the type, and a <code>let</code> variable can hold a different type later.</li>
+        <li>A <code>const</code> array or object can still have its contents changed. What can't change is which array or object the name refers to.</li>
+      </ul>
+    </div>
+    <div class="panel mistake">
+      <h2>Common mistakes</h2>
+      <ul>
+        <li>Using <code>var</code>. It's the old way, with confusing rules. MDN says there's no reason to use it in new code.</li>
+        <li>Writing <code>let</code> again when updating a value: <code>let score = 1;</code> then <code>let score = 2;</code> is an error.</li>
+        <li>Numbers in quotes: <code>"5" + 5</code> gives <code>"55"</code>, not <code>10</code>.</li>
+        <li>Mixing up case: <code>myAge</code> and <code>myage</code> are two different variables.</li>
+      </ul>
+    </div>
+    <div class="panel mdn">
+      <h2>On MDN</h2>
+      <ul>
+        <li><a href="https://developer.mozilla.org/en-US/docs/Learn_web_development/Core/Scripting/Variables">Storing the information you need: Variables</a><span class="hint">let, const, naming rules and types.</span></li>
+        <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/typeof">typeof</a><span class="hint">Every possible typeof result.</span></li>
+      </ul>
+    </div>
+  </section>
+
+  <footer class="page-foot"><a href="js-errors.html">← The Console &amp; Errors</a><a href="js-strings-numbers.html">Next: Numbers &amp; Strings →</a></footer>
+</div>
+
+<script src="runner.js"></script>
+<script>
+  const $ = (id) => document.getElementById(id);
+  // Each step: code, then what it does to memory. `set` = [name, value, kind?]. `err` = refused change.
+  const STEPS = [
+    { c: "let score = 0;", set: ["score", 0, "let"], t: "let creates a box called score and puts 0 in it. Numbers have no quotes." },
+    { c: "score = score + 10;", set: ["score", 10], t: "No let this time: the box already exists. The right side is worked out first (0 + 10), then stored back in score." },
+    { c: 'const player = "Ava";', set: ["player", "Ava", "const"], t: "const creates a box that can't be refilled. Text in quotes is a string." },
+    { c: 'player = "Bo";', err: "player", t: "TypeError: Assignment to constant variable. player was declared with const, so it keeps the value \"Ava\"." },
+    { c: "let lives;", set: ["lives", undefined, "let"], t: "A let variable with no value yet holds undefined. (A const must get its value right away.)" },
+    { c: "lives = 3;", set: ["lives", 3], t: "Now lives holds 3." },
+    { c: "let isOver = score > 100;", set: ["isOver", false, "let"], t: "score > 100 is a question with a yes or no answer. 10 > 100 is false, so isOver holds the boolean false." },
+    { c: 'const trails = ["Mesa", "Royal Arch"];', set: ["trails", ["Mesa", "Royal Arch"], "const"], t: "An array is a list of values in square brackets. typeof calls it \"object\"." },
+    { c: 'trails.push("Chautauqua");', set: ["trails", ["Mesa", "Royal Arch", "Chautauqua"]], t: "This works even though trails is const. The name still refers to the same array; only its contents changed." },
+    { c: 'let zip = "80302";', set: ["zip", "80302", "let"], t: "Quotes make this a string, even though it looks like a number." },
+    { c: "zip = 80302;", set: ["zip", 80302], t: "Now zip holds a number. JavaScript is dynamically typed: the value decides the type, not the variable." },
+  ];
+  let at = 0; // number of lines that have run
+
+  const show = (v) => v === undefined ? "undefined" : fmtJS(v, 1);
+  const typeName = (v) => Array.isArray(v) ? "object" : typeof v;
+  function state(n) {
+    const mem = new Map();
+    for (const s of STEPS.slice(0, n)) if (s.set) { const [k, v, kind] = s.set; mem.set(k, { v, kind: kind || mem.get(k).kind }); }
+    return mem;
+  }
+  function render() {
+    $("steps").innerHTML = STEPS.map((s, i) => `<div class="step ${i < at - 1 ? "done" : ""} ${i === at - 1 ? "now" + (s.err ? " err" : "") : ""}"><span class="n">${i + 1}</span><span>${hlJS(s.c)}</span></div>`).join("");
+    const mem = state(at), last = STEPS[at - 1];
+    const changed = last && (last.set ? last.set[0] : last.err);
+    $("memory").innerHTML = mem.size ? [...mem].map(([k, { v, kind }]) => {
+      const t = typeName(v);
+      return `<div class="var ${k === changed ? (last.err ? "refused" : "changed") : ""}"><div class="top"><span class="name">${k}</span><span class="kind ${kind}">${kind}${kind === "const" ? " 🔒" : ""}</span></div><span class="value type-${Array.isArray(v) ? "object" : t}"></span><span class="type">typeof → "${t}"${Array.isArray(v) ? " (array)" : ""}</span></div>`;
+    }).join("") : `<p class="empty">Nothing yet. Run the first line.</p>`;
+    [...mem].forEach(([, { v }], i) => { $("memory").querySelectorAll(".value")[i].textContent = show(v); });
+    $("explain").textContent = last ? last.t : "Each line runs in order, top to bottom.";
+    $("explain").className = "explain" + (last && last.err ? " err" : "");
+    $("count").textContent = `${at} / ${STEPS.length}`;
+    $("back").disabled = at === 0; $("next").disabled = at === STEPS.length;
+  }
+  $("next").addEventListener("click", () => { if (at < STEPS.length) at++; render(); });
+  $("back").addEventListener("click", () => { if (at > 0) at--; render(); });
+  $("restart").addEventListener("click", () => { at = 0; render(); });
+
+  // Name checker, following MDN's naming rules and conventions.
+  const RESERVED = "break case catch class const continue debugger default delete do else export extends false finally for function if import in instanceof let new null return static super switch this throw true try typeof var void while with yield await enum".split(" ");
+  const EXAMPLES = ["myAge", "1stPlace", "my-age", "first name", "_count", "for", "x", "totalPrice", "MYAGE", "TotalPrice", "café"];
+  $("chips").innerHTML = EXAMPLES.map((e) => `<button class="btn" data-n="${e}">${e}</button>`).join("");
+  $("chips").addEventListener("click", (e) => { const b = e.target.closest("button"); if (b) { $("name").value = b.dataset.n; checkName(); } });
+  function checkName() {
+    const n = $("name").value;
+    const out = [];
+    const no = (t) => out.push(["no", t]), meh = (t) => out.push(["meh", t]);
+    if (!n) { $("verdicts").innerHTML = ""; $("name-code").textContent = ""; return; }
+    if (/^\d/.test(n)) no("Can't start with a number. This is a SyntaxError.");
+    if (/\s/.test(n)) no("No spaces allowed. JavaScript reads this as two separate names. Use camelCase: firstName.");
+    if (/-/.test(n)) no("A hyphen means minus: my-age is read as my minus age. Use camelCase: myAge.");
+    if (/[^\w$\s-]/.test(n)) meh("MDN suggests sticking to Latin letters, numbers and underscores. Other characters may work, but they're easy to mistype.");
+    if (RESERVED.includes(n)) no(`${n} is a reserved word: JavaScript already uses it, so it can't be a variable name.`);
+    if (!out.some(([k]) => k === "no")) {
+      if (/^_/.test(n)) meh("Avoid starting with an underscore. JavaScript uses that pattern for special cases.");
+      if (/^[A-Z][A-Z0-9_]+$/.test(n)) meh("ALL CAPS is hard to read. MDN's convention is lower camelCase: myAge.");
+      else if (/^[A-Z]/.test(n)) meh("Starting with a capital letter (PascalCase) is usually kept for classes. Use lower camelCase: totalPrice.");
+      if (n.length === 1) meh("A single letter doesn't say what the variable holds. Use a descriptive name like count or price.");
+      if (n.length > 30) meh("Very long. Aim for a short, descriptive name.");
+      if (/^[a-z]+$/.test(n) && n.length > 8) meh("If this is more than one word, capitalize each new word (camelCase) so it's easy to read.");
+      if (!out.length) out.push(["ok", "Good name: valid, lower camelCase, and descriptive."]);
+    }
+    $("verdicts").innerHTML = out.map(([k]) => `<li class="${k}"></li>`).join("");
+    $("verdicts").querySelectorAll("li").forEach((li, i) => { li.textContent = (out[i][0] === "no" ? "✕ " : out[i][0] === "meh" ? "! " : "✓ ") + out[i][1]; });
+    $("name-code").innerHTML = hlJS(`let ${n} = 21;`);
+  }
+  $("name").addEventListener("input", checkName);
+
+  makeQuiz($("quiz"), [
+    { q: "What does typeof \"42\" return?", opts: ["\"number\"", "\"string\"", "\"boolean\""], a: 1, why: "The quotes make it a string, whatever is inside them." },
+    { q: "A score goes up each time the player wins. How should you declare it?", opts: ["const score = 0;", "let score = 0;"], a: 1, why: "The value needs to change, so it has to be let." },
+    { q: "This runs without an error. Why?", pre: "const colors = [\"red\"];\ncolors.push(\"blue\");", opts: ["push doesn't change arrays", "const stops reassignment, not changes to the array's contents", "const only applies to numbers"], a: 1, why: "colors still refers to the same array. Only its contents changed." },
+    { q: "Which name follows MDN's conventions?", opts: ["Total_Price", "totalprice", "totalPrice"], a: 2, why: "Lower camelCase: start lowercase, then capitalize each new word." },
+    { q: "What is the value of this variable?", pre: "let answer;", opts: ["0", "null", "undefined", "\"\""], a: 2, why: "A declared variable with no value holds undefined." },
+  ]);
+
+  render(); checkName();
+</script>
+</body>
+</html>

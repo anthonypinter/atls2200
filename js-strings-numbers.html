@@ -1,0 +1,198 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Numbers &amp; Strings</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Recursive:slnt,wght,CASL,MONO@-15..0,300..1000,0..1,0..1&display=swap">
+<link rel="stylesheet" href="style.css">
+<style>
+  .operand { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 6px; align-items: center; }
+  .operand input { font: 1rem var(--font-code); font-variation-settings: "MONO" 1; padding: 7px 10px; border: 1px solid var(--line); border-radius: 6px; background: var(--paper); color: var(--ink); width: 100%; min-width: 0; }
+  .ops { display: flex; flex-wrap: wrap; gap: 6px; }
+  .ops .btn { min-width: 42px; font-size: 1rem; }
+  .result { display: grid; grid-template-columns: minmax(0, 1fr); gap: 10px; align-content: center; justify-items: center; text-align: center; }
+  .result .expr { font: 600 1.5rem var(--font-code); font-variation-settings: "MONO" 1; overflow-wrap: anywhere; }
+  .result .ans { font: 800 2.2rem var(--font-code); font-variation-settings: "MONO" 1; overflow-wrap: anywhere; }
+  .result .ans.number { color: var(--prop); } .result .ans.string { color: var(--val); } .result .ans.nan { color: var(--bad); }
+  .result .t { font: 600 0.8rem var(--font-code); font-variation-settings: "MONO" 1; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); }
+  .result .why { max-width: 48ch; font-size: 0.95rem; }
+
+  .text-in { font: 1rem var(--font-code); font-variation-settings: "MONO" 1; padding: 7px 10px; border: 1px solid var(--line); border-radius: 6px; background: var(--paper); color: var(--ink); width: 100%; }
+  .methods { display: flex; flex-wrap: wrap; gap: 6px; }
+  .methods .btn { font-size: 0.8rem; padding: 5px 9px; }
+  .ruler { display: flex; flex-wrap: wrap; gap: 2px; }
+  .ch { display: grid; grid-template-rows: auto auto; width: 30px; text-align: center; border-radius: 4px; overflow: hidden; border: 1px solid var(--line); background: var(--panel); }
+  .ch b { font: 600 1rem/1.9 var(--font-code); font-variation-settings: "MONO" 1; white-space: pre; }
+  .ch i { font: normal 0.65rem/1.5 var(--font-code); font-variation-settings: "MONO" 1; color: var(--muted); background: var(--stage); }
+  .ch.hit { border-color: var(--cobalt); background: var(--cobalt-soft); } .ch.hit b { color: var(--cobalt); }
+  .ch.space b { color: var(--muted); }
+  .method-out { display: grid; grid-template-columns: minmax(0, 1fr); gap: 8px; }
+  .method-out .res { font: 600 1.1rem var(--font-code); font-variation-settings: "MONO" 1; padding: 10px 14px; border-radius: 8px; background: var(--panel); border: 1px solid var(--line); overflow-wrap: anywhere; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <nav class="crumbs" aria-label="Site"><a class="crumb" href="index.html">← Field Guide</a><a class="crumb" href="glossary.html">Glossary</a></nav>
+  <header class="page-head">
+    <span class="eyebrow">JavaScript Basics · Numbers &amp; Strings</span>
+    <h1>Numbers &amp; Strings</h1>
+    <p class="lede">Math works the way you'd expect, until a number turns out to be text. Mix numbers and strings below to see when <code>+</code> adds and when it joins.</p>
+  </header>
+
+  <section class="playground">
+    <div class="panel controls">
+      <div class="control"><label for="a">a</label><div class="operand"><input id="a" value="5" autocomplete="off"><div class="seg" role="group" aria-label="Type of a"><button class="btn" data-for="a" data-t="number">number</button><button class="btn" data-for="a" data-t="string">"string"</button></div></div></div>
+      <div class="control"><label for="b">b</label><div class="operand"><input id="b" value="2" autocomplete="off"><div class="seg" role="group" aria-label="Type of b"><button class="btn" data-for="b" data-t="number">number</button><button class="btn" data-for="b" data-t="string">"string"</button></div></div></div>
+      <div class="control"><span class="eyebrow">Operator</span><div class="ops" id="ops" role="group" aria-label="Operator"></div></div>
+      <p class="hint">Values typed into a form field are always strings. Click "string" on one side to see what happens if you forget to convert them.</p>
+    </div>
+    <div class="stage result" id="result" aria-live="polite"></div>
+  </section>
+
+  <div class="section-title"><span class="eyebrow">Part 2</span><h2>Useful string methods</h2><p>Every character in a string has an index, starting at 0. Pick a method to see what it returns. Methods return a new value; the original string never changes.</p></div>
+  <section class="playground">
+    <div class="panel controls">
+      <div class="control"><label for="txt">const text =</label><input class="text-in" id="txt" value="  Royal Arch Trail " autocomplete="off" spellcheck="false"></div>
+      <div class="methods" id="methods" role="group" aria-label="String methods"></div>
+    </div>
+    <div class="stage-col">
+      <div class="ruler" id="ruler" aria-hidden="true"></div>
+      <div class="method-out" id="mout" aria-live="polite"></div>
+    </div>
+  </section>
+
+  <div class="section-title"><span class="eyebrow">Try it</span><h2>Template literals and Math</h2><p>Backticks let you put variables right inside a string with <code>${ }</code>. It's easier to read than joining strings with <code>+</code>.</p></div>
+  <div class="runner"><textarea aria-label="Code editor">const trail = "Mesa";
+const miles = 6.7;
+
+console.log("The " + trail + " trail is " + miles + " miles.");
+console.log(`The ${trail} trail is ${miles} miles.`);
+console.log(`Round trip: ${miles * 2} miles`);
+
+console.log(0.1 + 0.2);
+console.log((0.1 + 0.2).toFixed(2));
+console.log(Math.round(6.7), Math.floor(6.7), Math.ceil(6.2));
+
+const typed = "12";          // like a value from a form field
+console.log(typed + 3);
+console.log(Number(typed) + 3);</textarea></div>
+
+  <div class="section-title"><span class="eyebrow">Practice</span><h2>Predict the output</h2></div>
+  <div class="panel quiz" id="quiz"></div>
+
+  <section class="notes">
+    <div class="panel">
+      <h2>Key ideas</h2>
+      <ul>
+        <li>Arithmetic: <code>+ - * /</code>, <code>%</code> (remainder) and <code>**</code> (power). Use parentheses to control the order.</li>
+        <li>If either side of <code>+</code> is a string, it joins instead of adding. The other operators always try to convert to numbers.</li>
+        <li>Convert text to a number with <code>Number("12")</code>, and a number to text with <code>String(12)</code> or <code>.toFixed(2)</code>.</li>
+        <li>Shortcuts: <code>score += 10</code>, <code>count++</code>, <code>count--</code>.</li>
+        <li>Template literals use backticks: <code>`Hi ${name}`</code>. They can also span several lines.</li>
+        <li><code>.length</code> is a property (no parentheses). <code>.toUpperCase()</code> is a method (with parentheses).</li>
+      </ul>
+    </div>
+    <div class="panel mistake">
+      <h2>Common mistakes</h2>
+      <ul>
+        <li>Adding form values without converting them: <code>"2" + "3"</code> is <code>"23"</code>.</li>
+        <li>Using normal quotes for a template: <code>"Hi ${name}"</code> prints the <code>${name}</code> literally. It needs backticks.</li>
+        <li>Expecting a method to change the original: <code>text.trim();</code> on its own does nothing useful. Save the result: <code>text = text.trim();</code></li>
+        <li>Off-by-one indexes: the first character is <code>[0]</code>, and the last is <code>[text.length - 1]</code>.</li>
+        <li>Expecting <code>0.1 + 0.2</code> to be exactly <code>0.3</code>. Round for display with <code>.toFixed()</code>.</li>
+      </ul>
+    </div>
+    <div class="panel mdn">
+      <h2>On MDN</h2>
+      <ul>
+        <li><a href="https://developer.mozilla.org/en-US/docs/Learn_web_development/Core/Scripting/Math">Basic math in JavaScript</a><span class="hint">Operators, precedence, and increment and decrement.</span></li>
+        <li><a href="https://developer.mozilla.org/en-US/docs/Learn_web_development/Core/Scripting/Strings">Handling text: strings</a><span class="hint">Quotes, escaping, and template literals.</span></li>
+        <li><a href="https://developer.mozilla.org/en-US/docs/Learn_web_development/Core/Scripting/Useful_string_methods">Useful string methods</a><span class="hint">length, indexes, slice, replace and more.</span></li>
+      </ul>
+    </div>
+  </section>
+
+  <footer class="page-foot"><a href="js-variables.html">← Variables &amp; Data Types</a><a href="js-arrays.html">Next: Arrays →</a></footer>
+</div>
+
+<script src="runner.js"></script>
+<script>
+  const $ = (id) => document.getElementById(id);
+  const types = { a: "number", b: "number" };
+  const OPS = ["+", "-", "*", "/", "%", "**"];
+  let op = "+";
+  $("ops").innerHTML = OPS.map((o) => `<button class="btn" data-op="${o}">${o}</button>`).join("");
+  $("ops").addEventListener("click", (e) => { const b = e.target.closest("button"); if (b) { op = b.dataset.op; calc(); } });
+  document.querySelectorAll("[data-for]").forEach((b) => b.addEventListener("click", () => { types[b.dataset.for] = b.dataset.t; calc(); }));
+  $("a").addEventListener("input", calc); $("b").addEventListener("input", calc);
+
+  function lit(raw, t) { return t === "string" ? JSON.stringify(raw) : (raw.trim() === "" ? "0" : raw.trim()); }
+  function val(raw, t) { return t === "string" ? raw : Number(raw.trim() === "" ? 0 : raw); }
+  function calc() {
+    document.querySelectorAll("[data-for]").forEach((b) => b.setAttribute("aria-pressed", String(types[b.dataset.for] === b.dataset.t)));
+    document.querySelectorAll("#ops button").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.op === op)));
+    const ra = $("a").value, rb = $("b").value;
+    const a = val(ra, types.a), b = val(rb, types.b);
+    const r = { "+": a + b, "-": a - b, "*": a * b, "/": a / b, "%": a % b, "**": a ** b }[op];
+    const t = typeof r;
+    const badNum = (raw, tp) => tp === "number" && Number.isNaN(Number(raw));
+    let why;
+    if (badNum(ra, types.a) || badNum(rb, types.b)) why = "That isn't a valid number. Without quotes, JavaScript would treat it as a variable name. Switch it to string to see what Number() makes of text.";
+    else if (op === "+" && (types.a === "string" || types.b === "string")) why = "One side is a string, so + joins the two values into text (concatenation). Convert with Number() first if you meant to add.";
+    else if (Number.isNaN(r)) why = "NaN means \"Not a Number\". JavaScript tried to convert a string to a number for this math and couldn't.";
+    else if (types.a === "string" || types.b === "string") why = `Only + joins strings. ${op} converts both sides to numbers first, so this works, but it's easy to get wrong. Convert with Number() yourself.`;
+    else if (r === Infinity || r === -Infinity) why = "Dividing by zero doesn't cause an error in JavaScript. It gives Infinity.";
+    else if (op === "%") why = `% gives the remainder: ${a} ÷ ${b} leaves ${r}. Use n % 2 === 0 to check whether a number is even.`;
+    else if (op === "**") why = `** raises to a power: ${a} multiplied by itself ${b} times.`;
+    else if (op === "/" && !Number.isInteger(r)) why = "Division can give a decimal. Use Math.round(), Math.floor() or .toFixed() to tidy it up for display.";
+    else why = "Two numbers, so this is ordinary math.";
+    const shown = t === "string" ? JSON.stringify(r) : String(r);
+    $("result").innerHTML = `<div class="expr">${hlJS(`${lit(ra, types.a)} ${op} ${lit(rb, types.b)}`)}</div><div class="ans ${Number.isNaN(r) ? "nan" : t}"></div><div class="t">typeof → "${t}"</div><p class="why"></p>`;
+    $("result").querySelector(".ans").textContent = shown;
+    $("result").querySelector(".why").textContent = why;
+  }
+
+  // Part 2
+  const METHODS = [
+    { k: "length", code: "text.length", run: (s) => s.length, why: "length counts every character, including spaces. It's a property, so there are no parentheses." },
+    { k: "[0]", code: "text[0]", run: (s) => s[0], hit: () => [0], why: "Square brackets get one character by its index. The first index is 0. Here it's a space." },
+    { k: "at(-1)", code: "text.at(-1)", run: (s) => s.at(-1), hit: (s) => [s.length - 1], why: "at() also accepts negative numbers, which count back from the end. -1 is the last character." },
+    { k: "trim()", code: "text.trim()", run: (s) => s.trim(), hit: (s) => [...s].map((c, i) => (/\s/.test(c) && (i < s.length - s.trimStart().length || i >= s.trimEnd().length) ? i : -1)).filter((i) => i >= 0), why: "trim() removes spaces from both ends. Useful for cleaning up what people type into forms." },
+    { k: "toUpperCase()", code: "text.toUpperCase()", run: (s) => s.toUpperCase(), why: "Returns a new string in capitals. text itself doesn't change." },
+    { k: 'includes("Arch")', code: 'text.includes("Arch")', run: (s) => s.includes("Arch"), hit: (s) => range(s.indexOf("Arch"), 4), why: "includes() answers true or false. It's case-sensitive: \"arch\" would be false." },
+    { k: 'indexOf("Arch")', code: 'text.indexOf("Arch")', run: (s) => s.indexOf("Arch"), hit: (s) => range(s.indexOf("Arch"), 1), why: "indexOf() gives the index where the text starts, or -1 if it isn't found." },
+    { k: "slice(2, 7)", code: "text.slice(2, 7)", run: (s) => s.slice(2, 7), hit: () => range(2, 5), why: "slice(start, end) copies from start up to, but not including, end. Index 7 is left out." },
+    { k: 'replace("Trail", "Loop")', code: 'text.replace("Trail", "Loop")', run: (s) => s.replace("Trail", "Loop"), hit: (s) => range(s.indexOf("Trail"), 5), why: "replace() swaps the first match. Use replaceAll() to swap every match." },
+    { k: 'split(" ")', code: 'text.trim().split(" ")', run: (s) => s.trim().split(" "), why: "split() cuts a string into an array wherever it finds the separator. The opposite is array.join(\" \")." },
+  ];
+  const range = (start, n) => (start < 0 ? [] : Array.from({ length: n }, (_, i) => start + i));
+  let method = 3;
+  $("methods").innerHTML = METHODS.map((m, i) => `<button class="btn" data-i="${i}">${m.k.replace(/</g, "&lt;")}</button>`).join("");
+  $("methods").addEventListener("click", (e) => { const b = e.target.closest("button"); if (b) { method = +b.dataset.i; strings(); } });
+  $("txt").addEventListener("input", strings);
+  function strings() {
+    const s = $("txt").value, m = METHODS[method];
+    document.querySelectorAll("#methods button").forEach((b) => b.setAttribute("aria-pressed", String(+b.dataset.i === method)));
+    const hits = new Set(m.hit ? m.hit(s) : []);
+    $("ruler").innerHTML = [...s].map((c, i) => `<span class="ch ${hits.has(i) ? "hit" : ""} ${c === " " ? "space" : ""}"><b>${c === " " ? "·" : c.replace(/&/g, "&amp;").replace(/</g, "&lt;")}</b><i>${i}</i></span>`).join("");
+    const r = m.run(s);
+    $("mout").innerHTML = `<pre class="snippet">${hlJS(m.code)}</pre><div class="res"></div><p class="hint"></p>`;
+    $("mout").querySelector(".res").textContent = "→ " + (r === undefined ? "undefined" : fmtJS(r, 1));
+    $("mout").querySelector(".hint").textContent = m.why;
+  }
+
+  makeQuiz($("quiz"), [
+    { q: "What does this log?", pre: 'console.log("3" + 4);', opts: ["7", "\"34\"", "NaN"], a: 1, why: "One side is a string, so + joins them into \"34\"." },
+    { q: "What does this log?", pre: 'console.log("10" - 4);', opts: ["6", "\"104\"", "NaN"], a: 0, why: "Only + joins strings. - converts both sides to numbers." },
+    { q: "What does this log?", pre: "console.log(17 % 5);", opts: ["3.4", "2", "3"], a: 1, why: "17 ÷ 5 = 3 with 2 left over. % gives the remainder." },
+    { q: "What does this log?", pre: 'const name = "Ava";\nconsole.log("Hi ${name}");', opts: ["Hi Ava", "Hi ${name}", "An error"], a: 1, why: "Placeholders only work inside backticks. In normal quotes, ${name} is plain text." },
+    { q: "What does this log?", pre: 'const word = "Boulder";\nconsole.log(word.slice(0, 3));', opts: ["Boul", "Bou", "oul"], a: 1, why: "slice(0, 3) includes indexes 0, 1 and 2, but not 3." },
+  ]);
+
+  calc(); strings();
+</script>
+</body>
+</html>

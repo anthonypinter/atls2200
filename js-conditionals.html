@@ -1,0 +1,213 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Conditionals</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Recursive:slnt,wght,CASL,MONO@-15..0,300..1000,0..1,0..1&display=swap">
+<link rel="stylesheet" href="style.css">
+<style>
+  .chain { display: grid; grid-template-columns: minmax(0, 1fr); background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 8px 0; overflow-x: auto; }
+  .cl { display: grid; grid-template-columns: 1fr auto; gap: 12px; align-items: center; padding: 3px 14px; font: 0.9rem/1.6 var(--font-code); font-variation-settings: "MONO" 1; white-space: pre; border-left: 3px solid transparent; min-width: max-content; }
+  .cl.ran { background: var(--good-soft); border-left-color: var(--good); }
+  .cl.skip { opacity: 0.4; }
+  .badge { font: 600 0.7rem var(--font-code); font-variation-settings: "MONO" 1; padding: 2px 7px; border-radius: 4px; text-transform: uppercase; letter-spacing: 0.04em; }
+  .badge.t { background: var(--good-soft); color: var(--good); border: 1px solid var(--good); }
+  .badge.f { background: var(--bad-soft); color: var(--bad); }
+  .badge.n { color: var(--muted); border: 1px dashed var(--line); }
+  .advice { display: grid; place-items: center; gap: 6px; text-align: center; min-height: 140px; }
+  .advice .icon { font-size: 2.4rem; line-height: 1; }
+  .advice .msg { font: 700 1.3rem var(--font-display); }
+  .check { display: flex; gap: 8px; align-items: center; cursor: pointer; font-size: 0.95rem; }
+  .check input { accent-color: var(--cobalt); }
+
+  .truth { width: 100%; border-collapse: collapse; font: 0.9rem var(--font-code); font-variation-settings: "MONO" 1; }
+  .truth th, .truth td { padding: 6px 10px; border-bottom: 1px solid var(--line); text-align: center; }
+  .truth th { font-size: 0.78rem; color: var(--muted); font-weight: 600; }
+  .truth tr.now td { background: var(--cobalt-soft); font-weight: 700; }
+  .truth .yes { color: var(--good); } .truth .no { color: var(--bad); }
+  .vals { display: flex; flex-wrap: wrap; gap: 6px; }
+  .vals .btn.falsy[aria-pressed="true"] { background: var(--bad); border-color: var(--bad); }
+  .vals .btn.truthy[aria-pressed="true"] { background: var(--good); border-color: var(--good); }
+  .truthy-out { font-size: 0.95rem; }
+  .table-wrap { overflow-x: auto; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <nav class="crumbs" aria-label="Site"><a class="crumb" href="index.html">← Field Guide</a><a class="crumb" href="glossary.html">Glossary</a></nav>
+  <header class="page-head">
+    <span class="eyebrow">JavaScript Basics · Conditionals</span>
+    <h1>Conditionals</h1>
+    <p class="lede">An <code>if</code> statement lets code make decisions. JavaScript checks each condition from top to bottom, runs the first block that is true, and skips everything else.</p>
+  </header>
+
+  <section class="playground">
+    <div class="panel controls">
+      <div class="control"><label for="temp">const temp = <span id="temp-out"></span>;</label><input type="range" id="temp" min="0" max="100" value="48"></div>
+      <label class="check"><input type="checkbox" id="wrong">Put the conditions in the wrong order</label>
+      <p class="hint" id="hint"></p>
+    </div>
+    <div class="stage-col">
+      <div class="chain" id="chain" aria-label="Code"></div>
+      <div class="stage advice" id="advice" aria-live="polite"></div>
+    </div>
+  </section>
+
+  <div class="section-title"><span class="eyebrow">Part 2</span><h2>AND, OR, NOT</h2><p>Combine conditions with <code>&amp;&amp;</code> (both must be true), <code>||</code> (at least one must be true) and <code>!</code> (flips true and false).</p></div>
+  <section class="playground">
+    <div class="panel controls">
+      <label class="check"><input type="checkbox" id="weekend" checked><span>const isWeekend = <span id="w-out"></span>;</span></label>
+      <label class="check"><input type="checkbox" id="raining"><span>const isRaining = <span id="r-out"></span>;</span></label>
+      <div class="control"><span class="eyebrow">Operator</span><div class="seg" id="logic" role="group" aria-label="Operator"><button class="btn" data-op="and">&amp;&amp;</button><button class="btn" data-op="or">||</button></div></div>
+    </div>
+    <div class="stage-col">
+      <pre class="snippet" id="logic-code"></pre>
+      <div class="panel table-wrap"><table class="truth" id="truth"></table></div>
+      <p class="hint" id="logic-why"></p>
+    </div>
+  </section>
+
+  <div class="section-title"><span class="eyebrow">Part 3</span><h2>Truthy and falsy</h2><p>A condition doesn't have to be a comparison. Any value works: six values count as false, and everything else counts as true. This is how <code>if (name)</code> checks whether someone typed anything.</p></div>
+  <section class="playground">
+    <div class="panel controls"><span class="eyebrow">const value =</span><div class="vals" id="vals" role="group" aria-label="Value"></div></div>
+    <div class="stage-col"><pre class="snippet" id="truthy-code"></pre><p class="truthy-out" id="truthy-out" aria-live="polite"></p></div>
+  </section>
+
+  <div class="section-title"><span class="eyebrow">Try it</span><h2>===, the ternary and switch</h2><p>Always compare with <code>===</code>. The ternary <code>condition ? a : b</code> is a short if/else that produces a value. <code>switch</code> checks one value against many exact matches.</p></div>
+  <div class="runner"><textarea aria-label="Code editor">console.log(5 === 5, "5" === 5, "5" == 5);
+
+const miles = 6.7;
+const label = miles > 5 ? "long hike" : "short hike";
+console.log(label);
+
+const day = "Sat";
+switch (day) {
+  case "Sat":
+  case "Sun":
+    console.log("Weekend: trails are busy");
+    break;
+  default:
+    console.log("Weekday: quieter trails");
+}
+
+const name = "";
+if (!name) {
+  console.log("Please enter your name");
+}</textarea></div>
+
+  <div class="section-title"><span class="eyebrow">Practice</span><h2>Predict the output</h2></div>
+  <div class="panel quiz" id="quiz"></div>
+
+  <section class="notes">
+    <div class="panel">
+      <h2>Key ideas</h2>
+      <ul>
+        <li><code>if (condition) { … } else if (other) { … } else { … }</code>. Only the first block whose condition is true runs.</li>
+        <li>Comparisons: <code>===</code> equal, <code>!==</code> not equal, <code>&lt;</code>, <code>&gt;</code>, <code>&lt;=</code>, <code>&gt;=</code>.</li>
+        <li>Use <code>===</code>, not <code>==</code>. Triple equals also checks the type, so <code>"5" === 5</code> is false.</li>
+        <li>Order matters: put the most specific conditions first.</li>
+        <li>Falsy values: <code>false</code>, <code>0</code>, <code>""</code>, <code>null</code>, <code>undefined</code>, <code>NaN</code>. Everything else is truthy.</li>
+      </ul>
+    </div>
+    <div class="panel mistake">
+      <h2>Common mistakes</h2>
+      <ul>
+        <li><code>if (x = 5)</code>: a single <code>=</code> assigns instead of comparing, so the condition is always true.</li>
+        <li><code>if (day === "Sat" || "Sun")</code>: each side needs its own comparison: <code>day === "Sat" || day === "Sun"</code>.</li>
+        <li>Putting <code>temp &lt; 60</code> before <code>temp &lt; 32</code>. The second can never run.</li>
+        <li>Forgetting <code>break</code> in a <code>switch</code>, so the code falls through into the next case.</li>
+        <li>A semicolon after the condition, as in <code>if (ok); {</code>, makes the block always run.</li>
+      </ul>
+    </div>
+    <div class="panel mdn">
+      <h2>On MDN</h2>
+      <ul>
+        <li><a href="https://developer.mozilla.org/en-US/docs/Learn_web_development/Core/Scripting/Conditionals">Making decisions in your code: conditionals</a><span class="hint">if...else, logical operators, switch and the ternary operator.</span></li>
+        <li><a href="https://developer.mozilla.org/en-US/docs/Glossary/Falsy">Falsy</a><span class="hint">The full list of falsy values.</span></li>
+      </ul>
+    </div>
+  </section>
+
+  <footer class="page-foot"><a href="js-arrays.html">← Arrays</a><a href="js-loops.html">Next: Loops →</a></footer>
+</div>
+
+<script src="runner.js"></script>
+<script>
+  const $ = (id) => document.getElementById(id);
+  const BRANCHES = [
+    { cond: "temp < 32", test: (t) => t < 32, msg: "Bring microspikes", icon: "🧊" },
+    { cond: "temp < 60", test: (t) => t < 60, msg: "Wear a jacket", icon: "🧥" },
+    { cond: "temp <= 85", test: (t) => t <= 85, msg: "Perfect hiking weather", icon: "🥾" },
+    { cond: null, msg: "Start early and bring extra water", icon: "☀️" },
+  ];
+  function renderChain() {
+    const t = +$("temp").value, wrong = $("wrong").checked;
+    $("temp-out").textContent = t;
+    const list = wrong ? [BRANCHES[1], BRANCHES[0], BRANCHES[2], BRANCHES[3]] : BRANCHES;
+    let done = false, ran;
+    const rows = [];
+    list.forEach((b, i) => {
+      const kw = i === 0 ? "if" : b.cond ? "} else if" : "} else";
+      let state;
+      if (done) state = "n";
+      else if (!b.cond || b.test(t)) { state = "t"; done = true; ran = b; }
+      else state = "f";
+      const head = b.cond ? `${kw} (${b.cond}) {` : `${kw} {`;
+      rows.push({ code: head, badge: b.cond ? state : (state === "t" ? "t" : "n"), label: b.cond ? (state === "n" ? "not checked" : state === "t" ? "true" : "false") : (state === "t" ? "runs" : "skipped"), cls: state === "n" ? "skip" : "" });
+      rows.push({ code: `  advice = "${b.msg}";`, cls: state === "t" ? "ran" : "skip" });
+    });
+    rows.push({ code: "}" });
+    $("chain").innerHTML = rows.map((r) => `<div class="cl ${r.cls || ""}"><span>${hlJS(r.code)}</span>${r.badge ? `<span class="badge ${r.badge}">${r.label}</span>` : "<span></span>"}</div>`).join("");
+    $("advice").innerHTML = `<span class="icon" aria-hidden="true">${ran.icon}</span><span class="msg">${ran.msg}</span>`;
+    $("hint").textContent = wrong
+      ? (t < 32 ? `It's ${t}°, which is below freezing, but temp < 60 is checked first and is true, so "Bring microspikes" can never run. Put the most specific condition first.` : "temp < 60 is now checked first. Drag the temperature below 32 to see the problem.")
+      : "Drag the slider. Once a condition is true, the conditions after it aren't even checked.";
+  }
+  $("temp").addEventListener("input", renderChain);
+  $("wrong").addEventListener("change", renderChain);
+
+  let op = "and";
+  function renderLogic() {
+    const w = $("weekend").checked, r = $("raining").checked;
+    $("w-out").textContent = w; $("r-out").textContent = r;
+    document.querySelectorAll("#logic button").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.op === op)));
+    const sym = op === "and" ? "&&" : "||";
+    const f = (a, b) => (op === "and" ? a && !b : a || !b);
+    const res = f(w, r);
+    $("logic-code").innerHTML = hlJS(`if (isWeekend ${sym} !isRaining) {\n  console.log("Go hiking!");   // ${res ? "runs" : "skipped"}\n}`);
+    const row = (a, b) => `<tr class="${a === w && b === r ? "now" : ""}"><td>${a}</td><td>${b}</td><td>${!b}</td><td class="${f(a, b) ? "yes" : "no"}">${f(a, b)}</td></tr>`;
+    $("truth").innerHTML = `<thead><tr><th scope="col">isWeekend</th><th scope="col">isRaining</th><th scope="col">!isRaining</th><th scope="col">isWeekend ${sym} !isRaining</th></tr></thead><tbody>${[[true, false], [true, true], [false, false], [false, true]].map(([a, b]) => row(a, b)).join("")}</tbody>`;
+    $("logic-why").textContent = op === "and"
+      ? "&& needs both sides to be true: only a dry weekend counts."
+      : "|| needs at least one side to be true: any weekend, or any dry day.";
+  }
+  $("weekend").addEventListener("change", renderLogic); $("raining").addEventListener("change", renderLogic);
+  $("logic").addEventListener("click", (e) => { const b = e.target.closest("button"); if (b) { op = b.dataset.op; renderLogic(); } });
+
+  const VALUES = [["false", false], ["0", 0], ['""', ""], ["null", null], ["undefined", undefined], ["NaN", NaN], ["true", true], ["42", 42], ['"Ava"', "Ava"], ['"0"', "0"], ['" "', " "], ["[]", []], ["-1", -1]];
+  let vi = 2;
+  $("vals").innerHTML = VALUES.map(([l, v], i) => `<button class="btn ${v ? "truthy" : "falsy"}" data-i="${i}">${l.replace(/</g, "&lt;")}</button>`).join("");
+  $("vals").addEventListener("click", (e) => { const b = e.target.closest("button"); if (b) { vi = +b.dataset.i; renderTruthy(); } });
+  function renderTruthy() {
+    const [l, v] = VALUES[vi];
+    document.querySelectorAll("#vals button").forEach((b) => b.setAttribute("aria-pressed", String(+b.dataset.i === vi)));
+    $("truthy-code").innerHTML = hlJS(`const value = ${l};\nif (value) {\n  console.log("truthy");  // ${v ? "runs" : "skipped"}\n} else {\n  console.log("falsy");   // ${v ? "skipped" : "runs"}\n}`);
+    const notes = { '"0"': "A string containing 0 isn't empty, so it's truthy. Only the number 0 is falsy.", '" "': "A space is still a character, so this string is truthy. Use .trim() before checking form input.", "[]": "An empty array is truthy. Check array.length instead.", '""': "An empty string is falsy. This is what an empty text field gives you.", "NaN": "NaN (from a failed number conversion) is falsy." };
+    $("truthy-out").textContent = `${l} is ${v ? "truthy" : "falsy"}. ` + (notes[l] || "");
+  }
+
+  makeQuiz($("quiz"), [
+    { q: "What does this log?", pre: 'const score = 75;\nif (score >= 90) {\n  console.log("A");\n} else if (score >= 70) {\n  console.log("C");\n} else if (score >= 50) {\n  console.log("D");\n}', opts: ["C", "C and D", "D"], a: 0, why: "Only the first true branch runs. 75 >= 70 is true, so the remaining checks are skipped." },
+    { q: "What does this log?", pre: 'console.log("7" === 7);', opts: ["true", "false"], a: 1, why: "=== checks the type too. A string is never equal to a number." },
+    { q: "What does this log?", pre: "const hasTicket = true;\nconst isFull = true;\nconsole.log(hasTicket && !isFull);", opts: ["true", "false"], a: 1, why: "!isFull is false, and && needs both sides to be true." },
+    { q: "What does this log?", pre: 'const input = "";\nconsole.log(input ? "filled" : "empty");', opts: ["filled", "empty"], a: 1, why: "An empty string is falsy, so the ternary picks the second value." },
+    { q: "Which correctly checks for the weekend?", opts: ['day === "Sat" || "Sun"', 'day === "Sat" || day === "Sun"', 'day === ("Sat" || "Sun")'], a: 1, why: "Each side of || needs its own full comparison." },
+  ]);
+
+  renderChain(); renderLogic(); renderTruthy();
+</script>
+</body>
+</html>

@@ -1,0 +1,252 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Events</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Recursive:slnt,wght,CASL,MONO@-15..0,300..1000,0..1,0..1&display=swap">
+<link rel="stylesheet" href="style.css">
+<style>
+  .check { display: flex; gap: 8px; align-items: center; cursor: pointer; font: 0.88rem var(--font-code); font-variation-settings: "MONO" 1; }
+  .check input { accent-color: var(--cobalt); }
+  .evlist { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px 10px; }
+  .sandbox { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; }
+  .sandbox .demo-btn { justify-self: start; font: 700 0.95rem var(--font-body); background: var(--cobalt); color: var(--panel); border: 0; border-radius: 8px; padding: 9px 16px; cursor: pointer; }
+  .sandbox input { font: 1rem var(--font-body); padding: 7px 10px; border: 1px solid var(--line); border-radius: 6px; background: var(--panel); color: var(--ink); width: 100%; }
+  .sandbox form { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; align-items: end; }
+  .sandbox form label { grid-column: 1 / -1; font-size: 0.85rem; color: var(--muted); }
+  .hover-box { border: 2px dashed var(--line); border-radius: 8px; padding: 14px; text-align: center; color: var(--muted); font-size: 0.9rem; }
+  .log { max-height: 260px; overflow-y: auto; }
+  .log li .ty { color: var(--prop); font-weight: 700; }
+  .log li.reload { color: var(--bad); background: var(--bad-soft); }
+
+  .nest { display: grid; place-items: center; }
+  .lvl { border: 2px solid var(--line); border-radius: 10px; padding: 18px; display: grid; gap: 6px; justify-items: center; transition: background 0.2s, border-color 0.2s; width: 100%; }
+  .lvl > .tag { font: 600 0.75rem var(--font-code); font-variation-settings: "MONO" 1; color: var(--muted); justify-self: start; }
+  .lvl.flash { background: var(--cobalt-soft); border-color: var(--cobalt); }
+  .lvl.flash > .tag { color: var(--cobalt); }
+  #b-btn { font: 700 0.95rem var(--font-body); background: var(--prop); color: #fff; border: 0; border-radius: 8px; padding: 10px 18px; cursor: pointer; }
+  #b-btn.flash { outline: 4px solid var(--cobalt); outline-offset: 3px; }
+  .order { width: 100%; border-collapse: collapse; font: 0.85rem var(--font-code); font-variation-settings: "MONO" 1; }
+  .order th, .order td { padding: 6px 10px; border-bottom: 1px solid var(--line); text-align: left; }
+  .order th { color: var(--muted); font-weight: 600; font-size: 0.75rem; }
+  .order tr.skip td { color: var(--muted); text-decoration: line-through; }
+  .table-wrap { overflow-x: auto; }
+
+  .tiles { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; width: 100%; max-width: 360px; padding: 8px; border: 2px dashed var(--line); border-radius: 10px; }
+  .tile { aspect-ratio: 1; border-radius: 6px; background: var(--stage); border: 1px solid var(--line); cursor: pointer; }
+  .tiles.flash { background: var(--bad-soft); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <nav class="crumbs" aria-label="Site"><a class="crumb" href="index.html">← Field Guide</a><a class="crumb" href="glossary.html">Glossary</a></nav>
+  <header class="page-head">
+    <span class="eyebrow">JavaScript in the Browser · Events</span>
+    <h1>Events</h1>
+    <p class="lede">Events are signals the browser sends when something happens: a click, a key press, a form being submitted. You listen for them with <code>addEventListener</code> and run a function in response.</p>
+  </header>
+
+  <section class="playground">
+    <div class="panel controls">
+      <span class="eyebrow">Listen for</span>
+      <div class="evlist" id="evlist"></div>
+      <label class="check" style="margin-top:6px"><input type="checkbox" id="prevent" checked>e.preventDefault() on submit</label>
+      <button class="btn" id="clear" style="justify-self:start">Clear log</button>
+    </div>
+    <div class="stage-col">
+      <div class="stage sandbox" id="sandbox">
+        <button class="demo-btn" id="d-btn" type="button">Click or double-click me</button>
+        <div class="hover-box" id="d-hover">Move the pointer in and out of this box</div>
+        <form id="d-form"><label for="d-input">Trail name (type, tab in and out, press Enter)</label><input id="d-input" autocomplete="off"><button class="btn run">Submit</button></form>
+      </div>
+      <pre class="snippet" id="ev-code"></pre>
+      <ol class="console log" id="ev-log" aria-label="Event log"></ol>
+    </div>
+  </section>
+
+  <div class="section-title"><span class="eyebrow">Part 2</span><h2>Bubbling</h2><p>When you click the button, the click doesn't stop there. It <b>bubbles up</b> through every ancestor, and each one's click listener runs in turn. This is the setup from MDN's bubbling example.</p></div>
+  <section class="playground">
+    <div class="panel controls">
+      <label class="check"><input type="checkbox" id="stop">e.stopPropagation() in the button's listener</label>
+      <label class="check"><input type="checkbox" id="capture">{ capture: true } on body and div</label>
+      <p class="hint" id="bubble-why"></p>
+    </div>
+    <div class="stage-col">
+      <div class="stage nest">
+        <div class="lvl" id="b-body"><span class="tag">body</span>
+          <div class="lvl" id="b-div"><span class="tag">div#container</span>
+            <button type="button" id="b-btn">Click me</button>
+          </div>
+        </div>
+      </div>
+      <div class="panel table-wrap"><table class="order" id="order"><tbody><tr><td class="hint">Click the button, then click in the div outside the button.</td></tr></tbody></table></div>
+      <pre class="snippet" id="bubble-code"></pre>
+    </div>
+  </section>
+
+  <div class="section-title"><span class="eyebrow">Part 3</span><h2>Event delegation</h2><p>Instead of adding a listener to each of the 16 tiles, add <b>one</b> listener to their container. Clicks on any tile bubble up to it, and <code>event.target</code> tells you which tile was clicked.</p></div>
+  <section class="playground">
+    <div class="panel controls">
+      <label class="check"><input type="checkbox" id="guard">Ignore clicks that aren't on a tile</label>
+      <p class="hint" id="deleg-why">Click some tiles, then click in a gap between them.</p>
+      <button class="btn" id="tiles-reset" style="justify-self:start">Reset tiles</button>
+    </div>
+    <div class="stage-col">
+      <div class="tiles" id="tiles" aria-label="Tile grid"></div>
+      <pre class="snippet" id="deleg-code"></pre>
+    </div>
+  </section>
+
+  <div class="section-title"><span class="eyebrow">Practice</span><h2>Check yourself</h2></div>
+  <div class="panel quiz" id="quiz"></div>
+
+  <section class="notes">
+    <div class="panel">
+      <h2>Key ideas</h2>
+      <ul>
+        <li><code>el.addEventListener("click", handler)</code>: the event type as a string, then the function to run. Pass the function itself, without <code>()</code>.</li>
+        <li>The handler receives an event object, usually named <code>e</code> or <code>event</code>. <code>e.target</code> is the element the event happened on.</li>
+        <li><code>e.preventDefault()</code> stops the browser's default action: a form reloading the page, or a link navigating.</li>
+        <li>Useful types: <code>click</code>, <code>input</code> (every change to a field), <code>change</code>, <code>submit</code>, <code>keydown</code>, <code>focus</code>, <code>blur</code>, <code>mouseover</code>, <code>mouseout</code>.</li>
+        <li>Events bubble from the target up through its ancestors. Delegation uses this: one listener on a parent handles all its children, even ones added later.</li>
+        <li>Remove a listener with <code>removeEventListener</code>, passing the same named function.</li>
+      </ul>
+    </div>
+    <div class="panel mistake">
+      <h2>Common mistakes</h2>
+      <ul>
+        <li><code>addEventListener("click", go())</code> runs <code>go</code> immediately. Pass <code>go</code>.</li>
+        <li><code>"onclick"</code> as the event name. The type is just <code>"click"</code>.</li>
+        <li>Inline HTML handlers like <code>onclick="…"</code>. MDN says never to use them: they mix languages and are often blocked by security settings.</li>
+        <li>Listening for <code>click</code> on a form's submit button instead of <code>submit</code> on the form, which misses submissions made by pressing Enter.</li>
+        <li>Forgetting <code>preventDefault()</code>, so the page reloads and your changes vanish.</li>
+      </ul>
+    </div>
+    <div class="panel mdn">
+      <h2>On MDN</h2>
+      <ul>
+        <li><a href="https://developer.mozilla.org/en-US/docs/Learn_web_development/Core/Scripting/Events">Introduction to events</a><span class="hint">addEventListener, the event object and preventDefault.</span></li>
+        <li><a href="https://developer.mozilla.org/en-US/docs/Learn_web_development/Core/Scripting/Event_bubbling">Event bubbling</a><span class="hint">Bubbling, capture, target vs currentTarget, and delegation.</span></li>
+        <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/Element#events">Element events</a><span class="hint">A list of event types.</span></li>
+      </ul>
+    </div>
+  </section>
+
+  <footer class="page-foot"><a href="js-dom.html">← Selecting &amp; Changing Elements</a><a href="js-create-elements.html">Next: Creating &amp; Removing Elements →</a></footer>
+</div>
+
+<script src="runner.js"></script>
+<script>
+  const $ = (id) => document.getElementById(id);
+  // Part 1: live event log on real elements
+  const EVENTS = [
+    ["click", "d-btn", true], ["dblclick", "d-btn", false], ["mouseover", "d-hover", false], ["mouseout", "d-hover", false],
+    ["keydown", "d-input", false], ["input", "d-input", true], ["focus", "d-input", false], ["blur", "d-input", false], ["submit", "d-form", true],
+  ];
+  const VAR = { "d-btn": "button", "d-hover": "box", "d-input": "field", "d-form": "form" };
+  $("evlist").innerHTML = EVENTS.map(([t, , on]) => `<label class="check"><input type="checkbox" data-t="${t}" ${on ? "checked" : ""}>${t}</label>`).join("");
+  const on = (t) => document.querySelector(`#evlist [data-t="${t}"]`).checked;
+  const log = $("ev-log");
+  function add(cls, html) {
+    if (log.querySelector(".muted")) log.innerHTML = "";
+    const li = document.createElement("li"); li.className = cls; li.innerHTML = html; log.prepend(li);
+    while (log.children.length > 30) log.lastChild.remove();
+  }
+  const esc = (s) => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;");
+  const tname = (el) => `${el.tagName.toLowerCase()}${el.id ? "#" + el.id : ""}`;
+  EVENTS.forEach(([type, id]) => {
+    $(id).addEventListener(type, (e) => {
+      if (type === "submit") {
+        if ($("prevent").checked) { e.preventDefault(); add("log", `<span class="ty">submit</span> on form#d-form → preventDefault() kept the page here`); }
+        else { e.preventDefault(); add("reload", `<span class="ty">submit</span> → the page would reload now, and everything on it would reset. (Stopped so you can keep reading.)`); }
+        if (!on("submit")) log.firstChild.remove();
+        return;
+      }
+      if (!on(type)) return;
+      let extra = "";
+      if (type === "keydown") extra = ` · e.key = "${esc(e.key)}"`;
+      if (type === "input") extra = ` · e.target.value = "${esc(e.target.value)}"`;
+      add("log", `<span class="ty">${type}</span> · e.target = ${tname(e.target)}${extra}`);
+    });
+  });
+  function renderEvCode() {
+    const active = EVENTS.filter(([t]) => on(t));
+    if (!active.length) { $("ev-code").innerHTML = hlJS("// Tick an event type to listen for it"); return; }
+    const lines = active.slice(0, 3).map(([t, id]) => t === "submit"
+      ? `form.addEventListener("submit", (e) => {\n${$("prevent").checked ? "  e.preventDefault();   // stop the page reload\n" : ""}  console.log("Submitted!");\n});`
+      : `${VAR[id]}.addEventListener("${t}", (e) => {\n  console.log(e.type, e.target${t === "keydown" ? ", e.key" : t === "input" ? ".value" : ""});\n});`);
+    $("ev-code").innerHTML = hlJS(lines.join("\n\n") + (active.length > 3 ? `\n\n// …and ${active.length - 3} more` : ""));
+  }
+  $("evlist").addEventListener("change", renderEvCode);
+  $("prevent").addEventListener("change", renderEvCode);
+  $("clear").addEventListener("click", () => { log.innerHTML = `<li class="muted">Interact with the elements above.</li>`; });
+  log.innerHTML = `<li class="muted">Interact with the elements above.</li>`;
+
+  // Part 2: bubbling, simulated so the highlights can be shown one at a time
+  let timers = [];
+  function bubble(target) {
+    timers.forEach(clearTimeout); timers = [];
+    const stop = $("stop").checked, cap = $("capture").checked;
+    const chain = target === "button" ? ["button", "div", "body"] : ["div", "body"];
+    let order = cap ? ["body", "div", ...(target === "button" ? ["button"] : [])].filter((x) => chain.includes(x)) : chain;
+    const rows = []; let stopped = false;
+    for (const who of order) {
+      if (stopped) { rows.push({ who, skip: true }); continue; }
+      rows.push({ who });
+      if (who === "button" && stop) stopped = true;
+    }
+    const names = { button: "BUTTON", div: "DIV", body: "BODY" };
+    $("order").innerHTML = `<thead><tr><th scope="col">#</th><th scope="col">Listener on</th><th scope="col">e.target</th><th scope="col">e.currentTarget</th></tr></thead><tbody>` +
+      rows.map((r, i) => `<tr class="${r.skip ? "skip" : ""}"><td>${r.skip ? "—" : i + 1}</td><td>${names[r.who]}</td><td>${names[target]}</td><td>${r.skip ? "never runs" : names[r.who]}</td></tr>`).join("") + "</tbody>";
+    const el = { button: $("b-btn"), div: $("b-div"), body: $("b-body") };
+    rows.filter((r) => !r.skip).forEach((r, i) => {
+      timers.push(setTimeout(() => { el[r.who].classList.add("flash"); }, i * 450));
+      timers.push(setTimeout(() => { el[r.who].classList.remove("flash"); }, i * 450 + 420));
+    });
+    let why;
+    if (target === "div") why = "Clicking the div (outside the button) starts at the div, so the button's listener isn't involved at all.";
+    else if (stop && cap) why = "Capture listeners run on the way down, before the button's own listener, so stopPropagation() in the button comes too late to stop them.";
+    else if (stop) why = "stopPropagation() in the button's listener stops the event there, so the div and body never hear about it.";
+    else if (cap) why = "With capture, the event is handled on the way down: outermost first. By default, almost all listeners use the bubbling phase instead.";
+    else why = "Innermost first: BUTTON, then DIV, then BODY. e.target stays the same (the button you clicked), while e.currentTarget is whichever element's listener is running.";
+    $("bubble-why").textContent = why;
+  }
+  function renderBubbleCode() {
+    const cap = $("capture").checked ? ", { capture: true }" : "";
+    $("bubble-code").innerHTML = hlJS(`function handleClick(e) {\n  console.log(e.target.tagName, e.currentTarget.tagName);\n}\n\ndocument.body.addEventListener("click", handleClick${cap});\ncontainer.addEventListener("click", handleClick${cap});\nbutton.addEventListener("click", (e) => {\n${$("stop").checked ? "  e.stopPropagation();\n" : ""}  handleClick(e);\n});`);
+  }
+  $("b-btn").addEventListener("click", (e) => { e.stopPropagation(); bubble("button"); });
+  $("b-div").addEventListener("click", (e) => { if (e.target === $("b-div") || e.target.classList.contains("tag")) bubble("div"); });
+  ["stop", "capture"].forEach((id) => $(id).addEventListener("change", () => { renderBubbleCode(); $("bubble-why").textContent = "Click the button to see the new order."; }));
+
+  // Part 3: MDN's delegation example
+  $("tiles").innerHTML = Array.from({ length: 16 }, () => `<div class="tile"></div>`).join("");
+  const random = (n) => Math.floor(Math.random() * n);
+  $("tiles").addEventListener("click", (e) => {
+    const guard = $("guard").checked;
+    if (guard && !e.target.matches(".tile")) { $("deleg-why").textContent = "e.target was the container itself (you clicked a gap), so the if statement ignored it."; return; }
+    e.target.style.backgroundColor = `rgb(${random(255)} ${random(255)} ${random(255)})`;
+    if (e.target === $("tiles")) {
+      $("deleg-why").textContent = "You clicked a gap, so e.target was the container itself, and the whole container changed color. Tick \"Ignore clicks that aren't on a tile\" to guard against this.";
+    } else $("deleg-why").textContent = "One listener on the container handled it. e.target is the tile you clicked.";
+  });
+  $("tiles-reset").addEventListener("click", () => { $("tiles").style.backgroundColor = ""; $("tiles").querySelectorAll(".tile").forEach((t) => (t.style.backgroundColor = "")); });
+  function renderDeleg() {
+    $("deleg-code").innerHTML = hlJS(`const container = document.querySelector("#container");\n\ncontainer.addEventListener("click", (event) => {\n${$("guard").checked ? '  if (!event.target.matches(".tile")) return;\n' : ""}  event.target.style.backgroundColor = bgChange();\n});`);
+  }
+  $("guard").addEventListener("change", renderDeleg);
+
+  makeQuiz($("quiz"), [
+    { q: "A form's input loses everything you typed when you press Enter. What's missing?", opts: ["e.preventDefault() in the submit listener", "e.stopPropagation()", "A click listener on the button"], a: 0, why: "Submitting a form reloads the page by default. preventDefault() stops that." },
+    { q: "A list item is clicked, and the listener is on the ul. What is e.target?", opts: ["The ul", "The li that was clicked", "document"], a: 1, why: "target is where the event started. currentTarget would be the ul." },
+    { q: "Which event fires every time the text in a field changes?", opts: ["click", "input", "submit"], a: 1, why: "input fires on every keystroke or paste. change only fires when the field loses focus." },
+    { q: "You add new buttons to a list after the page loads, and their clicks aren't handled. The best fix?", opts: ["Add one listener to the list and use e.target", "Use onclick attributes", "Reload the page"], a: 0, why: "Delegation: the parent's listener catches clicks from any child, including ones added later." },
+  ]);
+
+  renderEvCode(); renderBubbleCode(); renderDeleg();
+</script>
+</body>
+</html>

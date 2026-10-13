@@ -1,0 +1,268 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Console &amp; Errors</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Recursive:slnt,wght,CASL,MONO@-15..0,300..1000,0..1,0..1&display=swap">
+<link rel="stylesheet" href="style.css">
+<style>
+  .actions { display: grid; gap: 8px; }
+  .actions .btn { text-align: left; }
+  .tally { font: 700 0.95rem var(--font-code); font-variation-settings: "MONO" 1; color: var(--cobalt); }
+  .code { display: grid; grid-template-columns: minmax(0, 1fr); background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 8px 0; overflow-x: auto; }
+  .ln { display: grid; grid-template-columns: 34px 1fr; gap: 10px; text-align: left; border: 0; background: none; color: var(--ink); padding: 1px 14px 1px 0; cursor: pointer; font: 0.88rem/1.6 var(--font-code); font-variation-settings: "MONO" 1; white-space: pre; min-width: max-content; }
+  .ln:hover { background: var(--cobalt-soft); }
+  .ln .n { text-align: right; color: var(--muted); user-select: none; }
+  .ln.fixed { background: var(--good-soft); } .ln.fixed .n { color: var(--good); font-weight: 700; }
+  .ln.flag { background: var(--bad-soft); } .ln.flag .n { color: var(--bad); font-weight: 700; }
+  .console li .where { float: right; margin-left: 12px; color: var(--muted); text-decoration: underline; }
+  .gamebox { display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: center; font-size: 0.95rem; }
+  .gamebox .msg { font-weight: 700; }
+  .line-note { font-size: 0.95rem; min-height: 1.5em; }
+  .line-note.good { color: var(--good); } .line-note.bad { color: var(--bad); } .line-note.info { color: var(--muted); }
+  .decoder { display: grid; grid-template-columns: minmax(0, 1fr); gap: 6px; }
+  .decoder .btn { text-align: left; font-size: 0.8rem; white-space: normal; overflow-wrap: anywhere; }
+  .decode-out { display: grid; grid-template-columns: minmax(0, 1fr); gap: 10px; }
+  .decode-out .err-msg { font: 600 0.92rem var(--font-code); font-variation-settings: "MONO" 1; color: var(--bad); background: var(--bad-soft); padding: 10px 14px; border-radius: 8px; overflow-wrap: anywhere; }
+  .pair { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(240px, 100%), 1fr)); gap: 10px; }
+  .pair .label { font: 600 0.72rem var(--font-code); font-variation-settings: "MONO" 1; letter-spacing: 0.06em; text-transform: uppercase; display: block; margin-bottom: 4px; }
+  .pair .bad-l { color: var(--bad); } .pair .good-l { color: var(--good); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <nav class="crumbs" aria-label="Site"><a class="crumb" href="index.html">← Field Guide</a><a class="crumb" href="glossary.html">Glossary</a></nav>
+  <header class="page-head">
+    <span class="eyebrow">JavaScript Basics · The Console &amp; Errors</span>
+    <h1>The Console &amp; Errors</h1>
+    <p class="lede">When JavaScript breaks, the page usually just stops working with no message. The explanation is in the browser's console. This guessing game has five bugs: use the console to track them down.</p>
+  </header>
+
+  <section class="playground">
+    <div class="panel controls">
+      <span class="eyebrow">Test the game</span>
+      <div class="actions">
+        <button class="btn" id="a-load">1. Load the page</button>
+        <button class="btn" id="a-guess">2. Guess 50 and submit</button>
+        <button class="btn" id="a-play">3. Play 4 guesses: 50, 25, 12, 6</button>
+        <button class="btn" id="a-log">4. Add console.log(randomNumber), reload 5 times</button>
+      </div>
+      <p class="tally" id="tally"></p>
+      <p class="hint">Open the console in your own browser with <b>F12</b>, or <b>⌥⌘J</b> on a Mac (Chrome). In Safari, turn on Show features for web developers first.</p>
+      <button class="btn" id="reset" style="justify-self:start">Start over with all bugs</button>
+    </div>
+    <div class="stage-col">
+      <div class="panel gamebox" id="game" aria-live="polite"></div>
+      <ol class="console" id="out" aria-label="Console output"></ol>
+      <p class="line-note info" id="note">Run a test, read the console, then click the line of code you think is broken.</p>
+      <div class="code" id="code" role="group" aria-label="game.js, click a line to inspect it"></div>
+    </div>
+  </section>
+
+  <div class="section-title"><span class="eyebrow">Part 2</span><h2>Error message decoder</h2><p>These are the errors you'll see most often in Chrome. Firefox and Safari word some of them differently, but the type at the start (<code>SyntaxError</code>, <code>TypeError</code>, <code>ReferenceError</code>) is the same everywhere.</p></div>
+  <section class="playground">
+    <div class="panel decoder" id="decoder" role="group" aria-label="Error messages"></div>
+    <div class="stage-col"><div class="decode-out" id="decode-out"></div></div>
+  </section>
+
+  <div class="section-title"><span class="eyebrow">Practice</span><h2>Fix it yourself</h2><p>This code has three bugs. Run it, read the first error, fix that one, and run it again. When it works, the console prints three lines.</p></div>
+  <div class="runner"><textarea aria-label="Code editor">const trail = "Royal Arch";
+let miles = 3.4;
+console.log(trial);
+console.log(trail.toUppercase());
+const rating = 4;
+rating = 5;
+console.log(`${trail}: ${miles} miles, ${rating} stars`);</textarea></div>
+
+  <section class="notes">
+    <div class="panel">
+      <h2>Key ideas</h2>
+      <ul>
+        <li><b>Syntax errors</b> are typos in the grammar of the code: a missing bracket or quote. The whole script won't run.</li>
+        <li><b>Runtime errors</b> happen while the code runs, such as calling something that isn't a function. Code inside a function only fails when that function is called.</li>
+        <li><b>Logic errors</b> don't show any message. The code runs but does the wrong thing. Use <code>console.log()</code> to check values as the code runs.</li>
+        <li>Every error message tells you what went wrong and where: <code>game.js:21:13</code> means line 21, character 13.</li>
+        <li>Fix the first error first. One error often stops the rest of the code from running, so later errors can't appear yet.</li>
+      </ul>
+    </div>
+    <div class="panel mistake">
+      <h2>Common mistakes</h2>
+      <ul>
+        <li>Assuming the error is on the line it names. That's where the code crashed. The real cause can be earlier, such as a selector that matched nothing.</li>
+        <li>Wrong capitalization: <code>addeventListener</code>, <code>queryselector</code>, <code>textcontent</code>. JavaScript is case-sensitive.</li>
+        <li>Using <code>=</code> (assign) when you mean <code>===</code> (compare) inside an <code>if</code>.</li>
+        <li>Forgetting to reload the page after saving, then debugging the old code.</li>
+      </ul>
+    </div>
+    <div class="panel mdn">
+      <h2>On MDN</h2>
+      <ul>
+        <li><a href="https://developer.mozilla.org/en-US/docs/Learn_web_development/Core/Scripting/What_went_wrong">What went wrong? Troubleshooting JavaScript</a><span class="hint">The same guessing game, with its bugs explained step by step.</span></li>
+        <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Errors">JavaScript error reference</a><span class="hint">An explanation for every error message.</span></li>
+      </ul>
+    </div>
+  </section>
+
+  <footer class="page-foot"><a href="js-intro.html">← What Is JavaScript?</a><a href="js-variables.html">Next: Variables &amp; Data Types →</a></footer>
+</div>
+
+<script src="runner.js"></script>
+<script>
+  const $ = (id) => document.getElementById(id);
+  // Each line of game.js. Lines with a bug have a `fix` and an explanation.
+  const LINES = [
+    { c: 'const randomNumber = Math.floor(Math.random()) + 1;', bug: "random", fix: 'const randomNumber = Math.floor(Math.random() * 100) + 1;',
+      why: "Logic error. Math.random() gives a number from 0 up to 1, and Math.floor() rounds it down to 0, so randomNumber is always 1. Multiply by 100 first to get 1 to 100." },
+    { c: 'const guessField = document.querySelector(".guessField");' },
+    { c: 'const guessSubmit = document.querySelector(".guessSubmit");' },
+    { c: 'const lowOrHi = document.querySelector("lowOrHi");', bug: "selector", fix: 'const lowOrHi = document.querySelector(".lowOrHi");',
+      why: 'The selector is missing its dot, so it looks for a <lowOrHi> element. There isn\'t one, so querySelector returns null.' },
+    { c: 'let guessCount = 1;' },
+    { c: '' },
+    { c: 'function checkGuess() {' },
+    { c: '  const userGuess = Number(guessField.value);' },
+    { c: '  if (userGuess === randomNumber) {' },
+    { c: '    lowOrHi.textContent = "Congratulations! You got it right!";', msg: "win" },
+    { c: '  } else if (guessCount = 10) {', bug: "assign", fix: '  } else if (guessCount === 10) {',
+      why: "Logic error. A single = assigns 10 to guessCount instead of comparing. 10 counts as true, so the game ends after the first wrong guess. Use === to compare." },
+    { c: '    lowOrHi.textContent = "!!!GAME OVER!!!";', msg: "over" },
+    { c: '  } else if (userGuess < randomNumber) {' },
+    { c: '    lowOrHi.textContent = "Last guess was too low!";', msg: "low" },
+    { c: '  } else {' },
+    { c: '    lowOrHi.textContent = "Last guess was too high!";', msg: "high" },
+    { c: '  }' },
+    { c: '  guessCount++;' },
+    { c: '}' },
+    { c: '' },
+    { c: 'guessSubmit.addeventListener("click", checkGuess);', bug: "case", fix: 'guessSubmit.addEventListener("click", checkGuess);',
+      why: "addeventListener has a lowercase e, so it doesn't exist. JavaScript is case-sensitive: the method is addEventListener." },
+    { c: 'console.log("Game ready";', bug: "syntax", fix: 'console.log("Game ready");',
+      why: "Syntax error. The closing parenthesis of console.log() is missing. A syntax error stops the whole file from running, so it has to be fixed first." },
+  ];
+  const BUGS = LINES.filter((l) => l.bug).length;
+  const MSG = { win: "Congratulations! You got it right!", over: "!!!GAME OVER!!!", low: "Last guess was too low!", high: "Last guess was too high!" };
+  const lineOf = (key) => LINES.findIndex((l) => l.msg === key) + 1;
+  let fixed = new Set(), flagged = null;
+  const ok = (b) => fixed.has(b);
+
+  // Simulates one guess with the current fixes. Returns { msg } or { crashLine }.
+  function guess(value, count, secret) {
+    let key;
+    if (value === secret) key = "win";
+    else if (!ok("assign") || count === 10) key = "over";
+    else key = value < secret ? "low" : "high";
+    if (!ok("selector")) return { crashLine: lineOf(key) };
+    return { msg: MSG[key], key };
+  }
+  const secretNow = () => (ok("random") ? 37 : 1);
+
+  function show(lines, game) {
+    const out = $("out"); out.innerHTML = "";
+    lines.forEach(([cls, text, where]) => {
+      const li = document.createElement("li"); li.className = cls;
+      if (where) { const w = document.createElement("span"); w.className = "where"; w.textContent = where; li.append(w); }
+      li.append(text); out.append(li);
+    });
+    $("game").innerHTML = game;
+  }
+  const gameUI = (msg) => `<span>Guess a number from 1 to 100</span><span class="msg">${msg || ""}</span>`;
+  const loadErrors = () => {
+    if (!ok("syntax")) return [["err", "Uncaught SyntaxError: missing ) after argument list", "game.js:22"]];
+    if (!ok("case")) return [["err", "Uncaught TypeError: guessSubmit.addeventListener is not a function", "game.js:21:13"]];
+    return null;
+  };
+  function actLoad() {
+    const e = loadErrors();
+    show(e || [["log", "Game ready", "game.js:22"]], gameUI());
+    flagged = e ? (ok("syntax") ? 21 : 22) : null; renderCode();
+  }
+  function actGuess() {
+    const e = loadErrors();
+    if (e) { show(e.concat([["muted", "Clicking Submit does nothing: the script crashed when the page loaded, so the click listener was never added."]]), gameUI()); flagged = ok("syntax") ? 21 : 22; renderCode(); return; }
+    const r = guess(50, 1, secretNow());
+    if (r.crashLine) { show([["log", "Game ready", "game.js:22"], ["err", "Uncaught TypeError: Cannot set properties of null (setting 'textContent')\n    at HTMLButtonElement.checkGuess", `game.js:${r.crashLine}:25`]], gameUI()); flagged = r.crashLine; }
+    else { show([["log", "Game ready", "game.js:22"]], gameUI(r.msg)); flagged = null; }
+    renderCode();
+  }
+  function actPlay() {
+    const e = loadErrors();
+    if (e) { show(e, gameUI()); flagged = ok("syntax") ? 21 : 22; renderCode(); return; }
+    const lines = [["log", "Game ready", "game.js:22"]]; let last = "";
+    const secret = secretNow();
+    for (const [i, g] of [50, 25, 12, 6].entries()) {
+      const r = guess(g, i + 1, secret);
+      if (r.crashLine) { lines.push(["err", "Uncaught TypeError: Cannot set properties of null (setting 'textContent')", `game.js:${r.crashLine}:25`]); flagged = r.crashLine; break; }
+      lines.push(["muted", `Guess ${i + 1}: ${g} → "${r.msg}"`]); last = r.msg; flagged = null;
+      if (r.key === "over" || r.key === "win") break;
+    }
+    show(lines, gameUI(last)); renderCode();
+  }
+  function actLog() {
+    const e = loadErrors();
+    if (e) { show(e, gameUI()); return; }
+    const vals = ok("random") ? [37, 82, 5, 64, 19] : [1, 1, 1, 1, 1];
+    show(vals.map((v) => ["log", String(v), "game.js:2"]), gameUI());
+    flagged = null; renderCode();
+  }
+
+  function renderCode() {
+    $("code").innerHTML = LINES.map((l, i) => `<button class="ln ${l.bug && ok(l.bug) ? "fixed" : ""} ${flagged === i + 1 ? "flag" : ""}" data-i="${i}"><span class="n">${i + 1}</span><span>${hlJS(l.bug && ok(l.bug) ? l.fix : l.c) || " "}</span></button>`).join("");
+    $("tally").textContent = `Bugs fixed: ${fixed.size} / ${BUGS}` + (fixed.size === BUGS ? " · Game works!" : "");
+  }
+  $("code").addEventListener("click", (e) => {
+    const b = e.target.closest(".ln"); if (!b) return;
+    const l = LINES[b.dataset.i], n = +b.dataset.i + 1, note = $("note");
+    if (l.bug && !ok(l.bug)) {
+      // Syntax errors stop everything, so they're the only bug you can see until fixed, but fixing any line is allowed.
+      fixed.add(l.bug); note.className = "line-note good"; note.textContent = `Fixed line ${n}. ${l.why} Run the tests again.`;
+    } else if (l.bug) {
+      note.className = "line-note info"; note.textContent = `Line ${n} is already fixed.`;
+    } else if (l.msg && !ok("selector")) {
+      note.className = "line-note bad"; note.textContent = `The crash is reported on line ${n}, but this line is fine. The error says lowOrHi is null. Look at where lowOrHi gets its value.`;
+    } else {
+      note.className = "line-note info"; note.textContent = `Line ${n} is fine.`;
+    }
+    renderCode();
+  });
+  $("a-load").addEventListener("click", actLoad);
+  $("a-guess").addEventListener("click", actGuess);
+  $("a-play").addEventListener("click", actPlay);
+  $("a-log").addEventListener("click", actLog);
+  $("reset").addEventListener("click", () => { fixed = new Set(); flagged = null; $("note").className = "line-note info"; $("note").textContent = "Run a test, read the console, then click the line of code you think is broken."; actLoad(); });
+
+  // Part 2: decoder
+  const ERRORS = [
+    { m: "Uncaught ReferenceError: greting is not defined", t: "You used a name JavaScript doesn't know. Usually it's a typo, or the variable was declared inside a function or block you're outside of.",
+      bad: 'const greeting = "Hi";\nconsole.log(greting);', good: 'const greeting = "Hi";\nconsole.log(greeting);' },
+    { m: "Uncaught TypeError: btn.addeventListener is not a function", t: "You called something that isn't a function. Check the spelling and capitalization of the method name.",
+      bad: 'btn.addeventListener("click", go);', good: 'btn.addEventListener("click", go);' },
+    { m: "Uncaught TypeError: Cannot read properties of null (reading 'addEventListener')", t: "The thing before the dot is null, which almost always means querySelector found nothing. Check the selector (missing . or #?) and make sure the script runs after the HTML (use defer).",
+      bad: 'const btn = document.querySelector("menu-btn");\nbtn.addEventListener("click", go);', good: 'const btn = document.querySelector(".menu-btn");\nbtn.addEventListener("click", go);' },
+    { m: "Uncaught SyntaxError: missing ) after argument list", t: "A function call is missing its closing parenthesis, or something inside the parentheses is broken, such as a missing comma or quote.",
+      bad: 'console.log("Score:" score);', good: 'console.log("Score:", score);' },
+    { m: "Uncaught SyntaxError: Unexpected end of input", t: "The file ended while JavaScript was still waiting for something, usually a closing }. Count your braces: every { needs a }.",
+      bad: 'function greet() {\n  console.log("Hi");\n', good: 'function greet() {\n  console.log("Hi");\n}' },
+    { m: "Uncaught SyntaxError: Invalid or unexpected token", t: "Often an unclosed string: a missing quote mark, or a regular string that runs over two lines. Use backticks for multi-line strings.",
+      bad: 'const msg = "Hello;\nconsole.log(msg);', good: 'const msg = "Hello";\nconsole.log(msg);' },
+    { m: "Uncaught TypeError: Assignment to constant variable.", t: "You tried to change a variable declared with const. Use let if the value needs to change.",
+      bad: 'const score = 0;\nscore = score + 1;', good: 'let score = 0;\nscore = score + 1;' },
+    { m: "Uncaught SyntaxError: Identifier 'count' has already been declared", t: "You declared the same name twice with let or const. Declare it once, then reassign it without the keyword.",
+      bad: 'let count = 1;\nlet count = 2;', good: 'let count = 1;\ncount = 2;' },
+  ];
+  let pick = 0;
+  function renderDecoder() {
+    $("decoder").innerHTML = ERRORS.map((x, i) => `<button class="btn" aria-pressed="${i === pick}" data-i="${i}">${x.m.replace(/^Uncaught /, "").replace(/</g, "&lt;")}</button>`).join("");
+    const x = ERRORS[pick];
+    $("decode-out").innerHTML = `<div class="err-msg"></div><p></p><div class="pair"><div><span class="label bad-l">Causes it</span><pre class="snippet">${hlJS(x.bad)}</pre></div><div><span class="label good-l">Fixed</span><pre class="snippet">${hlJS(x.good)}</pre></div></div>`;
+    $("decode-out").querySelector(".err-msg").textContent = x.m;
+    $("decode-out").querySelector("p").textContent = x.t;
+  }
+  $("decoder").addEventListener("click", (e) => { const b = e.target.closest("button"); if (b) { pick = +b.dataset.i; renderDecoder(); } });
+
+  renderCode(); actLoad(); renderDecoder();
+</script>
+</body>
+</html>

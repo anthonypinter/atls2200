@@ -1,5 +1,5 @@
 <!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1"><style>:root{color-scheme:light}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
-<title>HTML &amp; CSS Field Guide</title>
+<title>HTML, CSS &amp; JS Field Guide</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -108,6 +108,21 @@
   .mini.shadow { align-items: center; justify-content: center; } .mini.shadow i { width: 50%; height: 60%; border-radius: 6px; background: var(--panel) !important; box-shadow: 0 6px 14px rgb(0 0 0 / 22%); }
   .mini.float { display: block; padding: 6px; } .mini.float i { float: left; width: 34%; height: 34px; margin: 0 6px 2px 0; } .mini.float span { display: block; height: 5px; margin-bottom: 5px; background: var(--muted); opacity: 0.45; border-radius: 2px; }
   .mini.organize { flex-direction: column; justify-content: center; gap: 3px; padding-left: 10px; } .mini.organize b { font: 600 0.62rem var(--font-code); font-variation-settings: "MONO" 1; color: var(--muted); line-height: 1; } .mini.organize span { display: flex; flex-direction: column; gap: 3px; } .mini.organize span i { height: 4px; width: 70%; background: var(--cobalt) !important; opacity: 0.6; }
+  /* JavaScript cards */
+  .mini.jsintro { flex-direction: column; justify-content: center; align-items: center; gap: 3px; } .mini.jsintro i { height: 11px; } .mini.jsintro i:nth-child(1) { width: 40%; } .mini.jsintro i:nth-child(2) { width: 60%; } .mini.jsintro i:nth-child(3) { width: 80%; }
+  .mini.jserr { align-items: center; gap: 10px; padding-inline: 10px; } .mini.jserr b { font: 800 1.4rem var(--font-display); color: var(--bad); } .mini.jserr span { flex: 1; display: grid; gap: 4px; }
+  .mini.jserr span i { height: 5px; background: var(--muted) !important; opacity: 0.5; } .mini.jserr span i.x { background: var(--bad) !important; opacity: 1; width: 70%; }
+  .mini.jsvar { align-items: center; justify-content: center; gap: 10px; } .mini.jsvar span { display: grid; gap: 2px; width: 34%; } .mini.jsvar b { font: 600 0.62rem var(--font-code); font-variation-settings: "MONO" 1; color: var(--cobalt); } .mini.jsvar i { height: 22px; border-radius: 4px; }
+  .mini.jsstr { align-items: center; justify-content: center; gap: 12px; } .mini.jsstr b { font: 700 0.9rem var(--font-code); font-variation-settings: "MONO" 1; color: var(--ink); } .mini.jsstr b:last-child { color: var(--val); }
+  .mini.jsarr { align-items: center; justify-content: center; gap: 3px; } .mini.jsarr i { width: 20%; height: 80%; display: grid; place-items: end center; font: 600 0.6rem var(--font-code); font-style: normal; color: #fff; padding-bottom: 2px; }
+  .mini.jsif { align-items: center; gap: 6px; padding-inline: 10px; } .mini.jsif > i { width: 18%; height: 40%; transform: rotate(45deg) scale(0.7); } .mini.jsif span { flex: 1; display: grid; gap: 6px; } .mini.jsif span i { height: 12px; } .mini.jsif span i.off { opacity: 0.25; }
+  .mini.jsloop { align-items: center; gap: 10px; padding-inline: 10px; } .mini.jsloop b { font: 800 1.5rem var(--font-display); color: var(--cobalt); } .mini.jsloop span { flex: 1; display: grid; gap: 4px; } .mini.jsloop span i { height: 8px; background: var(--item-3) !important; }
+  .mini.jsfn { align-items: center; justify-content: center; gap: 8px; } .mini.jsfn i { width: 22%; height: 50%; } .mini.jsfn b { font: 800 1.05rem var(--font-code); font-variation-settings: "MONO" 1; color: var(--item-4); }
+  .mini.jsobj { align-items: center; gap: 6px; padding-inline: 10px; } .mini.jsobj b { font: 800 1.6rem var(--font-code); color: var(--cobalt); } .mini.jsobj span { flex: 1; display: grid; gap: 4px; } .mini.jsobj span i { height: 5px; background: var(--prop) !important; opacity: 0.7; } .mini.jsobj span i:nth-child(2) { width: 70%; }
+  .mini.jsdom { display: grid; grid-template-columns: repeat(4, 1fr); grid-template-rows: 1fr 1fr 1fr; gap: 3px; } .mini.jsdom i { background: var(--line) !important; } .mini.jsdom i:nth-child(1) { grid-column: 2 / 4; } .mini.jsdom i:nth-child(2) { grid-column: 1 / 3; } .mini.jsdom i:nth-child(3) { grid-column: 3 / 5; } .mini.jsdom i:nth-child(4) { grid-column: 1 / 2; } .mini.jsdom i:nth-child(5) { grid-column: 3 / 4; } .mini.jsdom i.hit { background: var(--cobalt) !important; }
+  .mini.jsevent { align-items: center; justify-content: center; gap: 10px; } .mini.jsevent i { width: 34%; height: 50%; border-radius: 6px; outline: 3px solid var(--cobalt-soft); } .mini.jsevent b { font: 700 0.75rem var(--font-code); font-variation-settings: "MONO" 1; color: var(--prop); }
+  .mini.jscreate { flex-direction: column; justify-content: center; gap: 3px; padding-inline: 12px; } .mini.jscreate i { height: 10px; background: var(--line) !important; } .mini.jscreate i.new { background: var(--good) !important; width: 70%; }
+  .mini.jsfetch { align-items: center; justify-content: center; gap: 10px; } .mini.jsfetch b { font: 800 1rem var(--font-code); font-variation-settings: "MONO" 1; color: var(--prop); } .mini.jsfetch span { color: var(--muted); } .mini.jsfetch i { width: 30%; height: 70%; }
   .empty { padding-block: 28px; color: var(--muted); }
 </style>
 
@@ -115,7 +130,7 @@
   <header class="hero">
     <div class="hero-text">
       <span class="eyebrow">Intro to HTML, CSS &amp; JS · Student helpers</span>
-      <h1>HTML &amp; CSS <span class="sel">Field Guide</span></h1>
+      <h1>HTML, CSS &amp; JS <span class="sel">Field Guide</span></h1>
       <p class="lede">Hands-on reference pages for the parts of front-end code that trip people up. Change a setting and watch the layout respond, then try the same idea in your own project.</p>
     </div>
     <pre aria-label="Example CSS rule"><span class="cmt">/* every page works the same way */</span>
@@ -129,7 +144,7 @@
   <div class="toolbar">
     <label class="search" for="filter">
       <span class="mono" aria-hidden="true" style="color:var(--muted)">/</span>
-      <input id="filter" type="search" placeholder="Find a topic or property, e.g. gap">
+      <input id="filter" type="search" placeholder="Find a topic, property or method, e.g. gap">
     </label>
     <div class="legend">
       <span id="page-count"></span>
@@ -205,6 +220,23 @@
       { title: "Validating Your Code", href: "validation.html", mini: "valid", desc: "Use the W3C validators, spot common errors, and see how browsers repair bad HTML.", props: ["W3C", "errors", "Elements panel"] },
       { title: "Project Structure & Publishing", href: "publishing.html", mini: "publish", desc: "Name and organize files, then publish with GitHub Pages.", props: ["index.html", "folders", "GitHub Pages"] },
     ]},
+    { name: "JavaScript Basics", blurb: "The core language: storing values, making decisions, repeating work and reusing code.", topics: [
+      { title: "What Is JavaScript?", href: "js-intro.html", mini: "jsintro", desc: "What JavaScript adds to HTML and CSS, and where the script tag goes so your code can find the page.", props: ["<script>", "defer", "type=\"module\""] },
+      { title: "The Console & Errors", href: "js-errors.html", mini: "jserr", desc: "Read error messages, find the line that's really broken, and debug with console.log().", props: ["console.log()", "TypeError", "SyntaxError"] },
+      { title: "Variables & Data Types", href: "js-variables.html", mini: "jsvar", desc: "let vs const, naming rules, and the difference between 42 and \"42\".", props: ["let", "const", "typeof"] },
+      { title: "Numbers & Strings", href: "js-strings-numbers.html", mini: "jsstr", desc: "Math operators, why \"5\" + 5 is \"55\", template literals and string methods.", props: ["+", "`${ }`", ".slice()"] },
+      { title: "Arrays", href: "js-arrays.html", mini: "jsarr", desc: "Lists of values with zero-based indexes, and the methods that add, remove and search.", props: ["[0]", ".push()", ".length"] },
+      { title: "Conditionals", href: "js-conditionals.html", mini: "jsif", desc: "if, else if and else, comparing with ===, combining with && and ||, and truthy values.", props: ["if / else", "===", "&&"] },
+      { title: "Loops", href: "js-loops.html", mini: "jsloop", desc: "Step through for, for...of and while loops, then let map() and filter() do the looping.", props: ["for...of", "for", ".map()"] },
+      { title: "Functions", href: "js-functions.html", mini: "jsfn", desc: "Parameters, arguments and return values, arrow functions, and where variables can be seen.", props: ["function", "return", "=>"] },
+      { title: "Objects & JSON", href: "js-objects-json.html", mini: "jsobj", desc: "Group values under named keys, read nested data, and spot invalid JSON.", props: ["{ key: value }", "obj.key", "JSON.parse()"] },
+    ]},
+    { name: "JavaScript in the Browser", blurb: "Find, change, build and load parts of a page while people use it.", topics: [
+      { title: "Selecting & Changing Elements", href: "js-dom.html", mini: "jsdom", desc: "Find elements with CSS selectors, explore the DOM tree, and change text, classes and styles.", props: ["querySelector()", "classList", "textContent"] },
+      { title: "Events", href: "js-events.html", mini: "jsevent", desc: "React to clicks, typing and form submits, and see how events bubble up to parents.", props: ["addEventListener", "preventDefault()", "event.target"] },
+      { title: "Creating & Removing Elements", href: "js-create-elements.html", mini: "jscreate", desc: "Build MDN's shopping list: create elements, add them to the page, and remove them.", props: ["createElement()", "append()", "remove()"] },
+      { title: "Fetching Data", href: "js-fetch.html", mini: "jsfetch", desc: "Load JSON from a server with fetch(), handle 404s and failures, and update the page.", props: ["fetch()", "async / await", "response.ok"] },
+    ]},
   ];
 
   const esc = (s) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;");
@@ -256,6 +288,19 @@
     float: '<div class="mini float" aria-hidden="true"><i></i><span></span><span></span><span></span><span></span></div>',
     organize: '<div class="mini organize" aria-hidden="true"><b>/* */</b><span><i></i><i></i></span><b>/* */</b><span><i></i></span></div>',
     devtools: '<div class="mini devtools" aria-hidden="true"><span><i></i><i class="x"></i><i></i></span><span><i></i><i></i></span></div>',
+    jsintro: '<div class="mini jsintro" aria-hidden="true"><i></i><i></i><i></i></div>',
+    jserr: '<div class="mini jserr" aria-hidden="true"><b>✕</b><span><i></i><i class="x"></i><i></i></span></div>',
+    jsvar: '<div class="mini jsvar" aria-hidden="true"><span><b>let</b><i></i></span><span><b>const</b><i></i></span></div>',
+    jsstr: '<div class="mini jsstr" aria-hidden="true"><b>"5" + 5</b><b>"55"</b></div>',
+    jsarr: '<div class="mini jsarr" aria-hidden="true"><i>0</i><i>1</i><i>2</i><i>3</i></div>',
+    jsif: '<div class="mini jsif" aria-hidden="true"><i></i><span><i></i><i class="off"></i></span></div>',
+    jsloop: '<div class="mini jsloop" aria-hidden="true"><b>↻</b><span><i></i><i></i><i></i></span></div>',
+    jsfn: '<div class="mini jsfn" aria-hidden="true"><i></i><b>ƒ( )</b><i></i></div>',
+    jsobj: '<div class="mini jsobj" aria-hidden="true"><b>{</b><span><i></i><i></i><i></i></span><b>}</b></div>',
+    jsdom: '<div class="mini jsdom" aria-hidden="true"><i></i><i></i><i></i><i class="hit"></i><i></i></div>',
+    jsevent: '<div class="mini jsevent" aria-hidden="true"><i></i><b>click</b></div>',
+    jscreate: '<div class="mini jscreate" aria-hidden="true"><i></i><i></i><i class="new"></i></div>',
+    jsfetch: '<div class="mini jsfetch" aria-hidden="true"><b>{ }</b><span>→</span><i></i></div>',
   };
 
   function cardHTML(t) {

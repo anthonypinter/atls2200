@@ -1,0 +1,248 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Creating &amp; Removing Elements</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Recursive:slnt,wght,CASL,MONO@-15..0,300..1000,0..1,0..1&display=swap">
+<link rel="stylesheet" href="style.css">
+<style>
+  .check { display: flex; gap: 8px; align-items: flex-start; cursor: pointer; font-size: 0.92rem; }
+  .check input { accent-color: var(--cobalt); margin-top: 4px; }
+  .app { background: #fbfaf7; color: #1d2133; border-radius: 8px; padding: 14px; display: grid; gap: 10px; font-family: var(--font-body); }
+  .app h3 { font: 700 1.05rem var(--font-display); margin: 0; color: #0b6b5e; }
+  .app form { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; }
+  .app label { grid-column: 1 / -1; font-size: 0.85rem; color: #5a6280; }
+  .app input { font: 1rem var(--font-body); padding: 7px 10px; border: 1px solid #d9d4c7; border-radius: 6px; background: #fff; color: #1d2133; min-width: 0; }
+  .app form button { font: 700 0.9rem var(--font-body); background: #0b6b5e; color: #fff; border: 0; border-radius: 6px; padding: 7px 14px; cursor: pointer; }
+  .app ul { margin: 0; padding: 0; list-style: none; display: grid; gap: 6px; min-height: 30px; }
+  .app li { display: flex; justify-content: space-between; align-items: center; gap: 8px; background: #fff; border: 1px solid #e4e0d6; border-radius: 6px; padding: 6px 6px 6px 12px; animation: pop 0.25s; }
+  .app li span { overflow-wrap: anywhere; min-width: 0; }
+  .app li button { font: 600 0.8rem var(--font-body); background: #fde8e6; color: #b42318; border: 1px solid #f3b8b1; border-radius: 5px; padding: 3px 9px; cursor: pointer; }
+  .app .empty { color: #8a8fa3; font-size: 0.9rem; }
+  @keyframes pop { from { transform: scale(0.9); opacity: 0; } }
+  .code { display: grid; grid-template-columns: minmax(0, 1fr); background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 8px 0; overflow-x: auto; }
+  .code .l { padding: 0 14px; font: 0.84rem/1.6 var(--font-code); font-variation-settings: "MONO" 1; white-space: pre; border-left: 3px solid transparent; min-width: max-content; }
+  .code .l.ran { background: var(--good-soft); border-left-color: var(--good); }
+  .code .l.gone { text-decoration: line-through; opacity: 0.45; }
+  .code .l.changed { background: var(--bad-soft); border-left-color: var(--bad); }
+
+  .build { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(220px, 100%), 1fr)); gap: 12px; }
+  .zone { border: 2px dashed var(--line); border-radius: 10px; padding: 12px; display: grid; gap: 8px; align-content: start; min-height: 150px; }
+  .zone .eyebrow { font-size: 0.7rem; }
+  .zone ul { margin: 0; padding-left: 1.2em; display: grid; gap: 4px; }
+  .zone .floating { justify-self: start; font: 0.95rem var(--font-body); padding: 6px 12px; border-radius: 6px; background: var(--panel); border: 2px solid var(--cobalt); }
+  .zone .floating.done { color: var(--good); border-color: var(--good); font-weight: 700; }
+  .zone .new { color: var(--good); font-weight: 700; }
+  .stepper { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+  .stepper .count { font: 600 0.85rem var(--font-code); font-variation-settings: "MONO" 1; color: var(--muted); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <nav class="crumbs" aria-label="Site"><a class="crumb" href="index.html">← Field Guide</a><a class="crumb" href="glossary.html">Glossary</a></nav>
+  <header class="page-head">
+    <span class="eyebrow">JavaScript in the Browser · Creating &amp; Removing Elements</span>
+    <h1>Creating &amp; Removing Elements</h1>
+    <p class="lede">JavaScript can build new elements and add them to the page, then take them away again. This shopping list is MDN's DOM scripting exercise. Add and delete items and watch which lines of code run.</p>
+  </header>
+
+  <section class="playground">
+    <div class="panel controls">
+      <span class="eyebrow">Try a mistake</span>
+      <label class="check"><input type="checkbox" id="m-prevent">Leave out event.preventDefault()</label>
+      <label class="check"><input type="checkbox" id="m-append">Forget list.appendChild(listItem)</label>
+      <label class="check"><input type="checkbox" id="m-html">Use innerHTML instead of textContent</label>
+      <p class="hint" id="m-why">Add a few items, then turn on a mistake and add another. For the innerHTML one, try typing <code>&lt;b&gt;Milk&lt;/b&gt;</code>.</p>
+    </div>
+    <div class="stage-col">
+      <div class="app">
+        <h3>My shopping list</h3>
+        <form id="form"><label for="item">Enter a new item</label><input id="item" autocomplete="off" value="Trail mix"><button>Add item</button></form>
+        <ul id="list"></ul>
+      </div>
+      <ol class="console" id="out" aria-label="Console output"><li class="muted">Add an item.</li></ol>
+      <div class="code" id="code" aria-label="Code"></div>
+    </div>
+  </section>
+
+  <div class="section-title"><span class="eyebrow">Part 2</span><h2>Created isn't the same as on the page</h2><p><code>createElement()</code> makes an element in memory. It doesn't show up anywhere until you attach it to something that's already on the page.</p></div>
+  <section class="playground">
+    <div class="panel controls">
+      <div class="stepper"><button class="btn run" id="b-next">Next line ▸</button><button class="btn" id="b-reset">Restart</button><span class="count" id="b-count"></span></div>
+      <pre class="snippet" id="b-code"></pre>
+      <p class="hint" id="b-why"></p>
+    </div>
+    <div class="build">
+      <div class="zone"><span class="eyebrow">In memory (not on the page)</span><div id="b-mem"></div></div>
+      <div class="zone"><span class="eyebrow">On the page</span><ul id="b-page"><li>Trail mix</li><li>Water</li></ul></div>
+    </div>
+  </section>
+
+  <div class="section-title"><span class="eyebrow">Practice</span><h2>Check yourself</h2></div>
+  <div class="panel quiz" id="quiz"></div>
+
+  <section class="notes">
+    <div class="panel">
+      <h2>Key ideas</h2>
+      <ul>
+        <li>Make an element: <code>const li = document.createElement("li");</code></li>
+        <li>Fill it: <code>li.textContent = "Milk";</code>, <code>li.classList.add("item");</code></li>
+        <li>Put it on the page: <code>list.appendChild(li)</code>, or <code>list.append(li)</code> (which can also take text). <code>prepend()</code> adds at the start.</li>
+        <li>Take it off: <code>li.remove()</code>. (MDN's exercise uses the older <code>list.removeChild(li)</code>, which works the same.)</li>
+        <li>Appending an element that is already on the page moves it. Use <code>cloneNode(true)</code> to make a copy.</li>
+        <li>Use <code>textContent</code> for anything a person typed. It shows the text exactly as typed and never runs it as HTML.</li>
+      </ul>
+    </div>
+    <div class="panel mistake">
+      <h2>Common mistakes</h2>
+      <ul>
+        <li>Creating an element but never appending it, so nothing appears and there's no error.</li>
+        <li>Using <code>innerHTML</code> with user input. Someone can type HTML that runs code on your page (cross-site scripting).</li>
+        <li>Forgetting <code>preventDefault()</code> on the form, so the page reloads and the list is wiped.</li>
+        <li>Adding the delete listener to the wrong thing, such as the whole list instead of each item's button.</li>
+      </ul>
+    </div>
+    <div class="panel mdn">
+      <h2>On MDN</h2>
+      <ul>
+        <li><a href="https://developer.mozilla.org/en-US/docs/Learn_web_development/Core/Scripting/DOM_scripting#active_learning_a_dynamic_shopping_list">Active learning: a dynamic shopping list</a><span class="hint">The original exercise, step by step.</span></li>
+        <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/Document/createElement">Document.createElement()</a> and <a href="https://developer.mozilla.org/en-US/docs/Web/API/Element/innerHTML#security_considerations">innerHTML security</a><span class="hint">Why textContent is safer.</span></li>
+      </ul>
+    </div>
+  </section>
+
+  <footer class="page-foot"><a href="js-events.html">← Events</a><a href="js-fetch.html">Next: Fetching Data →</a></footer>
+</div>
+
+<script src="runner.js"></script>
+<script>
+  const $ = (id) => document.getElementById(id);
+  // The exercise code. `k` names the line for highlighting; `alt` is the line when a mistake is on.
+  const CODE = [
+    { c: 'const list = document.querySelector("ul");' },
+    { c: 'const input = document.querySelector("input");' },
+    { c: 'const form = document.querySelector("form");' },
+    { c: "" },
+    { c: 'form.addEventListener("submit", (event) => {', k: "s" },
+    { c: "  event.preventDefault();", k: "s", m: "m-prevent", drop: true },
+    { c: "  const myItem = input.value;", k: "s" },
+    { c: '  input.value = "";', k: "s" },
+    { c: "" },
+    { c: '  const listItem = document.createElement("li");', k: "s" },
+    { c: '  const listText = document.createElement("span");', k: "s" },
+    { c: '  const listBtn = document.createElement("button");', k: "s" },
+    { c: "" },
+    { c: "  listItem.appendChild(listText);", k: "s" },
+    { c: "  listText.textContent = myItem;", k: "s", m: "m-html", alt: "  listText.innerHTML = myItem;" },
+    { c: "  listItem.appendChild(listBtn);", k: "s" },
+    { c: '  listBtn.textContent = "Delete";', k: "s" },
+    { c: "  list.appendChild(listItem);", k: "s", m: "m-append", drop: true },
+    { c: "" },
+    { c: '  listBtn.addEventListener("click", () => {', k: "s" },
+    { c: "    listItem.remove();", k: "d" },
+    { c: "  });", k: "s" },
+    { c: "" },
+    { c: "  input.focus();", k: "s" },
+    { c: "});", k: "s" },
+  ];
+  let lastRun = null;
+  const on = (id) => $(id).checked;
+  function renderCode() {
+    $("code").innerHTML = CODE.map((l) => {
+      const mistake = l.m && on(l.m);
+      const cls = [lastRun && l.k === lastRun && !(mistake && l.drop) ? "ran" : "", mistake ? (l.drop ? "gone" : "changed") : ""].join(" ");
+      return `<div class="l ${cls}">${hlJS(mistake && l.alt ? l.alt : l.c) || " "}</div>`;
+    }).join("");
+  }
+  function log(cls, text) { const out = $("out"); if (out.querySelector(".muted")) out.innerHTML = ""; const li = document.createElement("li"); li.className = cls; li.textContent = text; out.prepend(li); while (out.children.length > 6) out.lastChild.remove(); }
+  function emptyNote() { const list = $("list"); if (!list.querySelector("li")) list.innerHTML = `<p class="empty">No items yet.</p>`; else list.querySelector(".empty")?.remove(); }
+
+  // Safely imitate innerHTML: parse in an inert document, strip anything that could run, report it.
+  function unsafeHTML(target, html) {
+    const doc = new DOMParser().parseFromString(`<body>${html}</body>`, "text/html");
+    const blocked = [];
+    doc.body.querySelectorAll("script, iframe, object, embed").forEach((el) => { blocked.push(`<${el.tagName.toLowerCase()}>`); el.remove(); });
+    doc.body.querySelectorAll("*").forEach((el) => [...el.attributes].forEach((a) => { if (/^on/i.test(a.name) || /^\s*javascript:/i.test(a.value)) { blocked.push(`${a.name}="${a.value}"`); el.removeAttribute(a.name); } }));
+    target.append(...[...doc.body.childNodes].map((n) => document.importNode(n, true)));
+    return blocked;
+  }
+
+  $("form").addEventListener("submit", (event) => {
+    event.preventDefault(); // always stopped here so the demo page itself never reloads
+    if (on("m-prevent")) {
+      $("list").innerHTML = ""; emptyNote(); lastRun = null; renderCode();
+      log("err", "The page reloaded: without preventDefault(), submitting the form loads the page again from scratch, and every item is gone.");
+      $("m-why").textContent = "Submitting a form makes the browser load a new page by default. preventDefault() cancels that so your JavaScript can handle it.";
+      return;
+    }
+    const myItem = $("item").value;
+    $("item").value = "";
+    const listItem = document.createElement("li");
+    const listText = document.createElement("span");
+    const listBtn = document.createElement("button");
+    listItem.appendChild(listText);
+    let why = "Each line ran in order. Everything inside the listener runs again for every new item.";
+    if (on("m-html")) {
+      const blocked = unsafeHTML(listText, myItem);
+      if (blocked.length) { log("err", `Blocked for this demo: ${blocked.join(", ")}. On a real page using innerHTML, this would have run code that someone typed.`); why = "Anything typed into an innerHTML line becomes real HTML, including attributes like onerror that run JavaScript. That's how cross-site scripting (XSS) attacks work. textContent never runs anything."; }
+      else why = /</.test(myItem) ? "innerHTML turned the tags you typed into real HTML. It looks harmless here, but someone could type HTML that runs code. Use textContent for anything users type." : "innerHTML looks the same as textContent for plain text. Now type something with a tag in it, such as <b>Milk</b>.";
+    } else {
+      listText.textContent = myItem;
+      if (/</.test(myItem)) why = "textContent showed the tags as plain text instead of running them as HTML. That's why it's the safe choice.";
+    }
+    listItem.appendChild(listBtn);
+    listBtn.textContent = "Delete";
+    listBtn.type = "button";
+    if (!on("m-append")) $("list").appendChild(listItem);
+    else { why = "The li was created and filled in, but never attached to the page, so nothing appeared. There's no error message for this: the element just sits in memory."; }
+    listBtn.addEventListener("click", () => {
+      listItem.remove(); emptyNote(); lastRun = "d"; renderCode();
+      log("log", `Removed <li>${myItem.length > 30 ? myItem.slice(0, 30) + "…" : myItem}</li>`);
+      $("m-why").textContent = "Each Delete button got its own listener when its item was created, so it knows exactly which listItem to remove.";
+    });
+    $("item").focus();
+    emptyNote(); lastRun = "s"; renderCode();
+    if (!on("m-html") || !/</.test(myItem)) log("log", on("m-append") ? "Created <li>, but it isn't on the page." : `Added <li>${myItem || "(empty)"}</li>`);
+    $("m-why").textContent = why;
+  });
+  ["m-prevent", "m-append", "m-html"].forEach((id) => $(id).addEventListener("change", renderCode));
+
+  // Part 2: element builder
+  const BUILD = [
+    { c: 'const li = document.createElement("li");', why: "A new, empty <li> now exists in memory. Nobody can see it yet." },
+    { c: 'li.textContent = "Headlamp";', why: "It has text now, but it still isn't attached to anything on the page." },
+    { c: 'li.classList.add("new");', why: "Classes, attributes and styles can all be set before it's on the page." },
+    { c: 'const list = document.querySelector("#packing");', why: "Find an element that's already on the page to attach it to." },
+    { c: "list.append(li);", why: "Now it's attached, so the browser shows it. append() adds it as the last child." },
+    { c: "list.prepend(li);", why: "Appending or prepending an element that's already on the page moves it. There's still only one li." },
+    { c: "li.remove();", why: "remove() takes it off the page. The li variable still exists in memory, so it could be added back." },
+  ];
+  let b = 0;
+  function renderBuild() {
+    $("b-code").innerHTML = BUILD.map((s, i) => `<span style="opacity:${i < b ? 1 : 0.35}">${hlJS(s.c)}</span>`).join("\n");
+    $("b-why").textContent = b ? BUILD[b - 1].why : "Step through the code one line at a time.";
+    $("b-count").textContent = `${b} / ${BUILD.length}`;
+    $("b-next").disabled = b >= BUILD.length;
+    const created = b >= 1, text = b >= 2, cls = b >= 3, onPage = b >= 5 && b < 7, first = b === 6;
+    const node = `<li class="${cls ? "new" : ""}">${text ? "Headlamp" : "&nbsp;"}</li>`;
+    $("b-mem").innerHTML = created && !onPage ? `<span class="floating ${cls ? "done" : ""}">&lt;li${cls ? ' class="new"' : ""}&gt;${text ? "Headlamp" : ""}&lt;/li&gt;</span>` : `<p class="hint">${b >= 7 ? "Removed from the page, but the li variable still holds it." : onPage ? "Nothing here: the li moved onto the page." : "Empty"}</p>`;
+    if (b >= 7) $("b-mem").innerHTML += `<span class="floating done">&lt;li class="new"&gt;Headlamp&lt;/li&gt;</span>`;
+    $("b-page").innerHTML = (first ? node : "") + "<li>Trail mix</li><li>Water</li>" + (onPage && !first ? node : "");
+  }
+  $("b-next").addEventListener("click", () => { if (b < BUILD.length) b++; renderBuild(); });
+  $("b-reset").addEventListener("click", () => { b = 0; renderBuild(); });
+
+  makeQuiz($("quiz"), [
+    { q: "This code runs with no error, but nothing appears. Why?", pre: 'const p = document.createElement("p");\np.textContent = "Hello";', opts: ["textContent is wrong", "p was never appended to the page", "createElement needs a < >"], a: 1, why: "createElement only makes it in memory. Append it to an element that's already on the page." },
+    { q: "Which is safest for showing text a user typed?", opts: ["el.innerHTML = userText;", "el.textContent = userText;"], a: 1, why: "textContent never interprets the text as HTML, so typed code can't run." },
+    { q: "You append an element that's already in list A to list B. What happens?", opts: ["It moves to list B", "It's copied, so it's in both", "An error"], a: 0, why: "An element can only be in one place. Use cloneNode(true) for a copy." },
+    { q: "How do you remove an element you have in a variable called card?", opts: ["card.delete()", "card.remove()", "document.remove(card)"], a: 1, why: "remove() takes the element off the page." },
+  ]);
+
+  emptyNote(); renderCode(); renderBuild();
+</script>
+</body>
+</html>

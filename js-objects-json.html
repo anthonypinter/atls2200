@@ -1,0 +1,236 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Objects &amp; JSON</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Recursive:slnt,wght,CASL,MONO@-15..0,300..1000,0..1,0..1&display=swap">
+<link rel="stylesheet" href="style.css">
+<style>
+  .tree { display: grid; grid-template-columns: minmax(0, 1fr); background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 8px 0; overflow-x: auto; font: 0.92rem/1.7 var(--font-code); font-variation-settings: "MONO" 1; }
+  .tree .row { white-space: pre; padding: 0 14px; min-width: max-content; }
+  .tree button.key { font: inherit; font-variation-settings: "MONO" 1; background: none; border: 0; padding: 0 3px; border-radius: 4px; color: var(--prop); cursor: pointer; text-decoration: underline dotted; text-underline-offset: 3px; }
+  .tree button.key:hover { background: var(--cobalt-soft); }
+  .tree button.key[aria-pressed="true"] { background: var(--cobalt); color: var(--panel); text-decoration: none; }
+  .tree .row.sel { background: var(--cobalt-soft); }
+  .access { display: grid; grid-template-columns: minmax(0, 1fr); gap: 10px; }
+  .access .res { font: 600 1.05rem var(--font-code); font-variation-settings: "MONO" 1; padding: 10px 14px; border-radius: 8px; background: var(--panel); border: 1px solid var(--line); overflow-wrap: anywhere; }
+  .access .res.bad { color: var(--bad); border-color: var(--bad); background: var(--bad-soft); }
+
+  .json-in { width: 100%; min-height: 230px; resize: vertical; font: 0.92rem/1.55 var(--font-code); font-variation-settings: "MONO" 1; color: var(--ink); background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 14px 16px; tab-size: 2; }
+  .breakers { display: flex; flex-wrap: wrap; gap: 6px; }
+  .breakers .btn { font-size: 0.8rem; padding: 5px 9px; }
+  .status { padding: 10px 14px; border-radius: 8px; font: 600 0.92rem var(--font-code); font-variation-settings: "MONO" 1; overflow-wrap: anywhere; }
+  .status.ok { background: var(--good-soft); color: var(--good); } .status.bad { background: var(--bad-soft); color: var(--bad); }
+  .rules { margin: 0; padding-left: 1.2em; display: grid; gap: 6px; font-size: 0.92rem; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <nav class="crumbs" aria-label="Site"><a class="crumb" href="index.html">← Field Guide</a><a class="crumb" href="glossary.html">Glossary</a></nav>
+  <header class="page-head">
+    <span class="eyebrow">JavaScript Basics · Objects &amp; JSON</span>
+    <h1>Objects &amp; JSON</h1>
+    <p class="lede">An object groups related values under named keys, such as a trail's name, length and location. JSON is the same idea written as text, and it's how most data travels between websites and servers.</p>
+  </header>
+
+  <section class="playground even">
+    <div class="stage-col">
+      <span class="eyebrow">Click a key to read it</span>
+      <div class="tree" id="tree" role="group" aria-label="The hike object"></div>
+    </div>
+    <div class="stage-col">
+      <div class="access" id="access" aria-live="polite"></div>
+    </div>
+  </section>
+
+  <div class="section-title"><span class="eyebrow">Part 2</span><h2>Dot or brackets?</h2><p>When the key is stored in a variable (for example, chosen from a dropdown), you have to use square brackets. A dot always looks for a key with that exact name.</p></div>
+  <section class="playground">
+    <div class="panel controls">
+      <div class="control"><label for="keypick">const key =</label><select id="keypick"><option>"name"</option><option selected>"miles"</option><option>"open"</option><option>"rating"</option></select></div>
+    </div>
+    <div class="stage-col"><pre class="snippet" id="bracket-code"></pre><ol class="console" id="bracket-out" aria-label="Console output"></ol><p class="hint" id="bracket-why"></p></div>
+  </section>
+
+  <div class="section-title"><span class="eyebrow">Part 3</span><h2>JSON checker</h2><p>JSON looks like a JavaScript object but has stricter rules. Edit the text, or click a button to make a common mistake. The status uses the browser's own <code>JSON.parse()</code>.</p></div>
+  <section class="playground">
+    <div class="panel controls">
+      <span class="eyebrow">Break it</span>
+      <div class="breakers" id="breakers"></div>
+      <button class="btn" id="json-reset" style="justify-self:start">Reset to valid JSON</button>
+      <ul class="rules">
+        <li>Keys and strings in "double quotes"</li>
+        <li>No trailing commas</li>
+        <li>No comments</li>
+        <li>No functions or undefined</li>
+        <li>Allowed: strings, numbers, true, false, null, arrays, objects</li>
+      </ul>
+    </div>
+    <div class="stage-col">
+      <textarea class="json-in" id="json" spellcheck="false" aria-label="JSON text"></textarea>
+      <div class="status" id="json-status" role="status"></div>
+      <p class="hint" id="json-why"></p>
+    </div>
+  </section>
+
+  <div class="section-title"><span class="eyebrow">Try it</span><h2>parse and stringify</h2><p>This is MDN's superheroes example. <code>JSON.parse()</code> turns JSON text into an object you can use. <code>JSON.stringify()</code> turns an object into text, for saving or sending.</p></div>
+  <div class="runner"><textarea aria-label="Code editor">const text = `{
+  "squadName": "Super hero squad",
+  "homeTown": "Metro City",
+  "members": [
+    { "name": "Molecule Man", "age": 29, "powers": ["Radiation resistance", "Turning tiny"] },
+    { "name": "Madame Uppercut", "age": 39, "powers": ["Million tonne punch", "Damage resistance", "Superhuman reflexes"] }
+  ]
+}`;
+
+const squad = JSON.parse(text);
+console.log(squad.homeTown);
+console.log(squad.members[1].powers[2]);
+console.log(squad.members.length, "members");
+
+const hero = { name: "Ava", age: 21, active: true };
+const saved = JSON.stringify(hero);
+console.log(saved);
+console.log(typeof saved);</textarea></div>
+
+  <div class="section-title"><span class="eyebrow">Practice</span><h2>Check yourself</h2></div>
+  <div class="panel quiz" id="quiz"></div>
+
+  <section class="notes">
+    <div class="panel">
+      <h2>Key ideas</h2>
+      <ul>
+        <li>An object is a set of <code>key: value</code> pairs in curly braces. Values can be anything, including arrays, other objects and functions (methods).</li>
+        <li>Read values with a dot (<code>hike.miles</code>) or brackets (<code>hike["miles"]</code>). Use brackets when the key is in a variable.</li>
+        <li>Chain through nested data one step at a time: <code>squad.members[1].powers[2]</code>.</li>
+        <li>Add or change a value just by assigning it: <code>hike.rating = 5;</code></li>
+        <li>JSON is text. <code>JSON.parse(text)</code> makes an object from it; <code>JSON.stringify(obj)</code> makes text from an object.</li>
+        <li><code>fetch()</code> responses have a <code>.json()</code> method that parses for you.</li>
+      </ul>
+    </div>
+    <div class="panel mistake">
+      <h2>Common mistakes</h2>
+      <ul>
+        <li><code>hike.key</code> when <code>key</code> is a variable. It looks for a key literally named "key". Use <code>hike[key]</code>.</li>
+        <li>Single quotes, trailing commas or comments in a <code>.json</code> file. Any one of them makes the whole file fail to parse.</li>
+        <li>Using JSON text as if it were an object: <code>text.members</code> is <code>undefined</code> until you parse it.</li>
+        <li>Forgetting the commas between properties in an object literal.</li>
+      </ul>
+    </div>
+    <div class="panel mdn">
+      <h2>On MDN</h2>
+      <ul>
+        <li><a href="https://developer.mozilla.org/en-US/docs/Learn_web_development/Core/Scripting/Object_basics">Object basics</a><span class="hint">Dot and bracket notation, methods, and this.</span></li>
+        <li><a href="https://developer.mozilla.org/en-US/docs/Learn_web_development/Core/Scripting/JSON">Working with JSON</a><span class="hint">The JSON rules, the superheroes example, parse and stringify.</span></li>
+      </ul>
+    </div>
+  </section>
+
+  <footer class="page-foot"><a href="js-functions.html">← Functions</a><a href="js-dom.html">Next: Selecting &amp; Changing Elements →</a></footer>
+</div>
+
+<script src="runner.js"></script>
+<script>
+  const $ = (id) => document.getElementById(id);
+  const hike = {
+    name: "Mesa Trail", miles: 6.7, open: true,
+    tags: ["loop", "views", "dogs"],
+    trailhead: { town: "Boulder", lat: 39.99, lng: -105.28 },
+    describe() { return `${this.name}: ${this.miles} mi`; },
+  };
+  // Render the object as clickable source. Each key button stores its access path.
+  let picked = "trailhead.town";
+  function lines(obj, path, indent) {
+    const pad = "  ".repeat(indent), out = [];
+    for (const [k, v] of Object.entries(obj)) {
+      const p = path ? `${path}.${k}` : k;
+      const keyBtn = `<button class="key" data-p="${p}" aria-pressed="${p === picked}">${k}</button>`;
+      if (typeof v === "function") out.push({ p, h: `${pad}${keyBtn}() { ${hlJS("return `${this.name}: ${this.miles} mi`;")} },` });
+      else if (Array.isArray(v)) out.push({ p, h: `${pad}${keyBtn}: [${v.map((x, i) => `<button class="key" data-p="${p}[${i}]" aria-pressed="${p + `[${i}]` === picked}" style="color:var(--val)">${hlJS(JSON.stringify(x))}</button>`).join(", ")}],` });
+      else if (v && typeof v === "object") { out.push({ p, h: `${pad}${keyBtn}: {` }); out.push(...lines(v, p, indent + 1)); out.push({ p, h: `${pad}},` }); }
+      else out.push({ p, h: `${pad}${keyBtn}: ${hlJS(JSON.stringify(v))},` });
+    }
+    return out;
+  }
+  function get(path) {
+    return path.split(/\.|(?=\[)/).reduce((o, part) => { const m = part.match(/^\[(\d+)\]$/); return o == null ? undefined : o[m ? +m[1] : part]; }, hike);
+  }
+  function renderTree() {
+    const ls = lines(hike, "", 1);
+    $("tree").innerHTML = `<div class="row">${hlJS("const hike = {")}</div>` + ls.map((l) => `<div class="row ${picked === l.p || picked.startsWith(l.p + "[") ? "sel" : ""}">${l.h}</div>`).join("") + `<div class="row">};</div>`;
+    const v = get(picked);
+    const isFn = typeof v === "function";
+    const dot = "hike." + picked + (isFn ? "()" : "");
+    const bracket = "hike" + picked.split(/\.|(?=\[)/).map((p) => (p.startsWith("[") ? p : `["${p}"]`)).join("") + (isFn ? "()" : "");
+    const val = isFn ? v.call(hike) : v;
+    const why = isFn ? "describe is a method: a function stored in an object. Call it with (). Inside it, this means the object, so this.name is hike.name."
+      : Array.isArray(get(picked.replace(/\[\d+\]$/, ""))) && /\[\d+\]$/.test(picked) ? "Arrays inside objects: use the key to get the array, then an index to get one item."
+      : picked.includes(".") ? "Nested object: each dot goes one level deeper."
+      : Array.isArray(v) ? "This value is an array. Add an index to get a single item, or click one of the items."
+      : v && typeof v === "object" ? "This value is another object. Click a key inside it to go deeper." : "A plain value stored under this key.";
+    $("access").innerHTML = `<span class="eyebrow">Dot notation</span><pre class="snippet">${hlJS(dot)}</pre><span class="eyebrow">Bracket notation (same result)</span><pre class="snippet">${hlJS(bracket)}</pre><div class="res"></div><p class="hint"></p>`;
+    $("access").querySelector(".res").textContent = "→ " + fmtJS(val, 1);
+    $("access").querySelector(".hint").textContent = why;
+  }
+  $("tree").addEventListener("click", (e) => { const b = e.target.closest("button.key"); if (b) { picked = b.dataset.p; renderTree(); } });
+
+  function renderBracket() {
+    const key = JSON.parse($("keypick").value);
+    $("bracket-code").innerHTML = hlJS(`const key = "${key}";\n\nconsole.log(hike[key]);   // brackets: uses the value of key\nconsole.log(hike.key);    // dot: looks for a key named "key"`);
+    const v = hike[key];
+    $("bracket-out").innerHTML = `<li class="log"></li><li class="log"></li>`;
+    $("bracket-out").children[0].textContent = v === undefined ? "undefined" : fmtJS(v);
+    $("bracket-out").children[1].textContent = "undefined";
+    $("bracket-why").textContent = v === undefined ? `hike has no ${key} key yet, so even brackets give undefined. You could add one with hike[key] = 5.` : `hike[key] became hike["${key}"]. hike.key is always undefined, because there's no key named "key".`;
+  }
+  $("keypick").addEventListener("change", renderBracket);
+
+  // Part 3: JSON checker
+  const VALID = `{
+  "name": "Mesa Trail",
+  "miles": 6.7,
+  "open": true,
+  "tags": ["loop", "views"],
+  "trailhead": { "town": "Boulder", "parking": null }
+}`;
+  const BREAK = [
+    { l: "Single quotes", f: (s) => s.replace('"Mesa Trail"', "'Mesa Trail'"), why: "JSON strings must use double quotes." },
+    { l: "Unquoted key", f: (s) => s.replace('"miles":', "miles:"), why: "In JavaScript objects keys can skip quotes, but in JSON every key needs double quotes." },
+    { l: "Trailing comma", f: (s) => s.replace('"views"]', '"views",]'), why: "JSON doesn't allow a comma after the last item." },
+    { l: "Comment", f: (s) => s.replace('"open": true,', '"open": true, // closes at dusk'), why: "JSON can't contain comments." },
+    { l: "undefined", f: (s) => s.replace('"parking": null', '"parking": undefined'), why: "undefined isn't a JSON value. Use null for \"no value\"." },
+    { l: "Function", f: (s) => s.replace('"open": true', '"open": function () { return true; }'), why: "Functions can't be stored in JSON. It's data only." },
+    { l: "Missing comma", f: (s) => s.replace('"miles": 6.7,', '"miles": 6.7'), why: "Each property must be separated from the next by a comma." },
+  ];
+  $("breakers").innerHTML = BREAK.map((b, i) => `<button class="btn" data-i="${i}">${b.l}</button>`).join("");
+  let lastWhy = "";
+  $("breakers").addEventListener("click", (e) => { const b = e.target.closest("button"); if (!b) return; const x = BREAK[b.dataset.i]; const next = x.f($("json").value); lastWhy = next === $("json").value ? "That mistake is already in the text, or the line it changes was edited. Reset to try it." : x.why; $("json").value = next; checkJSON(); });
+  $("json-reset").addEventListener("click", () => { $("json").value = VALID; lastWhy = ""; checkJSON(); });
+  $("json").addEventListener("input", () => { lastWhy = ""; checkJSON(); });
+  function checkJSON() {
+    const st = $("json-status");
+    try {
+      const data = JSON.parse($("json").value);
+      st.className = "status ok"; st.textContent = "✓ Valid JSON. JSON.parse() returned: " + fmtJS(data);
+      $("json-why").textContent = data && data.trailhead ? `Now it's an object, so data.trailhead.town is ${JSON.stringify(data.trailhead.town)}.` : "";
+    } catch (err) {
+      st.className = "status bad"; st.textContent = `✕ ${err.name}: ${err.message}`;
+      $("json-why").textContent = lastWhy || "Find the line the error points to and check it against the rules on the left.";
+    }
+  }
+
+  makeQuiz($("quiz"), [
+    { q: "What does this log?", pre: 'const user = { name: "Ava", age: 21 };\nconsole.log(user.name);', opts: ["Ava", "name", "undefined"], a: 0, why: "Dot notation reads the value stored under the key name." },
+    { q: "What does this log?", pre: 'const user = { name: "Ava" };\nconst field = "name";\nconsole.log(user.field);', opts: ["Ava", "undefined", "An error"], a: 1, why: "user.field looks for a key called \"field\". Use user[field] instead." },
+    { q: "Which is valid JSON?", opts: ["{ name: \"Ava\" }", "{ \"name\": 'Ava' }", "{ \"name\": \"Ava\" }"], a: 2, why: "Both the key and the string value need double quotes." },
+    { q: "What type is the result?", pre: "const out = JSON.stringify({ a: 1 });\nconsole.log(typeof out);", opts: ["\"object\"", "\"string\""], a: 1, why: "stringify turns an object into JSON text, which is a string." },
+    { q: "How do you get \"Damage resistance\"?", pre: 'const squad = {\n  members: [\n    { name: "Molecule Man", powers: ["Radiation resistance"] },\n    { name: "Madame Uppercut", powers: ["Million tonne punch", "Damage resistance"] }\n  ]\n};', opts: ["squad.members[1].powers[1]", "squad.members[2].powers[2]", "squad.powers[1]"], a: 0, why: "Second member is [1], and the second power is [1]." },
+  ]);
+
+  $("json").value = VALID;
+  renderTree(); renderBracket(); checkJSON();
+</script>
+</body>
+</html>

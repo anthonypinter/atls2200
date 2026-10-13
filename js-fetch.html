@@ -1,0 +1,231 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Fetching Data</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Recursive:slnt,wght,CASL,MONO@-15..0,300..1000,0..1,0..1&display=swap">
+<link rel="stylesheet" href="style.css">
+<style>
+  .scen { display: grid; gap: 6px; }
+  .scen .btn { text-align: left; }
+  .code { display: grid; grid-template-columns: minmax(0, 1fr); background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 8px 0; overflow-x: auto; }
+  .code .l { padding: 0 14px; font: 0.84rem/1.65 var(--font-code); font-variation-settings: "MONO" 1; white-space: pre; border-left: 3px solid transparent; min-width: max-content; transition: background 0.2s; }
+  .code .l.now { background: var(--cobalt-soft); border-left-color: var(--cobalt); }
+  .code .l.ran { background: color-mix(in srgb, var(--good-soft) 70%, transparent); border-left-color: var(--good); }
+  .code .l.fail { background: var(--bad-soft); border-left-color: var(--bad); }
+  .net { width: 100%; border-collapse: collapse; font: 0.82rem var(--font-code); font-variation-settings: "MONO" 1; }
+  .net th, .net td { padding: 6px 10px; border-bottom: 1px solid var(--line); text-align: left; white-space: nowrap; }
+  .net th { color: var(--muted); font-weight: 600; font-size: 0.72rem; }
+  .net .bad { color: var(--bad); } .net .ok { color: var(--good); } .net .pending { color: var(--muted); }
+  .net .bar { display: inline-block; height: 8px; border-radius: 4px; background: var(--item-3); vertical-align: middle; transition: width 0.8s linear; }
+  .table-wrap { overflow-x: auto; }
+  .preview { background: #fbfaf7; color: #1d2133; border-radius: 8px; padding: 14px; font-family: var(--font-body); display: grid; gap: 8px; min-height: 120px; align-content: start; }
+  .preview h3 { font: 700 1rem var(--font-display); margin: 0; color: #0b6b5e; }
+  .preview ul { margin: 0; padding: 0; list-style: none; display: grid; gap: 6px; }
+  .preview li { display: flex; justify-content: space-between; gap: 8px; background: #fff; border: 1px solid #e4e0d6; border-radius: 6px; padding: 6px 10px; font-size: 0.92rem; }
+  .preview .msg { font-size: 0.92rem; color: #5a6280; }
+  .preview .msg.err { color: #b42318; }
+  .spinner { display: inline-block; width: 14px; height: 14px; border: 2px solid #d9d4c7; border-top-color: #0b6b5e; border-radius: 50%; animation: spin 0.8s linear infinite; vertical-align: -2px; margin-right: 6px; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .say { font-size: 0.95rem; min-height: 1.5em; }
+  .flowrow { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+  .json-view { max-height: 220px; overflow: auto; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <nav class="crumbs" aria-label="Site"><a class="crumb" href="index.html">← Field Guide</a><a class="crumb" href="glossary.html">Glossary</a></nav>
+  <header class="page-head">
+    <span class="eyebrow">JavaScript in the Browser · Fetching Data</span>
+    <h1>Fetching Data</h1>
+    <p class="lede"><code>fetch()</code> asks a server for data, usually JSON, and lets you update part of the page without reloading it. The answer takes time to arrive, so your code has to wait for it and be ready for things to go wrong.</p>
+  </header>
+
+  <section class="playground">
+    <div class="panel controls">
+      <span class="eyebrow">What happens on the server</span>
+      <div class="scen" id="scen" role="group" aria-label="Scenario"></div>
+      <div class="control"><span class="eyebrow">Code style</span><div class="seg" id="style" role="group" aria-label="Code style"><button class="btn" data-s="then">.then()</button><button class="btn" data-s="await">async / await</button></div></div>
+      <button class="btn run" id="send">Send request ▸</button>
+      <p class="hint" id="scen-why"></p>
+    </div>
+    <div class="stage-col">
+      <div class="code" id="code" aria-label="Code"></div>
+      <p class="say" id="say" aria-live="polite"></p>
+      <div class="panel table-wrap"><span class="eyebrow">Network panel</span><table class="net" id="net"></table></div>
+      <ol class="console" id="out" aria-label="Console output"></ol>
+      <div class="preview" id="preview"><h3>Boulder trails</h3><p class="msg">Press Send request.</p></div>
+    </div>
+  </section>
+
+  <div class="section-title"><span class="eyebrow">Part 2</span><h2>The file being fetched</h2><p>The server sends back plain text in JSON format. <code>response.json()</code> parses it into an array of objects, which the code loops over to build the list.</p></div>
+  <section class="playground even">
+    <div class="stage-col"><span class="eyebrow">trails.json</span><pre class="snippet json-view" id="json-file"></pre></div>
+    <div class="stage-col"><span class="eyebrow">showTrails()</span><pre class="snippet" id="show-fn"></pre></div>
+  </section>
+
+  <div class="section-title"><span class="eyebrow">Practice</span><h2>Check yourself</h2></div>
+  <div class="panel quiz" id="quiz"></div>
+
+  <section class="notes">
+    <div class="panel">
+      <h2>Key ideas</h2>
+      <ul>
+        <li><code>fetch(url)</code> returns a <b>promise</b>: a placeholder for a value that will arrive later. <code>.then()</code> runs when it does, and <code>.catch()</code> runs if something fails.</li>
+        <li><code>async</code>/<code>await</code> is another way to write the same thing. <code>await</code> pauses that function until the promise settles, and <code>try</code>/<code>catch</code> handles errors.</li>
+        <li>Code after <code>fetch()</code> keeps running right away. It doesn't wait for the response.</li>
+        <li>A 404 is not an error to <code>fetch</code>. Check <code>response.ok</code> yourself and throw if it's false.</li>
+        <li><code>response.json()</code> reads the body and parses it as JSON (it also returns a promise).</li>
+        <li>Pages opened as <code>file://</code> can't fetch. Use a local server, such as VS Code's Live Server, or test on GitHub Pages.</li>
+      </ul>
+    </div>
+    <div class="panel mistake">
+      <h2>Common mistakes</h2>
+      <ul>
+        <li>Using the data on the line after <code>fetch()</code>. It isn't there yet. Use it inside <code>.then()</code> or after <code>await</code>.</li>
+        <li>Forgetting <code>return</code> before <code>response.json()</code> in a <code>.then()</code>, so the next <code>.then()</code> gets <code>undefined</code>.</li>
+        <li>Skipping the <code>response.ok</code> check, then trying to parse a 404 error page as JSON.</li>
+        <li>Using <code>await</code> outside an <code>async</code> function (only allowed at the top level of a module).</li>
+        <li>Opening the HTML file directly and wondering why every request fails with <code>Failed to fetch</code>.</li>
+      </ul>
+    </div>
+    <div class="panel mdn">
+      <h2>On MDN</h2>
+      <ul>
+        <li><a href="https://developer.mozilla.org/en-US/docs/Learn_web_development/Core/Scripting/Network_requests">Making network requests with JavaScript</a><span class="hint">The fetch() promise chain, response.ok and catch.</span></li>
+        <li><a href="https://developer.mozilla.org/en-US/docs/Learn_web_development/Core/Scripting/House_data_UI">Challenge: Building a house data UI</a><span class="hint">Fetch JSON, filter it, and render it.</span></li>
+        <li><a href="https://developer.mozilla.org/en-US/docs/Learn_web_development/Howto/Tools_and_setup/set_up_a_local_testing_server">How do you set up a local testing server?</a><span class="hint">Needed for fetch and modules.</span></li>
+      </ul>
+    </div>
+  </section>
+
+  <footer class="page-foot"><a href="js-create-elements.html">← Creating &amp; Removing Elements</a><a href="index.html">All topics →</a></footer>
+</div>
+
+<script src="runner.js"></script>
+<script>
+  const $ = (id) => document.getElementById(id);
+  const TRAILS = [{ name: "Mesa Trail", miles: 6.7 }, { name: "Royal Arch", miles: 3.4 }, { name: "Chautauqua Loop", miles: 1.2 }];
+  const GOOD = JSON.stringify(TRAILS, null, 2);
+  const BAD = GOOD.replace('"miles": 1.2\n  }', '"miles": 1.2,\n  }');
+  let badMsg = ""; try { JSON.parse(BAD); } catch (e) { badMsg = `${e.name}: ${e.message}`; }
+
+  const SCEN = {
+    ok: { l: "trails.json → 200 OK", why: "Everything works: the server finds the file and sends valid JSON.", status: "200", stages: ["call", "after", "wait", "okcheck", "json", "render"] },
+    notfound: { l: "trial.json (typo) → 404", url: "trial.json", why: "The server answers, but with 404 Not Found. fetch() still succeeds. Only the response.ok check catches this.", status: "404", stages: ["call", "after", "wait", "okcheck", "throw", "catch"], err: "Error: HTTP error: 404" },
+    badjson: { l: "trails.json has a trailing comma", why: "The request works, but the file isn't valid JSON, so response.json() fails.", status: "200", stages: ["call", "after", "wait", "okcheck", "json", "catch"], err: badMsg },
+    offline: { l: "No internet connection", why: "The request never reaches a server. fetch() itself rejects with a TypeError.", status: "(failed)", stages: ["call", "after", "wait", "catch"], err: "TypeError: Failed to fetch" },
+    file: { l: "Page opened from file://", why: "Browsers block fetch() from pages opened as files. The console shows a CORS error. Run a local server instead.", status: "CORS error", stages: ["call", "after", "catch"], err: "TypeError: Failed to fetch", cors: true },
+  };
+  let scen = "ok", style = "then", running = false;
+  $("scen").innerHTML = Object.entries(SCEN).map(([k, s]) => `<button class="btn" data-k="${k}">${s.l}</button>`).join("");
+
+  // Each code line is tagged with the stage that runs it.
+  const CODE = {
+    then: (url) => [
+      [`fetch("${url}")`, "call"],
+      ["  .then((response) => {", "okcheck"],
+      ["    if (!response.ok) {", "okcheck"],
+      ["      throw new Error(`HTTP error: ${response.status}`);", "throw"],
+      ["    }", "okcheck"],
+      ["    return response.json();", "json"],
+      ["  })", ""],
+      ["  .then((trails) => {", "render"],
+      ["    showTrails(trails);", "render"],
+      ["  })", ""],
+      ["  .catch((error) => {", "catch"],
+      ["    message.textContent = `Could not load trails: ${error}`;", "catch"],
+      ["  });", ""],
+      ["", ""],
+      ['console.log("Request sent");', "after"],
+    ],
+    await: (url) => [
+      ["async function loadTrails() {", ""],
+      ["  try {", ""],
+      [`    const response = await fetch("${url}");`, "call"],
+      ["    if (!response.ok) {", "okcheck"],
+      ["      throw new Error(`HTTP error: ${response.status}`);", "throw"],
+      ["    }", "okcheck"],
+      ["    const trails = await response.json();", "json"],
+      ["    showTrails(trails);", "render"],
+      ["  } catch (error) {", "catch"],
+      ["    message.textContent = `Could not load trails: ${error}`;", "catch"],
+      ["  }", ""],
+      ["}", ""],
+      ["", ""],
+      ["loadTrails();", "call"],
+      ['console.log("Request sent");', "after"],
+    ],
+  };
+  let done = [], current = null, failed = null;
+  function renderCode() {
+    const s = SCEN[scen];
+    document.querySelectorAll("#scen button").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.k === scen)));
+    document.querySelectorAll("#style button").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.s === style)));
+    $("code").innerHTML = CODE[style](s.url || "trails.json").map(([c, st]) => `<div class="l ${st && st === current ? "now" : st && st === failed ? "fail" : st && done.includes(st) ? "ran" : ""}">${hlJS(c) || " "}</div>`).join("");
+    $("scen-why").textContent = s.why;
+  }
+  function net(state, ms) {
+    const s = SCEN[scen], url = s.url || "trails.json";
+    const cls = state === "pending" ? "pending" : /^2/.test(s.status) ? "ok" : "bad";
+    $("net").innerHTML = `<thead><tr><th scope="col">Name</th><th scope="col">Status</th><th scope="col">Type</th><th scope="col">Time</th><th scope="col">Waterfall</th></tr></thead><tbody>` +
+      (state === "idle" ? `<tr><td colspan="5" class="pending">No requests yet.</td></tr>` :
+      `<tr><td>${url}</td><td class="${cls}">${state === "pending" ? "(pending)" : s.status}</td><td>fetch</td><td>${state === "pending" ? "…" : ms + " ms"}</td><td><span class="bar" style="width:${state === "pending" ? 10 : Math.min(120, ms / 6)}px;background:${cls === "bad" ? "var(--bad)" : ""}"></span></td></tr>`) + "</tbody>";
+  }
+  function log(cls, t) { const out = $("out"); if (out.querySelector(".muted")) out.innerHTML = ""; const li = document.createElement("li"); li.className = cls; li.textContent = t; out.append(li); }
+
+  const SAY = {
+    call: "fetch() sends the request and immediately hands back a promise. It doesn't wait.",
+    after: "The next line runs straight away, before any data has arrived. That's why \"Request sent\" is logged first.",
+    wait: "Waiting for the server…",
+    okcheck: "The response arrived. Check response.ok: true for status 200–299.",
+    throw: "response.ok is false, so throw an error. That skips straight to catch.",
+    json: "Read the body and parse it as JSON. This also returns a promise.",
+    render: "The data is ready: an array of objects. Build the list on the page.",
+    catch: "Something failed, so the catch block shows a friendly message instead of a broken page.",
+  };
+  async function send() {
+    if (running) return;
+    running = true; $("send").disabled = true;
+    const s = SCEN[scen];
+    done = []; failed = null; current = null;
+    $("out").innerHTML = ""; net("idle");
+    const pause = (ms) => new Promise((r) => setTimeout(r, ms));
+    for (const st of s.stages) {
+      current = st; renderCode(); $("say").textContent = SAY[st];
+      if (st === "call") { net("pending"); $("preview").innerHTML = `<h3>Boulder trails</h3><p class="msg"><span class="spinner"></span>Loading…</p>`; if (s.cors) { log("err", `Access to fetch at 'file:///Users/you/site/trails.json' from origin 'null' has been blocked by CORS policy: Cross origin requests are only supported for protocol schemes: http, https, …`); net("done", 2); } }
+      if (st === "after") log("log", "Request sent");
+      if (st === "wait") { await pause(1100); net("done", 640); }
+      if (st === "okcheck") log("log", `response.status is ${s.status}, response.ok is ${s.status === "200"}`);
+      if (st === "catch") { failed = "catch"; current = null; log("err", s.err); $("preview").innerHTML = `<h3>Boulder trails</h3><p class="msg err"></p>`; $("preview").querySelector(".msg").textContent = `Could not load trails: ${s.err}`; }
+      if (st === "render") $("preview").innerHTML = `<h3>Boulder trails</h3><ul>${TRAILS.map((t) => `<li><span>${t.name}</span><span>${t.miles} mi</span></li>`).join("")}</ul>`;
+      if (st !== "catch") done.push(st);
+      renderCode();
+      await pause(st === "wait" ? 200 : 750);
+    }
+    current = null; renderCode();
+    $("say").textContent = s.stages.includes("render") ? "Done. The list was built from data that arrived after the page had loaded, with no page reload." : "Done. The error was caught, so the page shows a message instead of breaking.";
+    running = false; $("send").disabled = false;
+  }
+  $("scen").addEventListener("click", (e) => { const b = e.target.closest("button"); if (b && !running) { scen = b.dataset.k; done = []; failed = null; renderCode(); } });
+  $("style").addEventListener("click", (e) => { const b = e.target.closest("button"); if (b && !running) { style = b.dataset.s; renderCode(); } });
+  $("send").addEventListener("click", send);
+
+  $("json-file").innerHTML = hlJS(GOOD);
+  $("show-fn").innerHTML = hlJS(`const list = document.querySelector("#trails");\n\nfunction showTrails(trails) {\n  for (const trail of trails) {\n    const li = document.createElement("li");\n    li.textContent = \`\${trail.name}: \${trail.miles} mi\`;\n    list.append(li);\n  }\n}`);
+
+  makeQuiz($("quiz"), [
+    { q: "In what order are these logged?", pre: 'fetch("trails.json")\n  .then((r) => r.json())\n  .then(() => console.log("B"));\nconsole.log("A");', opts: ["A, then B", "B, then A"], a: 0, why: "fetch doesn't block. A logs right away, and B logs later when the data arrives." },
+    { q: "The server returns 404. Without a response.ok check, does .catch() run?", opts: ["Yes, fetch rejects on 404", "No, fetch only rejects on network failures"], a: 1, why: "A 404 is still a response. You have to check response.ok and throw yourself." },
+    { q: "Every fetch fails with \"Failed to fetch\", but the file is definitely there. What's the likely cause?", opts: ["The JSON is invalid", "The page was opened from file://", "You need async/await"], a: 1, why: "Browsers block fetch from file:// pages. Use a local server or GitHub Pages." },
+    { q: "What's missing from this code?", pre: 'fetch("trails.json")\n  .then((response) => {\n    response.json();\n  })\n  .then((trails) => console.log(trails));', opts: ["return before response.json()", "await before fetch", "A catch()"], a: 0, why: "Without return, the next .then() gets undefined. (A catch() is also good practice.)" },
+  ]);
+
+  $("out").innerHTML = `<li class="muted">Press Send request.</li>`;
+  net("idle"); renderCode();
+</script>
+</body>
+</html>

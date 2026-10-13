@@ -1,0 +1,251 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Selecting &amp; Changing Elements</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Recursive:slnt,wght,CASL,MONO@-15..0,300..1000,0..1,0..1&display=swap">
+<link rel="stylesheet" href="style.css">
+<style>
+  .sel-in { display: grid; grid-template-columns: minmax(0, 1fr); gap: 6px; }
+  .sel-in input { font: 1rem var(--font-code); font-variation-settings: "MONO" 1; padding: 7px 10px; border: 1px solid var(--line); border-radius: 6px; background: var(--paper); color: var(--ink); width: 100%; }
+  .chipset { display: flex; flex-wrap: wrap; gap: 6px; }
+  .chipset .btn { font-size: 0.78rem; padding: 4px 8px; }
+  .check { display: flex; gap: 8px; align-items: center; cursor: pointer; font-size: 0.92rem; }
+  .check input { accent-color: var(--cobalt); }
+
+  /* The mini page being scripted */
+  #mini { background: #fbfaf7; color: #1d2133; border-radius: 8px; padding: 14px; font-family: var(--font-body); display: grid; gap: 10px; }
+  #mini header { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 8px; border-bottom: 2px solid #e4e0d6; padding-bottom: 8px; }
+  #mini h1 { font: 800 1.2rem var(--font-display); margin: 0; color: #0b6b5e; }
+  #mini nav { display: flex; gap: 10px; }
+  #mini nav a { color: #2340d9; font-size: 0.9rem; }
+  #mini main { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(140px, 100%), 1fr)); gap: 8px; }
+  #mini .card { background: #fff; border: 1px solid #e4e0d6; border-radius: 8px; padding: 10px; display: grid; gap: 4px; transition: background 0.2s; }
+  #mini .card h2 { font: 700 1rem var(--font-display); margin: 0; }
+  #mini .card p { margin: 0; font-size: 0.85rem; color: #5a6280; }
+  #mini .card button { justify-self: start; font: 600 0.8rem var(--font-body); border: 0; border-radius: 5px; background: #0b6b5e; color: #fff; padding: 4px 10px; }
+  #mini .featured { border: 2px solid #b4410c; }
+  #mini .highlight { background: #fff3c4 !important; }
+  #mini .hidden { display: none !important; }
+  #mini footer { font-size: 0.8rem; color: #5a6280; }
+  #mini .match { outline: 3px solid var(--cobalt); outline-offset: 2px; border-radius: 4px; }
+  #mini .match-first { outline: 3px solid var(--prop); outline-offset: 2px; border-radius: 4px; }
+
+  .dom { display: grid; grid-template-columns: minmax(0, 1fr); background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 8px 0; overflow-x: auto; max-height: 420px; overflow-y: auto; }
+  .node { font: 0.82rem/1.6 var(--font-code); font-variation-settings: "MONO" 1; white-space: pre; text-align: left; border: 0; background: none; color: var(--ink); padding: 0 12px; cursor: pointer; min-width: max-content; }
+  .node:hover { background: var(--stage); }
+  .node .tg { color: var(--cobalt); } .node .at { color: var(--prop); } .node .tx { color: var(--muted); font-style: italic; }
+  .node.hit { background: var(--cobalt-soft); } .node.first { background: color-mix(in srgb, var(--prop) 18%, transparent); }
+  .node[aria-pressed="true"] { outline: 2px solid var(--ink); outline-offset: -2px; }
+  .rel { font-size: 0.9rem; display: grid; gap: 4px; }
+  .rel b { font-family: var(--font-code); font-variation-settings: "MONO" 1; font-weight: 600; }
+  .actions { display: flex; flex-wrap: wrap; gap: 6px; }
+  .actions .btn { font-size: 0.8rem; padding: 5px 9px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <nav class="crumbs" aria-label="Site"><a class="crumb" href="index.html">← Field Guide</a><a class="crumb" href="glossary.html">Glossary</a></nav>
+  <header class="page-head">
+    <span class="eyebrow">JavaScript in the Browser · Selecting &amp; Changing Elements</span>
+    <h1>Selecting &amp; Changing Elements</h1>
+    <p class="lede">The browser turns your HTML into a tree of objects called the DOM (Document Object Model). JavaScript finds elements in that tree with the same selectors you use in CSS, then changes them.</p>
+  </header>
+
+  <section class="playground">
+    <div class="panel controls">
+      <div class="control"><label for="method">Method</label>
+        <select id="method"><option value="qs">querySelector()</option><option value="qsa">querySelectorAll()</option><option value="id">getElementById()</option></select>
+      </div>
+      <div class="sel-in"><label class="eyebrow" for="sel">Selector</label><input id="sel" value=".card" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+      <div class="chipset" id="chips"></div>
+      <p class="hint" id="sel-why"></p>
+    </div>
+    <div class="stage-col">
+      <pre class="snippet" id="sel-code"></pre>
+      <ol class="console" id="sel-out" aria-label="Console output"></ol>
+      <div class="stage"><div id="mini"></div></div>
+    </div>
+  </section>
+
+  <div class="section-title"><span class="eyebrow">Part 2</span><h2>The DOM tree</h2><p>This is the mini page above as the browser sees it. Matches from your selector are highlighted. Click any node to see how it relates to the others.</p></div>
+  <section class="playground even">
+    <div class="dom" id="dom" role="group" aria-label="DOM tree"></div>
+    <div class="panel rel" id="rel" aria-live="polite"></div>
+  </section>
+
+  <div class="section-title"><span class="eyebrow">Part 3</span><h2>Change what you selected</h2><p>These act on whatever your selector matched in Part 1. Try them on <code>.featured</code>, then on <code>h2</code> with querySelectorAll.</p></div>
+  <section class="playground">
+    <div class="panel controls">
+      <div class="actions" id="actions" role="group" aria-label="Changes"></div>
+      <button class="btn" id="reset" style="justify-self:start">Reset the mini page</button>
+    </div>
+    <div class="stage-col">
+      <pre class="snippet" id="act-code"></pre>
+      <ol class="console" id="act-out" aria-label="Console output"><li class="muted">Pick a change.</li></ol>
+      <p class="hint" id="act-why"></p>
+    </div>
+  </section>
+
+  <div class="section-title"><span class="eyebrow">Practice</span><h2>Check yourself</h2></div>
+  <div class="panel quiz" id="quiz"></div>
+
+  <section class="notes">
+    <div class="panel">
+      <h2>Key ideas</h2>
+      <ul>
+        <li><code>document.querySelector(".card")</code> returns the <b>first</b> match, or <code>null</code> if nothing matches.</li>
+        <li><code>document.querySelectorAll(".card")</code> returns <b>every</b> match as a NodeList. Loop over it with <code>for...of</code>.</li>
+        <li>Change text with <code>el.textContent = "…"</code>.</li>
+        <li>Prefer <code>el.classList.add()</code>, <code>.remove()</code> and <code>.toggle()</code> with styles in your CSS file over setting <code>el.style</code> directly. It keeps CSS and JS separate.</li>
+        <li>In <code>el.style</code>, CSS property names become camelCase: <code>background-color</code> → <code>backgroundColor</code>.</li>
+        <li>Family words: a <b>parent</b> directly contains its <b>children</b>; <b>siblings</b> share a parent; <b>descendants</b> are anything inside, at any depth.</li>
+      </ul>
+    </div>
+    <div class="panel mistake">
+      <h2>Common mistakes</h2>
+      <ul>
+        <li>Forgetting the <code>.</code> or <code>#</code>: <code>querySelector("card")</code> looks for a <code>&lt;card&gt;</code> element and returns <code>null</code>.</li>
+        <li>Adding a <code>#</code> with getElementById: <code>getElementById("#title")</code> returns <code>null</code>. It takes the plain id.</li>
+        <li>Treating a NodeList like one element: <code>cards.classList.add()</code> fails. Loop over the list.</li>
+        <li>Selecting elements before they exist, because the script isn't deferred.</li>
+      </ul>
+    </div>
+    <div class="panel mdn">
+      <h2>On MDN</h2>
+      <ul>
+        <li><a href="https://developer.mozilla.org/en-US/docs/Learn_web_development/Core/Scripting/DOM_scripting">DOM scripting introduction</a><span class="hint">The DOM tree, selecting, changing and creating elements.</span></li>
+        <li><a href="https://developer.mozilla.org/en-US/docs/Web/API/Document/querySelector">Document.querySelector()</a> and <a href="https://developer.mozilla.org/en-US/docs/Web/API/Element/classList">Element.classList</a><span class="hint">Full reference.</span></li>
+      </ul>
+    </div>
+  </section>
+
+  <footer class="page-foot"><a href="js-objects-json.html">← Objects &amp; JSON</a><a href="js-events.html">Next: Events →</a></footer>
+</div>
+
+<script src="runner.js"></script>
+<script>
+  const $ = (id) => document.getElementById(id);
+  const MINI = `<header><h1 id="title">Boulder Trails</h1><nav><a href="#">Home</a><a href="#">Map</a></nav></header>
+<main><article class="card"><h2>Mesa Trail</h2><p>6.7 mi · Moderate</p><button type="button" tabindex="-1">Save</button></article><article class="card featured"><h2>Royal Arch</h2><p>3.4 mi · Hard</p><button type="button" tabindex="-1">Save</button></article><article class="card"><h2>Chautauqua</h2><p>1.2 mi · Easy</p><button type="button" tabindex="-1">Save</button></article></main>
+<footer><p>Updated <time id="updated">May 2026</time></p></footer>`;
+  const mini = $("mini");
+  const CHIPS = [".card", ".featured", "h2", "#title", ".card p", "nav a", "main > .card:last-child", "card", "button", "section"];
+  $("chips").innerHTML = CHIPS.map((c) => `<button class="btn" data-c="${c}">${c.replace(/>/g, "&gt;")}</button>`).join("");
+  $("chips").addEventListener("click", (e) => { const b = e.target.closest("button"); if (b) { $("sel").value = b.dataset.c; select(); } });
+  mini.addEventListener("click", (e) => { if (e.target.closest("a, button")) e.preventDefault(); });
+
+  let matches = [], picked = null, result = null;
+  const label = (el) => `<${el.tagName.toLowerCase()}${el.id ? "#" + el.id : ""}${el.classList.length ? "." + [...el.classList].filter((c) => !c.startsWith("match")).join(".") : ""}>`.replace(/\.(?=>)/, "");
+  function select() {
+    const m = $("method").value, s = $("sel").value.trim();
+    mini.querySelectorAll(".match, .match-first").forEach((el) => el.classList.remove("match", "match-first"));
+    const out = $("sel-out"); out.innerHTML = "";
+    const log = (cls, t) => { const li = document.createElement("li"); li.className = cls; li.textContent = t; out.append(li); };
+    const call = m === "qs" ? `document.querySelector("${s}")` : m === "qsa" ? `document.querySelectorAll("${s}")` : `document.getElementById("${s}")`;
+    $("sel-code").innerHTML = hlJS(`const ${m === "qsa" ? "items" : "el"} = ${call};\nconsole.log(${m === "qsa" ? "items" : "el"});`);
+    matches = []; result = null;
+    let why = "";
+    try {
+      if (m === "id") { const el = s ? mini.querySelector(`[id="${CSS.escape(s)}"]`) : null; matches = el ? [el] : []; result = el; }
+      else { matches = s ? [...mini.querySelectorAll(s)] : []; result = m === "qs" ? matches[0] || null : matches; if (m === "qs") matches = matches.slice(0, 1); }
+      if (m === "qsa") log("log", `NodeList(${matches.length}) [${matches.map(label).join(", ")}]`);
+      else log(result ? "log" : "warn", result ? label(result) : "null");
+      matches.forEach((el, i) => el.classList.add(m === "qs" || i === 0 ? "match-first" : "match"));
+      if (m === "id" && s.startsWith("#")) why = "getElementById takes the plain id, with no #. Try title.";
+      else if (m === "id") why = result ? "getElementById finds one element by its id. It's an older method; querySelector(\"#title\") does the same thing." : "No element has that id.";
+      else if (!matches.length && /^[a-z]/i.test(s) && !/^(header|main|nav|footer|article|h1|h2|p|a|button|time|section|div|span)\b/.test(s)) why = `Nothing matched. Without a . or #, "${s}" is read as an element name. Did you mean .${s}?`;
+      else if (!matches.length) why = "Nothing matched, so querySelector returns null. Any code that uses it next, like el.textContent, will throw a TypeError.";
+      else if (m === "qs") why = `querySelector stops at the first match.${mini.querySelectorAll(s).length > 1 ? ` There are ${mini.querySelectorAll(s).length} matches; use querySelectorAll to get them all.` : ""}`;
+      else why = `${matches.length} match${matches.length === 1 ? "" : "es"}, in the order they appear in the HTML. The first is outlined in orange.`;
+    } catch (err) {
+      log("err", `Uncaught SyntaxError: Failed to execute '${m === "qs" ? "querySelector" : "querySelectorAll"}' on 'Document': '${s}' is not a valid selector.`);
+      why = "That isn't a valid CSS selector.";
+    }
+    $("sel-why").textContent = why;
+    renderDom(); renderActionsCode();
+  }
+  $("sel").addEventListener("input", select);
+  $("method").addEventListener("change", () => { if ($("method").value === "id" && $("sel").value.trim().startsWith("#")) $("sel").value = $("sel").value.trim().slice(1); select(); });
+
+  // Part 2: DOM tree of the mini page
+  function renderDom() {
+    if (picked && !mini.contains(picked)) picked = null; // e.g. replaced by textContent
+    const rows = [];
+    (function walk(el, depth) {
+      const pad = "  ".repeat(depth);
+      const attrs = [el.id && `<span class="at">id</span>="${el.id}"`, [...el.classList].filter((c) => !c.startsWith("match")).length && `<span class="at">class</span>="${[...el.classList].filter((c) => !c.startsWith("match")).join(" ")}"`].filter(Boolean).join(" ");
+      const text = [...el.childNodes].filter((n) => n.nodeType === 3 && n.textContent.trim()).map((n) => n.textContent.trim()).join(" ");
+      rows.push({ el, h: `${pad}<span class="tg">${el.tagName.toLowerCase()}</span>${attrs ? " " + attrs : ""}${text ? `  <span class="tx">"${text}"</span>` : ""}` });
+      [...el.children].forEach((c) => walk(c, depth + 1));
+    })(mini, 0);
+    $("dom").innerHTML = rows.map((r, i) => `<button class="node ${matches[0] === r.el ? "first" : matches.includes(r.el) ? "hit" : ""}" data-i="${i}" aria-pressed="${picked === r.el}">${i === 0 ? '<span class="tx">(the mini page)</span> ' + r.h : r.h}</button>`).join("");
+    $("dom").rows = rows.map((r) => r.el);
+    renderRel();
+  }
+  $("dom").addEventListener("click", (e) => { const b = e.target.closest(".node"); if (b) { picked = $("dom").rows[b.dataset.i]; renderDom(); } });
+  function renderRel() {
+    const el = picked;
+    if (!el) { $("rel").innerHTML = `<span class="eyebrow">Relationships</span><p class="hint">Click a node in the tree.</p>`; return; }
+    const sib = el.parentElement ? [...el.parentElement.children].filter((c) => c !== el) : [];
+    const desc = el.querySelectorAll("*").length;
+    const l = (x) => label(x).replace(/</g, "&lt;");
+    $("rel").innerHTML = `<span class="eyebrow">Relationships</span><p><b>${l(el)}</b></p>` +
+      `<p>Parent: ${el === mini ? "the page around it" : `<b>${l(el.parentElement)}</b>`}</p>` +
+      `<p>Children (${el.children.length}): ${[...el.children].map((c) => `<b>${l(c)}</b>`).join(", ") || "none"}</p>` +
+      `<p>Siblings (${sib.length}): ${sib.map((c) => `<b>${l(c)}</b>`).join(", ") || "none"}</p>` +
+      `<p>Descendants: ${desc} element${desc === 1 ? "" : "s"} inside it at any depth</p>` +
+      `<p class="hint">In code: el.parentElement, el.children, el.nextElementSibling.</p>`;
+  }
+
+  // Part 3: actions on the selection
+  const ACTIONS = [
+    { l: "textContent", c: (v) => `${v}.textContent = "Updated!";`, run: (el) => { el.textContent = "Updated!"; }, why: "textContent replaces everything inside the element with plain text, including any child elements." },
+    { l: "classList.add", c: (v) => `${v}.classList.add("highlight");`, run: (el) => el.classList.add("highlight"), why: "Adds a class. The .highlight rule lives in the CSS, so the look stays in your stylesheet." },
+    { l: "classList.toggle", c: (v) => `${v}.classList.toggle("hidden");`, run: (el) => el.classList.toggle("hidden"), why: "toggle adds the class if it's missing and removes it if it's there. Click again to bring the element back. This is how most show/hide menus work." },
+    { l: "style.backgroundColor", c: (v) => `${v}.style.backgroundColor = "gold";`, run: (el) => { el.style.backgroundColor = "gold"; }, why: "Sets an inline style. Note the camelCase: backgroundColor, not background-color." },
+    { l: "style.background-color ✕", c: (v) => `${v}.style.background-color = "gold";`, bad: "Uncaught SyntaxError: Invalid left-hand side in assignment", why: "With a hyphen, JavaScript reads this as style.background minus color, which can't be assigned to. Use camelCase." },
+    { l: "setAttribute", c: (v) => `${v}.setAttribute("title", "Saved!");`, run: (el) => el.setAttribute("title", "Saved!"), why: "Sets any HTML attribute. Hover over the element on the mini page to see the tooltip." },
+  ];
+  let lastAction = null;
+  $("actions").innerHTML = ACTIONS.map((a, i) => `<button class="btn" data-i="${i}">${a.l}</button>`).join("");
+  function renderActionsCode(out) {
+    const m = $("method").value, s = $("sel").value.trim();
+    const call = m === "qs" ? `document.querySelector("${s}")` : m === "qsa" ? `document.querySelectorAll("${s}")` : `document.getElementById("${s}")`;
+    const a = lastAction;
+    if (!a) { $("act-code").innerHTML = hlJS(`const ${m === "qsa" ? "items" : "el"} = ${call};`); return; }
+    $("act-code").innerHTML = hlJS(m === "qsa" ? `const items = ${call};\n\nfor (const el of items) {\n  ${a.c("el")}\n}` : `const el = ${call};\n${a.c("el")}`);
+  }
+  $("actions").addEventListener("click", (e) => {
+    const b = e.target.closest("button"); if (!b) return;
+    lastAction = ACTIONS[b.dataset.i];
+    const m = $("method").value, out = $("act-out"); out.innerHTML = "";
+    const log = (cls, t) => { const li = document.createElement("li"); li.className = cls; li.textContent = t; out.append(li); };
+    renderActionsCode();
+    let why = lastAction.why;
+    const targets = m === "qsa" ? (result || []) : result ? [result] : [];
+    if (lastAction.bad) log("err", lastAction.bad);
+    else if (m !== "qsa" && !result) { log("err", `Uncaught TypeError: Cannot read properties of null (reading '${lastAction.l.split(".")[0]}')`); why = "Your selector matched nothing, so el is null. Change the selector in Part 1 first."; }
+    else if (m === "qsa" && !targets.length) { log("muted", "The loop ran 0 times: the NodeList is empty."); why = "Nothing matched, so there was nothing to loop over."; }
+    else { targets.forEach((el) => { el.classList.remove("match", "match-first"); lastAction.run(el); }); log("log", `Changed ${targets.length} element${targets.length === 1 ? "" : "s"}.`); if (m === "qsa") why += " With querySelectorAll you loop over the NodeList and change each element."; }
+    $("act-why").textContent = why;
+    renderDom();
+  });
+  $("reset").addEventListener("click", () => { mini.innerHTML = MINI; picked = null; lastAction = null; $("act-out").innerHTML = `<li class="muted">Pick a change.</li>`; $("act-why").textContent = ""; select(); });
+
+  makeQuiz($("quiz"), [
+    { q: "The page has three .card elements. What does this give you?", pre: 'document.querySelector(".card")', opts: ["All three cards", "The first card", "null"], a: 1, why: "querySelector returns only the first match." },
+    { q: "This logs null. Why?", pre: 'const menu = document.querySelector("menu-button");\nconsole.log(menu);', opts: ["Missing . or #", "Wrong method", "Needs quotes"], a: 0, why: "Without a dot, it looks for a <menu-button> element, not a class." },
+    { q: "How do you set the font size from JavaScript?", opts: ['el.style.font-size = "2rem";', 'el.style.fontSize = "2rem";', 'el.fontSize = "2rem";'], a: 1, why: "CSS properties become camelCase on el.style." },
+    { q: "This throws a TypeError. Why?", pre: 'const cards = document.querySelectorAll(".card");\ncards.classList.add("open");', opts: ["cards is a NodeList, not a single element", "classList only works on buttons", "open isn't a valid class"], a: 0, why: "Loop over the NodeList and call classList.add on each element." },
+    { q: "In <ul><li>A</li><li>B</li></ul>, what are the two li elements to each other?", opts: ["Parent and child", "Siblings", "Ancestors"], a: 1, why: "They have the same parent, the ul, so they're siblings." },
+  ]);
+
+  mini.innerHTML = MINI;
+  select();
+</script>
+</body>
+</html>

@@ -1,0 +1,172 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Arrays</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Recursive:slnt,wght,CASL,MONO@-15..0,300..1000,0..1,0..1&display=swap">
+<link rel="stylesheet" href="style.css">
+<style>
+  .arr { display: flex; flex-wrap: wrap; gap: 8px; align-items: flex-start; min-height: 96px; align-content: flex-start; }
+  .slot { display: grid; grid-template-rows: auto auto; min-width: 84px; max-width: 100%; border-radius: 8px; overflow: hidden; border: 2px solid var(--line); background: var(--panel); transition: transform 0.2s, border-color 0.2s; }
+  .slot b { font: 600 0.95rem var(--font-code); font-variation-settings: "MONO" 1; color: var(--val); padding: 10px 12px; text-align: center; overflow-wrap: anywhere; }
+  .slot i { font: normal 0.72rem var(--font-code); font-variation-settings: "MONO" 1; color: var(--muted); background: var(--stage); text-align: center; padding: 2px; }
+  .slot.new { border-color: var(--good); animation: pop 0.3s; } .slot.hit { border-color: var(--cobalt); background: var(--cobalt-soft); }
+  @keyframes pop { from { transform: scale(0.6); } }
+  .arr .empty { color: var(--muted); font: 0.95rem var(--font-code); font-variation-settings: "MONO" 1; align-self: center; }
+  .opgroup { display: grid; gap: 6px; }
+  .opgroup .seg .btn { font-size: 0.8rem; padding: 5px 9px; }
+  .out { display: grid; grid-template-columns: minmax(0, 1fr); gap: 8px; }
+  .out .row { display: flex; flex-wrap: wrap; gap: 6px 12px; align-items: baseline; }
+  .tag { font: 600 0.7rem var(--font-code); font-variation-settings: "MONO" 1; text-transform: uppercase; letter-spacing: 0.05em; padding: 3px 7px; border-radius: 4px; }
+  .tag.mut { background: var(--bad-soft); color: var(--bad); } .tag.pure { background: var(--good-soft); color: var(--good); }
+  .ret { font: 600 1rem var(--font-code); font-variation-settings: "MONO" 1; overflow-wrap: anywhere; }
+  .item-in { font: 0.95rem var(--font-code); font-variation-settings: "MONO" 1; padding: 6px 10px; border: 1px solid var(--line); border-radius: 6px; background: var(--paper); color: var(--ink); width: 100%; }
+  .len { font: 600 0.85rem var(--font-code); font-variation-settings: "MONO" 1; color: var(--muted); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <nav class="crumbs" aria-label="Site"><a class="crumb" href="index.html">← Field Guide</a><a class="crumb" href="glossary.html">Glossary</a></nav>
+  <header class="page-head">
+    <span class="eyebrow">JavaScript Basics · Arrays</span>
+    <h1>Arrays</h1>
+    <p class="lede">An array stores a list of values under one name, in order, with a numbered index starting at 0. Some methods change the array, and others just hand you back an answer. Try them below.</p>
+  </header>
+
+  <section class="playground">
+    <div class="panel controls">
+      <div class="control"><label for="item">New item</label><input class="item-in" id="item" value="Chautauqua" autocomplete="off"></div>
+      <div class="opgroup"><span class="eyebrow">Add and remove</span><div class="seg" id="g-change"></div></div>
+      <div class="opgroup"><span class="eyebrow">Read and search</span><div class="seg" id="g-read"></div></div>
+      <div class="opgroup"><span class="eyebrow">Convert</span><div class="seg" id="g-conv"></div></div>
+      <button class="btn" id="reset" style="justify-self:start">Reset array</button>
+    </div>
+    <div class="stage-col">
+      <pre class="snippet" id="decl"></pre>
+      <div class="stage arr" id="arr" aria-live="polite"></div>
+      <span class="len" id="len"></span>
+      <div class="panel out" id="out"></div>
+    </div>
+  </section>
+
+  <div class="section-title"><span class="eyebrow">Try it</span><h2>Pick something at random</h2><p>MDN's silly story challenge uses this pattern to choose a random item from an array. <code>Math.random()</code> gives a number from 0 up to 1. Multiply it by the length and round down to get a valid index.</p></div>
+  <div class="runner"><textarea aria-label="Code editor">const names = ["Willy the Goblin", "Big Daddy", "Father Christmas"];
+const places = ["the soup kitchen", "Disneyland", "the White House"];
+const events = ["spontaneously combusted", "melted into a puddle", "turned into a slug"];
+
+const index = Math.floor(Math.random() * names.length);
+console.log("Index picked:", index);
+
+const who = names[index];
+const where = places[Math.floor(Math.random() * places.length)];
+const what = events[Math.floor(Math.random() * events.length)];
+
+console.log(`${who} went to ${where} and ${what}.`);
+console.log(`There are ${names.length} names; the last one is ${names[names.length - 1]}.`);</textarea></div>
+
+  <div class="section-title"><span class="eyebrow">Practice</span><h2>Predict the output</h2></div>
+  <div class="panel quiz" id="quiz"></div>
+
+  <section class="notes">
+    <div class="panel">
+      <h2>Key ideas</h2>
+      <ul>
+        <li>Create an array with square brackets: <code>const trails = ["Mesa", "Royal Arch"];</code></li>
+        <li>Read an item by its index: <code>trails[0]</code> is the first item. The last one is <code>trails[trails.length - 1]</code>.</li>
+        <li>Change an item: <code>trails[1] = "Flagstaff";</code></li>
+        <li><code>push()</code> and <code>pop()</code> work at the end; <code>unshift()</code> and <code>shift()</code> work at the start. <code>splice()</code> removes from the middle.</li>
+        <li>Arrays can hold any type, including other arrays and objects.</li>
+        <li>Convert between strings and arrays with <code>split()</code> and <code>join()</code>.</li>
+      </ul>
+    </div>
+    <div class="panel mistake">
+      <h2>Common mistakes</h2>
+      <ul>
+        <li>Starting to count at 1. <code>trails[1]</code> is the <em>second</em> item.</li>
+        <li>Reading <code>trails[trails.length]</code>. It's one past the end, so you get <code>undefined</code>.</li>
+        <li>Saving what <code>push()</code> returns and expecting the array: <code>const list = trails.push("x");</code> gives the new length.</li>
+        <li>Thinking <code>indexOf()</code> returns <code>false</code> when nothing is found. It returns <code>-1</code>. Use <code>includes()</code> for a true/false answer.</li>
+      </ul>
+    </div>
+    <div class="panel mdn">
+      <h2>On MDN</h2>
+      <ul>
+        <li><a href="https://developer.mozilla.org/en-US/docs/Learn_web_development/Core/Scripting/Arrays">Arrays</a><span class="hint">Creating, reading, adding and removing items.</span></li>
+        <li><a href="https://developer.mozilla.org/en-US/docs/Learn_web_development/Core/Scripting/Silly_story_generator">Challenge: Silly story generator</a><span class="hint">Put variables, strings and arrays together.</span></li>
+        <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array">Array reference</a><span class="hint">Every array method.</span></li>
+      </ul>
+    </div>
+  </section>
+
+  <footer class="page-foot"><a href="js-strings-numbers.html">← Numbers &amp; Strings</a><a href="js-conditionals.html">Next: Conditionals →</a></footer>
+</div>
+
+<script src="runner.js"></script>
+<script>
+  const $ = (id) => document.getElementById(id);
+  const START = ["Mesa", "Royal Arch", "Flagstaff"];
+  let arr = [...START], marks = { new: [], hit: [] };
+  const item = () => $("item").value.trim() || "Chautauqua";
+  const q = (s) => JSON.stringify(s);
+
+  // mut: true if the method changes the array. fn returns { ret, marks?, why }.
+  const OPS = {
+    change: [
+      { l: "push()", code: () => `trails.push(${q(item())})`, mut: true, fn: () => { const r = arr.push(item()); return { ret: r, marks: { new: [arr.length - 1] }, why: "Adds to the end and returns the new length." }; } },
+      { l: "pop()", code: () => "trails.pop()", mut: true, fn: () => ({ ret: arr.pop(), why: "Removes the last item and returns it. On an empty array it returns undefined." }) },
+      { l: "unshift()", code: () => `trails.unshift(${q(item())})`, mut: true, fn: () => { const r = arr.unshift(item()); return { ret: r, marks: { new: [0] }, why: "Adds to the start and returns the new length. Every other item's index goes up by one." }; } },
+      { l: "shift()", code: () => "trails.shift()", mut: true, fn: () => ({ ret: arr.shift(), why: "Removes the first item and returns it. Every other item's index goes down by one." }) },
+      { l: "splice(1, 1)", code: () => "trails.splice(1, 1)", mut: true, fn: () => ({ ret: arr.splice(1, 1), why: "Starting at index 1, removes 1 item. Returns an array of what it removed." }) },
+      { l: "[1] = …", code: () => `trails[1] = ${q(item())}`, mut: true, fn: () => { if (arr.length < 1) return { ret: undefined, why: "Assigning past the end leaves a gap. Add items with push() instead." }; arr[1] = item(); return { ret: arr[1], marks: { new: [1] }, why: "Square brackets with = replace the item at that index." }; } },
+    ],
+    read: [
+      { l: "[0]", code: () => "trails[0]", fn: () => ({ ret: arr[0], marks: { hit: [0] }, why: "The first item is at index 0." }) },
+      { l: "[length - 1]", code: () => "trails[trails.length - 1]", fn: () => ({ ret: arr[arr.length - 1], marks: { hit: [arr.length - 1] }, why: "length is one more than the last index, so subtract 1 to get the last item." }) },
+      { l: "[length]", code: () => "trails[trails.length]", fn: () => ({ ret: arr[arr.length], why: "There is nothing at index length (it's one past the end), so the result is undefined. This is a classic off-by-one mistake." }) },
+      { l: "includes()", code: () => `trails.includes(${q(item())})`, fn: () => { const i = arr.indexOf(item()); return { ret: arr.includes(item()), marks: { hit: i >= 0 ? [i] : [] }, why: "true or false: is this exact value in the array? It's case-sensitive." }; } },
+      { l: "indexOf()", code: () => `trails.indexOf(${q(item())})`, fn: () => { const i = arr.indexOf(item()); return { ret: i, marks: { hit: i >= 0 ? [i] : [] }, why: "Where is it? Returns the index, or -1 if it isn't there." }; } },
+    ],
+    conv: [
+      { l: 'join(", ")', code: () => 'trails.join(", ")', fn: () => ({ ret: arr.join(", "), why: "Joins every item into one string, with the separator between them." }) },
+      { l: "slice(0, 2)", code: () => "trails.slice(0, 2)", fn: () => ({ ret: arr.slice(0, 2), marks: { hit: [0, 1].filter((i) => i < arr.length) }, why: "Copies part of the array into a new one, from index 0 up to (not including) 2. The original is untouched." }) },
+      { l: "toSorted()", code: () => "trails.toSorted()", fn: () => ({ ret: arr.toSorted ? arr.toSorted() : [...arr].sort(), why: "Returns a sorted copy (alphabetical for strings). sort() does the same but changes the original array." }) },
+    ],
+  };
+  function group(id, list) {
+    $(id).innerHTML = list.map((o, i) => `<button class="btn" data-g="${id}" data-i="${i}">${o.l}</button>`).join("");
+    $(id).addEventListener("click", (e) => {
+      const b = e.target.closest("button"); if (!b) return;
+      const o = list[b.dataset.i];
+      const code = o.code(); const r = o.fn();
+      marks = Object.assign({ new: [], hit: [] }, r.marks);
+      render({ code, o, r });
+    });
+  }
+  group("g-change", OPS.change); group("g-read", OPS.read); group("g-conv", OPS.conv);
+
+  function render(last) {
+    $("decl").innerHTML = hlJS(`const trails = ${fmtJS(arr, 1)};`);
+    $("arr").innerHTML = arr.length ? arr.map((v, i) => `<div class="slot ${marks.new.includes(i) ? "new" : ""} ${marks.hit.includes(i) ? "hit" : ""}"><b></b><i>[${i}]</i></div>`).join("") : `<span class="empty">[] (empty)</span>`;
+    $("arr").querySelectorAll(".slot b").forEach((b, i) => { b.textContent = q(arr[i]); });
+    $("len").textContent = `trails.length → ${arr.length}`;
+    if (!last) { $("out").innerHTML = `<p class="hint">Pick a method. The new-item box sets the value used by push(), unshift(), includes() and indexOf().</p>`; return; }
+    $("out").innerHTML = `<pre class="snippet">${hlJS(last.code)}</pre><div class="row"><span class="tag ${last.o.mut ? "mut" : "pure"}">${last.o.mut ? "Changes the array" : "Array unchanged"}</span><span class="ret"></span></div><p class="hint"></p>`;
+    $("out").querySelector(".ret").textContent = "returns → " + (last.r.ret === undefined ? "undefined" : fmtJS(last.r.ret, 1));
+    $("out").querySelector(".hint").textContent = last.r.why;
+  }
+  $("reset").addEventListener("click", () => { arr = [...START]; marks = { new: [], hit: [] }; render(); });
+
+  makeQuiz($("quiz"), [
+    { q: "What does this log?", pre: 'const pets = ["cat", "dog", "fish"];\nconsole.log(pets[1]);', opts: ["cat", "dog", "fish"], a: 1, why: "Indexes start at 0, so [1] is the second item." },
+    { q: "What does this log?", pre: 'const pets = ["cat", "dog"];\nconsole.log(pets.push("bird"));', opts: ["[\"cat\", \"dog\", \"bird\"]", "bird", "3"], a: 2, why: "push() returns the new length, not the array." },
+    { q: "What does this log?", pre: 'const pets = ["cat", "dog"];\nconsole.log(pets.indexOf("Cat"));', opts: ["0", "-1", "false"], a: 1, why: "\"Cat\" with a capital C isn't in the array, and indexOf returns -1 when nothing is found." },
+    { q: "What does this log?", pre: 'const parts = "red,green,blue".split(",");\nconsole.log(parts.length);', opts: ["1", "3", "14"], a: 1, why: "split(\",\") makes an array of three strings." },
+  ]);
+
+  render();
+</script>
+</body>
+</html>

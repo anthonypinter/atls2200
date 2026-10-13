@@ -1,0 +1,216 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>What Is JavaScript?</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Recursive:slnt,wght,CASL,MONO@-15..0,300..1000,0..1,0..1&display=swap">
+<link rel="stylesheet" href="style.css">
+<style>
+  .layers { display: grid; gap: 8px; }
+  .layer { display: grid; grid-template-columns: auto 1fr; gap: 10px; align-items: start; padding: 10px 12px; border: 1px solid var(--line); border-radius: 8px; cursor: pointer; }
+  .layer input { accent-color: var(--cobalt); margin-top: 5px; }
+  .layer b { font: 700 0.95rem var(--font-code); font-variation-settings: "MONO" 1; }
+  .layer span { display: block; font-size: 0.88rem; color: var(--muted); }
+  .demo { display: grid; place-items: center; gap: 12px; min-height: 200px; }
+  .demo .note { font-size: 0.9rem; color: var(--muted); text-align: center; max-width: 40ch; }
+  .player.styled { font: 700 1.1rem "Recursive", sans-serif; letter-spacing: 0.04em; text-transform: uppercase; text-align: center; color: #0a0130; background: #ffc4a2; border: 2px solid #ce4e03; border-radius: 10px; padding: 10px 18px; cursor: pointer; box-shadow: 0 3px 0 #ce4e03; }
+  .player.plain { font: 16px "Times New Roman", serif; }
+  .rename { display: flex; gap: 6px; flex-wrap: wrap; justify-content: center; }
+  .rename input { font: 1rem var(--font-body); padding: 6px 10px; border: 1px solid var(--line); border-radius: 6px; background: var(--panel); color: var(--ink); }
+  .codes { display: grid; grid-template-columns: minmax(0, 1fr); gap: 10px; }
+  .codes .snippet { transition: opacity 0.2s; }
+  .codes .off { opacity: 0.35; }
+  .codes .label { font: 600 0.72rem var(--font-code); font-variation-settings: "MONO" 1; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); display: block; margin-bottom: 4px; }
+
+  .timeline { display: grid; grid-template-columns: minmax(0, 1fr); gap: 6px; }
+  .track { display: grid; grid-template-columns: 90px minmax(0, 1fr); gap: 10px; align-items: center; font: 0.8rem var(--font-code); font-variation-settings: "MONO" 1; color: var(--muted); }
+  .bar { position: relative; height: 22px; background: var(--panel); border: 1px solid var(--line); border-radius: 4px; overflow: hidden; }
+  .bar i { position: absolute; top: 0; bottom: 0; border-radius: 3px; transition: left 0.3s, width 0.3s; }
+  .bar i.parse { background: var(--item-1); } .bar i.load { background: var(--item-3); } .bar i.exec { background: var(--item-2); } .bar i.blocked { background: repeating-linear-gradient(45deg, var(--bad-soft) 0 6px, transparent 6px 12px); }
+  .key { display: flex; flex-wrap: wrap; gap: 12px; font-size: 0.82rem; color: var(--muted); }
+  .key span::before { content: ""; display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 5px; vertical-align: -1px; background: var(--c); }
+  .verdict { padding: 10px 14px; border-radius: 8px; font-size: 0.95rem; }
+  .verdict.good { background: var(--good-soft); color: var(--good); } .verdict.bad { background: var(--bad-soft); color: var(--bad); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <nav class="crumbs" aria-label="Site"><a class="crumb" href="index.html">← Field Guide</a><a class="crumb" href="glossary.html">Glossary</a></nav>
+  <header class="page-head">
+    <span class="eyebrow">JavaScript Basics · What Is JavaScript?</span>
+    <h1>What Is JavaScript?</h1>
+    <p class="lede">HTML gives a page its structure, CSS gives it style, and JavaScript gives it behavior. Turn each layer on and off to see what it adds, then find out where the <code>&lt;script&gt;</code> tag needs to go.</p>
+  </header>
+
+  <section class="playground">
+    <div class="panel controls">
+      <span class="eyebrow">Layers</span>
+      <div class="layers">
+        <label class="layer"><input type="checkbox" id="l-html" checked><div><b>HTML</b><span>Structure: there is a button, and it says something.</span></div></label>
+        <label class="layer"><input type="checkbox" id="l-css" checked><div><b>CSS</b><span>Presentation: colors, font, border, shape.</span></div></label>
+        <label class="layer"><input type="checkbox" id="l-js" checked><div><b>JavaScript</b><span>Behavior: clicking the button lets you change the name.</span></div></label>
+      </div>
+      <p class="hint">Each layer builds on the one before it. JavaScript can't add behavior to a button that doesn't exist.</p>
+    </div>
+    <div class="stage-col">
+      <div class="stage demo" id="demo"></div>
+      <div class="codes" id="codes"></div>
+    </div>
+  </section>
+
+  <div class="section-title"><span class="eyebrow">Part 2</span><h2>Where does the script tag go?</h2><p>A script often uses elements on the page. If it runs before the browser has read those elements, it finds nothing and fails. Pick a placement and see what happens as the page loads.</p></div>
+  <section class="playground">
+    <div class="panel controls">
+      <div class="control"><label for="place">Placement</label>
+        <select id="place">
+          <option value="head">&lt;script src&gt; in &lt;head&gt;</option>
+          <option value="defer" selected>&lt;script defer src&gt; in &lt;head&gt;</option>
+          <option value="bottom">&lt;script&gt; at the end of &lt;body&gt;</option>
+          <option value="module-file">type="module", opened from your computer</option>
+          <option value="module-server">type="module", on a web server</option>
+        </select>
+      </div>
+      <p class="hint" id="place-why"></p>
+    </div>
+    <div class="stage-col">
+      <pre class="snippet" id="place-code"></pre>
+      <div class="panel timeline" id="timeline"></div>
+      <div class="verdict" id="verdict" role="status"></div>
+      <ol class="console" id="place-console" aria-label="Console output"></ol>
+    </div>
+  </section>
+
+  <div class="section-title"><span class="eyebrow">Practice</span><h2>Check yourself</h2></div>
+  <div class="panel quiz" id="quiz"></div>
+
+  <section class="notes">
+    <div class="panel">
+      <h2>Key ideas</h2>
+      <ul>
+        <li>JavaScript is a programming language that runs in the browser. It can change content, react to clicks and typing, and fetch new data without reloading the page.</li>
+        <li>Put JavaScript in its own file and link it: <code>&lt;script defer src="script.js"&gt;&lt;/script&gt;</code>. Keeping HTML, CSS and JS in separate files keeps each one easy to read.</li>
+        <li><code>defer</code> downloads the script while the HTML loads, then runs it once the whole page has been read.</li>
+        <li><code>type="module"</code> works the same way and is what MDN recommends, but it only runs on a web server (or a local server), not from a file you double-clicked.</li>
+        <li>Comments: <code>// one line</code> or <code>/* several lines */</code>.</li>
+      </ul>
+    </div>
+    <div class="panel mistake">
+      <h2>Common mistakes</h2>
+      <ul>
+        <li>A plain <code>&lt;script src&gt;</code> in the head with no <code>defer</code>: the elements don't exist yet, so you get <code>null</code> errors.</li>
+        <li>Inline handlers like <code>&lt;button onclick="go()"&gt;</code>. MDN calls this bad practice. Use <code>addEventListener</code> in your JS file instead.</li>
+        <li>Writing <code>&lt;script src="script.js" /&gt;</code>. A script tag always needs a closing <code>&lt;/script&gt;</code>.</li>
+        <li>A wrong path in <code>src</code>. Nothing happens, and the console shows a 404 for the file.</li>
+      </ul>
+    </div>
+    <div class="panel mdn">
+      <h2>On MDN</h2>
+      <ul>
+        <li><a href="https://developer.mozilla.org/en-US/docs/Learn_web_development/Core/Scripting/What_is_JavaScript">What is JavaScript?</a><span class="hint">The layer cake, adding scripts, and loading strategies.</span></li>
+        <li><a href="https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/script">The &lt;script&gt; element</a><span class="hint">Every attribute, including defer, async and type.</span></li>
+      </ul>
+    </div>
+  </section>
+
+  <footer class="page-foot"><a href="publishing.html">← Project Structure &amp; Publishing</a><a href="js-errors.html">Next: The Console &amp; Errors →</a></footer>
+</div>
+
+<script src="runner.js"></script>
+<script>
+  const $ = (id) => document.getElementById(id);
+  let name = "Chris";
+  let renaming = false;
+
+  function renderLayers() {
+    const html = $("l-html").checked, css = $("l-css").checked, js = $("l-js").checked;
+    const demo = $("demo");
+    if (!html) {
+      demo.innerHTML = `<p class="note">No HTML, so there is nothing on the page. CSS has nothing to style and JavaScript has nothing to work with.</p>`;
+    } else if (renaming && js) {
+      demo.innerHTML = `<form class="rename" id="rename"><label for="nm" class="hint" style="width:100%;text-align:center">Enter a new name</label><input id="nm" value="${name.replace(/"/g, "&quot;")}" maxlength="20" autocomplete="off"><button class="btn run">OK</button></form>`;
+      $("nm").focus(); $("nm").select();
+      $("rename").addEventListener("submit", (e) => { e.preventDefault(); name = $("nm").value.trim() || name; renaming = false; renderLayers(); });
+    } else {
+      demo.innerHTML = `<button type="button" class="player ${css ? "styled" : "plain"}" id="player">Player 1: ${name.replace(/</g, "&lt;")}</button>` +
+        `<p class="note">${js ? "Click the button to change the name." : "Without JavaScript the button looks clickable, but clicking it does nothing."}</p>`;
+      if (js) $("player").addEventListener("click", () => { renaming = true; renderLayers(); });
+    }
+    const block = (label, on, html) => `<div class="${on ? "" : "off"}"><span class="label">${label}${on ? "" : " (off)"}</span><pre class="snippet">${html}</pre></div>`;
+    $("codes").innerHTML =
+      block("index.html", html, `<span class="tag-name">&lt;button</span> <span class="attr">class</span>=<span class="str">"player"</span><span class="tag-name">&gt;</span>Player 1: Chris<span class="tag-name">&lt;/button&gt;</span>`) +
+      block("style.css", css, `<span class="sel">.player</span> {\n  <span class="prop">font-family</span>: <span class="val">"Recursive", sans-serif</span>;\n  <span class="prop">background</span>: <span class="val">#ffc4a2</span>;\n  <span class="prop">border</span>: <span class="val">2px solid #ce4e03</span>;\n  <span class="prop">border-radius</span>: <span class="val">10px</span>;\n}`) +
+      block("script.js", js, hlJS(`const button = document.querySelector(".player");\n\nbutton.addEventListener("click", () => {\n  const name = prompt("Enter a new name");\n  button.textContent = \`Player 1: \${name}\`;\n});`));
+  }
+  ["l-html", "l-css", "l-js"].forEach((id) => $(id).addEventListener("change", () => { renaming = false; renderLayers(); }));
+
+  // Part 2: script placement. Times are illustrative: the page's HTML takes 10 units to read, the script 4 to download.
+  const PLACES = {
+    head: {
+      code: `&lt;head&gt;\n  <b>&lt;script src="script.js"&gt;&lt;/script&gt;</b>\n&lt;/head&gt;\n&lt;body&gt;\n  &lt;button class="player"&gt;…&lt;/button&gt;\n&lt;/body&gt;`,
+      parse: [[0, 1], [6, 9]], load: [1, 4], exec: [5, 1], blocked: [1, 5],
+      ok: false, verdict: "Broken. The script ran before the button existed.",
+      log: ["err", "Uncaught TypeError: Cannot read properties of null (reading 'addEventListener')\n    at script.js:3:8"],
+      why: "The browser stops reading HTML, downloads and runs the script, then carries on. When the script looks for .player, the button hasn't been read yet, so querySelector returns null.",
+    },
+    defer: {
+      code: `&lt;head&gt;\n  <b>&lt;script defer src="script.js"&gt;&lt;/script&gt;</b>\n&lt;/head&gt;\n&lt;body&gt;\n  &lt;button class="player"&gt;…&lt;/button&gt;\n&lt;/body&gt;`,
+      parse: [[0, 10]], load: [1, 4], exec: [10, 1],
+      ok: true, verdict: "Works. The script downloads early and runs after the HTML is read.",
+      log: ["log", "Button found: <button.player>"],
+      why: "defer downloads the script in the background while the HTML keeps loading, then runs it after the whole page has been read. This is the best choice when you open your files directly from your computer.",
+    },
+    bottom: {
+      code: `&lt;body&gt;\n  &lt;button class="player"&gt;…&lt;/button&gt;\n  <b>&lt;script src="script.js"&gt;&lt;/script&gt;</b>\n&lt;/body&gt;`,
+      parse: [[0, 10]], load: [10, 4], exec: [14, 1],
+      ok: true, verdict: "Works, but later. The download only starts after all the HTML is read.",
+      log: ["log", "Button found: <button.player>"],
+      why: "By the time the browser reaches the script, every element above it exists. The drawback: the browser doesn't discover the script until the end, so it starts downloading late.",
+    },
+    "module-file": {
+      code: `<span class="cmt">&lt;!-- file:///Users/you/site/index.html --&gt;</span>\n&lt;head&gt;\n  <b>&lt;script type="module" src="script.js"&gt;&lt;/script&gt;</b>\n&lt;/head&gt;`,
+      parse: [[0, 10]], load: [], exec: null,
+      ok: false, verdict: "Blocked. Modules won't load from a file you double-clicked.",
+      log: ["err", "Access to script at 'file:///Users/you/site/script.js' from origin 'null' has been blocked by CORS policy: Cross origin requests are only supported for protocol schemes: http, https, …"],
+      why: "For security, browsers only load modules over http:// or https://. Use defer while you're working from files, or run a local server, such as VS Code's Live Server extension.",
+    },
+    "module-server": {
+      code: `<span class="cmt">&lt;!-- https://you.github.io/site/ --&gt;</span>\n&lt;head&gt;\n  <b>&lt;script type="module" src="script.js"&gt;&lt;/script&gt;</b>\n&lt;/head&gt;`,
+      parse: [[0, 10]], load: [1, 4], exec: [10, 1],
+      ok: true, verdict: "Works. Modules behave like defer automatically.",
+      log: ["log", "Button found: <button.player>"],
+      why: "Module scripts are deferred by default, so the timing is the same as defer. MDN recommends type=\"module\" for new code. Once your site is on GitHub Pages or a local server, it just works.",
+    },
+  };
+  function renderPlace() {
+    const p = PLACES[$("place").value];
+    $("place-code").innerHTML = p.code.replace(/<b>/g, '<b style="color:var(--prop)">');
+    const pct = (n) => (n / 16) * 100 + "%";
+    const seg = (cls, [s, w]) => `<i class="${cls}" style="left:${pct(s)};width:${pct(w)}"></i>`;
+    $("timeline").innerHTML =
+      `<div class="track"><span>Read HTML</span><div class="bar">${p.parse.map((x) => seg("parse", x)).join("")}${p.blocked ? seg("blocked", p.blocked) : ""}</div></div>` +
+      `<div class="track"><span>Download JS</span><div class="bar">${p.load.length ? seg("load", p.load) : ""}</div></div>` +
+      `<div class="track"><span>Run JS</span><div class="bar">${p.exec ? seg("exec", p.exec) : ""}</div></div>` +
+      `<div class="key"><span style="--c:var(--item-1)">reading HTML</span><span style="--c:var(--item-3)">downloading</span><span style="--c:var(--item-2)">running</span>${p.blocked ? '<span style="--c:var(--bad)">HTML paused</span>' : ""}</div>`;
+    $("verdict").className = "verdict " + (p.ok ? "good" : "bad");
+    $("verdict").textContent = p.verdict;
+    $("place-console").innerHTML = `<li class="${p.log[0]}"></li>`;
+    $("place-console").firstChild.textContent = p.log[1];
+    $("place-why").textContent = p.why;
+  }
+  $("place").addEventListener("change", renderPlace);
+
+  const QUIZ = [
+    { q: "Which layer makes a menu open when you click the hamburger icon?", opts: ["HTML", "CSS", "JavaScript"], a: 2, why: "Responding to a click is behavior, which is JavaScript's job." },
+    { q: "Your script is in the head with no attributes and logs null for every element. The quickest fix?", opts: ["Add defer", "Add async", "Move the CSS link"], a: 0, why: "defer waits until the HTML has been read before running the script." },
+    { q: "You open index.html by double-clicking it, and your type=\"module\" script is blocked. Why?", opts: ["Modules need a server", "The file is too big", "Modules need the .mjs extension"], a: 0, why: "Browsers only load modules over http(s). Use defer locally, or run a local server." },
+    { q: "Which is the recommended way to run code when a button is clicked?", opts: ['onclick="go()" in the HTML', "addEventListener in script.js"], a: 1, why: "MDN advises against inline handlers. Keep behavior in your JavaScript file." },
+  ];
+  makeQuiz($("quiz"), QUIZ);
+
+  renderLayers(); renderPlace();
+</script>
+</body>
+</html>
