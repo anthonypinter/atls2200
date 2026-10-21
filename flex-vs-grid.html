@@ -4,9 +4,6 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Flexbox vs Grid</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Recursive:slnt,wght,CASL,MONO@-15..0,300..1000,0..1,0..1&display=swap">
 <link rel="stylesheet" href="style.css">
 <style>
   .scen { display: flex; flex-wrap: wrap; gap: 6px; }
@@ -63,13 +60,37 @@
 <script src="js/quiz.js"></script>
 </head>
 <body>
-<div class="wrap">
+<main class="wrap">
   <nav class="crumbs" aria-label="Site"><a class="crumb" href="index.html">← Field Guide</a><a class="crumb" href="glossary.html">Glossary</a></nav>
   <header class="page-head">
     <span class="eyebrow">Layout · Flexbox vs Grid</span>
     <h1>Flexbox vs Grid</h1>
     <p class="lede">Both can build most layouts, but each has a sweet spot. Flexbox arranges items along one line and lets their content decide their size. Grid lays out rows and columns together. Pick a layout and compare.</p>
+    <div class="objectives">
+      <p class="callout-title">You'll be able to</p>
+      <ul>
+        <li>Explain the difference between one-dimensional and two-dimensional layout.</li>
+        <li>Choose Flexbox or Grid for a given layout.</li>
+        <li>Combine the two, with a flex container inside a grid cell or the other way round.</li>
+      </ul>
+    </div>
   </header>
+
+  <div class="section-title"><span class="eyebrow">Read</span><h2>Two tools, different jobs</h2></div>
+  <div class="prose">
+    <p>You can build most layouts with either <span class="term">Flexbox</span> or <span class="term">Grid</span>, which is why people argue about which is better. They're not competitors. Each has a sweet spot, and real sites use both, often on the same page.</p>
+    <p>The key difference is dimensions. Flexbox is one-dimensional: it arranges items along a single row or column, and lets each item's content help decide its size. When flex items wrap onto a second line, that line is laid out on its own, so items in different lines don't line up with each other. Grid is two-dimensional: you define columns and rows, and items line up in both directions.</p>
+    <p>A useful rule of thumb:</p>
+    <ul>
+      <li>Reach for <strong>Flexbox</strong> for a row of things whose sizes come from their content: a nav bar, a set of buttons, a logo next to a title, tags that wrap.</li>
+      <li>Reach for <strong>Grid</strong> when columns must line up, or when you're defining the layout first and placing content into it: a card gallery, a page with a sidebar, a photo layout where one item spans several cells.</li>
+    </ul>
+    <p>The classic sign you picked wrong is a card gallery built with Flexbox: the last row has two cards, and they stretch to fill the whole width. With Grid, they keep the same width as the cards above.</p>
+    <p>The two also nest freely. A page might use Grid for its overall layout, and each card inside might use Flexbox to line up its icon, title and button.</p>
+    <div class="callout tip"><p class="callout-title">Tip</p><p>Ask yourself: "Do I care about columns lining up?" If yes, use Grid. If you just need things in a row, spaced nicely, use Flexbox.</p></div>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Play</span><h2>Compare the same layout</h2><p>Pick a layout and see it built both ways. Change the container width to see where each one struggles.</p></div>
 
   <div class="panel" style="display:grid;gap:12px">
     <div class="scen" id="scen" role="group" aria-label="Layout"></div>
@@ -84,6 +105,9 @@
     <span class="eyebrow">Rule of thumb</span>
     <p><strong>Content out:</strong> if the items' sizes should decide the layout (a row of buttons, tags, a navbar), use Flexbox. <strong>Layout in:</strong> if you want to draw the rows and columns first and drop items into them (a gallery, a page, a dashboard), use Grid. Real sites use both, often nested.</p>
   </div>
+
+  <div class="section-title"><span class="eyebrow">Practice</span><h2>Pick the right tool</h2><p>This page uses Flexbox for everything. One part should be Grid.</p></div>
+  <div id="ex-choose"></div>
 
   <section class="notes">
     <div class="panel">
@@ -106,8 +130,11 @@
     </div>
   </section>
 
+  <div class="section-title"><span class="eyebrow">Check yourself</span><h2>Quick check</h2></div>
+  <div class="panel quiz" id="quiz"></div>
+
   <footer class="page-foot" data-book-nav><a href="index.html">← Contents</a></footer>
-</div>
+</main>
 
 <script>
   const $ = (id) => document.getElementById(id);
@@ -155,6 +182,55 @@
   }
   $("w").addEventListener("input", render);
   render();
+</script>
+<script>
+  makeQuiz(document.getElementById("quiz"), [
+    { id: "q1", q: "Which is two-dimensional, controlling rows and columns together?", opts: ["Grid", "Flexbox", "Both"], a: 0, why: "Grid lines items up in both directions; Flexbox works along one line at a time." },
+    { id: "q2", q: "A row of buttons whose widths come from their text. Which fits best?", opts: ["Grid", "Flexbox", "Floats"], a: 1, why: "A single row sized by content is Flexbox's sweet spot." },
+    { id: "q3", q: "In a Flexbox card gallery, the last row's two cards stretch wide. What's the better tool?", opts: ["Tables", "position: absolute", "Grid"], a: 2, why: "Grid keeps every card the same column width, even in the last row." },
+    { id: "q4", q: "Can a flex container go inside a grid cell?", opts: ["Yes, they nest freely", "No, you must choose one", "Only with !important"], a: 0, why: "Grid for the page, Flexbox inside each card is a very common combination." },
+  ]);
+</script>
+<script>
+  makeExercise(document.getElementById("ex-choose"), {
+    title: "Tags and cards",
+    task: `<p>The tags are fine as a wrapping flex row. But the cards are a gallery, and the last row's cards stretch wider than the rest.</p>
+    <ol>
+      <li>Keep the tags as a flex row that wraps.</li>
+      <li>Rebuild the cards with Grid so every card is the same width, at least 200px, in as many columns as fit.</li>
+    </ol>`,
+    html: `<div class="tags">
+  <span>dogs ok</span><span>shade</span><span>views</span><span>steep</span><span>creek</span>
+</div>
+<div class="cards">
+  <div class="card">Mesa</div><div class="card">Royal Arch</div><div class="card">Flagstaff</div>
+  <div class="card">Bear Peak</div><div class="card">Chautauqua</div><div class="card">Green Mtn</div>
+  <div class="card">Sanitas</div>
+</div>`,
+    css: `body { font-family: system-ui, sans-serif; }
+.tags { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
+.tags span { background: #eef1fb; padding: 4px 10px; border-radius: 99px; }
+
+.cards { display: flex; flex-wrap: wrap; gap: 12px; }
+.card { flex: 1 1 200px; padding: 20px; background: #b9c4ef; }`,
+    solution: { css: `body { font-family: system-ui, sans-serif; }
+.tags { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
+.tags span { background: #eef1fb; padding: 4px 10px; border-radius: 99px; }
+
+.cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; }
+.card { padding: 20px; background: #b9c4ef; }` },
+    hints: [
+      "Columns that line up are Grid's job.",
+      "grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)) fits as many 200px+ columns as there's room for.",
+      "Remove the flex property from .card: it does nothing in a grid.",
+    ],
+    checks: [
+      { label: "The tags are still a wrapping flex row", test: ({ style }) => style(".tags", "display") === "flex" && style(".tags", "flex-wrap") === "wrap" },
+      { label: "The cards are a grid", test: ({ style }) => style(".cards", "display") === "grid" },
+    { label: "Columns use repeat(auto-fit, minmax(200px, 1fr))", test: ({ doc }) => [...doc.styleSheets[0].cssRules].some((r) => r.selectorText === ".cards" && /^repeat\(auto-(fit|fill),\s*minmax\(200px,\s*1fr\)\)$/.test(r.style.gridTemplateColumns)) },
+      { label: "Every card is the same width, at least 200px", test: ({ $$ }) => { const w = $$(".card").map((c) => c.getBoundingClientRect().width); return Math.max(...w) - Math.min(...w) < 1 && Math.min(...w) >= 200; } },
+    ],
+  });
 </script>
 </body>
 </html>

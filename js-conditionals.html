@@ -4,15 +4,12 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Conditionals</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Recursive:slnt,wght,CASL,MONO@-15..0,300..1000,0..1,0..1&display=swap">
 <link rel="stylesheet" href="style.css">
 <style>
   .chain { display: grid; grid-template-columns: minmax(0, 1fr); background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 8px 0; overflow-x: auto; }
   .cl { display: grid; grid-template-columns: 1fr auto; gap: 12px; align-items: center; padding: 3px 14px; font: 0.9rem/1.6 var(--font-code); font-variation-settings: "MONO" 1; white-space: pre; border-left: 3px solid transparent; min-width: max-content; }
   .cl.ran { background: var(--good-soft); border-left-color: var(--good); }
-  .cl.skip { opacity: 0.4; }
+  .cl.skip, .cl.skip * { color: var(--muted) !important; font-style: italic; }
   .badge { font: 600 0.7rem var(--font-code); font-variation-settings: "MONO" 1; padding: 2px 7px; border-radius: 4px; text-transform: uppercase; letter-spacing: 0.04em; }
   .badge.t { background: var(--good-soft); color: var(--good); border: 1px solid var(--good); }
   .badge.f { background: var(--bad-soft); color: var(--bad); }
@@ -40,13 +37,40 @@
 <script src="js/quiz.js"></script>
 </head>
 <body>
-<div class="wrap">
+<main class="wrap">
   <nav class="crumbs" aria-label="Site"><a class="crumb" href="index.html">← Field Guide</a><a class="crumb" href="glossary.html">Glossary</a></nav>
   <header class="page-head">
     <span class="eyebrow">JavaScript Basics · Conditionals</span>
     <h1>Conditionals</h1>
     <p class="lede">An <code>if</code> statement lets code make decisions. JavaScript checks each condition from top to bottom, runs the first block that is true, and skips everything else.</p>
+    <div class="objectives">
+      <p class="callout-title">You'll be able to</p>
+      <ul>
+        <li>Write if, else if and else blocks that run in the right order.</li>
+        <li>Compare values with === and combine conditions with &&, || and !.</li>
+        <li>Predict which values count as truthy and falsy.</li>
+      </ul>
+    </div>
   </header>
+
+  <div class="section-title"><span class="eyebrow">Read</span><h2>Making decisions</h2></div>
+  <div class="prose">
+    <p>Programs make choices: show the error or don't, say good morning or good evening. A <span class="term">conditional</span> runs code only when something is true.</p>
+    <pre class="snippet" data-lang="js">if (temp &gt;= 85) {
+  msg = "Hike early. It'll be hot.";
+} else if (temp &gt;= 50) {
+  msg = "Perfect hiking weather.";
+} else {
+  msg = "Bring layers.";
+}</pre>
+    <p>JavaScript checks each condition from top to bottom and runs the first block whose condition is true. Then it skips everything else, even if later conditions would also be true. That's why order matters: put the most specific conditions first. If the <code>&gt;= 50</code> check came first, a 95-degree day would get "perfect hiking weather."</p>
+    <p>Compare with <code>&lt;</code>, <code>&gt;</code>, <code>&lt;=</code>, <code>&gt;=</code>, and <span class="term" data-term="=== (strict equality)">===</span> for "equal." Always use three equals signs. The two-equals version converts types first, so <code>"5" == 5</code> is true, which hides bugs. <code>"5" === 5</code> is false. And remember that a single <code>=</code> assigns a value; it never compares.</p>
+    <p>Combine conditions with <code>&amp;&amp;</code> (both must be true), <code>||</code> (at least one must be true) and <code>!</code> (flips true and false): <code>if (isWeekend &amp;&amp; !isRaining)</code>.</p>
+    <p>A condition doesn't have to be a comparison. Any value works. Six values count as false: <code>false</code>, <code>0</code>, <code>""</code>, <code>null</code>, <code>undefined</code> and <code>NaN</code>. These are called <span class="term" data-term="Truthy / falsy">falsy</span>, and everything else is truthy. So <code>if (name)</code> means "if name isn't empty."</p>
+    <div class="callout warn"><p class="callout-title">Watch out</p><p><code>if (x = 5)</code> doesn't compare. It sets <code>x</code> to 5, and since 5 is truthy, the block always runs.</p></div>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Play</span><h2>Change the temperature</h2><p>Change the value and watch which branch runs. Then flip the order of the conditions.</p></div>
 
   <section class="playground">
     <div class="panel controls">
@@ -60,7 +84,7 @@
     </div>
   </section>
 
-  <div class="section-title"><span class="eyebrow">Part 2</span><h2>AND, OR, NOT</h2><p>Combine conditions with <code>&amp;&amp;</code> (both must be true), <code>||</code> (at least one must be true) and <code>!</code> (flips true and false).</p></div>
+  <div class="section-title"><span class="eyebrow">Play</span><h2>AND, OR, NOT</h2><p>Combine conditions with <code>&amp;&amp;</code> (both must be true), <code>||</code> (at least one must be true) and <code>!</code> (flips true and false).</p></div>
   <section class="playground">
     <div class="panel controls">
       <label class="check"><input type="checkbox" id="weekend" checked><span>const isWeekend = <span id="w-out"></span>;</span></label>
@@ -74,7 +98,7 @@
     </div>
   </section>
 
-  <div class="section-title"><span class="eyebrow">Part 3</span><h2>Truthy and falsy</h2><p>A condition doesn't have to be a comparison. Any value works: six values count as false, and everything else counts as true. This is how <code>if (name)</code> checks whether someone typed anything.</p></div>
+  <div class="section-title"><span class="eyebrow">Play</span><h2>Truthy and falsy</h2><p>A condition doesn't have to be a comparison. Any value works: six values count as false, and everything else counts as true. This is how <code>if (name)</code> checks whether someone typed anything.</p></div>
   <section class="playground">
     <div class="panel controls"><span class="eyebrow">const value =</span><div class="vals" id="vals" role="group" aria-label="Value"></div></div>
     <div class="stage-col"><pre class="snippet" id="truthy-code"></pre><p class="truthy-out" id="truthy-out" aria-live="polite"></p></div>
@@ -102,8 +126,8 @@ if (!name) {
   console.log("Please enter your name");
 }</textarea></div>
 
-  <div class="section-title"><span class="eyebrow">Practice</span><h2>Predict the output</h2></div>
-  <div class="panel quiz" id="quiz"></div>
+  <div class="section-title"><span class="eyebrow">Practice</span><h2>Fix the decision</h2><p>This function gives the wrong advice on hot days and ignores the rain. Reorder and add to it.</p></div>
+  <div id="ex-cond"></div>
 
   <section class="notes">
     <div class="panel">
@@ -135,8 +159,11 @@ if (!name) {
     </div>
   </section>
 
+  <div class="section-title"><span class="eyebrow">Check yourself</span><h2>Predict the output</h2></div>
+  <div class="panel quiz" id="quiz"></div>
+
   <footer class="page-foot" data-book-nav><a href="index.html">← Contents</a></footer>
-</div>
+</main>
 
 <script src="js/runner.js"></script>
 <script>
@@ -212,6 +239,54 @@ if (!name) {
   ]);
 
   renderChain(); renderLogic(); renderTruthy();
+</script>
+<script>
+  makeExercise(document.getElementById("ex-cond"), {
+    title: "Hiking advice",
+    task: `<p><code>hikeAdvice(temp, isRaining)</code> should return:</p>
+    <ul>
+      <li><code>"Stay home"</code> whenever it's raining</li>
+      <li><code>"Hike early"</code> at 85 degrees or more</li>
+      <li><code>"Perfect"</code> from 50 up to 84</li>
+      <li><code>"Bring layers"</code> below 50</li>
+    </ul>`,
+    js: `function hikeAdvice(temp, isRaining) {
+  if (temp >= 50) {
+    return "Perfect";
+  } else if (temp >= 85) {
+    return "Hike early";
+  }
+  return "Bring layers";
+}
+
+console.log(hikeAdvice(95, false));
+console.log(hikeAdvice(70, true));`,
+    solution: `function hikeAdvice(temp, isRaining) {
+  if (isRaining) {
+    return "Stay home";
+  } else if (temp >= 85) {
+    return "Hike early";
+  } else if (temp >= 50) {
+    return "Perfect";
+  }
+  return "Bring layers";
+}
+
+console.log(hikeAdvice(95, false));
+console.log(hikeAdvice(70, true));`,
+    expose: ["hikeAdvice"],
+    hints: [
+      "Only the first true condition runs. 95 is also >= 50, so that check catches it first.",
+      "Put the most specific conditions first: rain, then hot, then mild.",
+      "isRaining is already true or false, so if (isRaining) is enough.",
+    ],
+    checks: [
+      { label: "95° → “Hike early”", test: ({ fns }) => fns.hikeAdvice(95, false) === "Hike early" },
+      { label: "70° → “Perfect”, 30° → “Bring layers”", test: ({ fns }) => fns.hikeAdvice(70, false) === "Perfect" && fns.hikeAdvice(30, false) === "Bring layers" },
+      { label: "85° and 50° land on the right side", test: ({ fns }) => fns.hikeAdvice(85, false) === "Hike early" && fns.hikeAdvice(50, false) === "Perfect" && fns.hikeAdvice(49, false) === "Bring layers" },
+      { label: "Rain always means “Stay home”", test: ({ fns }) => [95, 70, 30].every((t) => fns.hikeAdvice(t, true) === "Stay home") },
+    ],
+  });
 </script>
 </body>
 </html>

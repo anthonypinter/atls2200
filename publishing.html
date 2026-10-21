@@ -4,9 +4,6 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Project Structure &amp; Publishing</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Recursive:slnt,wght,CASL,MONO@-15..0,300..1000,0..1,0..1&display=swap">
 <link rel="stylesheet" href="style.css">
 <style>
   .renames { display: grid; gap: 12px; }
@@ -46,15 +43,38 @@
 <script src="js/quiz.js"></script>
 </head>
 <body>
-<div class="wrap">
+<main class="wrap">
   <nav class="crumbs" aria-label="Site"><a class="crumb" href="index.html">← Field Guide</a><a class="crumb" href="glossary.html">Glossary</a></nav>
   <header class="page-head">
     <span class="eyebrow">Polish &amp; Workflow · Project Structure &amp; Publishing</span>
     <h1>Project Structure &amp; Publishing</h1>
     <p class="lede">A tidy folder and sensible file names prevent most "it works on my laptop" bugs. Clean up this messy project, then follow the steps to put a site online with GitHub Pages.</p>
+    <div class="objectives">
+      <p class="callout-title">You'll be able to</p>
+      <ul>
+        <li>Organize a project folder with index.html at the top and assets in subfolders.</li>
+        <li>Name files so they work on any web server.</li>
+        <li>Publish a site with GitHub Pages and test the live version.</li>
+      </ul>
+    </div>
   </header>
 
-  <div class="section-title" style="margin-top:0"><span class="eyebrow">Part 1</span><h2>Clean up a messy project</h2><p>Pick the best new name for each file. The folder on the right updates as you go.</p></div>
+  <div class="section-title"><span class="eyebrow">Read</span><h2>From your laptop to the web</h2></div>
+  <div class="prose">
+    <p>On your own computer, a messy folder mostly works. Once it's on a web server, small sloppiness turns into broken pages. A tidy structure and sensible file names prevent most "it works on my laptop" bugs.</p>
+    <p>Start with the home page. It must be called <span class="term">index.html</span> and sit at the top of the project folder. When someone visits your site's address without a file name, the server sends <code>index.html</code> automatically. Group everything else by type:</p>
+    <pre class="snippet">my-site/
+  index.html
+  about.html
+  css/style.css
+  images/flatirons.jpg</pre>
+    <p>File names should be lowercase, with hyphens instead of spaces: <code>trail-map.html</code>, not <code>Trail Map.HTML</code>. Most web servers treat <code>Photo.jpg</code> and <code>photo.jpg</code> as different files, even though your laptop may not. That's the most common reason images show up locally and break online.</p>
+    <p>Link with <span class="term">relative paths</span> like <code>images/flatirons.jpg</code>, never paths to your Desktop or Downloads folder. Those only exist on your computer.</p>
+    <p><span class="term">GitHub Pages</span> hosts plain HTML, CSS and JavaScript sites for free. You put your project in a <span class="term">repository</span>, turn on Pages in its settings, and a minute later your site is live at <code>username.github.io/repository-name</code>.</p>
+    <div class="callout warn"><p class="callout-title">Watch out</p><p>Upload the <em>contents</em> of your project folder, not the folder itself. Otherwise <code>index.html</code> ends up one level too deep and the site's address shows a 404.</p></div>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Play</span><h2>Clean up a messy project</h2><p>Pick the best new name for each file. The folder on the right updates as you go.</p></div>
   <section class="playground even">
     <div class="renames" id="renames"></div>
     <div class="stage-col">
@@ -72,7 +92,7 @@
     </div>
   </section>
 
-  <div class="section-title"><span class="eyebrow">Part 2</span><h2>Publish with GitHub Pages</h2><p>GitHub Pages hosts plain HTML, CSS and JavaScript sites for free.</p></div>
+  <div class="section-title"><span class="eyebrow">Play</span><h2>Publish with GitHub Pages</h2><p>GitHub Pages hosts plain HTML, CSS and JavaScript sites for free.</p></div>
   <section class="playground even">
     <ol class="gh-steps">
       <li><div><b>Make a GitHub account</b><span>Pick your username carefully. It becomes part of your site's address.</span></div></li>
@@ -101,6 +121,9 @@
     </div>
   </section>
 
+  <div class="section-title"><span class="eyebrow">Practice</span><h2>Fix the paths before publishing</h2><p>These links work on the author's laptop and nowhere else. Fix them to match the cleaned-up project.</p></div>
+  <div id="ex-publish"></div>
+
   <section class="notes">
     <div class="panel">
       <h2>Key ideas</h2>
@@ -122,8 +145,11 @@
     </div>
   </section>
 
+  <div class="section-title"><span class="eyebrow">Check yourself</span><h2>Quick check</h2></div>
+  <div class="panel quiz" id="quiz"></div>
+
   <footer class="page-foot" data-book-nav><a href="index.html">← Contents</a></footer>
-</div>
+</main>
 
 <script>
   const $ = (id) => document.getElementById(id);
@@ -170,6 +196,48 @@
   }
   ["user", "repo"].forEach((id) => $(id).addEventListener("input", url));
   url();
+</script>
+<script>
+  makeQuiz(document.getElementById("quiz"), [
+    { id: "q1", q: "What must the home page file be named?", opts: ["home.html", "main.html", "index.html"], a: 2, why: "Servers send index.html when no file name is given." },
+    { id: "q2", q: "An image works on your laptop but not online. The HTML says Flatirons.jpg; the file is flatirons.jpg. Why?", opts: ["Web servers are usually case-sensitive", "JPGs don't work online", "The cache"], a: 0, why: "Use lowercase names everywhere to avoid this." },
+    { id: "q3", q: "Which file name is safest?", opts: ["Trail Map.html", "trail-map.html", "trail_map (1).HTML"], a: 1, why: "Lowercase, hyphens, no spaces." },
+    { id: "q4", q: "Your published site shows 404, but /my-project/index.html works. What happened?", opts: ["index.html is misspelled", "Pages is down", "You uploaded the folder instead of its contents"], a: 2, why: "index.html needs to be at the top of the repository." },
+  ]);
+</script>
+<script>
+  makeExercise(document.getElementById("ex-publish"), {
+    title: "Ready for GitHub Pages",
+    task: `<p>The project was tidied up and the files were renamed. Here's the new structure:</p>
+    <pre class="snippet">my-site/
+  index.html          ← was home.html
+  trail-map.html      ← was Trail Map.HTML
+  css/style.css
+  images/flatirons.jpg   ← was Images/Flatirons.JPG</pre>
+    <p>This code is in <code>index.html</code>. Update every path to match.</p>`,
+    html: `<link rel="stylesheet" href="file:///Users/sam/Desktop/my-site/style.css">
+<nav>
+  <a href="home.html">Home</a>
+  <a href="Trail Map.HTML">Trail map</a>
+</nav>
+<img src="Images/Flatirons.JPG" alt="The Flatirons above Chautauqua" width="300" height="180">`,
+    solution: { html: `<link rel="stylesheet" href="css/style.css">
+<nav>
+  <a href="index.html">Home</a>
+  <a href="trail-map.html">Trail map</a>
+</nav>
+<img src="images/flatirons.jpg" alt="The Flatirons above Chautauqua" width="300" height="180">` },
+    hints: [
+      "Paths to your own computer (file:///Users/…) only work on your computer. Use a path relative to index.html.",
+      "Servers are case-sensitive: Images/Flatirons.JPG and images/flatirons.jpg are different files.",
+    ],
+    checks: [
+      { label: "The stylesheet link is css/style.css", test: ({ $ }) => ["css/style.css", "./css/style.css"].includes($('link[rel="stylesheet"]').getAttribute("href")) },
+      { label: "Home links to index.html", test: ({ $$ }) => ["index.html", "./", "./index.html"].includes($$("nav a")[0].getAttribute("href")) },
+      { label: "The trail map link is trail-map.html", test: ({ $$ }) => ["trail-map.html", "./trail-map.html"].includes($$("nav a")[1].getAttribute("href")) },
+      { label: "The image is images/flatirons.jpg", test: ({ $ }) => ["images/flatirons.jpg", "./images/flatirons.jpg"].includes($("img").getAttribute("src")) },
+    ],
+  });
 </script>
 </body>
 </html>

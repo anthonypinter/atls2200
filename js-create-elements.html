@@ -4,9 +4,6 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Creating &amp; Removing Elements</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Recursive:slnt,wght,CASL,MONO@-15..0,300..1000,0..1,0..1&display=swap">
 <link rel="stylesheet" href="style.css">
 <style>
   .check { display: flex; gap: 8px; align-items: flex-start; cursor: pointer; font-size: 0.92rem; }
@@ -21,12 +18,13 @@
   .app li { display: flex; justify-content: space-between; align-items: center; gap: 8px; background: #fff; border: 1px solid #e4e0d6; border-radius: 6px; padding: 6px 6px 6px 12px; animation: pop 0.25s; }
   .app li span { overflow-wrap: anywhere; min-width: 0; }
   .app li button { font: 600 0.8rem var(--font-body); background: #fde8e6; color: #b42318; border: 1px solid #f3b8b1; border-radius: 5px; padding: 3px 9px; cursor: pointer; }
-  .app .empty { color: #8a8fa3; font-size: 0.9rem; }
+  .app .empty { display: block; color: #5a6280; font-size: 0.9rem; background: none; border: 0; padding: 0; }
   @keyframes pop { from { transform: scale(0.9); opacity: 0; } }
   .code { display: grid; grid-template-columns: minmax(0, 1fr); background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 8px 0; overflow-x: auto; }
   .code .l { padding: 0 14px; font: 0.84rem/1.6 var(--font-code); font-variation-settings: "MONO" 1; white-space: pre; border-left: 3px solid transparent; min-width: max-content; }
   .code .l.ran { background: var(--good-soft); border-left-color: var(--good); }
-  .code .l.gone { text-decoration: line-through; opacity: 0.45; }
+  .code .l.gone { text-decoration: line-through; }
+  .code .l.gone, .code .l.gone *, #b-code .later, #b-code .later * { color: var(--muted) !important; }
   .code .l.changed { background: var(--bad-soft); border-left-color: var(--bad); }
 
   .build { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(220px, 100%), 1fr)); gap: 12px; }
@@ -45,13 +43,37 @@
 <script src="js/quiz.js"></script>
 </head>
 <body>
-<div class="wrap">
+<main class="wrap">
   <nav class="crumbs" aria-label="Site"><a class="crumb" href="index.html">← Field Guide</a><a class="crumb" href="glossary.html">Glossary</a></nav>
   <header class="page-head">
     <span class="eyebrow">JavaScript in the Browser · Creating &amp; Removing Elements</span>
     <h1>Creating &amp; Removing Elements</h1>
     <p class="lede">JavaScript can build new elements and add them to the page, then take them away again. This shopping list is MDN's DOM scripting exercise. Add and delete items and watch which lines of code run.</p>
+    <div class="objectives">
+      <p class="callout-title">You'll be able to</p>
+      <ul>
+        <li>Build a new element with createElement and fill it with text and classes.</li>
+        <li>Add elements to the page with append and remove them with remove.</li>
+        <li>Explain why typed text should go in textContent, not innerHTML.</li>
+      </ul>
+    </div>
   </header>
+
+  <div class="section-title"><span class="eyebrow">Read</span><h2>Building the page from code</h2></div>
+  <div class="prose">
+    <p>So far you've changed elements that were already in the HTML. JavaScript can also build new ones, which is how a to-do list grows when you add an item, or how search results appear. It takes three steps:</p>
+    <pre class="snippet" data-lang="js">const li = document.createElement("li");   // 1. make it
+li.textContent = "Trail mix";               // 2. fill it
+li.classList.add("item");
+list.append(li);                            // 3. attach it</pre>
+    <p><span class="term">createElement()</span> makes an element in memory. It isn't on the page yet, and it won't show up anywhere until you attach it to something that is. Forgetting that last step is the most common reason a new element never appears. <code>append()</code> adds it as the last child; <code>prepend()</code> adds it as the first. You'll also see the older <code>appendChild()</code>, which works the same way.</p>
+    <p>To take an element away, call <code>remove()</code> on it: <code>li.remove()</code>.</p>
+    <p>An element can only be in one place at a time. Appending an element that's already on the page moves it rather than copying it. To make a copy, use <code>cloneNode(true)</code>.</p>
+    <p>There's a shortcut you'll see a lot: setting <code>innerHTML</code> to a string of HTML. It's handy for building markup you wrote yourself. But never use it for text a visitor typed. If someone types <code>&lt;img src=x onerror=…&gt;</code>, <code>innerHTML</code> turns it into a real element, and the code inside runs. <span class="term">textContent</span> shows exactly what was typed and never runs it.</p>
+    <div class="callout tip"><p class="callout-title">Tip</p><p>After adding an item to a list, clear the input and put focus back in it with <code>input.focus()</code>, so people can type the next one straight away.</p></div>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Play</span><h2>Build a shopping list</h2><p>Add and delete items and watch which lines of code run. Then try each mistake.</p></div>
 
   <section class="playground">
     <div class="panel controls">
@@ -72,7 +94,7 @@
     </div>
   </section>
 
-  <div class="section-title"><span class="eyebrow">Part 2</span><h2>Created isn't the same as on the page</h2><p><code>createElement()</code> makes an element in memory. It doesn't show up anywhere until you attach it to something that's already on the page.</p></div>
+  <div class="section-title"><span class="eyebrow">Play</span><h2>Created isn't the same as on the page</h2><p><code>createElement()</code> makes an element in memory. It doesn't show up anywhere until you attach it to something that's already on the page.</p></div>
   <section class="playground">
     <div class="panel controls">
       <div class="stepper"><button class="btn run" id="b-next">Next line ▸</button><button class="btn" id="b-reset">Restart</button><span class="count" id="b-count"></span></div>
@@ -85,8 +107,8 @@
     </div>
   </section>
 
-  <div class="section-title"><span class="eyebrow">Practice</span><h2>Check yourself</h2></div>
-  <div class="panel quiz" id="quiz"></div>
+  <div class="section-title"><span class="eyebrow">Practice</span><h2>Build and remove list items</h2><p>Write two functions: one adds an item to a list, the other clears out finished ones.</p></div>
+  <div id="ex-create"></div>
 
   <section class="notes">
     <div class="panel">
@@ -118,8 +140,11 @@
     </div>
   </section>
 
+  <div class="section-title"><span class="eyebrow">Check yourself</span><h2>Quick check</h2></div>
+  <div class="panel quiz" id="quiz"></div>
+
   <footer class="page-foot" data-book-nav><a href="index.html">← Contents</a></footer>
-</div>
+</main>
 
 <script src="js/runner.js"></script>
 <script>
@@ -162,7 +187,7 @@
     }).join("");
   }
   function log(cls, text) { const out = $("out"); if (out.querySelector(".muted")) out.innerHTML = ""; const li = document.createElement("li"); li.className = cls; li.textContent = text; out.prepend(li); while (out.children.length > 6) out.lastChild.remove(); }
-  function emptyNote() { const list = $("list"); if (!list.querySelector("li")) list.innerHTML = `<p class="empty">No items yet.</p>`; else list.querySelector(".empty")?.remove(); }
+  function emptyNote() { const list = $("list"); if (!list.querySelector("li:not(.empty)")) list.innerHTML = `<li class="empty">No items yet.</li>`; else list.querySelector(".empty")?.remove(); }
 
   // Safely imitate innerHTML: parse in an inert document, strip anything that could run, report it.
   function unsafeHTML(target, html) {
@@ -226,7 +251,7 @@
   ];
   let b = 0;
   function renderBuild() {
-    $("b-code").innerHTML = BUILD.map((s, i) => `<span style="opacity:${i < b ? 1 : 0.35}">${hlJS(s.c)}</span>`).join("\n");
+    $("b-code").innerHTML = BUILD.map((s, i) => `<span${i < b ? "" : ' class="later"'}>${hlJS(s.c)}</span>`).join("\n");
     $("b-why").textContent = b ? BUILD[b - 1].why : "Step through the code one line at a time.";
     $("b-count").textContent = `${b} / ${BUILD.length}`;
     $("b-next").disabled = b >= BUILD.length;
@@ -247,6 +272,59 @@
   ]);
 
   emptyNote(); renderCode(); renderBuild();
+</script>
+<script>
+  makeExercise(document.getElementById("ex-create"), {
+    title: "A packing list",
+    task: `<ol>
+      <li><code>addItem(list, text)</code> creates an <code>&lt;li&gt;</code> with that text, adds it to the end of <code>list</code>, and returns it. Text someone typed must show exactly as typed, never as HTML.</li>
+      <li><code>clearDone(list)</code> removes every <code>li</code> with the class <code>done</code>, and leaves the rest.</li>
+    </ol>`,
+    js: `function addItem(list, text) {
+  // Your code here
+}
+
+function clearDone(list) {
+  // Your code here
+}
+
+// Try it:
+const list = document.createElement("ul");
+addItem(list, "Water");
+addItem(list, "Snacks").classList.add("done");
+clearDone(list);
+console.log(list.innerHTML);`,
+    solution: `function addItem(list, text) {
+  const li = document.createElement("li");
+  li.textContent = text;
+  list.append(li);
+  return li;
+}
+
+function clearDone(list) {
+  for (const li of list.querySelectorAll("li.done")) {
+    li.remove();
+  }
+}
+
+// Try it:
+const list = document.createElement("ul");
+addItem(list, "Water");
+addItem(list, "Snacks").classList.add("done");
+clearDone(list);
+console.log(list.innerHTML);`,
+    expose: ["addItem", "clearDone"],
+    hints: [
+      "document.createElement(\"li\") makes it; li.textContent = text fills it; list.append(li) attaches it.",
+      "Don't forget return li; at the end of addItem.",
+      "list.querySelectorAll(\"li.done\") finds the finished items. Call remove() on each.",
+    ],
+    checks: [
+      { label: "addItem adds an li to the end and returns it", test: ({ fns }) => { const ul = document.createElement("ul"); ul.innerHTML = "<li>Map</li>"; const li = fns.addItem(ul, "Water"); return ul.children.length === 2 && ul.lastElementChild === li && li.tagName === "LI" && li.textContent === "Water"; } },
+      { label: "Typed text shows as text, not HTML", test: ({ fns }) => { const ul = document.createElement("ul"); const li = fns.addItem(ul, "<b>Snacks</b>"); return li.textContent === "<b>Snacks</b>" && !li.querySelector("b"); } },
+      { label: "clearDone removes only the done items", test: ({ fns }) => { const ul = document.createElement("ul"); ul.innerHTML = '<li class="done">A</li><li>B</li><li class="done">C</li><li>D</li>'; fns.clearDone(ul); return [...ul.children].map((li) => li.textContent).join("") === "BD"; } },
+    ],
+  });
 </script>
 </body>
 </html>

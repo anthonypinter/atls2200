@@ -4,9 +4,6 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Organizing CSS</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Recursive:slnt,wght,CASL,MONO@-15..0,300..1000,0..1,0..1&display=swap">
 <link rel="stylesheet" href="style.css">
 <style>
   .steps { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
@@ -33,13 +30,38 @@
 <script src="js/quiz.js"></script>
 </head>
 <body>
-<div class="wrap">
+<main class="wrap">
   <nav class="crumbs" aria-label="Site"><a class="crumb" href="index.html">← Field Guide</a><a class="crumb" href="glossary.html">Glossary</a></nav>
   <header class="page-head">
     <span class="eyebrow">Polish &amp; Workflow · Organizing CSS</span>
     <h1>Organizing CSS</h1>
     <p class="lede">A stylesheet that works today can still be a nightmare to change next week. Watch one messy stylesheet get cleaned up in four steps. It styles exactly the same page at every step; only how easy it is to work with changes.</p>
+    <div class="objectives">
+      <p class="callout-title">You'll be able to</p>
+      <ul>
+        <li>Group a stylesheet into sections in a consistent order.</li>
+        <li>Name classes after what something is, not how it looks.</li>
+        <li>Replace repeated values with CSS variables and keep specificity low.</li>
+      </ul>
+    </div>
   </header>
+
+  <div class="section-title"><span class="eyebrow">Read</span><h2>A stylesheet you can come back to</h2></div>
+  <div class="prose">
+    <p>CSS doesn't care how your file is arranged. You do, the next time you need to change something and can't find it. A few habits keep a stylesheet easy to work with as it grows.</p>
+    <p><strong>Sections, always in the same order.</strong> A common order runs from general to specific: <span class="term">CSS variables</span> first, then base styles for plain elements like <code>body</code> and <code>a</code>, then layout, then components like cards and buttons, then small utility classes. Mark each section with a <span class="term">comment</span> heading. Because later rules win ties, this order also means the specific stuff naturally overrides the general.</p>
+    <pre class="snippet" data-lang="css">/* ===== Base ===== */
+body { font-family: var(--font-body); }
+
+/* ===== Components ===== */
+.trail-card { … }</pre>
+    <p><strong>Names that describe purpose.</strong> <code>.trail-card</code> still makes sense after the redesign; <code>.blue-box</code> doesn't, once the box turns green. A popular naming pattern called <span class="term">BEM</span> spells out how pieces relate: <code>.card</code>, <code>.card__title</code>, <code>.card--featured</code>.</p>
+    <p><strong>No repeated values.</strong> If you've typed the same color three times, make it a variable. Changing it later becomes a one-line edit.</p>
+    <p><strong>Low, even <span class="term">specificity</span>.</strong> Style with single classes. IDs and long chains like <code>#main .content ul li a</code> are hard to override, which leads to even longer selectors, and eventually <code>!important</code>.</p>
+    <div class="callout tip"><p class="callout-title">Tip</p><p>Delete rules you no longer use. Keeping them "just in case" makes every future change slower. If you need them back, they're in your version history.</p></div>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Play</span><h2>Clean up a stylesheet</h2><p>Step through four cleanups. The page looks identical at every step; only the stylesheet changes.</p></div>
 
   <div class="steps" id="steps" role="group" aria-label="Cleanup steps"></div>
   <div class="sheet-grid">
@@ -55,6 +77,9 @@
 
   <div class="section-title"><span class="eyebrow">Practice</span><h2>Pick the better class name</h2><p>Name classes for what something <em>is</em>, not how it looks. Looks change; purpose rarely does.</p></div>
   <div class="panel quiz" id="quiz2"></div>
+
+  <div class="section-title"><span class="eyebrow">Practice</span><h2>Clean up the stylesheet</h2><p>Rename a class by its purpose, store the repeated color once, and drop a heavy selector.</p></div>
+  <div id="ex-organize"></div>
 
   <section class="notes">
     <div class="panel">
@@ -79,7 +104,7 @@
   </section>
 
   <footer class="page-foot" data-book-nav><a href="index.html">← Contents</a></footer>
-</div>
+</main>
 
 <script>
   const $ = (id) => document.getElementById(id);
@@ -214,6 +239,50 @@ a { color: var(--brand); }
     { id: "q8", q: "The title inside that trail card, using BEM.", opts: [".trail-card__title", ".trailCardTitleBig"], a: 0, why: "block__element shows it belongs to .trail-card." },
     { id: "q9", q: "A larger version of the normal button.", opts: [".btn--large", ".big-blue-btn"], a: 0, why: "BEM modifiers (--) describe a variation without baking in colors." },
   ]);
+</script>
+<script>
+  makeExercise(document.getElementById("ex-organize"), {
+    title: "Tidy names and selectors",
+    task: `<ol>
+      <li>Rename <code>.blue-box</code> to <code>.trail-card</code>, in the HTML and the CSS.</li>
+      <li>Store <code>#2340d9</code> in a <code>--brand</code> variable on <code>:root</code>, so it's typed only once.</li>
+      <li>Replace the ID-based selector with a single class, <code>.trail-link</code>, added to the link.</li>
+    </ol>`,
+    html: `<div id="main">
+  <div class="blue-box">
+    <h2>Royal Arch</h2>
+    <ul><li><a href="#">Trail details</a></li></ul>
+  </div>
+</div>`,
+    css: `body { font-family: system-ui, sans-serif; }
+.blue-box { border: 2px solid #2340d9; padding: 12px; }
+.blue-box h2 { color: #2340d9; margin-top: 0; }
+#main .blue-box ul li a { color: #2340d9; font-weight: bold; }`,
+    solution: {
+      html: `<div id="main">
+  <div class="trail-card">
+    <h2>Royal Arch</h2>
+    <ul><li><a class="trail-link" href="#">Trail details</a></li></ul>
+  </div>
+</div>`,
+      css: `:root { --brand: #2340d9; }
+
+body { font-family: system-ui, sans-serif; }
+.trail-card { border: 2px solid var(--brand); padding: 12px; }
+.trail-card h2 { color: var(--brand); margin-top: 0; }
+.trail-link { color: var(--brand); font-weight: bold; }`,
+    },
+    hints: [
+      "Change the class name in both places, or the styles stop matching.",
+      ":root { --brand: #2340d9; } then color: var(--brand); everywhere else.",
+      "Add class=\"trail-link\" to the <a>, then style .trail-link.",
+    ],
+    checks: [
+      { label: ".blue-box is now .trail-card", test: ({ style, code }) => !/blue-box/.test(code.html + code.css) && style(".trail-card", "border-top-color") === "rgb(35, 64, 217)" },
+      { label: "#2340d9 is typed once", test: ({ code }) => (code.css.match(/#2340d9/gi) || []).length === 1 && /var\(--brand\)/.test(code.css) },
+      { label: "No ID selectors; the link uses .trail-link", test: ({ doc, style }) => [...doc.styleSheets[0].cssRules].every((r) => !r.selectorText || !r.selectorText.includes("#")) && style("a.trail-link", "color") === "rgb(35, 64, 217)" && Number(style("a.trail-link", "font-weight")) >= 700 },
+    ],
+  });
 </script>
 </body>
 </html>

@@ -4,9 +4,6 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Arrays</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Recursive:slnt,wght,CASL,MONO@-15..0,300..1000,0..1,0..1&display=swap">
 <link rel="stylesheet" href="style.css">
 <style>
   .arr { display: flex; flex-wrap: wrap; gap: 8px; align-items: flex-start; min-height: 96px; align-content: flex-start; }
@@ -32,13 +29,37 @@
 <script src="js/quiz.js"></script>
 </head>
 <body>
-<div class="wrap">
+<main class="wrap">
   <nav class="crumbs" aria-label="Site"><a class="crumb" href="index.html">← Field Guide</a><a class="crumb" href="glossary.html">Glossary</a></nav>
   <header class="page-head">
     <span class="eyebrow">JavaScript Basics · Arrays</span>
     <h1>Arrays</h1>
     <p class="lede">An array stores a list of values under one name, in order, with a numbered index starting at 0. Some methods change the array, and others just hand you back an answer. Try them below.</p>
+    <div class="objectives">
+      <p class="callout-title">You'll be able to</p>
+      <ul>
+        <li>Create an array and read items by their index.</li>
+        <li>Add and remove items with push, pop, shift, unshift and splice.</li>
+        <li>Tell which methods change the array and which return a new value.</li>
+      </ul>
+    </div>
   </header>
+
+  <div class="section-title"><span class="eyebrow">Read</span><h2>A list under one name</h2></div>
+  <div class="prose">
+    <p>When you have several related values, like the trails in a guide, you don't want <code>trail1</code>, <code>trail2</code>, <code>trail3</code>. An <span class="term">array</span> stores a whole list under one name, in order:</p>
+    <pre class="snippet" data-lang="js">const trails = ["Mesa", "Royal Arch", "Chautauqua"];
+trails[0]                  // "Mesa"
+trails.length              // 3
+trails[trails.length - 1]  // "Chautauqua"</pre>
+    <p>Each item has an <span class="term">index</span>, its position, and counting starts at 0. So the first item is <code>[0]</code>, and the last is at <code>length - 1</code>. Asking for an index that doesn't exist gives <code>undefined</code>, not an error. To change an item, assign to its index: <code>trails[1] = "Flagstaff"</code>.</p>
+    <p>Arrays come with <span class="term">methods</span> for adding and removing items. <code>push()</code> and <code>pop()</code> add and remove at the end. <code>unshift()</code> and <code>shift()</code> work at the start. <code>splice()</code> removes items from the middle.</p>
+    <p>Some methods change the array itself; others leave it alone and hand you an answer. <code>push()</code> changes it. <code>includes("Mesa")</code> just answers true or false, and <code>slice()</code> and <code>join()</code> return something new. Knowing which kind you're using saves a lot of confusion.</p>
+    <p>Arrays can hold any type of value: numbers, strings, even objects or other arrays. And <code>split()</code> and <code>join()</code> convert between strings and arrays.</p>
+    <div class="callout tip"><p class="callout-title">Tip</p><p>A <code>const</code> array can still change. <code>const</code> only means the name always points to the same array; you can still push and pop its contents.</p></div>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Play</span><h2>Change the array</h2><p>Try each method and watch which ones change the array and which just return a value.</p></div>
 
   <section class="playground">
     <div class="panel controls">
@@ -71,8 +92,8 @@ const what = events[Math.floor(Math.random() * events.length)];
 console.log(`${who} went to ${where} and ${what}.`);
 console.log(`There are ${names.length} names; the last one is ${names[names.length - 1]}.`);</textarea></div>
 
-  <div class="section-title"><span class="eyebrow">Practice</span><h2>Predict the output</h2></div>
-  <div class="panel quiz" id="quiz"></div>
+  <div class="section-title"><span class="eyebrow">Practice</span><h2>Change the list</h2><p>Add and remove trails with array methods, then read from the end of the list.</p></div>
+  <div id="ex-arrays"></div>
 
   <section class="notes">
     <div class="panel">
@@ -105,8 +126,11 @@ console.log(`There are ${names.length} names; the last one is ${names[names.leng
     </div>
   </section>
 
+  <div class="section-title"><span class="eyebrow">Check yourself</span><h2>Predict the output</h2></div>
+  <div class="panel quiz" id="quiz"></div>
+
   <footer class="page-foot" data-book-nav><a href="index.html">← Contents</a></footer>
-</div>
+</main>
 
 <script src="js/runner.js"></script>
 <script>
@@ -171,6 +195,39 @@ console.log(`There are ${names.length} names; the last one is ${names[names.leng
   ]);
 
   render();
+</script>
+<script>
+  makeExercise(document.getElementById("ex-arrays"), {
+    title: "Edit the trail list",
+    task: `<ol>
+      <li>Add <code>"Chautauqua"</code> to the end of the array.</li>
+      <li>Remove <code>"Mesa"</code> from the start.</li>
+      <li>Log how many trails there are, using <code>length</code>.</li>
+      <li>Log the last trail, using <code>length</code> to find its index.</li>
+    </ol>`,
+    js: `const trails = ["Mesa", "Royal Arch", "Flagstaff"];
+
+// Your code here
+`,
+    solution: `const trails = ["Mesa", "Royal Arch", "Flagstaff"];
+
+trails.push("Chautauqua");
+trails.shift();
+console.log(trails.length);
+console.log(trails[trails.length - 1]);`,
+    expose: ["trails"],
+    hints: [
+      "push() adds to the end; shift() removes from the start.",
+      "trails.length is the number of items.",
+      "Indexes start at 0, so the last item is trails[trails.length - 1].",
+    ],
+    checks: [
+      { label: "The array is Royal Arch, Flagstaff, Chautauqua", test: ({ fns }) => JSON.stringify(fns.trails) === JSON.stringify(["Royal Arch", "Flagstaff", "Chautauqua"]) },
+      { label: "Uses push and shift", test: ({ code }) => /\.push\(/.test(code.js) && /\.shift\(\)/.test(code.js) },
+      { label: "Logs the count, 3", test: ({ logs, code }) => logs.includes("3") && /trails\.length/.test(code.js) },
+      { label: "Logs the last trail using length", test: ({ logs, code }) => logs.includes("Chautauqua") && /trails\[\s*trails\.length\s*-\s*1\s*\]/.test(code.js) },
+    ],
+  });
 </script>
 </body>
 </html>

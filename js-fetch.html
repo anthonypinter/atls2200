@@ -4,9 +4,6 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Fetching Data</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Recursive:slnt,wght,CASL,MONO@-15..0,300..1000,0..1,0..1&display=swap">
 <link rel="stylesheet" href="style.css">
 <style>
   .scen { display: grid; gap: 6px; }
@@ -42,13 +39,42 @@
 <script src="js/quiz.js"></script>
 </head>
 <body>
-<div class="wrap">
+<main class="wrap">
   <nav class="crumbs" aria-label="Site"><a class="crumb" href="index.html">← Field Guide</a><a class="crumb" href="glossary.html">Glossary</a></nav>
   <header class="page-head">
     <span class="eyebrow">JavaScript in the Browser · Fetching Data</span>
     <h1>Fetching Data</h1>
     <p class="lede"><code>fetch()</code> asks a server for data, usually JSON, and lets you update part of the page without reloading it. The answer takes time to arrive, so your code has to wait for it and be ready for things to go wrong.</p>
+    <div class="objectives">
+      <p class="callout-title">You'll be able to</p>
+      <ul>
+        <li>Request JSON with fetch and show it on the page.</li>
+        <li>Wait for the response with .then() or async/await.</li>
+        <li>Handle errors, including a 404 that fetch doesn't treat as an error.</li>
+      </ul>
+    </div>
   </header>
+
+  <div class="section-title"><span class="eyebrow">Read</span><h2>Asking a server for data</h2></div>
+  <div class="prose">
+    <p>Many pages update part of themselves without reloading: new search results, the latest weather, more posts as you scroll. They ask a server for data with <span class="term">fetch()</span>, usually in <span class="term">JSON</span> format, then use the DOM to show it.</p>
+    <p>The answer takes time to arrive, from a few milliseconds to several seconds. JavaScript doesn't stop and wait; the code after <code>fetch()</code> keeps running right away. Instead, <code>fetch()</code> gives you a <span class="term">promise</span>: a placeholder for a value that will arrive later. <span class="term">async / await</span> lets you write code that waits for it:</p>
+    <pre class="snippet" data-lang="js">async function loadTrails() {
+  try {
+    const response = await fetch("trails.json");
+    if (!response.ok) throw new Error(response.status);
+    const trails = await response.json();
+    showTrails(trails);
+  } catch (err) {
+    status.textContent = "Couldn't load trails.";
+  }
+}</pre>
+    <p><code>await</code> pauses that function, and only that function, until the promise settles. <code>response.json()</code> reads the body and parses it, and it's a promise too, so it needs its own <code>await</code>. You'll also see the older style, with <code>.then()</code> for success and <code>.catch()</code> for failure. It does the same thing.</p>
+    <p>Plan for things to go wrong. The network can drop, and <code>try</code>/<code>catch</code> catches that. But a 404 "not found" is a completed request as far as <code>fetch()</code> is concerned, so it won't land in <code>catch</code> by itself. Check <code>response.ok</code> and throw an error when it's false.</p>
+    <div class="callout warn"><p class="callout-title">Watch out</p><p>Pages opened by double-clicking the file (<code>file://</code>) can't fetch. Use a local server, such as VS Code's Live Server, or test on GitHub Pages.</p></div>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Play</span><h2>Watch a request happen</h2><p>Send a request and follow it to the server and back. Try a slow network and a missing file.</p></div>
 
   <section class="playground">
     <div class="panel controls">
@@ -69,14 +95,14 @@
     </div>
   </section>
 
-  <div class="section-title"><span class="eyebrow">Part 2</span><h2>The file being fetched</h2><p>The server sends back plain text in JSON format. <code>response.json()</code> parses it into an array of objects, which the code loops over to build the list.</p></div>
+  <div class="section-title"><span class="eyebrow">Play</span><h2>The file being fetched</h2><p>The server sends back plain text in JSON format. <code>response.json()</code> parses it into an array of objects, which the code loops over to build the list.</p></div>
   <section class="playground even">
     <div class="stage-col"><span class="eyebrow">trails.json</span><pre class="snippet json-view" id="json-file"></pre></div>
     <div class="stage-col"><span class="eyebrow">showTrails()</span><pre class="snippet" id="show-fn"></pre></div>
   </section>
 
-  <div class="section-title"><span class="eyebrow">Practice</span><h2>Check yourself</h2></div>
-  <div class="panel quiz" id="quiz"></div>
+  <div class="section-title"><span class="eyebrow">Practice</span><h2>Handle the response</h2><p>Write the pieces a fetch needs: a check for failed responses, and a function that pulls out the data you want.</p></div>
+  <div id="ex-fetch"></div>
 
   <section class="notes">
     <div class="panel">
@@ -110,8 +136,11 @@
     </div>
   </section>
 
+  <div class="section-title"><span class="eyebrow">Check yourself</span><h2>Quick check</h2></div>
+  <div class="panel quiz" id="quiz"></div>
+
   <footer class="page-foot" data-book-nav><a href="index.html">← Contents</a></footer>
-</div>
+</main>
 
 <script src="js/runner.js"></script>
 <script>
@@ -236,6 +265,63 @@
 
   $("out").innerHTML = `<li class="muted">Press Send request.</li>`;
   net("idle"); renderCode();
+</script>
+<script>
+  makeExercise(document.getElementById("ex-fetch"), {
+    title: "Load trails safely",
+    task: `<ol>
+      <li><code>checkResponse(response)</code> returns the response when <code>response.ok</code> is true, and throws an <code>Error</code> when it's false (fetch doesn't treat a 404 as an error by itself).</li>
+      <li><code>trailNames(trails)</code> takes the parsed JSON, an array of trail objects, and returns an array of just their names.</li>
+      <li>Finish <code>loadTrails(url)</code>: <code>await</code> the fetch, check it, parse the JSON, and catch any error.</li>
+    </ol>
+    <p class="hint">Pages in this book can't reach a real trails file, so the checks test your functions with pretend responses.</p>`,
+    js: `function checkResponse(response) {
+  // Your code here
+}
+
+function trailNames(trails) {
+  // Your code here
+}
+
+async function loadTrails(url) {
+  const response = await fetch(url);
+  const trails = await response.json();
+  return trailNames(trails);
+}`,
+    solution: `function checkResponse(response) {
+  if (!response.ok) {
+    throw new Error("HTTP " + response.status);
+  }
+  return response;
+}
+
+function trailNames(trails) {
+  return trails.map((trail) => trail.name);
+}
+
+async function loadTrails(url) {
+  try {
+    const response = checkResponse(await fetch(url));
+    const trails = await response.json();
+    return trailNames(trails);
+  } catch (err) {
+    console.error("Couldn't load trails:", err.message);
+    return [];
+  }
+}`,
+    expose: ["checkResponse", "trailNames", "loadTrails"],
+    hints: [
+      "if (!response.ok) { throw new Error(\"HTTP \" + response.status); } then return response;",
+      "trails.map((trail) => trail.name) makes a new array of names.",
+      "Wrap the body of loadTrails in try { … } catch (err) { … }, and pass the fetch result through checkResponse.",
+    ],
+    checks: [
+      { label: "checkResponse returns a good response", test: ({ fns }) => { const r = { ok: true, status: 200 }; return fns.checkResponse(r) === r; } },
+      { label: "checkResponse throws on a 404", test: ({ fns }) => { try { fns.checkResponse({ ok: false, status: 404 }); return false; } catch (e) { return e instanceof Error; } } },
+      { label: "trailNames returns just the names", test: ({ fns }) => JSON.stringify(fns.trailNames([{ name: "Mesa", miles: 6.7 }, { name: "Royal Arch", miles: 3.4 }])) === '["Mesa","Royal Arch"]' && fns.trailNames([]).length === 0 },
+      { label: "loadTrails checks the response and catches errors", test: ({ fns, code }) => { const src = String(fns.loadTrails); return /checkResponse\(/.test(src) && /try\s*\{/.test(src) && /catch\s*(\(|\{)/.test(src); } },
+    ],
+  });
 </script>
 </body>
 </html>

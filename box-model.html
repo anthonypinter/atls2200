@@ -4,9 +4,6 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Box Model Explorer</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Recursive:slnt,wght,CASL,MONO@-15..0,300..1000,0..1,0..1&display=swap">
 <link rel="stylesheet" href="style.css">
 <style>
   :root { --m: #f3d7a8; --b: #f0b37a; --p: #b9d99a; --c: #9ec2e6; --layer-ink: #2a2a2a; }
@@ -21,7 +18,7 @@
   /* Devtools-style nested diagram */
   .diagram { font: 0.8rem var(--font-code); font-variation-settings: "MONO" 1; color: var(--layer-ink); text-align: center; max-width: 420px; }
   .layer { position: relative; padding: 22px 28px; border-radius: 4px; }
-  .layer > .lbl { position: absolute; top: 4px; left: 8px; font-size: 0.7rem; text-transform: lowercase; opacity: 0.85; }
+  .layer > .lbl { position: absolute; top: 4px; left: 8px; font-size: 0.7rem; text-transform: lowercase; }
   .layer > .n { position: absolute; left: 0; right: 0; font-variant-numeric: tabular-nums; }
   .layer > .n.t { top: 4px; } .layer > .n.b { bottom: 3px; }
   .layer > .n.l, .layer > .n.r { top: 50%; transform: translateY(-50%); left: auto; right: auto; }
@@ -42,14 +39,44 @@
 <script src="js/quiz.js"></script>
 </head>
 <body>
-<div class="wrap">
+<main class="wrap">
   <nav class="crumbs" aria-label="Site"><a class="crumb" href="index.html">← Field Guide</a><a class="crumb" href="glossary.html">Glossary</a></nav>
   <header class="page-head">
     <span class="eyebrow">CSS Basics · The Box Model</span>
     <h1>Box Model Explorer</h1>
     <p class="lede">Every element is a box made of four layers: content, padding, border, and margin. Adjust each layer and see how much space the box really takes up.</p>
+    <div class="objectives">
+      <p class="callout-title">You'll be able to</p>
+      <ul>
+        <li>Name the four layers of a box and say what each one does.</li>
+        <li>Work out how wide a box will be with <code>content-box</code> and with <code>border-box</code>.</li>
+        <li>Space boxes apart with margin, and predict when two margins collapse into one.</li>
+      </ul>
+    </div>
   </header>
 
+  <div class="section-title"><span class="eyebrow">Read</span><h2>Every element is a box</h2></div>
+  <div class="prose">
+    <p>Open DevTools on any page and hover over an element. The browser highlights a rectangle. Every element is a box, even a heading or a link that looks like it's just text. The rules for how that box is built are called the <span class="term">box model</span>, and knowing them is how you predict how big things will be.</p>
+    <p>Each box has four layers, from the inside out:</p>
+    <ul>
+      <li><strong>Content</strong> is the text or image itself. By default, <code>width</code> and <code>height</code> size only this part.</li>
+      <li><span class="term">Padding</span> is space between the content and the border. It's inside the box, so it shows the background color.</li>
+      <li><span class="term">Border</span> is the line around the padding. It can be any width, or none at all.</li>
+      <li><span class="term">Margin</span> is space outside the border that pushes other boxes away. It's always transparent.</li>
+    </ul>
+    <p>Here's the part that surprises people. By default, <code>width</code> sets only the content, and padding and border are added on top. This card is 352px wide on the page, not 300px:</p>
+    <pre class="snippet"><span class="sel">.card</span> {
+  <span class="prop">width</span>: <span class="val">300px</span>;
+  <span class="prop">padding</span>: <span class="val">20px</span>;          <span class="cmt">/* + 20 on each side = 340px */</span>
+  <span class="prop">border</span>: <span class="val">6px solid</span>;      <span class="cmt">/* + 6 on each side  = 352px */</span>
+}</pre>
+    <p>Add <code><span class="term">box-sizing</span>: border-box</code> and the browser does the math the other way: the whole box, padding and border included, is 300px, and the content shrinks to fit. That's much easier to plan with, which is why most stylesheets start with <code>* { box-sizing: border-box; }</code>.</p>
+    <div class="callout tip"><p class="callout-title">Tip</p><p>In <span class="term">DevTools</span>, the Computed tab draws the box model for whatever element you select, with the size of every layer. When a box is bigger than you expected, look there first.</p></div>
+    <p>One more rule: when two vertical margins touch, they don't add up. They <em>collapse</em> into the larger one. A heading with <code>margin-bottom: 30px</code> above a paragraph with <code>margin-top: 20px</code> leaves 30px between them, not 50px.</p>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Play</span><h2>Explore the box</h2><p>Change each layer and watch the math. Then switch <code>box-sizing</code> and see the same settings give a different size.</p></div>
   <section class="playground">
     <div class="panel controls" aria-label="Box settings">
       <span class="eyebrow">.box</span>
@@ -73,6 +100,9 @@
     </div>
   </section>
 
+  <div class="section-title"><span class="eyebrow">Practice</span><h2>Size and space two cards</h2><p>Fix the cards' size without touching their width, padding or border, then space and center them.</p></div>
+  <div id="ex-cards"></div>
+
   <section class="notes">
     <div class="panel">
       <h2>Key ideas</h2>
@@ -94,8 +124,11 @@
     </div>
   </section>
 
+  <div class="section-title"><span class="eyebrow">Check yourself</span><h2>Quick check</h2></div>
+  <div class="panel quiz" id="quiz"></div>
+
   <footer class="page-foot" data-book-nav><a href="index.html">← Contents</a></footer>
-</div>
+</main>
 
 <script>
   const $ = (id) => document.getElementById(id);
@@ -135,6 +168,71 @@
   $("bb").addEventListener("click", () => { sizing = "border-box"; update(); });
   document.querySelectorAll("input").forEach((el) => el.addEventListener("input", update));
   update();
+</script>
+<script>
+  makeExercise(document.getElementById("ex-cards"), {
+    title: "Size and space two trail cards",
+    task: `<p>Change only the CSS, and leave <code>width</code>, <code>padding</code> and <code>border</code> as they are:</p>
+      <ol>
+        <li>Make each card exactly 300px wide on the page, padding and border included.</li>
+        <li>Put 24px of space between the two cards.</li>
+        <li>Center the cards across the preview.</li>
+      </ol>`,
+    html: `<div class="card">
+  <h3>Mesa Trail</h3>
+  <p>6.7 miles · Moderate</p>
+</div>
+<div class="card">
+  <h3>Royal Arch</h3>
+  <p>3.4 miles · Hard</p>
+</div>`,
+    css: `.card {
+  width: 300px;
+  padding: 20px;
+  border: 4px solid #2340d9;
+  background: #eef1fb;
+  font-family: system-ui, sans-serif;
+}
+
+.card h3, .card p { margin: 0; }`,
+    solution: { css: `.card {
+  width: 300px;
+  padding: 20px;
+  border: 4px solid #2340d9;
+  background: #eef1fb;
+  font-family: system-ui, sans-serif;
+  box-sizing: border-box;
+  margin: 0 auto 24px;
+}
+
+.card h3, .card p { margin: 0; }` },
+    hints: [
+      "Right now the card is 300 + 20 + 20 + 4 + 4 = 348px wide. One property changes what width measures.",
+      "Space between boxes is margin. Stacked margins collapse, so margin-bottom: 24px on each card (or 24px on top and bottom) still gives 24px.",
+      "margin-left: auto and margin-right: auto share the leftover space equally. margin: 0 auto 24px sets top, sides and bottom in one line.",
+    ],
+    // Checks measure the rendered cards, so any working CSS passes.
+    checks: [
+      { label: "Each card is 300px wide on the page", test: ({ $$ }) => $$(".card").every((c) => Math.abs(c.getBoundingClientRect().width - 300) < 0.5) },
+      { label: "Width, padding and border are unchanged", test: ({ $$, style }) => $$(".card").every((c) => style(c, "padding-left") === "20px" && style(c, "border-left-width") === "4px" && style(c, "width") === "300px") },
+      { label: "There's 24px between the cards", test: ({ $$ }) => {
+        const [a, b] = $$(".card").map((c) => c.getBoundingClientRect());
+        return Math.abs(b.top - a.bottom - 24) < 0.5;
+      } },
+      { label: "The cards are centered", test: ({ doc, $$ }) => $$(".card").every((c) => {
+        const r = c.getBoundingClientRect();
+        return Math.abs(r.left - (doc.documentElement.clientWidth - r.right)) < 1;
+      }) },
+    ],
+  });
+
+  makeQuiz(document.getElementById("quiz"), [
+    { id: "q1", q: "With the default box-sizing, how wide is this box on the page?", pre: ".box {\n  width: 200px;\n  padding: 10px;\n  border: 2px solid;\n}", opts: ["200px", "220px", "224px"], a: 2, why: "Padding and border are added on both sides: 200 + 10 + 10 + 2 + 2 = 224px." },
+    { id: "q2", q: "Same box, but with box-sizing: border-box. How wide is it now?", opts: ["200px", "224px", "176px"], a: 0, why: "border-box makes width include padding and border, so the box stays 200px and the content shrinks to 176px." },
+    { id: "q3", q: "Which property adds space outside the border, pushing other boxes away?", opts: ["padding", "margin", "outline"], a: 1, why: "Margin is outside the border. Padding is inside it." },
+    { id: "q4", q: "A heading has margin-bottom: 30px and the paragraph below it has margin-top: 20px. How much space is between them?", opts: ["50px", "30px", "20px"], a: 1, why: "Vertical margins that touch collapse into the larger of the two." },
+    { id: "q5", q: "Which part of the box shows the element's background color?", opts: ["Only the content", "The content and padding", "The margin too"], a: 1, why: "Padding is inside the box, so the background shows through it. Margin is always transparent." },
+  ]);
 </script>
 </body>
 </html>

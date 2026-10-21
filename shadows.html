@@ -4,9 +4,6 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Shadows &amp; Filters</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Recursive:slnt,wght,CASL,MONO@-15..0,300..1000,0..1,0..1&display=swap">
 <link rel="stylesheet" href="style.css">
 <style>
   .light-stage { display: grid; place-items: center; min-height: 300px; background: #eef1f6; border-radius: var(--radius); border: 1px solid var(--line); padding: 30px; }
@@ -37,15 +34,37 @@
 <script src="js/quiz.js"></script>
 </head>
 <body>
-<div class="wrap">
+<main class="wrap">
   <nav class="crumbs" aria-label="Site"><a class="crumb" href="index.html">← Field Guide</a><a class="crumb" href="glossary.html">Glossary</a></nav>
   <header class="page-head">
     <span class="eyebrow">CSS Basics · Shadows &amp; Filters</span>
     <h1>Shadows &amp; Filters</h1>
     <p class="lede">Shadows make flat boxes look lifted off the page, and filters change how an element is drawn, like a photo editor. A little goes a long way: soft, subtle shadows look the most natural.</p>
+    <div class="objectives">
+      <p class="callout-title">You'll be able to</p>
+      <ul>
+        <li>Add a soft, natural box-shadow, and stack two for depth.</li>
+        <li>Use text-shadow to keep text readable on a photo.</li>
+        <li>Choose between box-shadow and filter: drop-shadow(), and use other filters.</li>
+      </ul>
+    </div>
   </header>
 
-  <div class="section-title" style="margin-top:0"><span class="eyebrow">Part 1</span><h2>box-shadow</h2><p>A shadow has an x offset, a y offset, a blur, a spread and a color. Try the presets, then adjust them yourself.</p></div>
+  <div class="section-title"><span class="eyebrow">Read</span><h2>Depth, used lightly</h2></div>
+  <div class="prose">
+    <p>A <span class="term">box-shadow</span> makes a flat box look lifted off the page. It takes up to five values: how far right, how far down, how much blur, how much spread, and a color.</p>
+    <pre class="snippet" data-lang="css">.card {
+  box-shadow:
+    0 1px 2px rgb(0 0 0 / 12%),
+    0 8px 24px rgb(0 0 0 / 10%);
+}</pre>
+    <p>The best shadows are barely noticeable. Use a semi-transparent color rather than solid black, and let it fall slightly downward, as if light were coming from above. Stacking a tight, darker shadow with a wide, soft one, separated by a comma, looks more realistic than any single shadow. Shadows are painted on top of the layout, so they never push other elements around.</p>
+    <p><code>text-shadow</code> works the same way for text, without the spread value. Its best use is keeping big headings readable on a busy photo. Don't put it on body text, where it just looks blurry.</p>
+    <p>A <span class="term">filter</span> changes how an element is drawn, like a photo editor. <code>blur()</code>, <code>grayscale()</code>, <code>brightness()</code> and <code>contrast()</code> are all filters. One is a shadow: <code>drop-shadow()</code>. The difference from <code>box-shadow</code> is shape. A box-shadow always follows the element's rectangle, while <code>drop-shadow()</code> follows the actual visible shape, so it's the one to use on a transparent PNG or an SVG icon.</p>
+    <div class="callout tip"><p class="callout-title">Tip</p><p>A shadow alone is a weak way to separate a card from a similar background, especially in dark mode where shadows barely show. Pair it with a subtle border.</p></div>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Play</span><h2>box-shadow</h2><p>A shadow has an x offset, a y offset, a blur, a spread and a color. Try the presets, then adjust them yourself.</p></div>
   <section class="playground">
     <div class="panel controls">
       <div class="presets" id="presets"></div>
@@ -68,7 +87,7 @@
     </div>
   </section>
 
-  <div class="section-title"><span class="eyebrow">Part 2</span><h2>text-shadow for readable text on images</h2></div>
+  <div class="section-title"><span class="eyebrow">Play</span><h2>text-shadow for readable text on images</h2></div>
   <section class="playground">
     <div class="panel controls">
       <div class="control"><label for="tb">blur</label><input id="tb" type="range" min="0" max="20" value="0"><span class="readout" id="tb-out"></span></div>
@@ -81,13 +100,13 @@
     </div>
   </section>
 
-  <div class="section-title"><span class="eyebrow">Part 3</span><h2>box-shadow vs filter: drop-shadow()</h2><p>box-shadow always follows the element's rectangle. The drop-shadow filter follows the actual shape, including transparent parts of an image.</p></div>
+  <div class="section-title"><span class="eyebrow">Play</span><h2>box-shadow vs filter: drop-shadow()</h2><p>box-shadow always follows the element's rectangle. The drop-shadow filter follows the actual shape, including transparent parts of an image.</p></div>
   <div class="compare">
     <div class="panel"><span class="eyebrow">box-shadow</span><div class="icon-wrap"><img id="i1" alt="Mountain icon" width="110" height="110"></div><p class="hint">The shadow outlines the image's square box.</p></div>
     <div class="panel"><span class="eyebrow">filter: drop-shadow()</span><div class="icon-wrap"><img id="i2" alt="Mountain icon" width="110" height="110"></div><p class="hint">The shadow traces the mountain's shape.</p></div>
   </div>
 
-  <div class="section-title"><span class="eyebrow">Part 4</span><h2>Other filters</h2></div>
+  <div class="section-title"><span class="eyebrow">Play</span><h2>Other filters</h2></div>
   <section class="playground filters">
     <div class="panel controls">
       <div class="control"><label for="fname">filter</label><select id="fname"><option value="none">none</option><option value="grayscale(1)">grayscale(1)</option><option value="sepia(1)">sepia(1)</option><option value="blur(4px)">blur(4px)</option><option value="brightness(0.6)">brightness(0.6)</option><option value="contrast(1.6)">contrast(1.6)</option><option value="saturate(2)">saturate(2)</option><option value="hue-rotate(120deg)">hue-rotate(120deg)</option></select></div>
@@ -95,6 +114,9 @@
     </div>
     <div class="stage"><img id="fimg" alt="Sunset over the Flatirons" width="360" height="200"></div>
   </section>
+
+  <div class="section-title"><span class="eyebrow">Practice</span><h2>Add depth with shadows</h2><p>Make the card float with a soft, natural shadow, and lift the heading off the photo.</p></div>
+  <div id="ex-shadow"></div>
 
   <section class="notes">
     <div class="panel">
@@ -117,8 +139,11 @@
     </div>
   </section>
 
+  <div class="section-title"><span class="eyebrow">Check yourself</span><h2>Quick check</h2></div>
+  <div class="panel quiz" id="quiz"></div>
+
   <footer class="page-foot" data-book-nav><a href="index.html">← Contents</a></footer>
-</div>
+</main>
 
 <script>
   const $ = (id) => document.getElementById(id);
@@ -173,6 +198,58 @@
 
   $("fimg").src = "data:image/svg+xml," + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="360" height="200" viewBox="0 0 360 200"><defs><linearGradient id="g" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ff7b54"/><stop offset="1" stop-color="#ffd56b"/></linearGradient></defs><rect width="360" height="200" fill="url(#g)"/><circle cx="270" cy="120" r="34" fill="#fff3d6"/><path d="M0 200 L0 120 L50 70 L80 110 L120 50 L160 115 L200 80 L240 140 L360 120 L360 200 Z" fill="#8a4f3a"/><path d="M0 200 L0 170 L360 160 L360 200 Z" fill="#2f5d3a"/></svg>');
   $("fname").addEventListener("input", () => ($("fimg").style.filter = $("fname").value));
+</script>
+<script>
+  makeQuiz(document.getElementById("quiz"), [
+    { id: "q1", q: "Which shadow color looks most natural?", opts: ["black", "gray", "rgb(0 0 0 / 15%)"], a: 2, why: "A semi-transparent shadow lets the background show through, like a real shadow." },
+    { id: "q2", q: "You want a shadow that follows a transparent PNG's outline. Which do you use?", opts: ["filter: drop-shadow()", "box-shadow", "text-shadow"], a: 0, why: "drop-shadow follows the visible shape; box-shadow follows the rectangle." },
+    { id: "q3", q: "Does a big box-shadow push nearby elements away?", opts: ["Yes", "No, shadows are painted on top and take no space", "Only with spread"], a: 1, why: "Shadows don't affect layout at all." },
+    { id: "q4", q: "What's the best use for text-shadow?", opts: ["All body text", "Links", "Big text over a busy photo"], a: 2, why: "It helps large text stand out from a busy background; on body text it just blurs." },
+  ]);
+</script>
+<script>
+  makeExercise(document.getElementById("ex-shadow"), {
+    title: "A realistic shadow",
+    task: `<ol>
+      <li>Give the card a shadow that falls slightly downward and uses a semi-transparent color.</li>
+      <li>Make it realistic by stacking two shadows: a tight one and a wide, soft one.</li>
+      <li>Add a <code>text-shadow</code> to the heading on the dark banner.</li>
+    </ol>`,
+    html: `<div class="banner"><h1>Royal Arch</h1></div>
+<div class="card">
+  <h2>Trail notes</h2>
+  <p>Steep, rocky and worth it.</p>
+</div>`,
+    css: `body { font-family: system-ui, sans-serif; background: #f4f5f8; padding: 12px; }
+.banner { background: #3b4a5c; color: white; padding: 24px; }
+.banner h1 { margin: 0; }
+.card { background: white; padding: 16px; margin-top: 16px; border-radius: 8px; }`,
+    solution: { css: `body { font-family: system-ui, sans-serif; background: #f4f5f8; padding: 12px; }
+.banner { background: #3b4a5c; color: white; padding: 24px; }
+.banner h1 { margin: 0; text-shadow: 0 2px 4px rgb(0 0 0 / 50%); }
+.card {
+  background: white; padding: 16px; margin-top: 16px; border-radius: 8px;
+  box-shadow: 0 1px 2px rgb(0 0 0 / 15%), 0 8px 24px rgb(0 0 0 / 12%);
+}` },
+    hints: [
+      "box-shadow: x y blur color. A positive y pushes the shadow down.",
+      "rgb(0 0 0 / 15%) is black at 15%: much softer than solid black.",
+      "Separate two shadows with a comma.",
+    ],
+    checks: (() => {
+      const shadows = (s) => s === "none" ? [] : s.split(/,(?![^(]*\))/).map((x) => {
+        const color = (x.match(/rgba?\([^)]*\)/) || [""])[0], nums = x.replace(color, "").trim().split(/\s+/).map(parseFloat);
+        const alpha = /rgba\(/.test(color) ? parseFloat(color.split(",")[3]) : 1;
+        return { y: nums[1], alpha };
+      });
+      return [
+        { label: "The card's shadow falls downward", test: ({ style }) => { const s = shadows(style(".card", "box-shadow")); return s.length > 0 && s.every((x) => x.y > 0); } },
+        { label: "Its color is semi-transparent", test: ({ style }) => { const s = shadows(style(".card", "box-shadow")); return s.length > 0 && s.every((x) => x.alpha < 1); } },
+        { label: "Two shadows are stacked", test: ({ style }) => shadows(style(".card", "box-shadow")).length >= 2 },
+        { label: "The heading has a text-shadow", test: ({ style }) => style(".banner h1", "text-shadow") !== "none" },
+      ];
+    })(),
+  });
 </script>
 </body>
 </html>

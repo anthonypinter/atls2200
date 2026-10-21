@@ -4,9 +4,6 @@
 <meta charset="utf-8">
 <title>HTML, CSS &amp; JS Field Guide</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Recursive:slnt,wght,CASL,MONO@-15..0,300..1000,0..1,0..1&display=swap">
 <link rel="stylesheet" href="style.css">
 <style>
   .hero { display: grid; grid-template-columns: 1.3fr 1fr; gap: 32px; align-items: end; padding-block: 24px 40px; border-bottom: 1px solid var(--line); }
@@ -61,6 +58,8 @@
   .mini.mq .desk { flex: 1; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 3px; }
   .mini i:nth-child(3n+1) { background: var(--item-1); } .mini i:nth-child(3n+2) { background: var(--item-2); } .mini i:nth-child(3n+3) { background: var(--item-3); }
   .mini.box i { background-color: var(--item-1); }
+  .unit-print { margin: 0; font-size: 0.9rem; } @media print { .unit-print { display: none; } }
+  .mini.review { flex-direction: column; justify-content: center; gap: 5px; } .mini.review i { height: 9px; border-radius: 99px; } .mini.review i:nth-child(1) { width: 85%; } .mini.review i:nth-child(2) { width: 65%; } .mini.review i:nth-child(3) { width: 75%; }
   .mini.doc { flex-direction: column; } .mini.doc i:first-child { height: 25%; } .mini.doc i:last-child { flex: 1; }
   .mini.sem { display: grid; grid-template-columns: 3fr 1fr; grid-template-rows: 1fr 2.4fr 1fr; } .mini.sem i:first-child, .mini.sem i:last-child { grid-column: 1 / -1; }
   .mini.form { flex-direction: column; justify-content: center; } .mini.form b { width: 30%; height: 5px; border-radius: 2px; background: var(--muted); }
@@ -123,7 +122,7 @@
   .mini.jsarr { align-items: center; justify-content: center; gap: 3px; } .mini.jsarr i { width: 20%; height: 80%; display: grid; place-items: end center; font: 600 0.6rem var(--font-code); font-style: normal; color: #fff; padding-bottom: 2px; }
   .mini.jsif { align-items: center; gap: 6px; padding-inline: 10px; } .mini.jsif > i { width: 18%; height: 40%; transform: rotate(45deg) scale(0.7); } .mini.jsif span { flex: 1; display: grid; gap: 6px; } .mini.jsif span i { height: 12px; } .mini.jsif span i.off { opacity: 0.25; }
   .mini.jsloop { align-items: center; gap: 10px; padding-inline: 10px; } .mini.jsloop b { font: 800 1.5rem var(--font-display); color: var(--cobalt); } .mini.jsloop span { flex: 1; display: grid; gap: 4px; } .mini.jsloop span i { height: 8px; background: var(--item-3) !important; }
-  .mini.jsfn { align-items: center; justify-content: center; gap: 8px; } .mini.jsfn i { width: 22%; height: 50%; } .mini.jsfn b { font: 800 1.05rem var(--font-code); font-variation-settings: "MONO" 1; color: var(--item-4); }
+  .mini.jsfn { align-items: center; justify-content: center; gap: 8px; } .mini.jsfn i { width: 22%; height: 50%; } .mini.jsfn b { font: 800 1.05rem var(--font-code); font-variation-settings: "MONO" 1; color: var(--fn); }
   .mini.jsobj { align-items: center; gap: 6px; padding-inline: 10px; } .mini.jsobj b { font: 800 1.6rem var(--font-code); color: var(--cobalt); } .mini.jsobj span { flex: 1; display: grid; gap: 4px; } .mini.jsobj span i { height: 5px; background: var(--prop) !important; opacity: 0.7; } .mini.jsobj span i:nth-child(2) { width: 70%; }
   .mini.jsdom { display: grid; grid-template-columns: repeat(4, 1fr); grid-template-rows: 1fr 1fr 1fr; gap: 3px; } .mini.jsdom i { background: var(--line) !important; } .mini.jsdom i:nth-child(1) { grid-column: 2 / 4; } .mini.jsdom i:nth-child(2) { grid-column: 1 / 3; } .mini.jsdom i:nth-child(3) { grid-column: 3 / 5; } .mini.jsdom i:nth-child(4) { grid-column: 1 / 2; } .mini.jsdom i:nth-child(5) { grid-column: 3 / 4; } .mini.jsdom i.hit { background: var(--cobalt) !important; }
   .mini.jsevent { align-items: center; justify-content: center; gap: 10px; } .mini.jsevent i { width: 34%; height: 50%; border-radius: 6px; outline: 3px solid var(--cobalt-soft); } .mini.jsevent b { font: 700 0.75rem var(--font-code); font-variation-settings: "MONO" 1; color: var(--prop); }
@@ -137,7 +136,7 @@
 <script src="js/quiz.js"></script>
 </head>
 <body>
-<div class="wrap">
+<main class="wrap">
   <header class="hero">
     <div class="hero-text">
       <span class="eyebrow">Intro to HTML, CSS &amp; JS · Student helpers</span>
@@ -164,14 +163,14 @@
     </div>
   </div>
 
-  <main id="units"></main>
+  <div id="units"></div>
   <p class="empty" id="empty" hidden>No topics match that search. Try a property name like <code>flex</code> or <code>margin</code>.</p>
 
   <footer class="page-foot">
     <span>Pages work in any modern browser. Resize the window to test responsive examples.</span>
     <span class="mono">Lessons are numbered in reading order.</span>
   </footer>
-</div>
+</main>
 
 <script>
   const esc = (s) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;");
@@ -235,6 +234,7 @@
     jsdom: '<div class="mini jsdom" aria-hidden="true"><i></i><i></i><i></i><i class="hit"></i><i></i></div>',
     jsevent: '<div class="mini jsevent" aria-hidden="true"><i></i><b>click</b></div>',
     jscreate: '<div class="mini jscreate" aria-hidden="true"><i></i><i></i><i class="new"></i></div>',
+    review: '<div class="mini review" aria-hidden="true"><i></i><i></i><i></i></div>',
     jsfetch: '<div class="mini jsfetch" aria-hidden="true"><b>{ }</b><span>→</span><i></i></div>',
   };
 
@@ -246,7 +246,7 @@
     const chips = `<div class="chips">${t.props.map((p) => `<code>${esc(p)}</code>`).join("")}</div>`;
     const done = isDone(t.slug);
     const top = `<div class="card-top"><h3>${esc(t.title)}${done ? '<span class="sr-only"> (completed)</span>' : ""}</h3><span class="status ${done ? "done" : "ready"}">${done ? "✓ " : ""}${t.num}</span></div>`;
-    return `<a class="card" href="${t.href}">${top}<div style="display:grid;gap:10px">${minis[t.mini]}<p>${esc(t.desc)}</p></div>${chips}</a>`;
+    return `<a class="card" href="${t.href}">${top}<div style="display:grid;gap:10px">${minis[t.mini]}<p>${esc(t.desc)}</p>${t.minutes ? `<span class="card-meta">About ${t.minutes} min</span>` : ""}</div>${chips}</a>`;
   }
 
   function render(query) {
@@ -258,7 +258,7 @@
       if (!topics.length) return "";
       const n = u.lessons.filter((t) => isDone(t.slug)).length;
       const bar = n ? `<div class="unit-progress"><span>${n} of ${u.lessons.length} complete</span><div class="progress-bar" aria-hidden="true"><i style="width:${(100 * n) / u.lessons.length}%"></i></div></div>` : "";
-      return `<section class="unit" id="part-${u.num}"><div class="unit-head"><span class="eyebrow">Part ${u.num} · ${u.lessons.length} lessons</span><h2>${esc(u.title)}</h2><p>${esc(u.blurb)}</p>${bar}</div><div class="cards">${topics.map(cardHTML).join("")}</div></section>`;
+      return `<section class="unit" id="part-${u.num}"><div class="unit-head"><span class="eyebrow">Part ${u.num} · ${u.lessons.length} lessons</span><h2>${esc(u.title)}</h2><p>${esc(u.blurb)}</p><p class="unit-print"><a href="print.html?part=${u.num}">Print this part</a></p>${bar}</div><div class="cards">${topics.map(cardHTML).join("")}</div></section>`;
     }).join("");
     document.getElementById("empty").hidden = shown > 0;
   }

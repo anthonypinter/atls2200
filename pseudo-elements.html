@@ -4,9 +4,6 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Pseudo-elements</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Recursive:slnt,wght,CASL,MONO@-15..0,300..1000,0..1,0..1&family=Lora:ital,wght@0,400;0,700;1,400&display=swap">
 <link rel="stylesheet" href="style.css">
 <style>
   .grid-demos { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px; }
@@ -42,15 +39,50 @@
 <script src="js/quiz.js"></script>
 </head>
 <body>
-<div class="wrap">
+<main class="wrap">
   <nav class="crumbs" aria-label="Site"><a class="crumb" href="index.html">← Field Guide</a><a class="crumb" href="glossary.html">Glossary</a></nav>
   <header class="page-head">
     <span class="eyebrow">CSS Basics · Pseudo-elements</span>
     <h1>Pseudo-elements</h1>
     <p class="lede">Pseudo-elements, written with two colons, style a <em>part</em> of an element, or add decorative content before or after it, without changing your HTML. Switch each one on and off to see what it adds.</p>
+    <div class="objectives">
+      <p class="callout-title">You'll be able to</p>
+      <ul>
+        <li>Add decorative content with ::before and ::after.</li>
+        <li>Style part of an element with ::first-letter, ::first-line, ::marker and ::selection.</li>
+        <li>Explain why important information shouldn't go in a pseudo-element.</li>
+      </ul>
+    </div>
   </header>
 
+  <div class="section-title"><span class="eyebrow">Read</span><h2>Style a part, or add a decoration</h2></div>
+  <div class="prose">
+    <p>A <span class="term">pseudo-element</span> lets you style a <em>part</em> of an element, or add decoration to it, without touching your HTML. It's written with two colons, which is how you tell it apart from a pseudo-class like <code>:hover</code>.</p>
+    <p>The two you'll use most are <code>::before</code> and <code>::after</code>. They insert a box at the start or end of an element's content:</p>
+    <pre class="snippet" data-lang="css">.quote::before {
+  content: "“";
+  font-size: 3rem;
+  color: #b4410c;
+}</pre>
+    <p>Every <code>::before</code> and <code>::after</code> needs a <code>content</code> property, or it doesn't appear at all. Often the content is empty, <code>content: ""</code>, and the pseudo-element is just a box you style into an underline, an arrow or a colored bar.</p>
+    <p>Others select a part of what's already there:</p>
+    <ul>
+      <li><code>::first-letter</code> styles the first letter, for a drop cap.</li>
+      <li><code>::first-line</code> styles the first line, however long it ends up being.</li>
+      <li><code>::marker</code> styles a list item's bullet or number.</li>
+      <li><code>::selection</code> styles text the visitor highlights.</li>
+      <li><code>::placeholder</code> styles the hint text in an input.</li>
+    </ul>
+    <p>Pseudo-elements are for decoration. Text in <code>content</code> can't be selected or copied, and screen readers don't treat it consistently, so anything visitors need to read belongs in the HTML.</p>
+    <div class="callout note"><p class="callout-title">Note</p><p><code>::before</code> and <code>::after</code> go <em>inside</em> the element, as its first and last child. That's why they don't work on <code>&lt;img&gt;</code> or <code>&lt;input&gt;</code>: those elements have no inside to put them in.</p></div>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Play</span><h2>Switch each one on</h2><p>Turn each pseudo-element on and off to see exactly what it adds.</p></div>
+
   <div class="grid-demos" id="demos"></div>
+
+  <div class="section-title"><span class="eyebrow">Practice</span><h2>Decorate with ::before and ::after</h2><p>Add three decorations with CSS alone. None of them belongs in the HTML.</p></div>
+  <div id="ex-pseudo"></div>
 
   <section class="notes">
     <div class="panel">
@@ -73,8 +105,11 @@
     </div>
   </section>
 
+  <div class="section-title"><span class="eyebrow">Check yourself</span><h2>Quick check</h2></div>
+  <div class="panel quiz" id="quiz"></div>
+
   <footer class="page-foot" data-book-nav><a href="index.html">← Contents</a></footer>
-</div>
+</main>
 
 <script>
   const DEMOS = [
@@ -94,6 +129,58 @@
       <p class="what">${d.what}</p>
     </div>`).join("");
   document.getElementById("demos").addEventListener("input", (e) => { const i = e.target.dataset.i; if (i !== undefined) document.getElementById("dc" + i).classList.toggle("on", e.target.checked); });
+</script>
+<script>
+  makeQuiz(document.getElementById("quiz"), [
+    { id: "q1", q: "Your ::after rule has a color and size but nothing appears. What's missing?", opts: ["A content property", "display: block", "Two colons"], a: 0, why: "::before and ::after don't exist until they have content, even content: \"\"." },
+    { id: "q2", q: "How do you tell a pseudo-element from a pseudo-class?", opts: ["Pseudo-elements use brackets", "Pseudo-elements use two colons", "There's no difference"], a: 1, why: "::before is a pseudo-element; :hover is a pseudo-class." },
+    { id: "q3", q: "Which pseudo-element makes a drop cap?", opts: ["::first-line", "::marker", "::first-letter"], a: 2, why: "::first-letter styles just the first letter." },
+    { id: "q4", q: "Why can't you add ::before to an <img>?", opts: ["Images have no content inside to hold it", "Images don't support CSS", "You need ::after instead"], a: 0, why: "::before goes inside an element, and an img has no inside." },
+  ]);
+</script>
+<script>
+  makeExercise(document.getElementById("ex-pseudo"), {
+    title: "Quote marks, an arrow and an underline",
+    task: `<ol>
+      <li>Put a big opening quote mark <code>“</code> before the blockquote.</li>
+      <li>Put an arrow <code>↗</code> after the external link.</li>
+      <li>Draw a bar under the heading: an empty <code>::after</code>, displayed as a block, 40px wide and 4px tall, with a background color.</li>
+    </ol>`,
+    html: `<h2 class="section">Trail notes</h2>
+<blockquote class="quote">The mountains are calling, and I must go.</blockquote>
+<p>See the <a class="external" href="#">city's trail guide</a>.</p>`,
+    css: `body { font-family: system-ui, sans-serif; }
+.quote { font-style: italic; }`,
+    solution: { css: `body { font-family: system-ui, sans-serif; }
+.quote { font-style: italic; }
+
+.quote::before {
+  content: "“";
+  font-size: 2em;
+  color: #2340d9;
+}
+
+.external::after { content: " ↗"; }
+
+.section::after {
+  content: "";
+  display: block;
+  width: 40px;
+  height: 4px;
+  margin-top: 6px;
+  background: #2340d9;
+}` },
+    hints: [
+      "Pseudo-elements need a content property, or they don't appear: content: \"“\";",
+      "For the bar, the content is empty (content: \"\"), and the size and color do the work.",
+      "::after is inline by default, so width and height are ignored until you add display: block.",
+    ],
+    checks: [
+      { label: "The quote starts with “", test: ({ $, doc }) => doc.defaultView.getComputedStyle($(".quote"), "::before").content.includes("“") },
+      { label: "The external link ends with ↗", test: ({ $, doc }) => doc.defaultView.getComputedStyle($(".external"), "::after").content.includes("↗") },
+      { label: "The heading has a 40 × 4px bar", test: ({ $, doc }) => { const s = doc.defaultView.getComputedStyle($(".section"), "::after"); return s.content === '""' && s.display === "block" && s.width === "40px" && s.height === "4px"; } },
+    ],
+  });
 </script>
 </body>
 </html>

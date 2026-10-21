@@ -4,9 +4,6 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Semantic Elements</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Recursive:slnt,wght,CASL,MONO@-15..0,300..1000,0..1,0..1&display=swap">
 <link rel="stylesheet" href="style.css">
 <style>
   .wire { display: grid; gap: 8px; grid-template-columns: minmax(0, 1fr) 180px; grid-template-areas: "header header" "main aside" "footer footer"; }
@@ -32,13 +29,44 @@
 <script src="js/quiz.js"></script>
 </head>
 <body>
-<div class="wrap">
+<main class="wrap">
   <nav class="crumbs" aria-label="Site"><a class="crumb" href="index.html">← Field Guide</a><a class="crumb" href="glossary.html">Glossary</a></nav>
   <header class="page-head">
     <span class="eyebrow">HTML Foundations · Semantic Elements</span>
     <h1>Semantic Elements</h1>
     <p class="lede">Semantic elements describe what content <em>is</em>, not how it looks. They look the same as a plain div, but screen readers, search engines and other developers can tell a navigation menu from a footer.</p>
+    <div class="objectives">
+      <p class="callout-title">You'll be able to</p>
+      <ul>
+        <li>Lay out a page with header, nav, main, article, section, aside and footer.</li>
+        <li>Decide when a div is the right choice.</li>
+        <li>Explain how landmarks help screen reader users move around a page.</li>
+      </ul>
+    </div>
   </header>
+
+  <div class="section-title"><span class="eyebrow">Read</span><h2>Say what each part of the page is</h2></div>
+  <div class="prose">
+    <p>Most pages have the same parts: a header with the logo, a navigation menu, the main content, maybe a sidebar, and a footer. You could build all of them out of <code>&lt;div&gt;</code>s, and they'd look exactly the same. But a <code>&lt;div&gt;</code> means only "a box," and <span class="term">semantic HTML</span> has an element for each part that says what it is:</p>
+    <pre class="snippet" data-lang="html">&lt;header&gt;logo and site name&lt;/header&gt;
+&lt;nav&gt;main menu&lt;/nav&gt;
+&lt;main&gt;
+  &lt;article&gt;one trail report&lt;/article&gt;
+  &lt;aside&gt;related trails&lt;/aside&gt;
+&lt;/main&gt;
+&lt;footer&gt;contact and copyright&lt;/footer&gt;</pre>
+    <p>Why bother, if they look the same? Because browsers turn these elements into <span class="term">landmarks</span>. A <span class="term">screen reader</span> user can jump straight to the main content or the navigation instead of listening to the whole page from the top. Search engines use them to find what matters, and the next developer to open your code can read its structure at a glance.</p>
+    <p>A few rules of thumb:</p>
+    <ul>
+    <li>Use one <code>&lt;main&gt;</code> per page, for the content that's unique to that page.</li>
+    <li><code>&lt;article&gt;</code> is something that would make sense on its own, like a blog post or a product card. <code>&lt;section&gt;</code> is a themed part of something bigger, and usually has a heading.</li>
+    <li>Use <code>&lt;nav&gt;</code> for major navigation, not every group of links.</li>
+    <li>Reach for <code>&lt;div&gt;</code> when nothing else fits, such as a wrapper you only need for layout. That's its job.</li>
+    </ul>
+    <div class="callout note"><p class="callout-title">Note</p><p>Semantic elements don't change how anything looks. You still style them with CSS, exactly as you would a div.</p></div>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Play</span><h2>Semantic HTML or div soup?</h2><p>Switch between the two versions of the same page, then click any region to see what it means and how a screen reader announces it.</p></div>
 
   <section class="playground even">
     <div class="stage-col">
@@ -54,6 +82,9 @@
 
   <div class="section-title"><span class="eyebrow">Practice</span><h2>Which element fits?</h2><p>Pick the best element for each piece of content.</p></div>
   <div class="panel quiz" id="quiz"></div>
+
+  <div class="section-title"><span class="eyebrow">Practice</span><h2>Replace the divs</h2><p>Every box here is a div. Swap in elements that say what each part of the page is.</p></div>
+  <div id="ex-landmarks"></div>
 
   <section class="notes">
     <div class="panel">
@@ -77,7 +108,7 @@
   </section>
 
   <footer class="page-foot" data-book-nav><a href="index.html">← Contents</a></footer>
-</div>
+</main>
 
 <script>
   const $ = (id) => document.getElementById(id);
@@ -131,6 +162,50 @@
     { id: "q6", q: "Something users click to open a menu.", opts: ["<div onclick>", "<a>", "<button>"], a: 2, why: "button works with the keyboard and screen readers by default. Use a for links to other pages." },
   ];
   makeQuiz($("quiz"), QUIZ);
+</script>
+<script>
+  makeExercise(document.getElementById("ex-landmarks"), {
+    title: "Name the parts of the page",
+    task: `<p>Replace the divs with semantic elements:</p>
+    <ul>
+      <li>The site header, with the navigation inside it</li>
+      <li>The main content, holding one article (the blog post)</li>
+      <li>The footer</li>
+    </ul>
+    <p>The logo can stay a div, or become a paragraph.</p>`,
+    html: `<div class="header">
+  <div class="logo">Boulder Trail Club</div>
+  <div class="nav"><a href="#">Trails</a> <a href="#">Events</a></div>
+</div>
+<div class="main">
+  <div class="post">
+    <h2>Spring trail work days</h2>
+    <p>Join us on Saturdays in April to repair the Mesa Trail.</p>
+  </div>
+</div>
+<div class="footer">© Boulder Trail Club</div>`,
+    solution: { html: `<header>
+  <div class="logo">Boulder Trail Club</div>
+  <nav><a href="#">Trails</a> <a href="#">Events</a></nav>
+</header>
+<main>
+  <article>
+    <h2>Spring trail work days</h2>
+    <p>Join us on Saturdays in April to repair the Mesa Trail.</p>
+  </article>
+</main>
+<footer>© Boulder Trail Club</footer>` },
+    hints: [
+      "The class names are clues: there's an element with each of those names except one.",
+      "A blog post makes sense on its own, so it's an <article>.",
+    ],
+    checks: [
+      { label: "A <header> contains the <nav>", test: ({ $ }) => !!$("header nav a") },
+      { label: "<main> holds an <article> with the post", test: ({ $ }) => $("main article h2").textContent.includes("Spring") },
+      { label: "There's a <footer>", test: ({ $ }) => $("footer").textContent.includes("Boulder Trail Club") },
+      { label: "At most one div is left (the logo)", test: ({ $$ }) => $$("div").length <= 1 },
+    ],
+  });
 </script>
 </body>
 </html>

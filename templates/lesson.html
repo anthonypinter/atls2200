@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>LESSON TITLE</title>
+<link rel="stylesheet" href="style.css">
+<style>
+  /* Styles for this lesson's playground only. Shared styles live in style.css. */
+</style>
+<script src="book.js"></script>
+<script src="js/progress.js"></script>
+<script src="js/chrome.js"></script>
+<script src="js/quiz.js"></script>
+</head>
+<body>
+<!--
+  Lesson template. Copy this file to the site root as <slug>.html, then:
+  1. Add the lesson to book.js in reading order, with minutes: how long the whole lesson takes, playground and practice
+     included (most are 20–30).
+  2. Fill in every section below in this order. Pilot examples to copy from: box-model.html, flexbox.html, js-loops.html.
+  3. Run node scripts/check.mjs (if you have Node), or push and let GitHub run it.
+
+  Writing style: talk to the student ("you"), keep sentences short, and use the book's running examples (Boulder trails,
+  a trail site) so lessons feel connected. Aim for about 300 words in Read, not counting code samples.
+-->
+<main class="wrap">
+  <nav class="crumbs" aria-label="Site"><a class="crumb" href="index.html">← Contents</a><a class="crumb" href="glossary.html">Glossary</a></nav>
+
+  <!-- 1. Header. The lesson number and reading time are added to the eyebrow automatically. -->
+  <header class="page-head">
+    <span class="eyebrow">PART TITLE · LESSON TITLE</span>
+    <h1>LESSON TITLE</h1>
+    <p class="lede">One or two sentences: what this is and what the student will do on this page.</p>
+    <div class="objectives">
+      <p class="callout-title">You'll be able to</p>
+      <ul>
+        <!-- 2–4 objectives, each starting with something the student can do: Name, Explain, Write, Choose, Fix… -->
+        <li>Objective one.</li>
+        <li>Objective two.</li>
+        <li>Objective three.</li>
+      </ul>
+    </div>
+  </header>
+
+  <!-- 2. Read: about 300 words. The idea, why it matters, one short code sample, and the one thing people get wrong.
+       Mark each glossary term the first time it appears: <span class="term">box model</span>, or
+       <span class="term" data-term="Box model">boxes</span> when the words differ from the glossary entry.
+       At most one callout: note, tip, warn ("Watch out") or try. -->
+  <div class="section-title"><span class="eyebrow">Read</span><h2>A HEADING THAT STATES THE IDEA</h2></div>
+  <div class="prose">
+    <p>Start with a situation the student recognizes, then introduce the idea.</p>
+    <pre class="snippet">/* One short example. Highlight CSS with .sel .prop .val .cmt and JavaScript with .kw .str .fn .num .cmt */</pre>
+    <p>Explain what the example shows.</p>
+    <div class="callout tip"><p class="callout-title">Tip</p><p>One practical tip.</p></div>
+  </div>
+
+  <!-- 3. Play: the interactive playground. Repeat this section for more playgrounds, each with its own heading. -->
+  <div class="section-title"><span class="eyebrow">Play</span><h2>PLAYGROUND HEADING</h2><p>What to try first, and what to watch for.</p></div>
+  <section class="playground">
+    <!-- Controls on the left, the live stage on the right. See any existing lesson for patterns. -->
+  </section>
+
+  <!-- 4. Practice: at least one graded exercise. Live editors (<div class="sandbox"> or <div class="runner">) can go
+       here too. Exercise ids must never change once published: saved work is stored under them. -->
+  <div class="section-title"><span class="eyebrow">Practice</span><h2>EXERCISE HEADING</h2><p>One sentence on what to build.</p></div>
+  <div id="ex-NAME"></div>
+
+  <!-- 5. Key ideas and Common mistakes. Bold text here that matches a glossary term becomes a pop-up. -->
+  <section class="notes">
+    <div class="panel">
+      <h2>Key ideas</h2>
+      <ul>
+        <li>Each key idea in one sentence.</li>
+      </ul>
+    </div>
+    <div class="panel mistake">
+      <h2>Common mistakes</h2>
+      <ul>
+        <li>Each mistake, and what to do instead.</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- 6. Check yourself: 4–5 questions. Question ids (q1, q2, …) must never change once published. -->
+  <div class="section-title"><span class="eyebrow">Check yourself</span><h2>Quick check</h2></div>
+  <div class="panel quiz" id="quiz"></div>
+
+  <footer class="page-foot" data-book-nav><a href="index.html">← Contents</a></footer>
+</main>
+
+<script>
+  // The playground's script goes here.
+</script>
+<script>
+  // Checks should measure the result (layout, computed styles, return values) rather than read the student's code,
+  // so any working answer passes. Make each check test one step on its own, and before publishing try the starter
+  // code, the solution and a different correct solution. Full reference: the comment at the top of js/exercise.js.
+  makeExercise(document.getElementById("ex-NAME"), {
+    title: "Exercise title",
+    task: "<p>What to do, as a short numbered list if there are several steps.</p>",
+    html: "<p>Starter HTML</p>",
+    css: "p { }",
+    solution: { css: "p { color: rebeccapurple; }" },
+    hints: ["A nudge toward the first step.", "A bigger nudge.", "Nearly the answer."],
+    checks: [
+      { label: "What this check tests, in the student's words", test: ({ $, style }) => style("p", "color") === "rgb(102, 51, 153)" },
+    ],
+  });
+
+  makeQuiz(document.getElementById("quiz"), [
+    { id: "q1", q: "Question?", opts: ["Option A", "Option B", "Option C"], a: 0, why: "Why the answer is right, in one sentence." },
+  ]);
+</script>
+</body>
+</html>

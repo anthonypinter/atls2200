@@ -4,13 +4,10 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>How the Web Works</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Recursive:slnt,wght,CASL,MONO@-15..0,300..1000,0..1,0..1&display=swap">
 <link rel="stylesheet" href="style.css">
 <style>
   .url { display: flex; flex-wrap: wrap; font: 600 clamp(0.9rem, 2.4vw, 1.2rem) var(--font-code); font-variation-settings: "MONO" 1; background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 14px 16px; gap: 0; }
-  .url button { font: inherit; font-variation-settings: inherit; border: 0; background: transparent; padding: 4px 1px; border-bottom: 3px solid transparent; cursor: pointer; color: var(--c); }
+  .url button { font: inherit; font-variation-settings: inherit; border: 0; background: transparent; padding: 4px 1px; border-bottom: 3px solid transparent; cursor: pointer; color: color-mix(in srgb, var(--c) 60%, var(--ink)); }
   .url button[aria-pressed="true"] { border-bottom-color: var(--c); background: color-mix(in srgb, var(--c) 12%, transparent); }
   .part-info { display: grid; gap: 6px; }
   .part-info b { font: 700 1rem var(--font-code); font-variation-settings: "MONO" 1; }
@@ -49,15 +46,36 @@
 <script src="js/quiz.js"></script>
 </head>
 <body>
-<div class="wrap">
+<main class="wrap">
   <nav class="crumbs" aria-label="Site"><a class="crumb" href="index.html">← Field Guide</a><a class="crumb" href="glossary.html">Glossary</a></nav>
   <header class="page-head">
     <span class="eyebrow">HTML Foundations · How the Web Works</span>
     <h1>How the Web Works</h1>
     <p class="lede">A website is a folder of files on someone else's computer. Your browser asks for those files one at a time and puts the page together. Knowing that explains most "it worked on my laptop" problems.</p>
+    <div class="objectives">
+      <p class="callout-title">You'll be able to</p>
+      <ul>
+        <li>Explain what happens between typing a URL and seeing the page.</li>
+        <li>Read the parts of a URL and say which file it asks for.</li>
+        <li>Recognize the status codes 200, 301 and 404.</li>
+      </ul>
+    </div>
   </header>
 
-  <div class="section-title" style="margin-top:0"><span class="eyebrow">Part 1</span><h2>Read a URL</h2><p>Every address has the same parts. Click each part to see what it does.</p></div>
+  <div class="section-title"><span class="eyebrow">Read</span><h2>A website is a folder of files</h2></div>
+  <div class="prose">
+    <p>When you visit a site, your browser is the <span class="term" data-term="Client and server">client</span>. Somewhere else, a <span class="term" data-term="Client and server">server</span> is a computer holding a folder of files: HTML, CSS, images. Your browser asks for a file, the server sends it back, and the browser builds the page. That's the whole web, repeated billions of times a day.</p>
+    <p>The address you type is a <span class="term">URL</span>, and every part of it means something:</p>
+    <pre class="snippet">https://trails.example.com/hikes/mesa.html
+└─┬─┘   └───────┬───────┘└────────┬──────┘
+protocol     domain          path to the file</pre>
+    <p>The <span class="term">domain name</span> finds the server. The path says which file you want from its folders. If the path ends in a folder, like <code>/hikes/</code>, the server sends that folder's <code>index.html</code>.</p>
+    <p>The server answers every request with an <span class="term">HTTP status code</span>. <code>200</code> means "here it is." <code>404</code> means there's no file at that path. <code>301</code> means it moved, and here's the new address.</p>
+    <p>A page is never just one file. The HTML arrives first. As the browser reads it, it finds a stylesheet, a script and some images, and asks for each one separately. If one of those requests fails, the rest of the page still shows up without it. That's why a typo in a file name gives you a page with no styles instead of a blank screen.</p>
+    <div class="callout tip"><p class="callout-title">Tip</p><p>Most servers care about capital letters, even though your laptop may not. <code>Style.css</code> and <code>style.css</code> are different files online. Use lowercase file names and you'll never chase this bug.</p></div>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Play</span><h2>Read a URL</h2><p>Every address has the same parts. Click each part to see what it does.</p></div>
   <section class="playground even">
     <div class="panel" style="display:grid;gap:14px">
       <div class="url" id="url" role="group" aria-label="Parts of a URL"></div>
@@ -71,7 +89,7 @@
     </div>
   </section>
 
-  <div class="section-title"><span class="eyebrow">Part 2</span><h2>One page, many requests</h2><p>Load the page and watch the log. The browser gets the HTML first, reads it, and only then discovers the CSS, images and fonts it also needs. Break something to see what happens.</p></div>
+  <div class="section-title"><span class="eyebrow">Play</span><h2>One page, many requests</h2><p>Load the page and watch the log. The browser gets the HTML first, reads it, and only then discovers the CSS, images and fonts it also needs. Break something to see what happens.</p></div>
   <section class="playground">
     <div class="panel controls">
       <button class="btn" id="load" style="justify-self:start">Load the page</button>
@@ -87,7 +105,7 @@
     </div>
   </section>
 
-  <div class="section-title"><span class="eyebrow">Part 3</span><h2>Set up your computer</h2><p>You don't need a server to start. A text editor and a browser are enough.</p></div>
+  <div class="section-title"><span class="eyebrow">Play</span><h2>Set up your computer</h2><p>You don't need a server to start. A text editor and a browser are enough.</p></div>
   <section class="setup">
     <div class="panel"><span class="num">1</span><h3>Install a code editor</h3><p>VS Code is free and works on every computer. It colors your code and closes tags for you. Don't use Word or TextEdit's rich text mode: they add hidden formatting.</p></div>
     <div class="panel"><span class="num">2</span><h3>Make one project folder</h3><p>Put every file for the site inside it, with <code>index.html</code> at the top level. Open the whole folder in your editor (File → Open Folder), not single files.</p></div>
@@ -105,6 +123,9 @@
       </tbody>
     </table>
   </div>
+
+  <div class="section-title"><span class="eyebrow">Practice</span><h2>Build a full URL</h2><p>A relative link only works on your own site. To link somewhere else, you need every part of the address.</p></div>
+  <div id="ex-url"></div>
 
   <section class="notes">
     <div class="panel">
@@ -129,8 +150,11 @@
     </div>
   </section>
 
+  <div class="section-title"><span class="eyebrow">Check yourself</span><h2>Quick check</h2></div>
+  <div class="panel quiz" id="quiz"></div>
+
   <footer class="page-foot" data-book-nav><a href="index.html">← Contents</a></footer>
-</div>
+</main>
 
 <script>
   const $ = (id) => document.getElementById(id);
@@ -148,7 +172,7 @@
   function drawUrl() {
     $("url").innerHTML = PARTS.map(([t, c], i) => `<button style="--c:var(${c})" data-i="${i}" aria-pressed="${i === partIdx}">${t}</button>`).join("");
     const [t, c, name, text] = PARTS[partIdx];
-    $("part-info").innerHTML = `<b style="color:var(${c})">${name}</b><p>${text}</p>`;
+    $("part-info").innerHTML = `<b style="color:color-mix(in srgb, var(${c}) 60%, var(--ink))">${name}</b><p>${text}</p>`;
   }
   $("url").addEventListener("click", (e) => { const b = e.target.closest("button"); if (b) { partIdx = +b.dataset.i; drawUrl(); } });
   drawUrl();
@@ -209,6 +233,36 @@
   $("load").addEventListener("click", load);
   ["b-css", "b-img", "b-index"].forEach((id) => $(id).addEventListener("change", load));
   load();
+</script>
+<script>
+  makeQuiz(document.getElementById("quiz"), [
+    { id: "q1", q: "In https://trails.example.com/hikes/mesa.html, which part tells the server which file you want?", opts: ["/hikes/mesa.html", "trails.example.com", "https"], a: 0, why: "The path after the domain names the file, inside the server's folders." },
+    { id: "q2", q: "The browser asks for a file and the server answers 404. What does that mean?", opts: ["The server is down", "There's no file at that path", "The file moved somewhere else"], a: 1, why: "404 is Not Found. A moved file gets a 301 instead." },
+    { id: "q3", q: "A URL ends in /hikes/. What does the server usually send back?", opts: ["A list of every file in the folder", "An error", "The folder's index.html"], a: 2, why: "When a URL names a folder, the server looks for index.html inside it." },
+    { id: "q4", q: "Your page loads but has no styles at all. What's the most likely cause?", opts: ["The stylesheet request failed, often from a wrong path or capital letter", "The HTML file failed to load", "The server is down"], a: 0, why: "Each file is a separate request. The HTML arrived, but the CSS didn't." },
+  ]);
+</script>
+<script>
+  makeExercise(document.getElementById("ex-url"), {
+    title: "Link to the city's trail map",
+    task: `<p>The trail map lives on another website, so <code>map.pdf</code> won't find it. Change the link's <code>href</code> to a full URL with these parts:</p>
+    <ul>
+      <li>Protocol: <code>https</code></li>
+      <li>Domain: <code>www.bouldercolorado.gov</code></li>
+      <li>Path: <code>/trails/map.pdf</code></li>
+    </ul>`,
+    html: `<p>Download the <a href="map.pdf">trail map</a> before you go.</p>`,
+    solution: { html: `<p>Download the <a href="https://www.bouldercolorado.gov/trails/map.pdf">trail map</a> before you go.</p>` },
+    hints: [
+      "A full URL reads protocol, then ://, then the domain, then the path.",
+      "Put it together: https://www.bouldercolorado.gov/trails/map.pdf",
+    ],
+    checks: [
+      { label: "The link uses https", test: ({ $ }) => new URL($("a").getAttribute("href")).protocol === "https:" },
+      { label: "The domain is www.bouldercolorado.gov", test: ({ $ }) => new URL($("a").getAttribute("href")).hostname === "www.bouldercolorado.gov" },
+      { label: "The path is /trails/map.pdf", test: ({ $ }) => new URL($("a").getAttribute("href")).pathname === "/trails/map.pdf" },
+    ],
+  });
 </script>
 </body>
 </html>

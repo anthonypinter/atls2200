@@ -4,9 +4,6 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Display Types</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Recursive:slnt,wght,CASL,MONO@-15..0,300..1000,0..1,0..1&display=swap">
 <link rel="stylesheet" href="style.css">
 <style>
   .flow { font-size: 1.05rem; line-height: 1.7; color: var(--ink); background: var(--panel); border-radius: 8px; padding: 16px; }
@@ -34,13 +31,42 @@
 <script src="js/quiz.js"></script>
 </head>
 <body>
-<div class="wrap">
+<main class="wrap">
   <nav class="crumbs" aria-label="Site"><a class="crumb" href="index.html">← Field Guide</a><a class="crumb" href="glossary.html">Glossary</a></nav>
   <header class="page-head">
     <span class="eyebrow">CSS Basics · Display Types</span>
     <h1>Display Types</h1>
     <p class="lede">Every element is either <em>block</em> (starts on a new line, fills the width) or <em>inline</em> (flows inside text like a word). That's why <code>width</code> works on a div and does nothing on a span.</p>
+    <div class="objectives">
+      <p class="callout-title">You'll be able to</p>
+      <ul>
+        <li>Explain the difference between block and inline elements.</li>
+        <li>Use inline-block when something should flow like a word but take a size.</li>
+        <li>Choose between display: none, visibility: hidden and opacity: 0.</li>
+      </ul>
+    </div>
   </header>
+
+  <div class="section-title"><span class="eyebrow">Read</span><h2>Block or inline?</h2></div>
+  <div class="prose">
+    <p>In <span class="term">normal flow</span>, before you add any layout, every element is one of two kinds:</p>
+    <ul>
+      <li>A <span class="term">block element</span> starts on a new line and stretches to fill the width of its parent. <code>div</code>, <code>p</code>, <code>h1</code>–<code>h6</code>, <code>ul</code> and <code>section</code> are blocks.</li>
+      <li>An <span class="term">inline element</span> flows inside a line of text, like a word. <code>span</code>, <code>a</code>, <code>strong</code> and <code>em</code> are inline.</li>
+    </ul>
+    <p>The difference explains a classic puzzle: why <code>width</code> works on a div but does nothing on a link. Inline elements take their size from their content, so they ignore <code>width</code>, <code>height</code> and top and bottom margins.</p>
+    <p>The <code>display</code> property changes how an element behaves:</p>
+    <pre class="snippet" data-lang="css">.badge {
+  display: inline-block;   /* flows like a word, but accepts a size */
+  padding: 4px 10px;
+  width: 80px;
+}</pre>
+    <p><code>inline-block</code> is the middle ground: it sits in a line of text like a word, but takes <code>width</code>, <code>height</code> and margins like a block. It's handy for buttons and badges. <code>display: flex</code> and <code>grid</code> are different again: they change how an element's <em>children</em> are laid out, which you'll meet in the Layout part.</p>
+    <p><code>display: none</code> removes an element completely, and the space it took up closes. <code>visibility: hidden</code> and <code>opacity: 0</code> hide it but keep its space.</p>
+    <div class="callout note"><p class="callout-title">Note</p><p>Changing <code>display</code> changes how an element looks, never what it means. A span with <code>display: block</code> is still a span, so choose elements for meaning first.</p></div>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Play</span><h2>Switch the display type</h2><p>Change display on three boxes, then give them a width, height, margin and padding to see which ones listen.</p></div>
 
   <section class="playground">
     <div class="panel controls">
@@ -76,6 +102,9 @@
     </div>
   </section>
 
+  <div class="section-title"><span class="eyebrow">Practice</span><h2>Change how boxes flow</h2><p>Three elements, three different display values.</p></div>
+  <div id="ex-display"></div>
+
   <section class="notes">
     <div class="panel">
       <h2>Key ideas</h2>
@@ -97,8 +126,11 @@
     </div>
   </section>
 
+  <div class="section-title"><span class="eyebrow">Check yourself</span><h2>Quick check</h2></div>
+  <div class="panel quiz" id="quiz"></div>
+
   <footer class="page-foot" data-book-nav><a href="index.html">← Contents</a></footer>
-</div>
+</main>
 
 <script>
   const $ = (id) => document.getElementById(id);
@@ -131,6 +163,50 @@
     c.style.display = v === "none" ? "none" : ""; c.style.visibility = v === "hidden" ? "hidden" : ""; c.style.opacity = v === "opacity" ? "0" : "";
     document.querySelectorAll("#hide button").forEach((x) => x.setAttribute("aria-pressed", String(x === b)));
     document.querySelectorAll("#cmp div").forEach((x) => x.classList.toggle("cur", x.dataset.v === v));
+  });
+</script>
+<script>
+  makeQuiz(document.getElementById("quiz"), [
+    { id: "q1", q: "You set width: 200px on a link and nothing changes. Why?", opts: ["width only works in percentages", "Links need a class first", "Links are inline and ignore width"], a: 2, why: "Inline elements size to their content. Make it inline-block or block to set a width." },
+    { id: "q2", q: "Which display value flows like a word but accepts width and height?", opts: ["inline-block", "inline", "block"], a: 0, why: "inline-block combines the two." },
+    { id: "q3", q: "Which hides an element and closes the gap it leaves?", opts: ["visibility: hidden", "display: none", "opacity: 0"], a: 1, why: "display: none removes the element from the layout entirely." },
+    { id: "q4", q: "Which of these is inline by default?", opts: ["<p>", "<section>", "<span>"], a: 2, why: "span flows inside text; p and section are blocks." },
+  ]);
+</script>
+<script>
+  makeExercise(document.getElementById("ex-display"), {
+    title: "Inline, inline-block and none",
+    task: `<ol>
+      <li>Make the menu items sit side by side on one line.</li>
+      <li>The badge already has a width of 80px, but it's ignored. Keep it in line with the text and make the width work.</li>
+      <li>Hide the old notice completely, so it takes up no space.</li>
+    </ol>`,
+    html: `<ul class="menu">
+  <li><a href="#">Trails</a></li>
+  <li><a href="#">Events</a></li>
+  <li><a href="#">Join</a></li>
+</ul>
+<p class="old-notice">The Mesa Trail bridge is closed (fixed last spring).</p>
+<p>Royal Arch <span class="badge">Hard</span> is 3.4 miles round trip.</p>`,
+    css: `body { font-family: system-ui, sans-serif; }
+.menu { list-style: none; padding: 0; }
+.menu li { margin-right: 16px; }
+.badge { width: 80px; padding: 4px 0; background: gold; text-align: center; }`,
+    solution: { css: `body { font-family: system-ui, sans-serif; }
+.menu { list-style: none; padding: 0; }
+.menu li { display: inline-block; margin-right: 16px; }
+.badge { display: inline-block; width: 80px; padding: 4px 0; background: gold; text-align: center; }
+.old-notice { display: none; }` },
+    hints: [
+      "List items are block elements, so each starts a new line. inline or inline-block puts them side by side.",
+      "Inline elements ignore width. inline-block flows like a word but accepts a width.",
+      "display: none removes an element from the page entirely.",
+    ],
+    checks: [
+      { label: "The menu items are on one line", test: ({ $$ }) => { const tops = $$(".menu li").map((li) => Math.round(li.getBoundingClientRect().top)); return new Set(tops).size === 1; } },
+      { label: "The badge is inline-block and 80px wide", test: ({ style }) => style(".badge", "display") === "inline-block" && style(".badge", "width") === "80px" },
+      { label: "The old notice is hidden", test: ({ style }) => style(".old-notice", "display") === "none" },
+    ],
   });
 </script>
 </body>

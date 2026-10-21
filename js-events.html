@@ -4,9 +4,6 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Events</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Recursive:slnt,wght,CASL,MONO@-15..0,300..1000,0..1,0..1&display=swap">
 <link rel="stylesheet" href="style.css">
 <style>
   .check { display: flex; gap: 8px; align-items: center; cursor: pointer; font: 0.88rem var(--font-code); font-variation-settings: "MONO" 1; }
@@ -27,7 +24,7 @@
   .lvl > .tag { font: 600 0.75rem var(--font-code); font-variation-settings: "MONO" 1; color: var(--muted); justify-self: start; }
   .lvl.flash { background: var(--cobalt-soft); border-color: var(--cobalt); }
   .lvl.flash > .tag { color: var(--cobalt); }
-  #b-btn { font: 700 0.95rem var(--font-body); background: var(--prop); color: #fff; border: 0; border-radius: 8px; padding: 10px 18px; cursor: pointer; }
+  #b-btn { font: 700 0.95rem var(--font-body); background: var(--prop); color: var(--paper); border: 0; border-radius: 8px; padding: 10px 18px; cursor: pointer; }
   #b-btn.flash { outline: 4px solid var(--cobalt); outline-offset: 3px; }
   .order { width: 100%; border-collapse: collapse; font: 0.85rem var(--font-code); font-variation-settings: "MONO" 1; }
   .order th, .order td { padding: 6px 10px; border-bottom: 1px solid var(--line); text-align: left; }
@@ -45,13 +42,39 @@
 <script src="js/quiz.js"></script>
 </head>
 <body>
-<div class="wrap">
+<main class="wrap">
   <nav class="crumbs" aria-label="Site"><a class="crumb" href="index.html">← Field Guide</a><a class="crumb" href="glossary.html">Glossary</a></nav>
   <header class="page-head">
     <span class="eyebrow">JavaScript in the Browser · Events</span>
     <h1>Events</h1>
     <p class="lede">Events are signals the browser sends when something happens: a click, a key press, a form being submitted. You listen for them with <code>addEventListener</code> and run a function in response.</p>
+    <div class="objectives">
+      <p class="callout-title">You'll be able to</p>
+      <ul>
+        <li>Run code in response to clicks, typing and form submissions with addEventListener.</li>
+        <li>Use the event object's target, and stop default behavior with preventDefault.</li>
+        <li>Explain event bubbling and handle many elements with one delegated listener.</li>
+      </ul>
+    </div>
   </header>
+
+  <div class="section-title"><span class="eyebrow">Read</span><h2>Reacting to what people do</h2></div>
+  <div class="prose">
+    <p>Most JavaScript on a page waits for something to happen: a click, a key press, a form being submitted. Each of those is an <span class="term">event</span>, a signal the browser sends. You listen for one with <span class="term">addEventListener()</span>:</p>
+    <pre class="snippet" data-lang="js">const btn = document.querySelector("#save");
+btn.addEventListener("click", saveTrail);
+
+function saveTrail(e) {
+  console.log("Clicked:", e.target);
+}</pre>
+    <p>Give it the event's name as a string, then the function to run. Pass the function itself, without parentheses: <code>saveTrail</code>, not <code>saveTrail()</code>. With parentheses, the function runs immediately, once, and its result is passed instead.</p>
+    <p>The browser hands your function an event object, usually named <code>e</code>. <span class="term">event.target</span> is the element the event happened on. Useful event names include <code>click</code>, <code>input</code> (every change to a field), <code>submit</code> and <code>keydown</code>.</p>
+    <p>Some events come with a default action. Submitting a form reloads the page; clicking a link navigates away. <span class="term">preventDefault()</span> stops that, so your code can handle it instead.</p>
+    <p>Events also travel. A click on a button inside a card also counts as a click on the card, then on its parent, all the way up to the document. This is <span class="term">event bubbling</span>, and it makes a powerful trick possible. Instead of adding a listener to each of 50 items, add one to their container and check <code>e.target</code> to see which item was clicked. That's <span class="term">event delegation</span>, and it even works for items added later.</p>
+    <div class="callout warn"><p class="callout-title">Watch out</p><p>Listen for <code>submit</code> on the form, not <code>click</code> on its button. Pressing Enter in a field submits the form without clicking anything.</p></div>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Play</span><h2>Listen for events</h2><p>Pick an event type and interact with the elements to see when it fires.</p></div>
 
   <section class="playground">
     <div class="panel controls">
@@ -71,7 +94,7 @@
     </div>
   </section>
 
-  <div class="section-title"><span class="eyebrow">Part 2</span><h2>Bubbling</h2><p>When you click the button, the click doesn't stop there. It <b>bubbles up</b> through every ancestor, and each one's click listener runs in turn. This is the setup from MDN's bubbling example.</p></div>
+  <div class="section-title"><span class="eyebrow">Play</span><h2>Bubbling</h2><p>When you click the button, the click doesn't stop there. It <b>bubbles up</b> through every ancestor, and each one's click listener runs in turn. This is the setup from MDN's bubbling example.</p></div>
   <section class="playground">
     <div class="panel controls">
       <label class="check"><input type="checkbox" id="stop">e.stopPropagation() in the button's listener</label>
@@ -91,7 +114,7 @@
     </div>
   </section>
 
-  <div class="section-title"><span class="eyebrow">Part 3</span><h2>Event delegation</h2><p>Instead of adding a listener to each of the 16 tiles, add <b>one</b> listener to their container. Clicks on any tile bubble up to it, and <code>event.target</code> tells you which tile was clicked.</p></div>
+  <div class="section-title"><span class="eyebrow">Play</span><h2>Event delegation</h2><p>Instead of adding a listener to each of the 16 tiles, add <b>one</b> listener to their container. Clicks on any tile bubble up to it, and <code>event.target</code> tells you which tile was clicked.</p></div>
   <section class="playground">
     <div class="panel controls">
       <label class="check"><input type="checkbox" id="guard">Ignore clicks that aren't on a tile</label>
@@ -99,13 +122,13 @@
       <button class="btn" id="tiles-reset" style="justify-self:start">Reset tiles</button>
     </div>
     <div class="stage-col">
-      <div class="tiles" id="tiles" aria-label="Tile grid"></div>
+      <div class="tiles" id="tiles" role="group" aria-label="Tile grid"></div>
       <pre class="snippet" id="deleg-code"></pre>
     </div>
   </section>
 
-  <div class="section-title"><span class="eyebrow">Practice</span><h2>Check yourself</h2></div>
-  <div class="panel quiz" id="quiz"></div>
+  <div class="section-title"><span class="eyebrow">Practice</span><h2>Respond to events</h2><p>Wire up a click counter and a form that doesn't reload the page.</p></div>
+  <div id="ex-events"></div>
 
   <section class="notes">
     <div class="panel">
@@ -139,8 +162,11 @@
     </div>
   </section>
 
+  <div class="section-title"><span class="eyebrow">Check yourself</span><h2>Quick check</h2></div>
+  <div class="panel quiz" id="quiz"></div>
+
   <footer class="page-foot" data-book-nav><a href="index.html">← Contents</a></footer>
-</div>
+</main>
 
 <script src="js/runner.js"></script>
 <script>
@@ -251,6 +277,52 @@
   ]);
 
   renderEvCode(); renderBubbleCode(); renderDeleg();
+</script>
+<script>
+  makeExercise(document.getElementById("ex-events"), {
+    title: "A counter and a form",
+    task: `<ol>
+      <li><code>setupCounter(button, output)</code>: each click on the button adds 1 and shows the count in <code>output</code>, like <code>3 clicks</code>.</li>
+      <li><code>setupForm(form, input, output)</code>: when the form is submitted, stop the page from reloading and show <code>Saved: </code> plus what was typed.</li>
+    </ol>
+    <p class="hint">The checks create their own buttons and forms and click or submit them.</p>`,
+    js: `function setupCounter(button, output) {
+  let count = 0;
+  // Listen for clicks on button here
+}
+
+function setupForm(form, input, output) {
+  // Listen for submit on form here
+}`,
+    solution: `function setupCounter(button, output) {
+  let count = 0;
+  button.addEventListener("click", () => {
+    count++;
+    output.textContent = \`\${count} clicks\`;
+  });
+}
+
+function setupForm(form, input, output) {
+  form.addEventListener("submit", (e) => {
+    e.preventDefault();
+    output.textContent = "Saved: " + input.value;
+  });
+}`,
+    expose: ["setupCounter", "setupForm"],
+    hints: [
+      "button.addEventListener(\"click\", () => { … }) runs the function on every click.",
+      "Listen for \"submit\" on the form, not \"click\" on its button.",
+      "The handler gets an event object: call e.preventDefault() on it.",
+    ],
+    checks: (() => {
+      const formParts = () => { const form = document.createElement("form"), input = document.createElement("input"), output = document.createElement("p"); form.append(input); return { form, input, output }; };
+      return [
+        { label: "Three clicks show “3 clicks”", test: ({ fns }) => { const b = document.createElement("button"), o = document.createElement("span"); fns.setupCounter(b, o); b.click(); b.click(); b.click(); return o.textContent === "3 clicks"; } },
+        { label: "Submitting shows “Saved: ” and the input", test: ({ fns }) => { const p = formParts(); fns.setupForm(p.form, p.input, p.output); p.input.value = "Royal Arch"; p.form.dispatchEvent(new Event("submit", { cancelable: true })); return p.output.textContent === "Saved: Royal Arch"; } },
+        { label: "Submitting doesn't reload the page", test: ({ fns }) => { const p = formParts(); fns.setupForm(p.form, p.input, p.output); const e = new Event("submit", { cancelable: true }); p.form.dispatchEvent(e); return e.defaultPrevented; } },
+      ];
+    })(),
+  });
 </script>
 </body>
 </html>

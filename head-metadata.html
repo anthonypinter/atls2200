@@ -4,9 +4,6 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>The Head &amp; Metadata</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Recursive:slnt,wght,CASL,MONO@-15..0,300..1000,0..1,0..1&display=swap">
 <link rel="stylesheet" href="style.css">
 <style>
   .text-in { font: 0.95rem var(--font-body); width: 100%; padding: 7px 9px; border: 1px solid var(--line); border-radius: 6px; background: var(--paper); color: var(--ink); resize: vertical; }
@@ -45,13 +42,41 @@
 <script src="js/quiz.js"></script>
 </head>
 <body>
-<div class="wrap">
+<main class="wrap">
   <nav class="crumbs" aria-label="Site"><a class="crumb" href="index.html">← Field Guide</a><a class="crumb" href="glossary.html">Glossary</a></nav>
   <header class="page-head">
     <span class="eyebrow">HTML Foundations · The Head &amp; Metadata</span>
     <h1>The Head &amp; Metadata</h1>
     <p class="lede">Nothing in the <code>&lt;head&gt;</code> shows on the page, but it decides how your site looks everywhere else: the browser tab, search results, and the preview card when someone shares a link.</p>
+    <div class="objectives">
+      <p class="callout-title">You'll be able to</p>
+      <ul>
+        <li>Write a page title and meta description that work in tabs and search results.</li>
+        <li>Add a favicon to a site.</li>
+        <li>Use Open Graph tags to control the preview card when a link is shared.</li>
+      </ul>
+    </div>
   </header>
+
+  <div class="section-title"><span class="eyebrow">Read</span><h2>What the head controls</h2></div>
+  <div class="prose">
+    <p>Nothing in the <span class="term">head</span> appears on your page, but it decides how your site shows up everywhere else: in the browser tab, in bookmarks, in search results, and in the little preview card when someone pastes your link into a chat.</p>
+    <p>Four things do most of the work:</p>
+    <ul>
+      <li><code>&lt;title&gt;</code> is the text in the tab and the clickable headline in search results. Make it specific, most important part first: "Royal Arch Trail | Boulder Trail Club".</li>
+      <li>The <span class="term">meta description</span> is a one-sentence summary, about 150 characters, that search engines may show under the title.</li>
+      <li>A <span class="term">favicon</span> is the small icon in the tab, linked with <code>&lt;link rel="icon"&gt;</code>.</li>
+      <li><span class="term">Open Graph</span> tags, written <code>og:</code>, control the preview card in messages and social posts: its title, description and image.</li>
+    </ul>
+    <pre class="snippet" data-lang="html">&lt;title&gt;Royal Arch Trail | Boulder Trail Club&lt;/title&gt;
+&lt;meta name="description" content="A steep 3.4-mile hike to a sandstone arch above Boulder."&gt;
+&lt;link rel="icon" href="favicon.svg"&gt;
+&lt;meta property="og:image" content="https://trails.example.com/img/royal-arch.jpg"&gt;</pre>
+    <p>Notice that the <code>og:image</code> is a full address starting with <code>https://</code>. The preview card is built by another company's server, which has no idea where your page lives, so a relative path like <code>img/royal-arch.jpg</code> won't work there.</p>
+    <div class="callout warn"><p class="callout-title">Watch out</p><p>When you copy one page to start another, the head comes along too. It's easy to end up with ten pages all titled "Home". Change the title and description on every new page.</p></div>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Play</span><h2>See your head everywhere</h2><p>Edit the title, description, icon and Open Graph tags, and watch the tab, the search result and the share card update.</p></div>
 
   <section class="playground">
     <div class="panel controls" aria-label="Head settings">
@@ -83,6 +108,9 @@
       <span class="attr">href</span>=<span class="str">"icon-180.png"</span><span class="tag-name">&gt;</span></pre><p class="hint">A 180 × 180 PNG, used when someone adds your site to their phone's home screen.</p></div>
   </section>
 
+  <div class="section-title"><span class="eyebrow">Practice</span><h2>Fill in the head</h2><p>Nothing in the head shows on the page, but it decides how the page looks in tabs, search results and shared links.</p></div>
+  <div id="ex-head"></div>
+
   <section class="notes">
     <div class="panel">
       <h2>Key ideas</h2>
@@ -105,8 +133,11 @@
     </div>
   </section>
 
+  <div class="section-title"><span class="eyebrow">Check yourself</span><h2>Quick check</h2></div>
+  <div class="panel quiz" id="quiz"></div>
+
   <footer class="page-foot" data-book-nav><a href="index.html">← Contents</a></footer>
-</div>
+</main>
 
 <script>
   const $ = (id) => document.getElementById(id);
@@ -162,6 +193,63 @@
     navigator.clipboard.writeText($("code").textContent).then(() => { $("copy").textContent = "Copied"; setTimeout(() => ($("copy").textContent = "Copy"), 1200); }).catch(() => {});
   });
   update();
+</script>
+<script>
+  makeQuiz(document.getElementById("quiz"), [
+    { id: "q1", q: "Where does a page's <title> show up?", opts: ["In the browser tab and search results", "As the big heading on the page", "Only in the HTML source"], a: 0, why: "The title shows in tabs, bookmarks and search results, never on the page itself." },
+    { id: "q2", q: "Why must og:image be a full https:// URL?", opts: ["Relative paths are slower", "Another company's server fetches it and doesn't know where your page is", "Open Graph only supports PNG files"], a: 1, why: "The card is built elsewhere, so it needs the image's complete address." },
+    { id: "q3", q: "Which title is best for a trail's page?", opts: ["Home", "Welcome to our website!", "Royal Arch Trail | Boulder Trail Club"], a: 2, why: "Specific and most important first, so it's useful in a crowded tab bar and in search results." },
+    { id: "q4", q: "You changed your favicon but still see the old one. What's the likely reason?", opts: ["Browsers cache favicons heavily", "Favicons only change once a day", "The meta description is wrong"], a: 0, why: "Browsers hold on to favicons. Try a private window to see the new one." },
+  ]);
+</script>
+<script>
+  makeExercise(document.getElementById("ex-head"), {
+    title: "Metadata for a trail page",
+    task: `<p>Fix up this page's head:</p>
+    <ol>
+      <li>Change the title to <em>Royal Arch Trail | Boulder Trail Club</em>.</li>
+      <li>Add a meta description of at least 50 characters.</li>
+      <li>Add the viewport meta tag.</li>
+      <li>Add <code>og:title</code> and <code>og:image</code> tags. The image needs a full <code>https://</code> URL.</li>
+    </ol>`,
+    html: `<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Untitled</title>
+</head>
+<body>
+  <h1>Royal Arch Trail</h1>
+  <p>A steep 3.4-mile round trip to a sandstone arch.</p>
+</body>
+</html>`,
+    solution: { html: `<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Royal Arch Trail | Boulder Trail Club</title>
+  <meta name="description" content="A steep 3.4-mile round trip from Chautauqua to a sandstone arch with views over Boulder.">
+  <meta property="og:title" content="Royal Arch Trail">
+  <meta property="og:image" content="https://example.com/images/royal-arch.jpg">
+</head>
+<body>
+  <h1>Royal Arch Trail</h1>
+  <p>A steep 3.4-mile round trip to a sandstone arch.</p>
+</body>
+</html>` },
+    hints: [
+      "The description is a meta tag: <meta name=\"description\" content=\"…\">.",
+      "The viewport tag: <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">.",
+      "Open Graph tags use property instead of name: <meta property=\"og:title\" content=\"…\">.",
+    ],
+    checks: [
+      { label: "The title is “Royal Arch Trail | Boulder Trail Club”", test: ({ $ }) => $("title").textContent.trim() === "Royal Arch Trail | Boulder Trail Club" },
+      { label: "There's a description of 50+ characters", test: ({ $ }) => $('meta[name="description"]').getAttribute("content").trim().length >= 50 },
+      { label: "There's a viewport meta tag", test: ({ code }) => /<meta\s+name="viewport"\s+content="[^"]*width=device-width/i.test(code.html) },
+      { label: "og:title is set, and og:image is a full https URL", test: ({ $ }) => $('meta[property="og:title"]').getAttribute("content").trim() !== "" && $('meta[property="og:image"]').getAttribute("content").startsWith("https://") },
+    ],
+  });
 </script>
 </body>
 </html>

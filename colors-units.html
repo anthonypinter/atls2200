@@ -4,9 +4,6 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Colors &amp; Units</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Recursive:slnt,wght,CASL,MONO@-15..0,300..1000,0..1,0..1&display=swap">
 <link rel="stylesheet" href="style.css">
 <style>
   .swatch-big { border-radius: var(--radius); min-height: 180px; display: grid; grid-template-columns: 1fr 1fr; overflow: hidden; border: 1px solid var(--line); }
@@ -41,15 +38,43 @@
 <script src="js/quiz.js"></script>
 </head>
 <body>
-<div class="wrap">
+<main class="wrap">
   <nav class="crumbs" aria-label="Site"><a class="crumb" href="index.html">← Field Guide</a><a class="crumb" href="glossary.html">Glossary</a></nav>
   <header class="page-head">
     <span class="eyebrow">CSS Basics · Colors &amp; Units</span>
     <h1>Colors &amp; Units</h1>
     <p class="lede">CSS gives you several ways to write the same color and many units for size. Mix a color with the sliders, then see how each unit turns into real pixels.</p>
+    <div class="objectives">
+      <p class="callout-title">You'll be able to</p>
+      <ul>
+        <li>Write colors as hex, rgb() and hsl(), with transparency.</li>
+        <li>Choose between px, rem, em, %, vw and vh for a size.</li>
+        <li>Explain why rem is the right unit for font sizes.</li>
+      </ul>
+    </div>
   </header>
 
-  <div class="section-title" style="margin-top:0"><span class="eyebrow">Part 1</span><h2>Mixing colors with HSL</h2><p>HSL stands for hue, saturation and lightness. It's the easiest format to adjust by hand: keep the hue and change the lightness to get a darker or lighter shade of the same color.</p></div>
+  <div class="section-title"><span class="eyebrow">Read</span><h2>Writing colors and sizes</h2></div>
+  <div class="prose">
+    <p>CSS gives you several ways to write the same color. These all mean the same teal:</p>
+    <pre class="snippet" data-lang="css">color: #0b6b5e;              /* hex */
+color: rgb(11 107 94);       /* red, green, blue: 0 to 255 */
+color: hsl(172 81% 23%);     /* hue, saturation, lightness */
+color: rgb(11 107 94 / 50%); /* the same teal, half transparent */</pre>
+    <p>A <span class="term">hex color</span> is three pairs of digits for red, green and blue, from <code>00</code> to <code>ff</code>. Designers hand you hex codes, so you'll see them often. <span class="term">HSL</span> is the easiest to adjust by hand: the hue is a spot on the color wheel from 0 to 360, saturation runs from gray to vivid, and lightness from black to white. To make a lighter version of a color, raise the lightness.</p>
+    <p>Sizes need a <span class="term">unit</span>, and each unit is measured from something different:</p>
+    <ul>
+      <li><code>px</code> is a fixed size.</li>
+      <li><code>rem</code> is a multiple of the root font size, usually 16px.</li>
+      <li><code>em</code> is a multiple of the parent's font size.</li>
+      <li><code>%</code> is a share of the parent, usually its width.</li>
+      <li><code>vw</code> and <code>vh</code> are a percentage of the window's width and height.</li>
+    </ul>
+    <p>Use <span class="term">rem</span> for font sizes. Some people set a larger default text size in their browser so they can read comfortably. Sizes in rem grow with that setting; sizes in px ignore it. Use <code>%</code> or <code>max-width</code> for widths, so layouts can shrink on phones.</p>
+    <div class="callout warn"><p class="callout-title">Watch out</p><p>Light gray text on white looks sleek, and many people can't read it. Check the <span class="term">contrast ratio</span> of your text and background. DevTools shows it when you inspect a color.</p></div>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Play</span><h2>Mixing colors with HSL</h2><p>HSL stands for hue, saturation and lightness. It's the easiest format to adjust by hand: keep the hue and change the lightness to get a darker or lighter shade of the same color.</p></div>
   <section class="playground">
     <div class="panel controls">
       <div class="control"><label for="h">hue (the color wheel)</label><div class="hue-track"></div><input id="h" type="range" min="0" max="360" value="225"><span class="readout" id="h-out"></span></div>
@@ -73,7 +98,7 @@
     </div>
   </section>
 
-  <div class="section-title"><span class="eyebrow">Part 2</span><h2>Units: how big is "12"?</h2><p>Each bar below is the same number with a different unit. Change the settings and watch which bars move.</p></div>
+  <div class="section-title"><span class="eyebrow">Play</span><h2>Units: how big is "12"?</h2><p>Each bar below is the same number with a different unit. Change the settings and watch which bars move.</p></div>
   <section class="playground">
     <div class="panel controls">
       <div class="control"><label for="root">html font-size (sets rem)</label><input id="root" type="range" min="10" max="24" value="16"><span class="readout" id="root-out"></span></div>
@@ -83,6 +108,9 @@
     </div>
     <div class="stage units-wrap"><div class="parent" id="parent"><span class="lbl" id="plabel"></span><div id="bars" style="display:grid;gap:12px"></div></div></div>
   </section>
+
+  <div class="section-title"><span class="eyebrow">Practice</span><h2>Pick better units</h2><p>These pixel values ignore the reader's settings and the screen size. Swap in units that adapt.</p></div>
+  <div id="ex-units"></div>
 
   <section class="notes">
     <div class="panel">
@@ -106,8 +134,11 @@
     </div>
   </section>
 
+  <div class="section-title"><span class="eyebrow">Check yourself</span><h2>Quick check</h2></div>
+  <div class="panel quiz" id="quiz"></div>
+
   <footer class="page-foot" data-book-nav><a href="index.html">← Contents</a></footer>
-</div>
+</main>
 
 <script>
   const $ = (id) => document.getElementById(id);
@@ -177,6 +208,49 @@
   ["root", "pf", "pw"].forEach((id) => $(id).addEventListener("input", units));
   window.addEventListener("resize", units);
   units();
+</script>
+<script>
+  makeQuiz(document.getElementById("quiz"), [
+    { id: "q1", q: "Which unit should you use for font sizes, so text respects the visitor's settings?", opts: ["px", "vw", "rem"], a: 2, why: "rem scales with the browser's default font size; px doesn't." },
+    { id: "q2", q: "In hsl(172 81% 23%), what does raising the last number do?", opts: ["Makes it lighter", "Changes the hue", "Makes it more transparent"], a: 0, why: "The third value is lightness, from black (0%) to white (100%)." },
+    { id: "q3", q: "What's wrong with width: 200;?", opts: ["Nothing", "It's missing a unit, so it's ignored", "It needs quotes"], a: 1, why: "Sizes other than 0 need a unit, like 200px." },
+    { id: "q4", q: "Why do nested em sizes cause surprises?", opts: ["em ignores the parent", "em only works on headings", "em is measured from the parent's font size, so they multiply"], a: 2, why: "Each level multiplies the one above it. rem always measures from the root instead." },
+  ]);
+</script>
+<script>
+  makeExercise(document.getElementById("ex-units"), {
+    title: "rem, max-width and transparency",
+    task: `<ol>
+      <li>Change both font sizes to <code>rem</code>, keeping them the same size (16px is 1rem).</li>
+      <li>The card is a fixed 700px. Make it fill narrow screens but never grow past 700px.</li>
+      <li>Make the banner's blue background 50% transparent, using <code>rgb()</code>. The blue is <code>rgb(35 64 217)</code>.</li>
+    </ol>`,
+    html: `<h1>Trail Club</h1>
+<p>Spring hikes start in April.</p>
+<div class="card">
+  <p class="banner">Sign-ups are open</p>
+</div>`,
+    css: `body { font-family: system-ui, sans-serif; }
+h1 { font-size: 32px; }
+p { font-size: 16px; }
+.card { width: 700px; padding: 1rem; background: #eef1fb; }
+.banner { background: #2340d9; color: white; padding: 8px; }`,
+    solution: { css: `body { font-family: system-ui, sans-serif; }
+h1 { font-size: 2rem; }
+p { font-size: 1rem; }
+.card { width: 100%; max-width: 700px; padding: 1rem; background: #eef1fb; }
+.banner { background: rgb(35 64 217 / 50%); color: white; padding: 8px; }` },
+    hints: [
+      "rem is relative to the root font size, normally 16px. So 32px is 2rem.",
+      "width: 100%; max-width: 700px; is the go-to pattern.",
+      "Add a fourth value after a slash for transparency: rgb(35 64 217 / 50%).",
+    ],
+    checks: [
+      { label: "Font sizes use rem, at the same sizes", test: ({ style, code }) => style("h1", "font-size") === "32px" && style("p", "font-size") === "16px" && !/font-size:\s*[\d.]+px/.test(code.css) },
+      { label: "The card is capped at 700px, not fixed", test: ({ style, code }) => style(".card", "max-width") === "700px" && !/width:\s*700px/.test(code.css.replace(/max-width:\s*700px/g, "")) },
+      { label: "The banner's blue is 50% transparent", test: ({ style }) => style(".banner", "background-color") === "rgba(35, 64, 217, 0.5)" },
+    ],
+  });
 </script>
 </body>
 </html>

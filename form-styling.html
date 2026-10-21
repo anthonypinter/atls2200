@@ -4,9 +4,6 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Styling Forms</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Recursive:slnt,wght,CASL,MONO@-15..0,300..1000,0..1,0..1&display=swap">
 <link rel="stylesheet" href="style.css">
 <style>
   .steps { display: grid; gap: 6px; }
@@ -44,13 +41,36 @@
 <script src="js/quiz.js"></script>
 </head>
 <body>
-<div class="wrap">
+<main class="wrap">
   <nav class="crumbs" aria-label="Site"><a class="crumb" href="index.html">← Field Guide</a><a class="crumb" href="glossary.html">Glossary</a></nav>
   <header class="page-head">
     <span class="eyebrow">Polish &amp; Workflow · Styling Forms</span>
     <h1>Styling Forms</h1>
     <p class="lede">Browser-default forms look cramped and inconsistent. A handful of rules fixes most of it. Add them one layer at a time and watch the same form improve.</p>
+    <div class="objectives">
+      <p class="callout-title">You'll be able to</p>
+      <ul>
+        <li>Give inputs, selects and buttons the page's font with font: inherit.</li>
+        <li>Lay out labels and fields so they're easy to scan and fit any width.</li>
+        <li>Style focus and error states that everyone can see.</li>
+      </ul>
+    </div>
   </header>
+
+  <div class="section-title"><span class="eyebrow">Read</span><h2>Forms that feel like part of the page</h2></div>
+  <div class="prose">
+    <p>Browsers style form controls their own way, and a little differently in each browser. The results look cramped and out of place. A handful of rules fixes most of it.</p>
+    <p>Start with fonts. Inputs, selects, text areas and buttons don't inherit the page's font the way other elements do, so they show up smaller, in the browser's default face. One line brings them in line:</p>
+    <pre class="snippet" data-lang="css">input, select, textarea, button {
+  font: inherit;
+}</pre>
+    <p>Next, layout. Put each <span class="term">label</span> above its input and make the input full width. That's the easiest arrangement to scan, and it works on a phone without any media queries. Add <span class="term">padding</span> so the text isn't pressed against the edge, and set <code><span class="term">box-sizing</span>: border-box</code> so <code>width: 100%</code> plus padding doesn't poke out of the container.</p>
+    <p><code>accent-color</code> recolors checkboxes, radio buttons and range sliders to match your site in one line.</p>
+    <p>Then the states. Visitors need to see which field they're in, so give <code>:focus-visible</code> a clear outline rather than removing it. For errors, <code>:user-invalid</code> matches a field that breaks its rules, such as a <code>required</code> field left empty, but only after the visitor has interacted with it. Unlike <code>:invalid</code>, it won't paint the whole form red before anyone has typed a thing.</p>
+    <div class="callout warn"><p class="callout-title">Watch out</p><p>Don't show errors with color alone. Some visitors can't tell red from green. Add a text message next to the field explaining what's wrong.</p></div>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Play</span><h2>Improve the form one layer at a time</h2><p>Step through the layers and watch the same form get easier to use. Try the fields at each step.</p></div>
 
   <section class="playground even">
     <div class="stage-col">
@@ -69,6 +89,9 @@
       </form>
     </div>
   </section>
+
+  <div class="section-title"><span class="eyebrow">Practice</span><h2>Style the form</h2><p>Fix the fonts, the overflow and the missing focus style.</p></div>
+  <div id="ex-formstyle"></div>
 
   <section class="notes">
     <div class="panel">
@@ -91,8 +114,11 @@
     </div>
   </section>
 
+  <div class="section-title"><span class="eyebrow">Check yourself</span><h2>Quick check</h2></div>
+  <div class="panel quiz" id="quiz"></div>
+
   <footer class="page-foot" data-book-nav><a href="index.html">← Contents</a></footer>
-</div>
+</main>
 
 <script>
   const $ = (id) => document.getElementById(id);
@@ -125,6 +151,54 @@
     $("sent").innerHTML = '<div class="sent">Thanks! A real form would send this now.</div>';
   });
   render();
+</script>
+<script>
+  makeQuiz(document.getElementById("quiz"), [
+    { id: "q1", q: "Why do inputs often look smaller than the page text?", opts: ["Browsers shrink inputs on purpose", "Form controls don't inherit the page's font", "Inputs ignore CSS"], a: 1, why: "Add font: inherit to inputs, selects, text areas and buttons." },
+    { id: "q2", q: "An input with width: 100% and padding sticks out of its box. What fixes it?", opts: ["width: 99%", "overflow: hidden on the input", "box-sizing: border-box"], a: 2, why: "border-box includes the padding inside the 100%." },
+    { id: "q3", q: "Why use :user-invalid instead of :invalid?", opts: ["It waits until the visitor has interacted with the field", "It works in more browsers", "It's shorter"], a: 0, why: ":invalid matches empty required fields as soon as the page loads." },
+    { id: "q4", q: "What does accent-color change?", opts: ["Every input's text color", "Checkboxes, radios and range sliders", "The page's link color"], a: 1, why: "It recolors the browser's built-in controls in one line." },
+  ]);
+</script>
+<script>
+  makeExercise(document.getElementById("ex-formstyle"), {
+    title: "A tidy sign-up form",
+    task: `<ol>
+      <li>Make the inputs and button use the page's font.</li>
+      <li>The inputs are 100% wide with padding, so they poke out of the form. Keep them inside.</li>
+      <li>The focus outline was removed. Bring back a visible focus style with <code>:focus-visible</code> instead.</li>
+      <li>Color the checkbox <code>#2340d9</code> with <code>accent-color</code>.</li>
+    </ol>`,
+    html: `<form>
+  <label for="name">Name</label>
+  <input id="name" type="text">
+  <label for="email">Email</label>
+  <input id="email" type="email">
+  <label><input type="checkbox"> Email me about new hikes</label>
+  <button>Sign up</button>
+</form>`,
+    css: `body { font-family: Georgia, serif; font-size: 18px; }
+form { display: grid; gap: 6px; max-width: 320px; border: 2px solid #c8cbd6; padding: 12px; }
+input[type="text"], input[type="email"] { width: 100%; padding: 10px; }
+input:focus { outline: none; }`,
+    solution: { css: `body { font-family: Georgia, serif; font-size: 18px; }
+form { display: grid; gap: 6px; max-width: 320px; border: 2px solid #c8cbd6; padding: 12px; }
+input, button { font: inherit; }
+input[type="text"], input[type="email"] { width: 100%; padding: 10px; box-sizing: border-box; }
+input:focus-visible { outline: 3px solid #2340d9; outline-offset: 2px; }
+input[type="checkbox"] { accent-color: #2340d9; }` },
+    hints: [
+      "Form controls don't inherit fonts: input, button { font: inherit; }",
+      "box-sizing: border-box puts the padding inside the 100%.",
+      "Replace input:focus { outline: none } with input:focus-visible { outline: 3px solid #2340d9; }.",
+    ],
+    checks: [
+      { label: "Inputs and button use the page's font", test: ({ $$, style }) => $$("input[type=text], input[type=email], button").every((el) => style(el, "font-family") === style("body", "font-family") && style(el, "font-size") === "18px") },
+      { label: "The inputs stay inside the form", test: ({ $, $$, style }) => { const f = $("form"); const inner = f.getBoundingClientRect().right - parseFloat(style(f, "padding-right")) - 2; return $$("input[type=text], input[type=email]").every((i) => i.getBoundingClientRect().right <= inner + 0.5); } },
+      { label: "There's a visible :focus-visible style", test: ({ doc }) => [...doc.styleSheets[0].cssRules].some((r) => /:focus-visible/.test(r.selectorText) && ((r.style.outlineStyle && r.style.outlineStyle !== "none") || (r.style.outline && !/none/.test(r.style.outline)) || r.style.boxShadow)) && ![...doc.styleSheets[0].cssRules].some((r) => /:focus(?!-)/.test(r.selectorText) && /none|0px/.test(r.style.outline || r.style.outlineStyle || "")) },
+      { label: "The checkbox is #2340d9", test: ({ style }) => style('input[type="checkbox"]', "accent-color") === "rgb(35, 64, 217)" },
+    ],
+  });
 </script>
 </body>
 </html>

@@ -4,9 +4,6 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Forms &amp; Inputs</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Recursive:slnt,wght,CASL,MONO@-15..0,300..1000,0..1,0..1&display=swap">
 <link rel="stylesheet" href="style.css">
 <style>
   .types { display: flex; flex-wrap: wrap; gap: 6px; }
@@ -60,13 +57,35 @@
 <script src="js/quiz.js"></script>
 </head>
 <body>
-<div class="wrap">
+<main class="wrap">
   <nav class="crumbs" aria-label="Site"><a class="crumb" href="index.html">← Field Guide</a><a class="crumb" href="glossary.html">Glossary</a></nav>
   <header class="page-head">
     <span class="eyebrow">HTML Foundations · Forms &amp; Inputs</span>
     <h1>Forms &amp; Inputs</h1>
     <p class="lede">Picking the right input type gets you validation, phone keyboards and date pickers for free. Connecting each label to its input makes the form usable for everyone.</p>
+    <div class="objectives">
+      <p class="callout-title">You'll be able to</p>
+      <ul>
+        <li>Pick input types that give visitors the right keyboard, picker and validation.</li>
+        <li>Connect every input to a label, and group related choices with fieldset and legend.</li>
+        <li>Explain what name, action and method do when a form is sent.</li>
+      </ul>
+    </div>
   </header>
+
+  <div class="section-title"><span class="eyebrow">Read</span><h2>Ask for information the right way</h2></div>
+  <div class="prose">
+    <p>A form is a conversation with your visitor, and HTML does a surprising amount of the work for you if you choose the right pieces. Start with the input type. <code>type="email"</code> gives phones a keyboard with an @ key and checks the address before sending. <code>type="date"</code> brings up a date picker. <code>type="number"</code> shows a number pad. Use <code>type="text"</code> for everything and you get none of that.</p>
+    <p>Every input needs a <span class="term">label</span>, connected to it by matching the label's <code>for</code> to the input's <code>id</code>:</p>
+    <pre class="snippet" data-lang="html">&lt;label for="email"&gt;Email&lt;/label&gt;
+&lt;input type="email" id="email" name="email" required&gt;</pre>
+    <p>That connection matters more than it looks. Clicking the label focuses the input, which gives everyone a bigger target, and a <span class="term">screen reader</span> reads the label aloud when someone reaches the field. A <span class="term">placeholder</span> is not a label: it disappears as soon as you type, leaving people guessing what the field was for.</p>
+    <p>For a group of choices, like radio buttons for trail difficulty, wrap them in a <code>&lt;fieldset&gt;</code> and put the question in its <code>&lt;legend&gt;</code>. Radio buttons in a group share the same <code>name</code>, which is how the browser knows only one can be picked.</p>
+    <p>When the form is sent, each field travels as <code>name=value</code>. The form's <code>action</code> says where to send it, and <code>method</code> says how: <code>get</code> puts it in the URL, <code>post</code> sends it out of sight. A field without a <code>name</code> isn't sent at all.</p>
+    <div class="callout note"><p class="callout-title">Note</p><p>Attributes like <code>required</code> and <code>min</code> make the browser check answers before sending. That helps visitors, but it doesn't protect a server: anyone can bypass it. Real sites check again on the server.</p></div>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Play</span><h2>Try each input type</h2><p>Pick a type and see the keyboard, picker and validation you get for free.</p></div>
 
   <section class="playground">
     <div class="panel controls">
@@ -154,6 +173,9 @@
     <div class="panel" style="display:grid;gap:8px;align-content:start"><span class="eyebrow">The request</span><pre class="snippet" id="req"></pre><p class="hint" id="req-note"></p></div>
   </section>
 
+  <div class="section-title"><span class="eyebrow">Practice</span><h2>Make the form usable</h2><p>This sign-up form works with a mouse, barely. Label it, name it, and group it so it works for everyone.</p></div>
+  <div id="ex-form"></div>
+
   <section class="notes">
     <div class="panel">
       <h2>Key ideas</h2>
@@ -175,8 +197,11 @@
     </div>
   </section>
 
+  <div class="section-title"><span class="eyebrow">Check yourself</span><h2>Quick check</h2></div>
+  <div class="panel quiz" id="quiz"></div>
+
   <footer class="page-foot" data-book-nav><a href="index.html">← Contents</a></footer>
-</div>
+</main>
 
 <script>
   const $ = (id) => document.getElementById(id);
@@ -262,6 +287,60 @@
   $("send").addEventListener("input", req);
   $("send").addEventListener("submit", (e) => e.preventDefault());
   req();
+</script>
+<script>
+  makeQuiz(document.getElementById("quiz"), [
+    { id: "q1", q: "Which attribute connects a label to its input?", opts: ["The label's for matches the input's id", "The label's name matches the input's name", "The label goes right before the input"], a: 0, why: "for and id must match exactly. Then clicking the label focuses the input." },
+    { id: "q2", q: "Why isn't a placeholder enough on its own?", opts: ["It's not sent with the form", "It disappears once you type, and is often hard to read", "Browsers don't support it"], a: 1, why: "Once someone starts typing, the placeholder is gone, and so is the only hint about the field." },
+    { id: "q3", q: "Three radio buttons for Easy, Moderate and Hard. What must they share so only one can be picked?", opts: ["The same id", "The same value", "The same name"], a: 2, why: "Radio buttons with the same name form one group." },
+    { id: "q4", q: "A field has no name attribute. What happens when the form is sent?", opts: ["It isn't sent", "It's sent as \"unnamed\"", "The form won't submit"], a: 0, why: "Only fields with a name are included in the data." },
+    { id: "q5", q: "Which input type gives phones a keyboard with an @ key?", opts: ["text", "email", "url"], a: 1, why: "type=\"email\" also checks that the address looks valid." },
+  ]);
+</script>
+<script>
+  makeExercise(document.getElementById("ex-form"), {
+    title: "Volunteer sign-up",
+    task: `<ol>
+      <li>Give every input a <code>&lt;label&gt;</code> connected to it.</li>
+      <li>Make the email field <code>type="email"</code>.</li>
+      <li>Give every input a <code>name</code>. The two radio buttons share one.</li>
+      <li>Group the radio buttons in a <code>&lt;fieldset&gt;</code> with a <code>&lt;legend&gt;</code>.</li>
+      <li>Replace the div with a real submit button.</li>
+    </ol>`,
+    html: `<form>
+  Name <input type="text">
+  Email <input type="text">
+  Trail crew:
+  <input type="radio" value="mesa"> Mesa
+  <input type="radio" value="royal-arch"> Royal Arch
+  <div class="btn">Sign up</div>
+</form>`,
+    css: `form { font-family: system-ui, sans-serif; display: grid; gap: 8px; max-width: 320px; }`,
+    solution: { html: `<form>
+  <label for="name">Name</label>
+  <input type="text" id="name" name="name">
+  <label for="email">Email</label>
+  <input type="email" id="email" name="email">
+  <fieldset>
+    <legend>Trail crew</legend>
+    <label><input type="radio" name="crew" value="mesa"> Mesa</label>
+    <label><input type="radio" name="crew" value="royal-arch"> Royal Arch</label>
+  </fieldset>
+  <button type="submit">Sign up</button>
+</form>` },
+    hints: [
+      "Connect a label with for and id: <label for=\"email\">Email</label> <input id=\"email\">. Or wrap the input inside the label.",
+      "Radios in a group share a name, like name=\"crew\". That's what makes picking one unpick the other.",
+      "<fieldset><legend>Trail crew</legend> … </fieldset> wraps the radios.",
+    ],
+    checks: [
+      { label: "Every input has a label", test: ({ $$ }) => $$("input").length === 4 && $$("input").every((i) => i.labels.length > 0) },
+      { label: "The email field is type=\"email\"", test: ({ $$ }) => $$('input[type="email"]').length === 1 },
+      { label: "Every input has a name, and the radios share one", test: ({ $$ }) => $$("input").every((i) => i.name) && new Set($$('input[type="radio"]').map((r) => r.name)).size === 1 },
+      { label: "The radios are in a fieldset with a legend", test: ({ $, $$ }) => $$('fieldset input[type="radio"]').length === 2 && $("fieldset > legend").textContent.trim() !== "" },
+      { label: "There's a real submit button", test: ({ $ }) => ($("form button") || {}).type === "submit" || !!$('input[type="submit"]') },
+    ],
+  });
 </script>
 </body>
 </html>

@@ -17,18 +17,20 @@ Opening `index.html` straight from the file system also works. Use a local serve
 
 | File | What it does |
 | --- | --- |
-| `book.js` | **The table of contents.** Parts and lessons in reading order. Lesson numbers (e.g. 3.1), the contents page, the sidebar, breadcrumbs and previous/next links all come from here |
+| `book.js` | **The table of contents.** Parts and lessons in reading order. Lesson numbers (e.g. 3.1), the contents page, the sidebar, breadcrumbs and previous/next links all come from here. Each part ends with its review page (`review-*.html`), and a lesson's optional `related` list adds "Related lessons" links to both lessons |
 | `js/progress.js` | Saved progress (visited and completed lessons, quiz answers, best scores) in `localStorage`. The only code that touches saved data, so a backend can sync it later via `Progress.merge()` |
 | `js/chrome.js` | Adds the reading layout to every page: top bar, sidebar contents with "On this page" links and checkmarks, Mark complete, previous/next footer, search, theme toggle and print tweaks. Also loads the components below only on pages that use them |
 | `js/quiz.js` | `makeQuiz(el, items)`: multiple-choice quizzes whose answers are saved and restored, with Retry |
 | `index.html` | The cover and contents page, rendered from `book.js` (the small card diagrams live in its `minis` map) |
 | `style.css` | Shared design tokens (light and dark), playground widgets, book chrome and print styles |
-| `js/runner.js` | The runnable JavaScript editor with a console, plus `hlJS()` and the shared editor behavior |
+| `fonts/` | The two typefaces (Atkinson Hyperlegible and Recursive), served from the site itself so pages load nothing from Google and work offline once cached |
+| `js/runner.js` | The runnable JavaScript editor with a console, plus `hlJS()` and the shared editor behavior. Student code runs with a loop guard: a loop that runs for 1.5 seconds without stopping is stopped with an error instead of freezing the tab |
 | `js/sandbox.js` | Live HTML/CSS editor with a preview |
-| `js/exercise.js` | `makeExercise(el, def)`: graded exercises with checks, hints and a solution; work and passes are saved |
+| `js/exercise.js` | `makeExercise(el, def)`: graded exercises with checks, hints and a solution; work and passes are saved. Each one starts when it scrolls near the screen, so pages load fast |
 | `js/glossary.js` | Definition pop-ups for glossary terms in lesson text |
 | `js/search.js` | The search dialog (Search button, Ctrl/⌘ + K, or /) |
 | `glossary-terms.js` | All glossary terms, shared by `glossary.html`, the pop-ups and search |
+| `print.html` | Printable chapters: a whole part (or one lesson) on one page, ready to print or save as a PDF, with quiz answers, hints and solutions at the end. Linked from each part on the contents page and from the Print link on every lesson. It only works when the book is served (GitHub Pages or a local server), not opened as a file |
 | `glossary.html` | The glossary page. Each term has an anchor, e.g. `glossary.html#term-box-model` |
 | `search-index.js` | **Generated.** GitHub rebuilds it every time it publishes, so the live site's search is always current. The copy in the repo is only for searching while testing locally. Don't edit by hand |
 | `scripts/check.mjs` | Site checker, and builder for the search index (see below) |
@@ -36,7 +38,7 @@ Opening `index.html` straight from the file system also works. Use a local serve
 
 ## Add or move a lesson
 
-1. Copy an existing lesson that's close to what you need, e.g. `flexbox.html`, and rename it `<slug>.html`. Keep the shared scripts at the end of `<head>`, in this order:
+1. Copy `templates/lesson.html` to the site root as `<slug>.html` and follow the comments in it. `box-model.html`, `flexbox.html` and `js-loops.html` are finished examples. The template already has the shared scripts at the end of `<head>`, which must stay in this order:
    ```html
    <script src="book.js"></script>
    <script src="js/progress.js"></script>

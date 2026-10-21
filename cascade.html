@@ -4,16 +4,14 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Cascade &amp; Inheritance</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Recursive:slnt,wght,CASL,MONO@-15..0,300..1000,0..1,0..1&family=Lora:ital@0;1&display=swap">
 <link rel="stylesheet" href="style.css">
 <style>
   .seg-list { display: grid; gap: 6px; }
   .seg-list .btn { text-align: left; }
-  #art { border: 2px dashed var(--prop); border-radius: 8px; padding: 14px; display: grid; gap: 10px; position: relative; color: var(--ink); background: var(--panel); }
+  #art { border: 2px dashed var(--prop); border-radius: 8px; padding: 14px; display: grid; gap: 10px; position: relative; color: #161a2b; background: #fff; }
+  /* The demo is a light "page" in both themes, so sample colors like firebrick stay readable. */
+  #art .kid-wrap { border-color: #d9deeb; } #art .kid-wrap .who { color: #5a6280; } #art > .who { color: #b4410c; }
   #art > .who, .kid-wrap .who { font: 600 0.72rem var(--font-code); font-variation-settings: "MONO" 1; }
-  #art > .who { color: var(--prop); }
   .kid-wrap { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 10px; align-items: center; padding: 8px 10px; border-radius: 6px; border: 1px solid var(--line); }
   .kid-wrap .who { display: block; color: var(--muted); margin-bottom: 4px; }
   .badge { font: 600 0.75rem var(--font-code); font-variation-settings: "MONO" 1; padding: 3px 8px; border-radius: 4px; white-space: nowrap; }
@@ -29,7 +27,7 @@
   .rulecard { display: grid; grid-template-columns: auto 1fr auto; gap: 12px; align-items: center; padding: 12px; border-radius: 8px; border: 1px solid var(--line); background: var(--panel); }
   .rulecard.win { border-color: var(--good); box-shadow: inset 4px 0 0 var(--good); }
   .rulecard .order { display: grid; gap: 4px; }
-  .rulecard .order button { font-size: 0.8rem; padding: 2px 8px; }
+  .rulecard .order button { font-size: 0.8rem; padding: 2px 8px; min-width: 28px; min-height: 26px; }
   .rulecard .body { display: grid; gap: 6px; min-width: 0; }
   .rulecard select { font: 0.92rem var(--font-code); font-variation-settings: "MONO" 1; color: var(--cobalt); background: var(--paper); border: 1px solid var(--line); border-radius: 6px; padding: 5px; max-width: 100%; }
   .decl { font: 0.92rem var(--font-code); font-variation-settings: "MONO" 1; }
@@ -46,15 +44,43 @@
 <script src="js/quiz.js"></script>
 </head>
 <body>
-<div class="wrap">
+<main class="wrap">
   <nav class="crumbs" aria-label="Site"><a class="crumb" href="index.html">← Field Guide</a><a class="crumb" href="glossary.html">Glossary</a></nav>
   <header class="page-head">
     <span class="eyebrow">CSS Basics · Cascade &amp; Inheritance</span>
     <h1>Cascade &amp; Inheritance</h1>
     <p class="lede">Some styles pass down from parent to child automatically, and some don't. When several rules disagree, the cascade decides which one wins.</p>
+    <div class="objectives">
+      <p class="callout-title">You'll be able to</p>
+      <ul>
+        <li>Predict which properties a child inherits from its parent.</li>
+        <li>Work out which rule wins using origin, importance, specificity and source order.</li>
+        <li>Make buttons and inputs inherit the page's font.</li>
+      </ul>
+    </div>
   </header>
 
-  <div class="section-title" style="margin-top:0"><span class="eyebrow">Part 1</span><h2>What gets inherited?</h2><p>Set a property on the article. The badges read what the browser actually computed for each child.</p></div>
+  <div class="section-title"><span class="eyebrow">Read</span><h2>Passing styles down, and settling arguments</h2></div>
+  <div class="prose">
+    <p>Two systems decide the final style of every element. <span class="term">Inheritance</span> passes styles down from parent to child. The <span class="term">cascade</span> settles arguments when several rules disagree.</p>
+    <p>Inheritance is why you can set a font once and have the whole page use it:</p>
+    <pre class="snippet" data-lang="css">body {
+  font-family: "Atkinson Hyperlegible", sans-serif;
+  color: #161a2b;
+  line-height: 1.6;
+}</pre>
+    <p>Every element inside <code>body</code> inherits those, because text properties inherit: <code>color</code>, <code>font-*</code>, <code>line-height</code>, <code>text-align</code>. Box properties don't. A border on a <code>&lt;section&gt;</code> doesn't put a border on every paragraph inside it, and neither do <code>padding</code>, <code>margin</code>, <code>background</code> or <code>width</code>. If a child looks like it inherited a background, it's actually transparent, and you're seeing the parent behind it.</p>
+    <p>When rules disagree about the same property on the same element, the cascade checks, in order:</p>
+    <ol>
+      <li><strong>Importance</strong>: a declaration marked <code><span class="term">!important</span></code> beats normal ones.</li>
+      <li><strong><span class="term">Specificity</span></strong>: IDs beat classes, classes beat element types.</li>
+      <li><strong><span class="term">Source order</span></strong>: if everything else ties, the rule that comes later wins.</li>
+    </ol>
+    <p>That last rule includes the order of your <code>&lt;link&gt;</code> tags. Link a general stylesheet after a specific one, and the general one can win.</p>
+    <div class="callout tip"><p class="callout-title">Tip</p><p>Buttons and inputs don't inherit your font and color. Add <code>button, input, select, textarea { font: inherit; color: inherit; }</code> near the top of your stylesheet, and forms match the rest of the page.</p></div>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Play</span><h2>What gets inherited?</h2><p>Set a property on the article. The badges read what the browser actually computed for each child.</p></div>
   <section class="playground">
     <div class="panel controls">
       <span class="eyebrow">Set on article</span>
@@ -74,7 +100,7 @@
     </div>
   </section>
 
-  <div class="section-title"><span class="eyebrow">Part 2</span><h2>Which rule wins?</h2><p>Three rules all try to color the same heading, <code>&lt;h3 class="title" id="top"&gt;</code>. Change the selectors, reorder the rules, or add <code>!important</code>.</p></div>
+  <div class="section-title"><span class="eyebrow">Play</span><h2>Which rule wins?</h2><p>Three rules all try to color the same heading, <code>&lt;h3 class="title" id="top"&gt;</code>. Change the selectors, reorder the rules, or add <code>!important</code>.</p></div>
   <div class="rules" id="rules"></div>
   <div class="result-row" aria-live="polite"><span class="sample" id="sample">Mesa Trail</span><span id="verdict"></span></div>
   <div class="panel" style="margin-top:14px">
@@ -85,6 +111,9 @@
       <li>If it's still a tie, the rule that comes later in the CSS wins.</li>
     </ul>
   </div>
+
+  <div class="section-title"><span class="eyebrow">Practice</span><h2>Let it inherit</h2><p>This stylesheet sets the same font and color three times. Set them once and let inheritance do the rest.</p></div>
+  <div id="ex-inherit"></div>
 
   <section class="notes">
     <div class="panel">
@@ -107,8 +136,11 @@
     </div>
   </section>
 
+  <div class="section-title"><span class="eyebrow">Check yourself</span><h2>Quick check</h2></div>
+  <div class="panel quiz" id="quiz"></div>
+
   <footer class="page-foot" data-book-nav><a href="index.html">← Contents</a></footer>
-</div>
+</main>
 
 <script>
   const $ = (id) => document.getElementById(id);
@@ -187,6 +219,49 @@
     cascade();
   });
   cascade();
+</script>
+<script>
+  makeQuiz(document.getElementById("quiz"), [
+    { id: "q1", q: "You set color: navy on a <section>. Do the paragraphs inside turn navy?", opts: ["Yes, color inherits", "No, nothing inherits", "Only if they have a class"], a: 0, why: "Text properties like color pass down to children." },
+    { id: "q2", q: "You put a border on a <section>. Do the paragraphs inside get borders too?", opts: ["Yes", "No, border doesn't inherit", "Only the first one"], a: 1, why: "Box properties like border, padding and margin don't inherit." },
+    { id: "q3", q: "Two rules with equal specificity set different colors. Which wins?", opts: ["The later one", "The first", "The darker color"], a: 0, why: "When importance and specificity tie, source order decides." },
+    { id: "q4", q: "Your buttons ignore the page's font. What fixes it?", opts: ["body { font: inherit; }", "button { font: inherit; }", "!important on the body font"], a: 1, why: "Form controls don't inherit fonts by default, so tell them to." },
+  ]);
+</script>
+<script>
+  makeExercise(document.getElementById("ex-inherit"), {
+    title: "Set the font once",
+    task: `<ol>
+      <li>Set the font and text color on <code>body</code> instead, and delete the repeated declarations.</li>
+      <li>Buttons don't inherit fonts by default. Make the button use the page's font with <code>inherit</code>.</li>
+    </ol>`,
+    html: `<div class="card">
+  <h2>Mesa Trail</h2>
+  <p>A rolling trail along the base of the Flatirons.</p>
+  <ul><li>6.7 miles</li><li>Moderate</li></ul>
+  <button>Save trail</button>
+</div>`,
+    css: `h2 { font-family: Georgia, serif; color: #1d2a3a; }
+p { font-family: Georgia, serif; color: #1d2a3a; }
+li { font-family: Georgia, serif; color: #1d2a3a; }
+
+.card { border: 2px solid #2340d9; padding: 12px; }`,
+    solution: { css: `body { font-family: Georgia, serif; color: #1d2a3a; }
+
+button { font-family: inherit; }
+
+.card { border: 2px solid #2340d9; padding: 12px; }` },
+    hints: [
+      "Text properties like font-family and color are inherited, so everything inside body gets them.",
+      "button { font-family: inherit; } (or font: inherit) brings the page's font into the button.",
+    ],
+    checks: [
+      { label: "body sets Georgia and #1d2a3a", test: ({ style }) => style("body", "font-family").includes("Georgia") && style("body", "color") === "rgb(29, 42, 58)" },
+      { label: "The font and color are declared only once", test: ({ doc }) => { const rules = [...doc.styleSheets[0].cssRules]; return rules.filter((r) => r.style && r.style.fontFamily && r.style.fontFamily !== "inherit").length === 1 && rules.filter((r) => r.style && r.style.color && r.style.color !== "inherit").length === 1; } },
+      { label: "Everything is still Georgia", test: ({ $$, style }) => $$("h2, p, li").every((el) => style(el, "font-family").includes("Georgia")) },
+      { label: "The button uses the page's font", test: ({ style }) => style("button", "font-family") === style("body", "font-family") },
+    ],
+  });
 </script>
 </body>
 </html>

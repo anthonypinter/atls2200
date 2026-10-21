@@ -4,15 +4,12 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Sizing Items</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Recursive:slnt,wght,CASL,MONO@-15..0,300..1000,0..1,0..1&display=swap">
 <link rel="stylesheet" href="style.css">
 <style>
   .parent { border: 2px dashed var(--prop); border-radius: 8px; padding: 10px; display: grid; gap: 10px; max-width: 100%; }
   .parent > .lbl { font: 600 0.75rem var(--font-code); font-variation-settings: "MONO" 1; color: var(--prop); }
   .sbox { background: color-mix(in srgb, var(--cobalt) 18%, transparent); border: 2px solid var(--cobalt); border-radius: 6px; padding: 8px 10px; display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap; font: 0.85rem var(--font-code); font-variation-settings: "MONO" 1; min-width: 0; }
-  .sbox b { color: var(--cobalt); } .sbox span { color: var(--muted); font-variant-numeric: tabular-nums; }
+  .sbox b { color: var(--cobalt); } .sbox span { color: var(--ink); font-variant-numeric: tabular-nums; }
   .sbox.inline { display: inline-flex; }
   .grow-demo { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
   @media (max-width: 640px) { .grow-demo { grid-template-columns: 1fr; } }
@@ -30,15 +27,38 @@
 <script src="js/quiz.js"></script>
 </head>
 <body>
-<div class="wrap">
+<main class="wrap">
   <nav class="crumbs" aria-label="Site"><a class="crumb" href="index.html">← Field Guide</a><a class="crumb" href="glossary.html">Glossary</a></nav>
   <header class="page-head">
     <span class="eyebrow">CSS Basics · Sizing Items</span>
     <h1>Sizing Items</h1>
     <p class="lede">Without a set size, a block fills the width it's given and is as tall as its content. Set sizes with care: fixed pixels break on small screens, while percentages and min/max limits adapt.</p>
+    <div class="objectives">
+      <p class="callout-title">You'll be able to</p>
+      <ul>
+        <li>Size boxes with fixed, percentage and max-width values that adapt to the screen.</li>
+        <li>Choose min-height over height for boxes that hold text.</li>
+        <li>Keep a box's shape with aspect-ratio, and size by the screen with vh.</li>
+      </ul>
+    </div>
   </header>
 
-  <div class="section-title" style="margin-top:0"><span class="eyebrow">Part 1</span><h2>Width: fixed, flexible and limited</h2><p>Drag the parent's width and compare how each box responds. The numbers are measured live.</p></div>
+  <div class="section-title"><span class="eyebrow">Read</span><h2>Sizes that adapt</h2></div>
+  <div class="prose">
+    <p>Left alone, a block element is as wide as its parent and as tall as its content. That default is usually right, and most sizing bugs start when you override it with fixed numbers.</p>
+    <p>A box with <code>width: 1000px</code> is 1000px wide on a laptop and on a phone that's only 390px wide, so it sticks out and the whole page scrolls sideways. The pattern you'll use constantly is this one:</p>
+    <pre class="snippet" data-lang="css">.content {
+  width: 100%;
+  max-width: 600px;
+}</pre>
+    <p>On a phone the box fills the screen. On a big screen it stops growing at 600px, which keeps lines of text short enough to read comfortably. <code>min-width</code> works the other way, setting a floor.</p>
+    <p>Percentages are a share of the parent's width, so <code>width: 50%</code> is half of whatever contains it. Percentage <em>heights</em> are trickier: they only work if the parent has a set height, which it usually doesn't.</p>
+    <p>Height deserves extra care. Text wraps onto more lines as the screen narrows, so a box with a fixed <code>height</code> eventually can't hold its text, and the text spills out. If you need a box to be at least a certain height, use <code>min-height</code>, which lets it grow.</p>
+    <p>Two more tools help. <code><span class="term">aspect-ratio</span>: 16 / 9</code> keeps a box's shape as its width changes, which is perfect for video and image placeholders. And <code>vh</code> is a percentage of the window's height, so <code>min-height: 100vh</code> fills the screen. On phones, where toolbars come and go, <code>100dvh</code> adjusts for them.</p>
+    <div class="callout tip"><p class="callout-title">Tip</p><p>Before setting any width or height, ask whether the content could decide instead. Fewer fixed sizes means fewer layouts that break on someone else's screen.</p></div>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Play</span><h2>Width: fixed, flexible and limited</h2><p>Drag the parent's width and compare how each box responds. The numbers are measured live.</p></div>
   <section class="playground">
     <div class="panel controls">
       <div class="control"><label for="pw">parent width</label><input id="pw" type="range" min="200" max="700" step="10" value="520"><span class="readout" id="pw-out"></span></div>
@@ -54,7 +74,7 @@
     </div></div>
   </section>
 
-  <div class="section-title"><span class="eyebrow">Part 2</span><h2>height vs min-height</h2><p>Add more text and see which box copes.</p></div>
+  <div class="section-title"><span class="eyebrow">Play</span><h2>height vs min-height</h2><p>Add more text and see which box copes.</p></div>
   <section class="playground">
     <div class="panel controls">
       <div class="control"><label for="paras">paragraphs of text</label><input id="paras" type="range" min="1" max="4" value="2"><span class="readout" id="paras-out"></span></div>
@@ -65,7 +85,7 @@
     </div>
   </section>
 
-  <div class="section-title"><span class="eyebrow">Part 3</span><h2>aspect-ratio and viewport units</h2></div>
+  <div class="section-title"><span class="eyebrow">Play</span><h2>aspect-ratio and viewport units</h2></div>
   <section class="playground">
     <div class="panel controls">
       <div class="control"><label for="ratio">aspect-ratio</label><select id="ratio"><option>16 / 9</option><option>4 / 3</option><option>1 / 1</option><option>3 / 4</option></select></div>
@@ -77,6 +97,9 @@
       <div id="vh"></div>
     </div>
   </section>
+
+  <div class="section-title"><span class="eyebrow">Practice</span><h2>Size boxes that adapt</h2><p>Fixed sizes break on other screens. Make each of these flexible.</p></div>
+  <div id="ex-sizing"></div>
 
   <section class="notes">
     <div class="panel">
@@ -100,8 +123,11 @@
     </div>
   </section>
 
+  <div class="section-title"><span class="eyebrow">Check yourself</span><h2>Quick check</h2></div>
+  <div class="panel quiz" id="quiz"></div>
+
   <footer class="page-foot" data-book-nav><a href="index.html">← Contents</a></footer>
-</div>
+</main>
 
 <script>
   const $ = (id) => document.getElementById(id);
@@ -144,6 +170,47 @@
     $("vh").textContent = `height: ${v}vh = ${Math.round(innerHeight * v / 100)}px in your ${innerHeight}px-tall window`;
   }
   ["ratio", "aw", "vhv"].forEach((id) => $(id).addEventListener("input", part3)); window.addEventListener("resize", part3); part3();
+</script>
+<script>
+  makeQuiz(document.getElementById("quiz"), [
+    { id: "q1", q: "What does width: 100%; max-width: 600px; do on a phone and on a laptop?", opts: ["Fills the phone, caps at 600px on the laptop", "Always 600px", "Always fills the screen"], a: 0, why: "It's full width until the screen is wider than 600px, then stops growing." },
+    { id: "q2", q: "A card has height: 200px and its text spills out on phones. What's the better choice?", opts: ["height: 400px", "min-height: 200px", "overflow: hidden"], a: 1, why: "min-height sets a minimum but lets the box grow with its text." },
+    { id: "q3", q: "width: 50% is half the width of what?", opts: ["The screen", "The element's content", "The element's parent"], a: 2, why: "Percentage widths are a share of the parent's width." },
+    { id: "q4", q: "Which property keeps a video placeholder 16:9 at any width?", opts: ["aspect-ratio: 16 / 9", "height: 56%", "width: 16 / 9"], a: 0, why: "aspect-ratio sets the height from the width automatically." },
+  ]);
+</script>
+<script>
+  makeExercise(document.getElementById("ex-sizing"), {
+    title: "Flexible widths and heights",
+    task: `<ol>
+      <li>The page column should fill narrow screens but never grow past 500px, and sit centered.</li>
+      <li>The video placeholder should fill the column and keep a 16 / 9 shape at any width.</li>
+      <li>The note has a fixed height and its text spills out. Let it grow, but keep it at least 60px tall.</li>
+    </ol>`,
+    html: `<div class="page">
+  <div class="video">Video</div>
+  <p class="note">Trail work days run every Saturday in April. Bring gloves, water and sturdy shoes; we'll provide tools, snacks and a very good map of where the worst mud is.</p>
+</div>`,
+    css: `body { font-family: system-ui, sans-serif; margin: 0; }
+.page { width: 500px; }
+.video { width: 500px; height: 200px; background: #1d2a3a; color: white; display: grid; place-items: center; }
+.note { height: 60px; background: #eef1fb; padding: 8px; }`,
+    solution: { css: `body { font-family: system-ui, sans-serif; margin: 0; }
+.page { width: 100%; max-width: 500px; margin: 0 auto; }
+.video { width: 100%; aspect-ratio: 16 / 9; background: #1d2a3a; color: white; display: grid; place-items: center; }
+.note { min-height: 60px; background: #eef1fb; padding: 8px; }` },
+    hints: [
+      "width: 100%; max-width: 500px; fills small screens and caps big ones. margin: 0 auto centers it.",
+      "aspect-ratio: 16 / 9 sets the height from the width. Remove the fixed height so it can.",
+      "min-height sets a minimum, and the box can still grow past it.",
+    ],
+    checks: [
+      { label: "The column is capped at 500px", test: ({ style }) => style(".page", "max-width") === "500px" },
+      { label: "The column is centered", test: ({ $, doc }) => { const r = $(".page").getBoundingClientRect(); return Math.abs(r.left - (doc.documentElement.clientWidth - r.right)) < 1; } },
+      { label: "The video fills the column at 16 / 9", test: ({ $ }) => { const v = $(".video").getBoundingClientRect(), p = $(".page").getBoundingClientRect(); return Math.abs(v.width - p.width) < 1 && Math.abs(v.width / v.height - 16 / 9) < 0.02; } },
+      { label: "The note fits its text and is at least 60px", test: ({ $, style }) => $(".note").scrollHeight <= $(".note").clientHeight + 1 && style(".note", "min-height") === "60px" },
+    ],
+  });
 </script>
 </body>
 </html>

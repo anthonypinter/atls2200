@@ -4,16 +4,13 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Transforms Playground</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Recursive:slnt,wght,CASL,MONO@-15..0,300..1000,0..1,0..1&display=swap">
 <link rel="stylesheet" href="style.css">
 <style>
   .t-stage { display: flex; gap: 14px; align-items: center; justify-content: center; min-height: 320px; overflow: hidden; }
   .slot { position: relative; width: 120px; height: 120px; flex: none; }
   .ghost { position: absolute; inset: 0; border: 2px dashed var(--muted); border-radius: 8px; }
   .slot .item { position: absolute; inset: 0; padding: 0; font-size: 1rem; transition: transform 0.25s ease; }
-  .sib { width: 90px; height: 120px; flex: none; opacity: 0.85; font-size: 0.85rem; padding: 0; }
+  .sib { width: 90px; height: 120px; flex: none; font-size: 0.85rem; padding: 0; }
   .origin-dot { position: absolute; width: 12px; height: 12px; margin: -6px 0 0 -6px; border-radius: 50%; background: var(--ink); border: 2px solid var(--panel); z-index: 2; pointer-events: none; }
   .slot .item { font-variation-settings: "MONO" 1; }
 
@@ -44,13 +41,36 @@
 <script src="js/quiz.js"></script>
 </head>
 <body>
-<div class="wrap">
+<main class="wrap">
   <nav class="crumbs" aria-label="Site"><a class="crumb" href="index.html">← Field Guide</a><a class="crumb" href="glossary.html">Glossary</a></nav>
   <header class="page-head">
     <span class="eyebrow">Polish &amp; Workflow · Transforms</span>
     <h1>Transforms Playground</h1>
     <p class="lede"><code>transform</code> moves, turns, resizes or slants an element <em>after</em> the page is laid out. The element looks different, but the space it takes up doesn't change, so nothing around it moves.</p>
+    <div class="objectives">
+      <p class="callout-title">You'll be able to</p>
+      <ul>
+        <li>Move, rotate, scale and skew an element with transform.</li>
+        <li>Combine several transform functions and predict how their order changes the result.</li>
+        <li>Explain why transforms don't move neighboring elements.</li>
+      </ul>
+    </div>
   </header>
+
+  <div class="section-title"><span class="eyebrow">Read</span><h2>Changing how a box looks, not where it sits</h2></div>
+  <div class="prose">
+    <p>A <span class="term">transform</span> changes how an element is drawn after the page has been laid out. You can slide it, turn it, grow it or slant it:</p>
+    <pre class="snippet" data-lang="css">.badge {
+  transform: translateY(-4px) rotate(-3deg) scale(1.1);
+}</pre>
+    <p>The four kinds of function are <code>translate()</code> (move), <code>rotate()</code> (turn, in <code>deg</code>), <code>scale()</code> (resize, where 1 is normal size) and <code>skew()</code> (slant). Each has X and Y versions, like <code>translateX()</code>.</p>
+    <p>The key idea is that transforms don't affect layout. The browser keeps the element's original space reserved, so nothing around it moves. That's what makes transforms perfect for hover effects: a card can lift up 4px without pushing the rest of the page down. It's also why you shouldn't build layouts with them. A translated box leaves a gap where it was and overlaps whatever it lands on.</p>
+    <p>You can list several functions in one <code>transform</code>, separated by spaces, and order matters: each function works in the direction left by the ones before it. Rotate and then translate, and the element moves along its new, tilted direction.</p>
+    <p><span class="term">transform-origin</span> sets the point the element turns and scales around. The default is the center; <code>transform-origin: top left</code> makes it pivot from the corner, like a door on a hinge.</p>
+    <div class="callout warn"><p class="callout-title">Watch out</p><p>A second <code>transform</code> replaces the first one completely. If a card has <code>rotate(-2deg)</code> and its hover state sets <code>scale(1.05)</code>, the rotation disappears on hover. Repeat both: <code>rotate(-2deg) scale(1.05)</code>.</p></div>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Play</span><h2>Transform a card</h2><p>Drag the sliders and watch the dashed outline: that's the space the card still takes up in the layout.</p></div>
 
   <section class="playground">
     <div class="panel controls" aria-label="Transform settings">
@@ -100,6 +120,9 @@
 }</pre><p class="hint">One arrow icon serves as both "next" and "back."</p></div>
   </section>
 
+  <div class="section-title"><span class="eyebrow">Practice</span><h2>Transform without moving the layout</h2><p>Tilt a stamp, lift a card on hover, and swing a door from its edge.</p></div>
+  <div id="ex-transform"></div>
+
   <section class="notes">
     <div class="panel">
       <h2>Key ideas</h2>
@@ -122,8 +145,11 @@
     </div>
   </section>
 
+  <div class="section-title"><span class="eyebrow">Check yourself</span><h2>Quick check</h2></div>
+  <div class="panel quiz" id="quiz"></div>
+
   <footer class="page-foot" data-book-nav><a href="index.html">← Contents</a></footer>
-</div>
+</main>
 
 <script>
   const $ = (id) => document.getElementById(id);
@@ -163,6 +189,48 @@
     set($("o1"), on ? "translateX(140px) rotate(45deg)" : "none");
     set($("o2"), on ? "rotate(45deg) translateX(140px)" : "none");
     $("play").textContent = on ? "Reset both" : "Play both";
+  });
+</script>
+<script>
+  makeQuiz(document.getElementById("quiz"), [
+    { id: "q1", q: "You scale a card to 1.2 on hover. What happens to the cards next to it?", opts: ["They get pushed aside", "Nothing; the card overlaps them", "They shrink"], a: 1, why: "Transforms don't affect layout, so neighbors stay put." },
+    { id: "q2", q: "transform: rotate(5deg); then on hover, transform: scale(1.1);. What happens on hover?", opts: ["Scaled, and the rotation is lost", "Rotated and scaled", "Nothing"], a: 0, why: "The second transform replaces the first. Write rotate(5deg) scale(1.1)." },
+    { id: "q3", q: "Why does rotate(45) do nothing?", opts: ["Rotations max out at 30", "It needs a unit: 45deg", "rotate only works on images"], a: 1, why: "Angles need a unit like deg or turn." },
+    { id: "q4", q: "What does transform-origin control?", opts: ["Which transform runs first", "Where the element starts in the layout", "The point the element rotates and scales around"], a: 2, why: "The default is the center; change it to pivot from a corner or edge." },
+  ]);
+</script>
+<script>
+  makeExercise(document.getElementById("ex-transform"), {
+    title: "Rotate, lift and pivot",
+    task: `<ol>
+      <li>Rotate the stamp -8 degrees.</li>
+      <li>Write a <code>.card:hover</code> rule that moves the card up 4px and scales it to 1.03, in one <code>transform</code>.</li>
+      <li>Make the door rotate around its left edge instead of its center.</li>
+    </ol>`,
+    html: `<div class="card">
+  <span class="stamp">Done!</span>
+  <h3>Royal Arch</h3>
+</div>
+<div class="door">Door</div>`,
+    css: `body { font-family: system-ui, sans-serif; padding: 16px; }
+.card { max-width: 260px; padding: 16px; background: #eef1fb; transition: transform 200ms ease; }
+.stamp { display: inline-block; border: 2px solid crimson; color: crimson; padding: 2px 8px; }
+.door { width: 120px; height: 60px; margin-top: 24px; background: #b9c4ef; display: grid; place-items: center; transform: rotate(-20deg); }`,
+    solution: { css: `body { font-family: system-ui, sans-serif; padding: 16px; }
+.card { max-width: 260px; padding: 16px; background: #eef1fb; transition: transform 200ms ease; }
+.card:hover { transform: translateY(-4px) scale(1.03); }
+.stamp { display: inline-block; border: 2px solid crimson; color: crimson; padding: 2px 8px; transform: rotate(-8deg); }
+.door { width: 120px; height: 60px; margin-top: 24px; background: #b9c4ef; display: grid; place-items: center; transform: rotate(-20deg); transform-origin: left; }` },
+    hints: [
+      "transform: rotate(-8deg). Angles need the deg unit.",
+      "List both functions in one transform: translateY(-4px) scale(1.03).",
+      "transform-origin: left (or left center) moves the pivot point.",
+    ],
+    checks: [
+      { label: "The stamp is rotated -8deg", test: ({ style }) => { const m = style(".stamp", "transform").match(/matrix\(([^)]+)\)/); if (!m) return false; const [a, b] = m[1].split(",").map(Number); return Math.abs(Math.atan2(b, a) * 180 / Math.PI + 8) < 0.5; } },
+      { label: ".card:hover lifts 4px and scales to 1.03", test: ({ doc }) => [...doc.styleSheets[0].cssRules].some((r) => r.selectorText === ".card:hover" && /translateY\(-4px\)/.test(r.style.transform) && /scale\(1\.03\)/.test(r.style.transform)) },
+      { label: "The door pivots on its left edge", test: ({ style }) => style(".door", "transform-origin").startsWith("0px") },
+    ],
   });
 </script>
 </body>

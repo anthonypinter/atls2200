@@ -7,19 +7,23 @@
      lessons:  { [slug]: { visited, completed, updatedAt } },          completed is a timestamp or null
      quizzes:  { [quizId]: { answers: { [questionId]: { choice, correct } }, best: { score, total }, updatedAt } },
      exercises: { [exerciseId]: { code: { html, css } | { js }, passed, updatedAt } },   passed is a timestamp or null
+     sections: { [sectionId]: { seen, interacted, updatedAt } },     first time on screen / first click or edit in it
      attempts: [ { quiz, q, choice, correct, at } | { exercise, passed, score, total, at } ],   oldest first
      last:     { slug, at }                                           the lesson to continue from
    }
    quizId and exerciseId are "<slug>/<element id>", e.g. "js-arrays/quiz"; question ids come from the quiz data (q1, q2, …).
+   sectionId is "<slug>/<heading id>", e.g. "flexbox/sec-try-every-setting" (the ids under "On this page").
    Times are ISO strings. updatedAt on each record lets Progress.merge() combine two copies (say this browser and a
-   server) without losing work: the newer record wins, and attempts from both sides are kept. */
+   server) without losing work: the newer record wins, and attempts from both sides are kept.
+   js/backend.js does exactly that when a student signs in: it merges this copy with their account's and keeps both
+   up to date. Without a backend (or signed out) nothing here changes. */
 (function () {
   const KEY = "book:progress";
   const VERSION = 1;
   const MAX_ATTEMPTS = 2000;
   const listeners = new Set();
   const now = () => new Date().toISOString();
-  const empty = () => ({ v: VERSION, lessons: {}, quizzes: {}, exercises: {}, attempts: [], last: null });
+  const empty = () => ({ v: VERSION, lessons: {}, quizzes: {}, exercises: {}, sections: {}, attempts: [], last: null });
 
   function load() {
     let data = null;
@@ -58,6 +62,12 @@
     for (const id of Object.keys(out.exercises)) {
       const passed = [a.exercises?.[id]?.passed, b.exercises?.[id]?.passed].filter(Boolean).sort()[0];
       if (passed) out.exercises[id] = { ...out.exercises[id], passed };
+    }
+    // Sections only ever gain a time, so keep the earliest of each.
+    const first = (x, y) => [x, y].filter(Boolean).sort()[0] || null;
+    for (const id of new Set([...Object.keys(a.sections || {}), ...Object.keys(b.sections || {})])) {
+      const x = a.sections?.[id] || {}, y = b.sections?.[id] || {};
+      out.sections[id] = { seen: first(x.seen, y.seen), interacted: first(x.interacted, y.interacted), updatedAt: [x.updatedAt, y.updatedAt].filter(Boolean).sort().pop() || null };
     }
     const seen = new Set();
     out.attempts = [...(a.attempts || []), ...(b.attempts || [])]
@@ -131,7 +141,27 @@
       });
     },
 
+    section: (id) => load().sections[id] || null,
+    /** A section counts as seen once it has been on screen for a few seconds (js/chrome.js decides when). */
+    seeSection(id) {
+      if (load().sections[id]?.seen) return;
+      change((d) => { d.sections[id] = { interacted: null, ...d.sections[id], seen: now(), updatedAt: now() }; });
+    },
+    /** The first click, keypress or edit inside a section. Interacting also counts as seeing it. */
+    interact(id) {
+      if (load().sections[id]?.interacted) return;
+      change((d) => { const s = d.sections[id] || {}; d.sections[id] = { ...s, seen: s.seen || now(), interacted: now(), updatedAt: now() }; });
+    },
+    /** Whether a section is finished. kind is its eyebrow ("Read", "Play", "Practice", …) or "notes": sections with
+        something to do need an interaction, reading needs only a visit. The instructor dashboard uses this too. */
+    sectionDone(rec, kind) {
+      if (!rec?.seen) return false;
+      return !/^(play|try it|practice|check yourself|your turn)$/i.test(kind || "") || !!rec.interacted;
+    },
+
     merge,
+    /** Swap in a whole progress object (js/backend.js uses this after merging with the server). null clears it. */
+    replace(data) { save(Object.assign(empty(), data || {})); },
     /** Run fn whenever progress changes, in this tab or another one. Returns an unsubscribe function. */
     subscribe(fn) { listeners.add(fn); return () => listeners.delete(fn); },
   };

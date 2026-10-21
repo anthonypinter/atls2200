@@ -4,9 +4,6 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Embeds &amp; iframes</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Recursive:slnt,wght,CASL,MONO@-15..0,300..1000,0..1,0..1&display=swap">
 <link rel="stylesheet" href="style.css">
 <style>
   .stage.scroll { overflow-x: auto; min-height: 0; }
@@ -45,15 +42,44 @@
 <script src="js/quiz.js"></script>
 </head>
 <body>
-<div class="wrap">
+<main class="wrap">
   <nav class="crumbs" aria-label="Site"><a class="crumb" href="index.html">← Field Guide</a><a class="crumb" href="glossary.html">Glossary</a></nav>
   <header class="page-head">
     <span class="eyebrow">HTML Foundations · Embeds &amp; iframes</span>
     <h1>Embeds &amp; iframes</h1>
     <p class="lede">An <code>&lt;iframe&gt;</code> is a window in your page that shows another web page. It's how you put a YouTube video, a Google Map or a CodePen demo on your site without hosting it yourself.</p>
+    <div class="objectives">
+      <p class="callout-title">You'll be able to</p>
+      <ul>
+        <li>Embed a YouTube video or a Google Map with an iframe.</li>
+        <li>Give an iframe a title, make it responsive, and lazy-load it.</li>
+        <li>Explain why your CSS doesn't affect what's inside an iframe.</li>
+      </ul>
+    </div>
   </header>
 
-  <div class="section-title" style="margin-top:0"><span class="eyebrow">Part 1</span><h2>Build an embed</h2><p>Sites hand you embed code with a fixed width and height. Make the page narrow like a phone, then fix the embed so it fits and is accessible.</p></div>
+  <div class="section-title"><span class="eyebrow">Read</span><h2>A window into another page</h2></div>
+  <div class="prose">
+    <p>An <span class="term">iframe</span> puts a whole separate web page inside yours. It's how you show a YouTube video, a Google Map or a CodePen demo without hosting any of it. The service gives you the code to <span class="term">embed</span>, usually from a Share or Embed button:</p>
+    <pre class="snippet" data-lang="html">&lt;iframe src="https://www.youtube.com/embed/VIDEO_ID"
+        title="Hiking the Mesa Trail, a 3-minute tour"
+        loading="lazy"&gt;&lt;/iframe&gt;</pre>
+    <p>Three attributes are worth adding to whatever you paste:</p>
+    <ul>
+      <li><code>title</code> says what's inside. A screen reader announces it, so people can decide whether to go in.</li>
+      <li><code>loading="lazy"</code> waits until the visitor scrolls near it. A YouTube player downloads close to 1 MB before anyone presses play, so this matters.</li>
+      <li>Responsive sizing. Embed code usually arrives with <code>width="560" height="315"</code>, which sticks out of the page on a phone. Instead, set it in CSS:</li>
+    </ul>
+    <pre class="snippet" data-lang="css">iframe {
+  width: 100%;
+  height: auto;
+  aspect-ratio: 16 / 9;
+}</pre>
+    <p>Because an iframe holds a separate document, your CSS can't reach inside it, and its CSS can't leak out. You can size and position the frame, but you can't restyle the video player or the map within it.</p>
+    <div class="callout warn"><p class="callout-title">Watch out</p><p>The <code>src</code> must be the embed address, like <code>youtube.com/embed/…</code>, not the page you'd visit, like <code>youtube.com/watch?v=…</code>. The ordinary page refuses to load inside a frame.</p></div>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Play</span><h2>Build an embed</h2><p>Sites hand you embed code with a fixed width and height. Make the page narrow like a phone, then fix the embed so it fits and is accessible.</p></div>
   <section class="playground">
     <div class="panel controls" aria-label="Embed settings">
       <div class="control"><label for="kind">embed</label>
@@ -72,7 +98,7 @@
     </div>
   </section>
 
-  <div class="section-title"><span class="eyebrow">Part 2</span><h2>A page inside a page</h2><p>An iframe holds a completely separate document. Your CSS doesn't reach inside it, and its CSS doesn't leak out. Style the outer page and watch.</p></div>
+  <div class="section-title"><span class="eyebrow">Play</span><h2>A page inside a page</h2><p>An iframe holds a completely separate document. Your CSS doesn't reach inside it, and its CSS doesn't leak out. Style the outer page and watch.</p></div>
   <section class="iso">
     <div class="box" id="host-page">
       <span class="eyebrow">your page</span>
@@ -87,12 +113,15 @@
     </div>
   </section>
 
-  <div class="section-title"><span class="eyebrow">Part 3</span><h2>Where to get the code</h2></div>
+  <div class="section-title"><span class="eyebrow">Play</span><h2>Where to get the code</h2></div>
   <section class="steps">
     <div class="panel"><h3>YouTube</h3><ol><li>Open the video and click <b>Share</b>.</li><li>Choose <b>Embed</b> and copy the code.</li><li>Paste it into your HTML, then add a <code>title</code> and the responsive CSS.</li></ol></div>
     <div class="panel"><h3>Google Maps</h3><ol><li>Search for the place and click <b>Share</b>.</li><li>Pick the <b>Embed a map</b> tab and copy the HTML.</li><li>It already has <code>loading="lazy"</code>. Change the title and remove the fixed width.</li></ol></div>
     <div class="panel"><h3>When embedding is refused</h3><p>Many sites, including most banks, social sites and Google Search, tell browsers not to show them inside iframes. You'll see a blank box or "refused to connect." Link to them instead.</p></div>
   </section>
+
+  <div class="section-title"><span class="eyebrow">Practice</span><h2>Make the embed responsive</h2><p>This map is a fixed 600 by 450 box. Make it accessible, lazy, and fit any screen.</p></div>
+  <div id="ex-embed"></div>
 
   <section class="notes">
     <div class="panel">
@@ -115,8 +144,11 @@
     </div>
   </section>
 
+  <div class="section-title"><span class="eyebrow">Check yourself</span><h2>Quick check</h2></div>
+  <div class="panel quiz" id="quiz"></div>
+
   <footer class="page-foot" data-book-nav><a href="index.html">← Contents</a></footer>
-</div>
+</main>
 
 <script>
   const $ = (id) => document.getElementById(id);
@@ -171,6 +203,49 @@
     const on = $("host-page").classList.toggle("loud");
     $("loud").setAttribute("aria-pressed", String(on));
     $("iso-note").textContent = on ? "Your page's heading and paragraph changed. The text inside the iframe didn't, because it's a separate document with its own styles." : "Click the button to add a rule to your page's stylesheet.";
+  });
+</script>
+<script>
+  makeQuiz(document.getElementById("quiz"), [
+    { id: "q1", q: "Your embedded video sticks out of the page on phones. What fixes it?", opts: ["A bigger width attribute", "width: 100%, height: auto and aspect-ratio: 16 / 9", "overflow: hidden on the body"], a: 1, why: "Let the frame fill its container and keep its shape with aspect-ratio." },
+    { id: "q2", q: "Why give an iframe a title?", opts: ["It shows above the frame", "Search engines require it", "Screen readers announce it so people know what's inside"], a: 2, why: "The title describes the frame's content for assistive technology." },
+    { id: "q3", q: "You add CSS to change the YouTube player's colors, and nothing happens. Why?", opts: ["An iframe is a separate document your CSS can't reach", "Your CSS has a typo", "YouTube blocks all CSS"], a: 0, why: "Styles don't cross into or out of an iframe." },
+    { id: "q4", q: "Which src works for a YouTube embed?", opts: ["youtube.com/watch?v=abc123", "youtube.com/embed/abc123", "youtu.be/abc123"], a: 1, why: "Only the embed address is allowed to load inside a frame." },
+  ]);
+</script>
+<script>
+  makeExercise(document.getElementById("ex-embed"), {
+    title: "Embed a trail map",
+    task: `<ol>
+      <li>Give the iframe a <code>title</code> that says what's in it.</li>
+      <li>Make it wait to load until it's near the screen.</li>
+      <li>In the CSS, make it fill the width of the page and keep a 3 / 2 shape.</li>
+    </ol>`,
+    html: `<iframe src="about:blank" width="600" height="450"></iframe>`,
+    css: `iframe {
+  border: 2px solid #2340d9;
+  background: #eef1fb;
+}`,
+    solution: {
+      html: `<iframe src="about:blank" title="Map of the Mesa Trail" loading="lazy" width="600" height="450"></iframe>`,
+      css: `iframe {
+  border: 2px solid #2340d9;
+  background: #eef1fb;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 3 / 2;
+}`,
+    },
+    hints: [
+      "Lazy loading is an attribute: loading=\"lazy\".",
+      "width: 100% makes it fill its container. height: auto lets aspect-ratio decide the height.",
+    ],
+    checks: [
+      { label: "The iframe has a descriptive title", test: ({ $ }) => $("iframe").getAttribute("title").trim().length >= 5 },
+      { label: "It loads lazily", test: ({ $ }) => $("iframe").getAttribute("loading") === "lazy" },
+      { label: "It fills the page width", test: ({ $, doc }) => $("iframe").getBoundingClientRect().width >= doc.body.clientWidth - 1 },
+      { label: "It keeps a 3 / 2 shape", test: ({ $ }) => { const r = $("iframe").getBoundingClientRect(); return Math.abs(r.width / r.height - 1.5) < 0.02; } },
+    ],
   });
 </script>
 </body>

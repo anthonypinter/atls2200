@@ -4,9 +4,6 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Video &amp; Audio</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Recursive:slnt,wght,CASL,MONO@-15..0,300..1000,0..1,0..1&display=swap">
 <link rel="stylesheet" href="style.css">
 <style>
   .player { position: relative; aspect-ratio: 16 / 9; max-width: 100%; border-radius: 10px; overflow: hidden; background: #0d1018; color: #fff; }
@@ -41,13 +38,38 @@
 <script src="js/quiz.js"></script>
 </head>
 <body>
-<div class="wrap">
+<main class="wrap">
   <nav class="crumbs" aria-label="Site"><a class="crumb" href="index.html">← Field Guide</a><a class="crumb" href="glossary.html">Glossary</a></nav>
   <header class="page-head">
     <span class="eyebrow">HTML Foundations · Video &amp; Audio</span>
     <h1>Video &amp; Audio</h1>
     <p class="lede">The <code>&lt;video&gt;</code> and <code>&lt;audio&gt;</code> elements play media without any plugins. Their attributes control what visitors see and whether anything plays by itself. This player is a simulation that follows the same rules as a real one.</p>
+    <div class="objectives">
+      <p class="callout-title">You'll be able to</p>
+      <ul>
+        <li>Add video and audio with controls, a poster and more than one source.</li>
+        <li>Explain why browsers block autoplay with sound.</li>
+        <li>Add captions to a video with a WebVTT file and the track element.</li>
+      </ul>
+    </div>
   </header>
+
+  <div class="section-title"><span class="eyebrow">Read</span><h2>Media without plugins</h2></div>
+  <div class="prose">
+    <p>Browsers play video and audio on their own, with two elements that work almost the same way:</p>
+    <pre class="snippet" data-lang="html">&lt;video controls poster="mesa-cover.jpg" width="1280" height="720"&gt;
+  &lt;source src="mesa.webm" type="video/webm"&gt;
+  &lt;source src="mesa.mp4" type="video/mp4"&gt;
+  &lt;track kind="captions" src="mesa.vtt" srclang="en" label="English"&gt;
+&lt;/video&gt;</pre>
+    <p><code>controls</code> adds the play button, timeline and volume. Leave it out and visitors can't pause or mute, so always include it unless you build your own. <code>poster</code> shows an image until the video starts, instead of a black box. And listing more than one <code>&lt;source&gt;</code> lets the browser play the first format it supports.</p>
+    <p>You've probably noticed videos that start silently, or not at all. Browsers block <em>autoplay with sound</em>, because nobody wants a page to start talking at them. Autoplay only works when the video is also <code>muted</code>, and even then, use it sparingly. A background video that loops forever with no way to stop it is distracting, and a problem for people with motion sensitivity.</p>
+    <p>Captions live in a separate text file in WebVTT format, linked with <code>&lt;track&gt;</code>. They're essential for people who can't hear the audio, and useful for everyone watching on mute in a quiet room. For audio-only content, like a podcast, provide a transcript.</p>
+    <p><code>&lt;audio controls&gt;</code> works the same way, without the picture.</p>
+    <div class="callout tip"><p class="callout-title">Tip</p><p>Video files are big. Compress them before uploading, or host long videos on YouTube or Vimeo and <a href="embeds.html">embed</a> them instead.</p></div>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Play</span><h2>Try each attribute</h2><p>Turn attributes on and off and watch how the player behaves. It follows the same rules as a real browser.</p></div>
 
   <section class="playground">
     <div class="panel controls">
@@ -69,6 +91,9 @@
 
   <div class="section-title"><span class="eyebrow">Captions</span><h2>The captions file</h2><p>Captions live in a separate WebVTT text file, linked with <code>&lt;track&gt;</code>. Each cue has a start time, an end time and the text. The current cue is highlighted while the video plays.</p></div>
   <div class="panel vtt" id="vtt"></div>
+
+  <div class="section-title"><span class="eyebrow">Practice</span><h2>Fix the media players</h2><p>This video starts blaring on its own and can't be paused. Make it polite and accessible.</p></div>
+  <div id="ex-media"></div>
 
   <section class="notes">
     <div class="panel">
@@ -92,8 +117,11 @@
     </div>
   </section>
 
+  <div class="section-title"><span class="eyebrow">Check yourself</span><h2>Quick check</h2></div>
+  <div class="panel quiz" id="quiz"></div>
+
   <footer class="page-foot" data-book-nav><a href="index.html">← Contents</a></footer>
-</div>
+</main>
 
 <script>
   const $ = (id) => document.getElementById(id);
@@ -148,6 +176,44 @@
   document.querySelectorAll(".controls input").forEach((el) => el.addEventListener("input", reload));
   $("restart").addEventListener("click", reload);
   reload();
+</script>
+<script>
+  makeQuiz(document.getElementById("quiz"), [
+    { id: "q1", q: "Your video has autoplay but doesn't start. What's most likely missing?", opts: ["muted", "controls", "poster"], a: 0, why: "Browsers block autoplay with sound. Add muted and it can start on its own." },
+    { id: "q2", q: "What does the poster attribute do?", opts: ["Adds a title over the video", "Shows an image before the video plays", "Sets the video's thumbnail on YouTube"], a: 1, why: "Without a poster, the player is often a black box until it loads." },
+    { id: "q3", q: "Why list both an MP4 and a WebM <source>?", opts: ["The browser plays both", "It makes the video load faster", "The browser plays the first one it supports"], a: 2, why: "Sources are tried in order, so each browser gets a format it can play." },
+    { id: "q4", q: "How do you add captions to a <video>?", opts: ["A <track kind=\"captions\"> pointing at a .vtt file", "Type the captions inside the <video> tags", "Add an alt attribute"], a: 0, why: "Captions are a separate WebVTT file, linked with track." },
+  ]);
+</script>
+<script>
+  makeExercise(document.getElementById("ex-media"), {
+    title: "A video and a sound clip",
+    task: `<ol>
+      <li>Give the video controls and stop it autoplaying.</li>
+      <li>Replace its <code>src</code> with two <code>&lt;source&gt;</code> elements: <code>royal-arch.mp4</code> and <code>royal-arch.webm</code>.</li>
+      <li>Add English captions from <code>royal-arch.vtt</code> with a <code>&lt;track&gt;</code>.</li>
+      <li>Give the audio controls.</li>
+    </ol>`,
+    html: `<video src="royal-arch.mp4" autoplay width="480" height="270"></video>
+<audio src="trail-sounds.mp3"></audio>`,
+    solution: { html: `<video controls width="480" height="270">
+  <source src="royal-arch.mp4" type="video/mp4">
+  <source src="royal-arch.webm" type="video/webm">
+  <track kind="captions" src="royal-arch.vtt" srclang="en" label="English">
+</video>
+<audio controls src="trail-sounds.mp3"></audio>` },
+    hints: [
+      "controls is an attribute with no value: <video controls>.",
+      "<source> elements go between <video> and </video>. Take src off the video itself.",
+      "<track kind=\"captions\" src=\"royal-arch.vtt\" srclang=\"en\" label=\"English\">",
+    ],
+    checks: [
+      { label: "The video has controls and doesn't autoplay with sound", test: ({ $ }) => { const v = $("video"); return v.hasAttribute("controls") && (!v.hasAttribute("autoplay") || v.hasAttribute("muted")); } },
+      { label: "The video lists MP4 and WebM sources", test: ({ $, $$ }) => !$("video").hasAttribute("src") && $$("video source").some((s) => /\.mp4$/.test(s.getAttribute("src"))) && $$("video source").some((s) => /\.webm$/.test(s.getAttribute("src"))) },
+      { label: "English captions are attached", test: ({ $ }) => { const t = $('video track[kind="captions"]'); return t.getAttribute("src") === "royal-arch.vtt" && t.getAttribute("srclang") === "en"; } },
+      { label: "The audio has controls", test: ({ $ }) => $("audio").hasAttribute("controls") },
+    ],
+  });
 </script>
 </body>
 </html>

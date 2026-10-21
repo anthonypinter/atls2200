@@ -4,9 +4,6 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Flexbox Playground</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Recursive:slnt,wght,CASL,MONO@-15..0,300..1000,0..1,0..1&display=swap">
 <link rel="stylesheet" href="style.css">
 <style>
   .stage { display: flex; }
@@ -19,14 +16,43 @@
 <script src="js/quiz.js"></script>
 </head>
 <body>
-<div class="wrap">
+<main class="wrap">
   <nav class="crumbs" aria-label="Site"><a class="crumb" href="index.html">← Field Guide</a><a class="crumb" href="glossary.html">Glossary</a></nav>
   <header class="page-head">
     <span class="eyebrow">Layout · Flexbox</span>
     <h1>Flexbox Playground</h1>
     <p class="lede">Flexbox lays out items in one direction, a row or a column. You set the rules on the <em>container</em>, and its direct children (the flex items) follow them.</p>
+    <div class="objectives">
+      <p class="callout-title">You'll be able to</p>
+      <ul>
+        <li>Turn a parent into a flex container and line its children up in a row or a column.</li>
+        <li>Tell the main axis from the cross axis, and choose <code>justify-content</code> or <code>align-items</code> to match.</li>
+        <li>Space items with <code>gap</code> and let them wrap onto new lines.</li>
+      </ul>
+    </div>
   </header>
 
+  <div class="section-title"><span class="eyebrow">Read</span><h2>One direction at a time</h2></div>
+  <div class="prose">
+    <p>Putting boxes side by side used to take floats and workarounds. <span class="term">Flexbox</span> does it in one line: add <code>display: flex</code> to a parent, and its direct children line up in a row.</p>
+    <p>The parent becomes the <em>flex container</em>, and its children become <em>flex items</em>. Almost every rule goes on the container. That's also the most common mistake: <code>display: flex</code> goes on the parent, not on the items you want to move.</p>
+    <p>Every flex container has two directions:</p>
+    <ul>
+      <li>The <span class="term">main axis</span> runs the way items flow. With the default <code>flex-direction: row</code>, that's left to right. <code>justify-content</code> spaces items along it.</li>
+      <li>The <span class="term">cross axis</span> runs at a right angle to it, so up and down in a row. <code>align-items</code> lines items up along it.</li>
+    </ul>
+    <p>Switch to <code>flex-direction: column</code> and the axes swap. Now <code>justify-content</code> moves items up and down, and <code>align-items</code> moves them side to side. If a property seems to do the wrong thing, check which way your main axis runs.</p>
+    <pre class="snippet"><span class="sel">.site-nav</span> {
+  <span class="prop">display</span>: <span class="val">flex</span>;
+  <span class="prop">justify-content</span>: <span class="val">space-between</span>;  <span class="cmt">/* main axis: spread out */</span>
+  <span class="prop">align-items</span>: <span class="val">center</span>;            <span class="cmt">/* cross axis: center vertically */</span>
+  <span class="prop">gap</span>: <span class="val">16px</span>;                      <span class="cmt">/* space between items */</span>
+}</pre>
+    <p>Use <span class="term">gap</span> for space between items instead of margins on each one. And remember that items don't wrap by default: when they run out of room, they shrink. Add <code>flex-wrap: wrap</code> to let them move onto a new line instead.</p>
+    <div class="callout note"><p class="callout-title">Note</p><p>Flexbox handles one direction at a time. For rows and columns together, like a photo gallery, use <a href="grid.html">CSS Grid</a>. <a href="flex-vs-grid.html">Flexbox vs Grid</a> builds the same layouts both ways.</p></div>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Play</span><h2>Try every setting</h2><p>Change one property at a time and watch the items move. Then switch to a column and see which controls swap jobs.</p></div>
   <section class="playground">
     <div class="panel controls" aria-label="Flex container settings">
       <span class="eyebrow">.container</span>
@@ -77,8 +103,11 @@
     </div>
   </section>
 
+  <div class="section-title"><span class="eyebrow">Check yourself</span><h2>Quick check</h2></div>
+  <div class="panel quiz" id="quiz"></div>
+
   <footer class="page-foot" data-book-nav><a href="index.html">← Contents</a></footer>
-</div>
+</main>
 
 <script>
   const $ = (id) => document.getElementById(id);
@@ -196,6 +225,14 @@
       } },
     ],
   });
+
+  makeQuiz(document.getElementById("quiz"), [
+    { id: "q1", q: "You want three cards side by side. Where does display: flex go?", opts: ["On each card", "On the element that contains the cards", "On both"], a: 1, why: "display: flex goes on the parent. Its direct children become the flex items." },
+    { id: "q2", q: "The container has flex-direction: column. Which property now moves items up and down?", opts: ["justify-content", "align-items", "vertical-align"], a: 0, why: "justify-content always works along the main axis, and in a column the main axis runs up and down." },
+    { id: "q3", q: "Your items squish when the window gets narrow instead of moving to a new line. What fixes it?", opts: ["flex-wrap: wrap", "align-items: stretch", "flex-grow: 1"], a: 0, why: "Flex items don't wrap by default. flex-wrap: wrap lets them move onto a new line." },
+    { id: "q4", q: "Which line puts 16px between every item without adding space at the ends?", opts: ["padding: 16px", "gap: 16px", "justify-content: space-around"], a: 1, why: "gap adds space only between items. padding adds space inside the container, around all of them." },
+    { id: "q5", q: "What does flex-grow: 1 on just the first item do?", opts: ["Makes it take up the leftover space", "Makes it 1px wider", "Moves it to the end"], a: 0, why: "flex-grow shares out the extra space in the row. With only one item growing, it takes all of it." },
+  ]);
 </script>
 </body>
 </html>

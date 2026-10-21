@@ -4,9 +4,6 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Validating Your Code</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Recursive:slnt,wght,CASL,MONO@-15..0,300..1000,0..1,0..1&display=swap">
 <link rel="stylesheet" href="style.css">
 <style>
   .tools { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px; }
@@ -38,13 +35,34 @@
 <script src="js/quiz.js"></script>
 </head>
 <body>
-<div class="wrap">
+<main class="wrap">
   <nav class="crumbs" aria-label="Site"><a class="crumb" href="index.html">← Field Guide</a><a class="crumb" href="glossary.html">Glossary</a></nav>
   <header class="page-head">
     <span class="eyebrow">Polish &amp; Workflow · Validating Your Code</span>
     <h1>Validating Your Code</h1>
     <p class="lede">Browsers quietly guess their way around mistakes, so broken code often looks fine until it suddenly doesn't. A validator reads your code like a strict teacher and lists every problem with a line number.</p>
+    <div class="objectives">
+      <p class="callout-title">You'll be able to</p>
+      <ul>
+        <li>Check HTML and CSS with a validator and read its messages.</li>
+        <li>Fix errors starting from the top of the list.</li>
+        <li>Use DevTools to see how the browser repaired broken HTML.</li>
+      </ul>
+    </div>
   </header>
+
+  <div class="section-title"><span class="eyebrow">Read</span><h2>A second pair of eyes</h2></div>
+  <div class="prose">
+    <p>Browsers are forgiving. If you forget a closing tag or misspell a property, they don't show an error. They guess what you meant and keep going. That sounds helpful, but it means broken code often looks fine in your browser until something unrelated changes, or until someone opens it in a different browser that guesses differently.</p>
+    <p>A <span class="term">validator</span> doesn't guess. It reads your code against the rules and lists every problem with a line number. There are free ones for HTML and CSS, and you can paste code in or upload a file.</p>
+    <p>Validators sort their findings into two groups. <strong>Errors</strong> break the rules and should be fixed. <strong>Warnings</strong> are suggestions, worth reading but not always wrong.</p>
+    <p>Always fix from the top down. One early mistake, like an unclosed <code>&lt;div&gt;</code>, can make everything after it look wrong to the validator, producing a long list of errors that disappear once you fix the first one. Fix it, validate again, and repeat.</p>
+    <p>For CSS, the browser simply skips any declaration it doesn't understand. There's no message; the style just doesn't apply. That silent skip is exactly the bug you're hunting, and the CSS validator will point straight at it.</p>
+    <p>When HTML is broken, the browser repairs it in ways that can surprise you, such as moving a <code>&lt;div&gt;</code> out of a <code>&lt;p&gt;</code>. <span class="term">DevTools</span> shows the repaired version, so comparing it with your file reveals what the browser changed.</p>
+    <div class="callout tip"><p class="callout-title">Tip</p><p>Validate before handing in any project, and any time something looks wrong and you can't see why. It takes a minute and catches mistakes your eyes skip over.</p></div>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Play</span><h2>The tools</h2><p>Bookmark these. Then try spotting errors yourself below.</p></div>
 
   <div class="tools">
     <div class="panel"><span class="eyebrow">HTML</span><h3><a href="https://validator.w3.org/#validate_by_input">W3C Markup Validator</a></h3>
@@ -71,6 +89,9 @@
   <p class="panel parse-note" id="parse-note" aria-live="polite"></p>
   <div class="panel" style="display:grid;gap:6px;margin-top:14px"><span class="eyebrow">To see this in your own project</span><p>Right-click the problem area and choose <strong>Inspect</strong>. In the Elements panel, compare the tree to your file. Wherever they differ, that's where your HTML has an error.</p></div>
 
+  <div class="section-title"><span class="eyebrow">Practice</span><h2>Fix what the validator found</h2><p>A validator flagged these errors. The page looks fine, but each one is a real bug.</p></div>
+  <div id="ex-validate"></div>
+
   <section class="notes">
     <div class="panel">
       <h2>Key ideas</h2>
@@ -92,8 +113,11 @@
     </div>
   </section>
 
+  <div class="section-title"><span class="eyebrow">Check yourself</span><h2>Quick check</h2></div>
+  <div class="panel quiz" id="quiz"></div>
+
   <footer class="page-foot" data-book-nav><a href="index.html">← Contents</a></footer>
-</div>
+</main>
 
 <script>
   const $ = (id) => document.getElementById(id);
@@ -179,6 +203,55 @@
     document.querySelectorAll("#parse-pick button").forEach((b) => b.setAttribute("aria-pressed", String(b.textContent === snip)));
   }
   parse();
+</script>
+<script>
+  makeQuiz(document.getElementById("quiz"), [
+    { id: "q1", q: "The validator lists 14 errors. Where should you start?", opts: ["At the bottom", "At the top", "With the shortest one"], a: 1, why: "One early mistake can cause many later errors. Fix it and validate again." },
+    { id: "q2", q: "What does a browser do with a CSS declaration it doesn't understand?", opts: ["Shows an error", "Stops reading the file", "Skips it silently"], a: 2, why: "That silent skip is why the CSS validator is worth running." },
+    { id: "q3", q: "Your page looks right in your browser. Is it valid?", opts: ["Yes, definitely", "Not necessarily; browsers repair mistakes", "Only if it's in Chrome"], a: 1, why: "Browsers guess around broken code, and different browsers guess differently." },
+    { id: "q4", q: "How can you see the HTML the browser actually built?", opts: ["View Source", "DevTools' Elements panel", "The validator"], a: 1, why: "View Source shows your file; the Elements panel shows the repaired page." },
+  ]);
+</script>
+<script>
+  makeExercise(document.getElementById("ex-validate"), {
+    title: "Clear the validator's list",
+    task: `<p>The validator reported:</p>
+    <ul>
+      <li><strong>HTML:</strong> Duplicate ID <code>trail</code>.</li>
+      <li><strong>HTML:</strong> An <code>img</code> element must have an <code>alt</code> attribute.</li>
+      <li><strong>HTML:</strong> No <code>p</code> element in scope but a <code>p</code> end tag seen. (A div can't go inside a paragraph.)</li>
+      <li><strong>CSS:</strong> Property <code>colour</code> doesn't exist.</li>
+      <li><strong>CSS:</strong> <code>10 px</code> is not a valid margin value.</li>
+    </ul>`,
+    html: `<h1 id="trail">Mesa Trail</h1>
+<p id="trail">A rolling trail along the Flatirons.</p>
+<img src="mesa.jpg" width="300" height="160">
+<p>Conditions: <div class="status">Muddy</div></p>`,
+    css: `body { font-family: system-ui, sans-serif; }
+h1 { colour: #2340d9; }
+.status { margin: 10 px; font-weight: bold; }`,
+    solution: {
+      html: `<h1 id="trail">Mesa Trail</h1>
+<p>A rolling trail along the Flatirons.</p>
+<img src="mesa.jpg" alt="Mesa Trail crossing a meadow below the Flatirons" width="300" height="160">
+<p>Conditions: <span class="status">Muddy</span></p>`,
+      css: `body { font-family: system-ui, sans-serif; }
+h1 { color: #2340d9; }
+.status { margin: 10px; font-weight: bold; }`,
+    },
+    hints: [
+      "An id can be used only once per page. Remove or rename the second one.",
+      "Paragraphs can only hold inline content. Use a <span> instead of the div.",
+      "colour is British spelling, which CSS doesn't accept. And units touch their numbers: 10px.",
+    ],
+    checks: [
+      { label: "Every id is unique", test: ({ $$ }) => { const ids = $$("[id]").map((e) => e.id); return new Set(ids).size === ids.length; } },
+      { label: "The image has alt text", test: ({ $ }) => ($("img").getAttribute("alt") || "").trim() !== "" },
+      { label: "No block element inside the paragraph", test: ({ code }) => !/<p\b(?:(?!<\/p>)[\s\S])*<div/i.test(code.html) },
+      { label: "The heading is blue", test: ({ style }) => style("h1", "color") === "rgb(35, 64, 217)" },
+      { label: "The status has a 10px margin", test: ({ style }) => style(".status", "margin-top") === "10px" },
+    ],
+  });
 </script>
 </body>
 </html>

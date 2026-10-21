@@ -4,9 +4,6 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Floats</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Recursive:slnt,wght,CASL,MONO@-15..0,300..1000,0..1,0..1&display=swap">
 <link rel="stylesheet" href="style.css">
 <style>
   .article { background: #fff; color: #1d2133; border: 1px solid var(--line); border-radius: var(--radius); padding: 18px; font: 1rem/1.65 Georgia, serif; min-width: 0; display: flow-root; }
@@ -22,7 +19,7 @@
   /* Normal flow on purpose: a grid or flex container would contain the float and hide the bug. */
   .collapse-demo { display: block; }
   #box { border: 3px dashed var(--prop); border-radius: 8px; padding: 8px; background: color-mix(in srgb, var(--prop) 8%, transparent); }
-  #box .lbl { font: 600 0.75rem var(--font-code); font-variation-settings: "MONO" 1; color: var(--prop); display: block; }
+  #box .lbl { font: 600 0.75rem var(--font-code); font-variation-settings: "MONO" 1; color: color-mix(in srgb, var(--prop) 75%, var(--ink)); display: block; }
   #box .fl { float: left; width: 110px; height: 110px; margin: 6px 10px 0 0; border-radius: 8px; background: var(--item-1); color: #fff; display: grid; place-items: center; font: 700 0.85rem var(--font-code); }
   .after-box { margin-top: 10px; padding: 10px; border-radius: 8px; background: var(--item-3); color: #fff; font-weight: 700; }
 </style>
@@ -32,15 +29,38 @@
 <script src="js/quiz.js"></script>
 </head>
 <body>
-<div class="wrap">
+<main class="wrap">
   <nav class="crumbs" aria-label="Site"><a class="crumb" href="index.html">← Field Guide</a><a class="crumb" href="glossary.html">Glossary</a></nav>
   <header class="page-head">
     <span class="eyebrow">Layout · Floats</span>
     <h1>Floats</h1>
     <p class="lede">A floated element moves to the left or right, and the text flows around it, like a photo in a magazine. That's still the job floats do best. Before Flexbox and Grid existed they were also used for whole-page layouts, so you'll see them in older code.</p>
+    <div class="objectives">
+      <p class="callout-title">You'll be able to</p>
+      <ul>
+        <li>Wrap text around an image with float and a margin.</li>
+        <li>Start an element below floats with clear.</li>
+        <li>Fix a collapsed parent with display: flow-root, and recognize float layouts in older code.</li>
+      </ul>
+    </div>
   </header>
 
-  <div class="section-title" style="margin-top:0"><span class="eyebrow">Part 1</span><h2>Wrap text around an image</h2></div>
+  <div class="section-title"><span class="eyebrow">Read</span><h2>Wrapping text around an image</h2></div>
+  <div class="prose">
+    <p>A <span class="term">float</span> moves an element to the left or right edge of its container, and lets the text that follows flow around it, like a photo in a magazine article. That's still the job floats do best:</p>
+    <pre class="snippet" data-lang="css">.article img {
+  float: left;
+  width: 40%;
+  margin: 0 1rem 1rem 0;   /* space between the photo and the text */
+}</pre>
+    <p>Give a floated element a width, or it shrinks to fit its content. And give it a margin on the side facing the text, so words don't press right against the image.</p>
+    <p>Sometimes the next part of the page should start <em>below</em> the float instead of wrapping beside it, like a new section heading. <code><span class="term">clear</span>: both</code> does that: the element moves down until it's past any floats above it.</p>
+    <p>Floats have one famous side effect. A floated element no longer counts toward its parent's height, so if everything inside a box is floated, the box collapses to nothing and its background and border disappear. Add <code>display: flow-root</code> to the parent and it contains its floats again.</p>
+    <p>Before Flexbox and Grid existed, floats were the only way to put boxes side by side, so whole page layouts were built from them, along with workarounds like the "clearfix" hack. You'll see that in older code and tutorials. For new layouts, use <a href="flexbox.html">Flexbox</a> or <a href="grid.html">Grid</a>, and keep floats for wrapping text.</p>
+    <div class="callout tip"><p class="callout-title">Tip</p><p>On a phone, a floated image squeezes the text into a narrow strip. Use a media query to remove the float on small screens and let the image sit above the text.</p></div>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Play</span><h2>Wrap text around an image</h2></div>
   <section class="playground">
     <div class="panel controls">
       <div class="control"><label for="fl">float</label><select id="fl"><option>none</option><option selected>left</option><option>right</option></select></div>
@@ -59,7 +79,7 @@
     </div>
   </section>
 
-  <div class="section-title"><span class="eyebrow">Part 2</span><h2>The collapsing parent</h2><p>A floated child no longer counts toward its parent's height. If everything inside is floated, the parent shrinks to almost nothing and the next element slides up underneath.</p></div>
+  <div class="section-title"><span class="eyebrow">Play</span><h2>The collapsing parent</h2><p>A floated child no longer counts toward its parent's height. If everything inside is floated, the parent shrinks to almost nothing and the next element slides up underneath.</p></div>
   <section class="playground">
     <div class="panel controls">
       <label class="check"><input type="checkbox" id="fix">Fix the parent with <code>display: flow-root</code></label>
@@ -70,6 +90,9 @@
       <div class="after-box">The next section</div>
     </div>
   </section>
+
+  <div class="section-title"><span class="eyebrow">Practice</span><h2>Wrap text around a photo</h2><p>Float the photo, start the next section below it, and fix a box that collapsed.</p></div>
+  <div id="ex-float"></div>
 
   <section class="notes">
     <div class="panel">
@@ -93,8 +116,11 @@
     </div>
   </section>
 
+  <div class="section-title"><span class="eyebrow">Check yourself</span><h2>Quick check</h2></div>
+  <div class="panel quiz" id="quiz"></div>
+
   <footer class="page-foot" data-book-nav><a href="index.html">← Contents</a></footer>
-</div>
+</main>
 
 <script>
   const $ = (id) => document.getElementById(id);
@@ -122,6 +148,52 @@
   }
   $("fix").addEventListener("input", part2);
   part2();
+</script>
+<script>
+  makeQuiz(document.getElementById("quiz"), [
+    { id: "q1", q: "What's the best modern use for float?", opts: ["Whole page layouts", "Wrapping text around an image", "Centering things"], a: 1, why: "For layouts, use Flexbox or Grid. Floats are for text wrap." },
+    { id: "q2", q: "A heading wraps beside a floated photo, but you want it below. What fixes it?", opts: ["display: block on the photo", "float: none on the heading", "clear: both on the heading"], a: 2, why: "clear moves an element below any floats above it." },
+    { id: "q3", q: "Every child of a box is floated, and the box's background vanished. Why?", opts: ["Floats don't count toward the parent's height", "Floats hide backgrounds", "The box needs z-index"], a: 0, why: "The parent collapses. display: flow-root makes it contain its floats." },
+    { id: "q4", q: "You float a flex item. What happens?", opts: ["It floats inside the flex container", "The float is ignored", "The container stops being flex"], a: 1, why: "Floats don't apply to flex or grid items." },
+  ]);
+</script>
+<script>
+  makeExercise(document.getElementById("ex-float"), {
+    title: "A magazine-style article",
+    task: `<ol>
+      <li>Float the photo to the left, with at least 12px of space between it and the text.</li>
+      <li>Make the “Getting there” heading start below the photo instead of beside it.</li>
+      <li>The badge box below has only floated children, so it collapsed and its border is a flat line. Make it contain its floats.</li>
+    </ol>`,
+    html: `<div class="photo">Photo</div>
+<p>Royal Arch is a short, steep climb from Chautauqua. The trail switchbacks through ponderosa pine, then climbs a rocky gully to the arch.</p>
+<h2>Getting there</h2>
+<p>Park at Chautauqua and walk up the Bluebell Road.</p>
+<div class="badges">
+  <span class="badge">Steep</span>
+  <span class="badge">Views</span>
+</div>`,
+    css: `body { font-family: system-ui, sans-serif; }
+.photo { width: 160px; height: 140px; background: #b9c4ef; display: grid; place-items: center; }
+.badges { border: 2px solid #2340d9; margin-top: 16px; }
+.badge { float: left; padding: 6px 10px; margin: 6px; background: gold; }`,
+    solution: { css: `body { font-family: system-ui, sans-serif; }
+.photo { width: 160px; height: 140px; background: #b9c4ef; display: grid; place-items: center; float: left; margin: 0 16px 8px 0; }
+h2 { clear: both; }
+.badges { border: 2px solid #2340d9; margin-top: 16px; display: flow-root; }
+.badge { float: left; padding: 6px 10px; margin: 6px; background: gold; }` },
+    hints: [
+      "float: left, plus margin-right for the gap.",
+      "clear: both moves an element below any floats above it.",
+      "display: flow-root on the parent makes it contain its floated children.",
+    ],
+    checks: [
+      { label: "The photo floats left with a 12px+ gap", test: ({ style }) => style(".photo", "float") === "left" && parseFloat(style(".photo", "margin-right")) >= 12 },
+      { label: "The text wraps beside the photo", test: ({ $ }) => $("p").getBoundingClientRect().top < $(".photo").getBoundingClientRect().bottom },
+      { label: "The heading starts below the photo", test: ({ $ }) => $("h2").getBoundingClientRect().top >= $(".photo").getBoundingClientRect().bottom - 1 },
+      { label: "The badge box contains its badges", test: ({ $ }) => $(".badges").getBoundingClientRect().bottom >= $(".badge").getBoundingClientRect().bottom },
+    ],
+  });
 </script>
 </body>
 </html>

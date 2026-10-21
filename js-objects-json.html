@@ -4,9 +4,6 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Objects &amp; JSON</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Recursive:slnt,wght,CASL,MONO@-15..0,300..1000,0..1,0..1&display=swap">
 <link rel="stylesheet" href="style.css">
 <style>
   .tree { display: grid; grid-template-columns: minmax(0, 1fr); background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 8px 0; overflow-x: auto; font: 0.92rem/1.7 var(--font-code); font-variation-settings: "MONO" 1; }
@@ -32,13 +29,42 @@
 <script src="js/quiz.js"></script>
 </head>
 <body>
-<div class="wrap">
+<main class="wrap">
   <nav class="crumbs" aria-label="Site"><a class="crumb" href="index.html">← Field Guide</a><a class="crumb" href="glossary.html">Glossary</a></nav>
   <header class="page-head">
     <span class="eyebrow">JavaScript Basics · Objects &amp; JSON</span>
     <h1>Objects &amp; JSON</h1>
     <p class="lede">An object groups related values under named keys, such as a trail's name, length and location. JSON is the same idea written as text, and it's how most data travels between websites and servers.</p>
+    <div class="objectives">
+      <p class="callout-title">You'll be able to</p>
+      <ul>
+        <li>Create an object and read its values with dots and brackets.</li>
+        <li>Navigate nested objects and arrays one step at a time.</li>
+        <li>Convert between objects and JSON text with JSON.parse and JSON.stringify.</li>
+      </ul>
+    </div>
   </header>
+
+  <div class="section-title"><span class="eyebrow">Read</span><h2>Grouping values under names</h2></div>
+  <div class="prose">
+    <p>An array is a list in order. An <span class="term">object</span> groups related values under names, called keys, like everything you know about one trail:</p>
+    <pre class="snippet" data-lang="js">const hike = {
+  name: "Royal Arch",
+  miles: 3.4,
+  dogs: true,
+  tags: ["steep", "views"],
+};
+hike.name          // "Royal Arch"
+hike["miles"]      // 3.4
+hike.tags[1]       // "views"</pre>
+    <p>Read a value with a dot and the key's name. Square brackets with the key as a string do the same thing, and you need them when the key is stored in a variable: if <code>key</code> holds <code>"miles"</code>, then <code>hike[key]</code> works but <code>hike.key</code> looks for a key literally named "key".</p>
+    <p>Values can be anything, including arrays and other objects. Real data is often nested several levels deep, so read it one step at a time: <code>trails[0].tags[1]</code> means the first trail, then its tags, then the second tag. To add or change a value, assign it: <code>hike.rating = 5</code>.</p>
+    <p><span class="term">JSON</span> is the same idea written as plain text. It's how most data travels between websites and servers. It has stricter rules than JavaScript: keys need double quotes, strings use double quotes too, and there are no trailing commas or comments.</p>
+    <p>Because JSON is text, you convert it before using it. <code>JSON.parse(text)</code> turns JSON text into an object you can read with dots. <code>JSON.stringify(obj)</code> turns an object back into text, ready to save or send.</p>
+    <div class="callout warn"><p class="callout-title">Watch out</p><p>One missing comma or a single quote makes JSON invalid, and <code>JSON.parse()</code> throws an error. If the error mentions an unexpected token, check the JSON text first.</p></div>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Play</span><h2>Read the object</h2><p>Click any key to see the code that reads it.</p></div>
 
   <section class="playground even">
     <div class="stage-col">
@@ -50,7 +76,7 @@
     </div>
   </section>
 
-  <div class="section-title"><span class="eyebrow">Part 2</span><h2>Dot or brackets?</h2><p>When the key is stored in a variable (for example, chosen from a dropdown), you have to use square brackets. A dot always looks for a key with that exact name.</p></div>
+  <div class="section-title"><span class="eyebrow">Play</span><h2>Dot or brackets?</h2><p>When the key is stored in a variable (for example, chosen from a dropdown), you have to use square brackets. A dot always looks for a key with that exact name.</p></div>
   <section class="playground">
     <div class="panel controls">
       <div class="control"><label for="keypick">const key =</label><select id="keypick"><option>"name"</option><option selected>"miles"</option><option>"open"</option><option>"rating"</option></select></div>
@@ -58,7 +84,7 @@
     <div class="stage-col"><pre class="snippet" id="bracket-code"></pre><ol class="console" id="bracket-out" aria-label="Console output"></ol><p class="hint" id="bracket-why"></p></div>
   </section>
 
-  <div class="section-title"><span class="eyebrow">Part 3</span><h2>JSON checker</h2><p>JSON looks like a JavaScript object but has stricter rules. Edit the text, or click a button to make a common mistake. The status uses the browser's own <code>JSON.parse()</code>.</p></div>
+  <div class="section-title"><span class="eyebrow">Play</span><h2>JSON checker</h2><p>JSON looks like a JavaScript object but has stricter rules. Edit the text, or click a button to make a common mistake. The status uses the browser's own <code>JSON.parse()</code>.</p></div>
   <section class="playground">
     <div class="panel controls">
       <span class="eyebrow">Break it</span>
@@ -99,8 +125,8 @@ const saved = JSON.stringify(hero);
 console.log(saved);
 console.log(typeof saved);</textarea></div>
 
-  <div class="section-title"><span class="eyebrow">Practice</span><h2>Check yourself</h2></div>
-  <div class="panel quiz" id="quiz"></div>
+  <div class="section-title"><span class="eyebrow">Practice</span><h2>Read and write JSON</h2><p>Turn JSON text into an object, pull values out of it, and turn it back into text.</p></div>
+  <div id="ex-objects"></div>
 
   <section class="notes">
     <div class="panel">
@@ -132,8 +158,11 @@ console.log(typeof saved);</textarea></div>
     </div>
   </section>
 
+  <div class="section-title"><span class="eyebrow">Check yourself</span><h2>Quick check</h2></div>
+  <div class="panel quiz" id="quiz"></div>
+
   <footer class="page-foot" data-book-nav><a href="index.html">← Contents</a></footer>
-</div>
+</main>
 
 <script src="js/runner.js"></script>
 <script>
@@ -235,6 +264,39 @@ console.log(typeof saved);</textarea></div>
 
   $("json").value = VALID;
   renderTree(); renderBracket(); checkJSON();
+</script>
+<script>
+  makeExercise(document.getElementById("ex-objects"), {
+    title: "A hike from JSON",
+    task: `<ol>
+      <li>Parse <code>json</code> into an object called <code>hike</code>.</li>
+      <li>Log the hike's name, then its second tag.</li>
+      <li>Add <code>rating: 5</code> to the object, then log the whole hike as JSON text.</li>
+    </ol>`,
+    js: `const json = '{"name": "Royal Arch", "miles": 3.4, "tags": ["steep", "views"]}';
+
+// Your code here
+`,
+    solution: `const json = '{"name": "Royal Arch", "miles": 3.4, "tags": ["steep", "views"]}';
+
+const hike = JSON.parse(json);
+console.log(hike.name);
+console.log(hike.tags[1]);
+hike.rating = 5;
+console.log(JSON.stringify(hike));`,
+    expose: ["hike"],
+    hints: [
+      "JSON.parse(json) turns the text into an object.",
+      "hike.tags is an array, so the second tag is hike.tags[1].",
+      "Add a key by assigning it: hike.rating = 5; then JSON.stringify(hike).",
+    ],
+    checks: [
+      { label: "hike is an object parsed from json", test: ({ fns, code }) => fns.hike && fns.hike.name === "Royal Arch" && /JSON\.parse\(\s*json\s*\)/.test(code.js) },
+      { label: "Logs the name, then “views”", test: ({ logs }) => logs.indexOf("Royal Arch") >= 0 && logs.indexOf("views") > logs.indexOf("Royal Arch") },
+      { label: "hike.rating is 5", test: ({ fns }) => fns.hike.rating === 5 },
+      { label: "Logs the hike as JSON text, with the rating", test: ({ logs }) => logs.some((l) => { try { const o = JSON.parse(l); return o.rating === 5 && o.name === "Royal Arch"; } catch { return false; } }) },
+    ],
+  });
 </script>
 </body>
 </html>

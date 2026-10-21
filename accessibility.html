@@ -4,9 +4,6 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Accessibility Basics</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Recursive:slnt,wght,CASL,MONO@-15..0,300..1000,0..1,0..1&display=swap">
 <link rel="stylesheet" href="style.css">
 <style>
   /* Sample site, intentionally its own light look so contrast numbers are fixed. */
@@ -49,13 +46,37 @@
 <script src="js/quiz.js"></script>
 </head>
 <body>
-<div class="wrap">
+<main class="wrap">
   <nav class="crumbs" aria-label="Site"><a class="crumb" href="index.html">← Field Guide</a><a class="crumb" href="glossary.html">Glossary</a></nav>
   <header class="page-head">
     <span class="eyebrow">Polish &amp; Workflow · Accessibility Basics</span>
     <h1>Accessibility Basics</h1>
     <p class="lede">An accessible site works for people using a keyboard, a screen reader, zoom, or a phone in bright sun. This sample page has seven common problems. Click into it and press Tab to move through it, then compare it with the fixed version.</p>
+    <div class="objectives">
+      <p class="callout-title">You'll be able to</p>
+      <ul>
+        <li>Use semantic HTML so buttons, links, labels and headings work for everyone.</li>
+        <li>Test a page with only the keyboard.</li>
+        <li>Check that every control has a name and that meaning never depends on color alone.</li>
+      </ul>
+    </div>
   </header>
+
+  <div class="section-title"><span class="eyebrow">Read</span><h2>Building for everyone</h2></div>
+  <div class="prose">
+    <p><span class="term">Accessibility</span> means people can use your site however they use the web: with a mouse, a keyboard, a <span class="term">screen reader</span> that reads the page aloud, zoomed in to 200%, or on a phone in bright sun. Plenty of visitors depend on these, and an accessible site is easier for everyone else, too.</p>
+    <p>Most of the work is done by choosing the right HTML element. A real <code>&lt;button&gt;</code> can be reached with Tab, pressed with Enter or Space, and is announced as "button." A <code>&lt;div&gt;</code> with a click handler does none of that. The same goes for links, headings, lists and form labels: <span class="term">semantic HTML</span> brings accessibility with it for free.</p>
+    <p>Four checks catch most problems:</p>
+    <ul>
+      <li><strong>Keyboard.</strong> Put your mouse away and press Tab through the page. Can you reach and use everything? Can you see where you are? Never remove the <span class="term">focus</span> outline without adding a replacement.</li>
+      <li><strong>Names.</strong> Every control needs a name a screen reader can say: a label for each input, text inside each button, <span class="term">alt text</span> on each meaningful image.</li>
+      <li><strong>Color.</strong> Text needs enough <span class="term" data-term="Contrast ratio">contrast</span> with its background, at least 4.5 to 1 for normal text. And don't use color alone to carry meaning, like red for errors.</li>
+      <li><strong>Structure.</strong> Use one <code>&lt;h1&gt;</code> and headings in order, so people can jump around the page by heading.</li>
+    </ul>
+    <div class="callout tip"><p class="callout-title">Tip</p><p>Placeholder text isn't a label. It disappears as soon as someone starts typing, and it's usually too pale to read. Use a real <code>&lt;label&gt;</code>.</p></div>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Play</span><h2>Find the seven problems</h2><p>Click into the sample page and press Tab to move through it. Then switch to the fixed version and compare.</p></div>
 
   <section class="playground even">
     <div class="stage-col">
@@ -83,6 +104,9 @@
     <li><b>Turn images off</b><span>Does the alt text tell you what you'd miss? See the Images &amp; Alt Text page.</span></li>
   </ul>
 
+  <div class="section-title"><span class="eyebrow">Practice</span><h2>Fix the barriers</h2><p>This sign-up box has four problems that lock people out. Fix each one.</p></div>
+  <div id="ex-a11y"></div>
+
   <section class="notes">
     <div class="panel">
       <h2>Key ideas</h2>
@@ -104,8 +128,11 @@
     </div>
   </section>
 
+  <div class="section-title"><span class="eyebrow">Check yourself</span><h2>Quick check</h2></div>
+  <div class="panel quiz" id="quiz"></div>
+
   <footer class="page-foot" data-book-nav><a href="index.html">← Contents</a></footer>
-</div>
+</main>
 
 <script>
   const $ = (id) => document.getElementById(id);
@@ -164,6 +191,62 @@
   function clearLog() { $("log").innerHTML = "<li>Click the sample page, then press Tab.</li>"; }
   $("clear").addEventListener("click", clearLog);
   render();
+</script>
+<script>
+  makeQuiz(document.getElementById("quiz"), [
+    { id: "q1", q: "Why use <button> instead of a clickable <div>?", opts: ["Buttons load faster", "Divs can't be styled", "A button works with the keyboard and is announced properly"], a: 2, why: "Real buttons get keyboard support and a screen-reader role for free." },
+    { id: "q2", q: "What's the quickest way to test keyboard access?", opts: ["Unplug the mouse and press Tab through the page", "Run a spell-check", "Zoom out"], a: 0, why: "Everything you can click should be reachable and visible with Tab." },
+    { id: "q3", q: "Errors are shown only by turning the field red. What's the problem?", opts: ["Red is too bright", "People who can't distinguish red miss them", "Nothing"], a: 1, why: "Add text or an icon so color isn't the only signal." },
+    { id: "q4", q: "Can placeholder text replace a label?", opts: ["Yes", "No; it disappears when typing starts and is often too faint", "Only on phones"], a: 1, why: "Use a real <label> connected to the input." },
+  ]);
+</script>
+<script>
+  makeExercise(document.getElementById("ex-a11y"), {
+    title: "An accessible sign-up box",
+    task: `<ol>
+      <li>The “Subscribe” control is a div. Make it a real button.</li>
+      <li>The email field has only placeholder text. Give it a label.</li>
+      <li>The trail photo has no alt text. Describe it.</li>
+      <li>The small print is pale gray. Darken it to a contrast of at least 4.5 to 1 on white.</li>
+    </ol>`,
+    html: `<div class="signup">
+  <img src="trail.jpg" width="300" height="120">
+  <h2>Trail news</h2>
+  <input type="email" placeholder="Your email">
+  <div class="btn">Subscribe</div>
+  <p class="small">One email a month. Unsubscribe anytime.</p>
+</div>`,
+    css: `body { font-family: system-ui, sans-serif; background: white; }
+.btn { display: inline-block; background: #2340d9; color: white; padding: 8px 16px; cursor: pointer; }
+.small { color: #b5b5b5; font-size: 0.85rem; }`,
+    solution: {
+      html: `<div class="signup">
+  <img src="trail.jpg" alt="The Mesa Trail winding through a spring meadow" width="300" height="120">
+  <h2>Trail news</h2>
+  <label for="email">Email</label>
+  <input id="email" type="email" placeholder="you@example.com">
+  <button class="btn" type="button">Subscribe</button>
+  <p class="small">One email a month. Unsubscribe anytime.</p>
+</div>`,
+      css: `body { font-family: system-ui, sans-serif; background: white; }
+.btn { display: inline-block; background: #2340d9; color: white; padding: 8px 16px; cursor: pointer; border: 0; font: inherit; }
+.small { color: #595959; font-size: 0.85rem; }`,
+    },
+    hints: [
+      "A <button> can be reached with Tab and pressed with Enter or Space. A div can't.",
+      "<label for=\"email\">Email</label> plus id=\"email\" on the input.",
+      "#595959 on white is about 7 to 1. #767676 is just over 4.5 to 1.",
+    ],
+    checks: [
+      { label: "Subscribe is a real button", test: ({ $, $$ }) => !!$$("button").find((b) => b.textContent.includes("Subscribe")) && !$$("div").some((d) => d.textContent.trim() === "Subscribe") },
+      { label: "The email field has a label", test: ({ $ }) => $('input[type="email"]').labels.length > 0 && $('input[type="email"]').labels[0].textContent.trim() !== "" },
+      { label: "The photo has alt text", test: ({ $ }) => ($("img").getAttribute("alt") || "").trim().length >= 10 },
+      { label: "The small print has 4.5:1 contrast", test: ({ style }) => {
+        const lum = (c) => { const [r, g, b] = c.match(/\d+(\.\d+)?/g).slice(0, 3).map((v) => { v /= 255; return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4; }); return 0.2126 * r + 0.7152 * g + 0.0722 * b; };
+        return 1.05 / (lum(style(".small", "color")) + 0.05) >= 4.5;
+      } },
+    ],
+  });
 </script>
 </body>
 </html>

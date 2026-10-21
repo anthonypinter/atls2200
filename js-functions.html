@@ -4,9 +4,6 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Functions</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Recursive:slnt,wght,CASL,MONO@-15..0,300..1000,0..1,0..1&display=swap">
 <link rel="stylesheet" href="style.css">
 <style>
   .check { display: flex; gap: 8px; align-items: center; cursor: pointer; font-size: 0.95rem; }
@@ -37,13 +34,38 @@
 <script src="js/quiz.js"></script>
 </head>
 <body>
-<div class="wrap">
+<main class="wrap">
   <nav class="crumbs" aria-label="Site"><a class="crumb" href="index.html">← Field Guide</a><a class="crumb" href="glossary.html">Glossary</a></nav>
   <header class="page-head">
     <span class="eyebrow">JavaScript Basics · Functions</span>
     <h1>Functions</h1>
     <p class="lede">A function is a named, reusable block of code. You pass values in, it does some work, and it can hand a value back. Change the arguments and follow the values through the function.</p>
+    <div class="objectives">
+      <p class="callout-title">You'll be able to</p>
+      <ul>
+        <li>Write a function with parameters and call it with arguments.</li>
+        <li>Use return to send a value back, and explain what happens without it.</li>
+        <li>Recognize function declarations and arrow functions, and explain scope.</li>
+      </ul>
+    </div>
   </header>
+
+  <div class="section-title"><span class="eyebrow">Read</span><h2>Reusable blocks of code</h2></div>
+  <div class="prose">
+    <p>A <span class="term">function</span> is a named block of code that you can run whenever you need it, as many times as you like. You pass values in, it does some work, and it can hand a value back.</p>
+    <pre class="snippet" data-lang="js">function hikeTime(miles, pace = 2) {
+  return miles / pace;
+}
+const hours = hikeTime(6, 3);   // 2</pre>
+    <p>The names in the definition, <code>miles</code> and <code>pace</code>, are <span class="term">parameters</span>: placeholders waiting for values. The values you pass when you call it, <code>6</code> and <code>3</code>, are <span class="term">arguments</span>. <code>pace = 2</code> is a default, used when no second argument is given.</p>
+    <p>To run a function, you call it with parentheses: <code>hikeTime(6, 3)</code>. Without the parentheses, <code>hikeTime</code> just refers to the function itself without running it, which is exactly what you want when you pass it to an event listener, but a bug everywhere else.</p>
+    <p><code>return</code> sends a value back to wherever the function was called, and ends the function right there. Forget the <code>return</code> and the function still runs, but its <span class="term">return value</span> is <code>undefined</code>.</p>
+    <p>You'll see functions written several ways. The <span class="term">arrow function</span> is the short version: <code>const hikeTime = (miles, pace = 2) =&gt; miles / pace;</code>. It does the same thing.</p>
+    <p>Variables declared inside a function only exist inside it. That's called <span class="term">scope</span>, and it's a good thing: two functions can each have their own <code>total</code> without interfering with each other.</p>
+    <div class="callout tip"><p class="callout-title">Tip</p><p>A good function does one job and is named with a verb that says what: <code>hikeTime()</code>, <code>showError()</code>, <code>addTrail()</code>.</p></div>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Play</span><h2>Follow the values</h2><p>Change the arguments and follow each value through the function. Then try the two common mistakes.</p></div>
 
   <section class="playground">
     <div class="panel controls">
@@ -60,10 +82,10 @@
     </div>
   </section>
 
-  <div class="section-title"><span class="eyebrow">Part 2</span><h2>Three ways to write a function</h2><p>All three do the same thing. You'll see all of them in code online. MDN recommends arrow functions for short functions, especially ones you pass to another function.</p></div>
+  <div class="section-title"><span class="eyebrow">Play</span><h2>Three ways to write a function</h2><p>All three do the same thing. You'll see all of them in code online. MDN recommends arrow functions for short functions, especially ones you pass to another function.</p></div>
   <div class="ways" id="ways"></div>
 
-  <div class="section-title"><span class="eyebrow">Part 3</span><h2>Scope: where can a variable be seen?</h2><p>A variable declared inside a function only exists inside that function. One declared outside every function (global) can be used anywhere. Click a cell to try using that variable from that place.</p></div>
+  <div class="section-title"><span class="eyebrow">Play</span><h2>Scope: where can a variable be seen?</h2><p>A variable declared inside a function only exists inside that function. One declared outside every function (global) can be used anywhere. Click a cell to try using that variable from that place.</p></div>
   <section class="playground even">
     <pre class="snippet" id="scope-code"></pre>
     <div class="stage-col">
@@ -92,8 +114,8 @@ console.log(greet());
 console.log(warn("Royal Arch", true));
 console.log(warn("Mesa", false));</textarea></div>
 
-  <div class="section-title"><span class="eyebrow">Practice</span><h2>Predict the output</h2></div>
-  <div class="panel quiz" id="quiz"></div>
+  <div class="section-title"><span class="eyebrow">Practice</span><h2>Write functions that return</h2><p>Fix a function that forgets to return, give it a default, and write a second one as an arrow function.</p></div>
+  <div id="ex-func"></div>
 
   <section class="notes">
     <div class="panel">
@@ -125,8 +147,11 @@ console.log(warn("Mesa", false));</textarea></div>
     </div>
   </section>
 
+  <div class="section-title"><span class="eyebrow">Check yourself</span><h2>Predict the output</h2></div>
+  <div class="panel quiz" id="quiz"></div>
+
   <footer class="page-foot" data-book-nav><a href="index.html">← Contents</a></footer>
-</div>
+</main>
 
 <script src="js/runner.js"></script>
 <script>
@@ -195,6 +220,40 @@ console.log(warn("Mesa", false));</textarea></div>
   ]);
 
   machine();
+</script>
+<script>
+  makeExercise(document.getElementById("ex-func"), {
+    title: "Hike time and round trips",
+    task: `<ol>
+      <li><code>hikeTime(miles, pace)</code> logs <code>undefined</code>. Make it return the hours: miles divided by pace.</li>
+      <li>Give <code>pace</code> a default of 2, so <code>hikeTime(6)</code> returns 3.</li>
+      <li>Write an arrow function <code>roundTrip(miles)</code> that returns twice the distance.</li>
+    </ol>`,
+    js: `function hikeTime(miles, pace) {
+  miles / pace;
+}
+
+console.log(hikeTime(6, 3));`,
+    solution: `function hikeTime(miles, pace = 2) {
+  return miles / pace;
+}
+
+const roundTrip = (miles) => miles * 2;
+
+console.log(hikeTime(6, 3));
+console.log(roundTrip(3.4));`,
+    expose: ["hikeTime", "roundTrip"],
+    hints: [
+      "Without return, a function hands back undefined.",
+      "A default goes in the parameter list: function hikeTime(miles, pace = 2).",
+      "const roundTrip = (miles) => miles * 2;",
+    ],
+    checks: [
+      { label: "hikeTime(6, 3) returns 2", test: ({ fns }) => fns.hikeTime(6, 3) === 2 },
+      { label: "hikeTime(6) returns 3", test: ({ fns }) => fns.hikeTime(6) === 3 },
+      { label: "roundTrip is an arrow function returning double", test: ({ fns, code }) => fns.roundTrip(3.4) === 6.8 && fns.roundTrip(0) === 0 && /roundTrip\s*=\s*(\([^)]*\)|\w+)\s*=>/.test(code.js) },
+    ],
+  });
 </script>
 </body>
 </html>

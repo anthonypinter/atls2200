@@ -9,6 +9,9 @@
      Docked beside the page on wide screens (open/closed is remembered), a drawer on narrow ones.
    - Footer: fills <footer data-book-nav> with a Mark complete button and previous/next links in reading order.
    - Progress (js/progress.js): records the visit, then shows checkmarks and per-part counts in the sidebar.
+     Each section is recorded as seen once it has been on screen for a few seconds, and as interacted with on the
+     first click, keypress or edit inside it; "On this page" ticks off finished sections.
+   - Accounts: when book.js has a backend configured, loads js/backend.js (sign-in, sync, instructor notes).
    - Print: opens every <details> while printing.
    Without JavaScript the static crumbs and footer still link back to the contents. */
 (function () {
@@ -41,11 +44,29 @@
     s.onerror = () => reject(new Error("Could not load " + src));
     document.head.append(s);
   });
-  // Pages call makeExercise() inline, before js/exercise.js has loaded; calls wait in a queue until it arrives.
+  // Pages call makeExercise() inline, before js/exercise.js has loaded. Exercises sit below the fold, so each call
+  // waits until its exercise is nearly on screen; then js/exercise.js (and the editor it needs) loads and runs the
+  // queued calls. exercise.js replaces window.makeExercise with the real one, which has no .queue.
   if (!window.makeExercise) {
     const queue = [];
-    window.makeExercise = (...args) => { queue.push(args); loadScript("js/exercise.js"); };
+    const start = (args) => {
+      if (!window.makeExercise.queue) return window.makeExercise(...args);
+      queue.push(args);
+      loadScript("js/exercise.js");
+    };
+    const waiting = new Map();   // exercise element → its makeExercise() arguments
+    const go = (el) => { if (!waiting.has(el)) return; near.unobserve(el); start(waiting.get(el)); waiting.delete(el); };
+    const near = "IntersectionObserver" in window && new IntersectionObserver((entries) => {
+      for (const e of entries) if (e.isIntersecting) go(e.target);
+    }, { rootMargin: "600px 0px" });
+    window.makeExercise = (...args) => {
+      if (args[0]) args[0].exerciseDef = args[1];   // print.html reads the task, starter code and solution from here
+      if (near && args[0]) { waiting.set(args[0], args); near.observe(args[0]); } else start(args);
+    };
     window.makeExercise.queue = queue;
+    // Start everything now: before printing, and for tests that can't scroll.
+    window.makeExercise.startAll = () => [...waiting.keys()].forEach(go);
+    addEventListener("beforeprint", () => window.makeExercise.startAll?.());
   }
 
   if (!book) return;
@@ -60,6 +81,9 @@
     });
   });
   book.lessons = lessons;
+  // Related lessons: book.js lists each pair once, and the link shows on both lessons.
+  const related = new Map(lessons.map((l) => [l.slug, new Set()]));
+  for (const l of lessons) for (const r of l.related || []) { related.get(l.slug).add(r); related.get(r)?.add(l.slug); }
 
   const P = window.Progress;
   const slug = P ? P.page : (decodeURIComponent(location.pathname.split("/").pop()) || "index.html").replace(/\.html?$/, "");
@@ -74,18 +98,23 @@
 
     if (document.querySelector(".runner")) loadScript("js/runner.js");
     if (document.querySelector(".sandbox")) loadScript("js/sandbox.js");
+    if (document.querySelector("pre[data-lang]")) loadScript("js/highlight.js");
     if (slug !== "glossary" && wrap.querySelector(".term, .page-head strong, .section-title strong, .notes strong")) {
       loadScript("glossary-terms.js").then(() => loadScript("js/glossary.js"));
     }
 
     const eyebrow = wrap.querySelector(".page-head .eyebrow");
-    if (eyebrow && current) eyebrow.prepend(`${current.num} · `);
+    if (eyebrow && current) {
+      eyebrow.prepend(`${current.num} · `);
+      if (current.minutes) eyebrow.append(` · About ${current.minutes} min`);
+    }
 
     const bar = buildBar();
     const crumbs = wrap.querySelector(":scope > .crumbs, :scope > .crumb");
     if (crumbs) crumbs.replaceWith(bar); else wrap.prepend(bar);
 
-    const toc = buildToc(current ? sectionsOf(wrap) : []);
+    const sections = current ? sectionsOf(wrap) : [];
+    const toc = buildToc(sections);
     const backdrop = document.createElement("div");
     backdrop.className = "book-backdrop";
     backdrop.hidden = true;
@@ -96,8 +125,24 @@
     document.body.prepend(skip, toc, backdrop);
 
     fillFooter();
+
+    // Boxes that scroll (code samples, demo frames) must be reachable with Tab, or keyboard users can't scroll them.
+    const focusScrollers = () => {
+      for (const el of wrap.querySelectorAll("pre, div, ol, ul, table, section")) {
+        if (el.hasAttribute("tabindex") || (el.scrollWidth <= el.clientWidth + 1 && el.scrollHeight <= el.clientHeight + 1)) continue;
+        const s = getComputedStyle(el);
+        if (!/auto|scroll/.test(s.overflowX + s.overflowY) || el.querySelector("a[href], button, input, select, textarea, [tabindex]")) continue;
+        el.tabIndex = 0;
+      }
+    };
+    addEventListener("load", () => { focusScrollers(); setTimeout(focusScrollers, 1500); });
+    let resizing;
+    addEventListener("resize", () => { clearTimeout(resizing); resizing = setTimeout(focusScrollers, 300); });
+
+    const printing = new URLSearchParams(location.search).has("print");
     if (P) {
-      if (current) P.visit(slug);
+      // print.html loads lessons in a hidden frame with ?print; that isn't a visit.
+      if (current && !printing) { P.visit(slug); trackSections(wrap, sections); }
       const paint = () => paintProgress(toc);
       P.subscribe(paint);
       paint();
@@ -157,6 +202,8 @@
       label();
     });
     label();
+
+    if (book.backend?.url && !printing) loadScript("js/backend.js");
   });
 
   function buildBar() {
@@ -167,7 +214,7 @@
     else if (slug === "glossary") trail.push(`<li aria-current="page">Glossary</li>`);
     bar.innerHTML = `<button class="btn book-menu" type="button" aria-controls="book-toc" aria-expanded="false"><span aria-hidden="true">☰</span> Contents</button>`
       + (slug === "index" ? "" : `<nav class="book-crumbs" aria-label="Breadcrumb"><ol>${trail.join("")}</ol></nav>`)
-      + `<div class="book-tools"><button class="btn book-search" type="button" aria-haspopup="dialog" aria-keyshortcuts="Control+K Meta+K"><span aria-hidden="true">⌕</span> Search</button>${slug === "glossary" ? "" : `<a class="crumb" href="glossary.html">Glossary</a>`}<button class="btn book-theme" type="button"></button></div>`;
+      + `<div class="book-tools"><button class="btn book-search" type="button" aria-haspopup="dialog" aria-keyshortcuts="Control+K Meta+K"><span aria-hidden="true">⌕</span> Search</button>${current ? `<a class="crumb" href="print.html?lesson=${current.slug}">Print</a>` : ""}${slug === "glossary" ? "" : `<a class="crumb" href="glossary.html">Glossary</a>`}<button class="btn book-theme" type="button"></button></div>`;
     return bar;
   }
 
@@ -185,7 +232,9 @@
         used.add(id);
         h.id = id;
       }
-      return { id: h.id, text: h.textContent.trim() };
+      // kind is the eyebrow above the heading (Read, Play, Practice, …); notes panels have none.
+      const kind = h.closest(".notes") ? "notes" : h.parentElement.querySelector(".eyebrow")?.textContent.trim() || "";
+      return { id: h.id, text: h.textContent.trim(), kind };
     });
   }
 
@@ -197,7 +246,7 @@
     const lessonLink = (l) => {
       const here = l === current;
       const subs = here && sections.length
-        ? `<p class="book-sec-label">On this page</p><ol class="book-sections">${sections.map((s) => `<li><a href="#${s.id}">${esc(s.text)}</a></li>`).join("")}</ol>`
+        ? `<p class="book-sec-label">On this page</p><ol class="book-sections">${sections.map((s) => `<li><a href="#${s.id}" data-sec="${s.id}" data-kind="${esc(s.kind)}">${esc(s.text)}<span class="sr-only book-done-label"></span></a></li>`).join("")}</ol>`
         : "";
       return `<li><a href="${l.href}" data-slug="${l.slug}"${here ? ' aria-current="page"' : ""}><span class="book-num">${l.num}</span><span>${esc(l.title)}<span class="sr-only book-done-label"></span></span><span class="book-check" aria-hidden="true">✓</span></a>${subs}</li>`;
     };
@@ -212,6 +261,43 @@
     return aside;
   }
 
+  // Which section each part of the page belongs to: everything after a section heading up to the next one, and each
+  // notes panel on its own. A section is seen after SEEN_MS on screen; any click, keypress or edit in it is an interaction.
+  const SEEN_MS = 3000;
+  function trackSections(wrap, sections) {
+    if (!sections.length) return;
+    const owner = new Map();
+    let sec = null;
+    for (const el of wrap.children) {
+      if (el.matches(".section-title")) sec = el.querySelector(":scope > h2")?.id || sec;
+      if (el.matches(".notes")) { el.querySelectorAll("h2[id]").forEach((h) => owner.set(h.parentElement, h.id)); continue; }
+      if (sec && !el.matches("script, style, footer, nav, .book-bar, .book-related")) owner.set(el, sec);
+    }
+    const key = (id) => `${slug}/${id}`;
+    const ownerOf = (el) => { while (el && !owner.has(el)) el = el.parentElement; return el && owner.get(el); };
+
+    const showing = new Map(), timers = new Map();
+    const io = "IntersectionObserver" in window && new IntersectionObserver((entries) => {
+      for (const e of entries) {
+        const id = owner.get(e.target);
+        const set = showing.get(id) || new Set();
+        showing.set(id, set);
+        if (e.isIntersecting) set.add(e.target); else set.delete(e.target);
+        if (set.size && !timers.has(id)) timers.set(id, setTimeout(() => { P.seeSection(key(id)); done(id); }, SEEN_MS));
+        if (!set.size && timers.has(id)) { clearTimeout(timers.get(id)); timers.delete(id); }
+      }
+    }, { rootMargin: "-15% 0px -15% 0px" });
+    const done = (id) => { for (const [el, s] of owner) if (s === id) io.unobserve(el); };
+    if (io) for (const [el, id] of owner) if (!P.section(key(id))?.seen) io.observe(el);
+
+    const touch = (e) => {
+      if (!e.isTrusted || (e.type === "click" && e.target.closest("a[href]"))) return;
+      const id = ownerOf(e.target);
+      if (id) P.interact(key(id));
+    };
+    for (const type of ["click", "input", "change", "keydown"]) wrap.addEventListener(type, touch, true);
+  }
+
   function fillFooter() {
     const foot = document.querySelector("footer[data-book-nav]");
     if (!foot || !current) return;
@@ -223,6 +309,8 @@
     };
     const done = P ? `<div class="book-done"><span>Finished this lesson?</span><button class="btn" type="button" aria-pressed="false">Mark lesson complete</button></div>` : "";
     foot.innerHTML = done + step(prev, "prev") + step(next, "next");
+    const rel = lessons.filter((l) => related.get(slug).has(l.slug));
+    if (rel.length) foot.insertAdjacentHTML("beforebegin", `<nav class="book-related" aria-label="Related lessons"><h2>Related lessons</h2><ul>${rel.map((l) => `<li><a href="${l.href}"><span class="book-num">${l.num}</span>${esc(l.title)}</a></li>`).join("")}</ul></nav>`);
     foot.classList.add("book-foot");
     const btn = foot.querySelector(".book-done button");
     if (btn) btn.addEventListener("click", () => P.setComplete(slug, btn.getAttribute("aria-pressed") !== "true"));
@@ -242,6 +330,12 @@
       const el = toc.querySelector(`.book-count[data-part="${part.num}"]`);
       el.innerHTML = `<span aria-hidden="true">${n}/${part.lessons.length}</span><span class="sr-only">, ${n} of ${part.lessons.length} complete</span>`;
       el.classList.toggle("all", n === part.lessons.length);
+    });
+    const secs = P.data().sections;
+    toc.querySelectorAll("a[data-sec]").forEach((a) => {
+      const d = P.sectionDone(secs[`${slug}/${a.dataset.sec}`], a.dataset.kind);
+      a.classList.toggle("done", d);
+      a.querySelector(".book-done-label").textContent = d ? " (done)" : "";
     });
     const btn = document.querySelector(".book-done button");
     if (btn) {

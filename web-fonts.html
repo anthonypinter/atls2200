@@ -4,9 +4,6 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Web Fonts</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Recursive:slnt,wght,CASL,MONO@-15..0,300..1000,0..1,0..1&family=Merriweather:wght@400;700&family=Playfair+Display:wght@400;700&family=Roboto+Slab:wght@400;700&family=Pacifico&family=Space+Mono:wght@400;700&family=Source+Sans+3:wght@400;700&display=swap">
 <link rel="stylesheet" href="style.css">
 <style>
   .specimen { background: #fff; color: #1d2133; border: 1px solid var(--line); border-radius: var(--radius); padding: 22px; display: grid; gap: 10px; min-width: 0; overflow-wrap: anywhere; }
@@ -34,13 +31,33 @@
 <script src="js/quiz.js"></script>
 </head>
 <body>
-<div class="wrap">
+<main class="wrap">
   <nav class="crumbs" aria-label="Site"><a class="crumb" href="index.html">← Field Guide</a><a class="crumb" href="glossary.html">Glossary</a></nav>
   <header class="page-head">
     <span class="eyebrow">CSS Basics · Web Fonts</span>
     <h1>Web Fonts</h1>
     <p class="lede">Visitors only have a handful of fonts installed. A web font is downloaded along with your page so everyone sees the same type. Here's how to add one, what happens while it loads, and why the fallback still matters.</p>
+    <div class="objectives">
+      <p class="callout-title">You'll be able to</p>
+      <ul>
+        <li>Add a Google Font to a page, or self-host one with @font-face.</li>
+        <li>Choose a fallback that keeps the page readable while the font loads.</li>
+        <li>Pick a font-display setting and load only the weights you use.</li>
+      </ul>
+    </div>
   </header>
+
+  <div class="section-title"><span class="eyebrow">Read</span><h2>Fonts that travel with your page</h2></div>
+  <div class="prose">
+    <p>Every computer has its own set of installed fonts, and they're not the same. A <span class="term">web font</span> is downloaded along with your page, so every visitor sees the same type. The easiest source is Google Fonts: choose a font and the weights you need, and it gives you <code>&lt;link&gt;</code> tags to paste into your head, above your own stylesheet. Then use it like any other font:</p>
+    <pre class="snippet" data-lang="css">body {
+  font-family: "Source Sans 3", Arial, sans-serif;
+}</pre>
+    <p>You can also host the font files yourself, with an <code>@font-face</code> rule that names the font and points to a <code>.woff2</code> file in your project.</p>
+    <p>A web font is a download, and downloads take time or fail. Until it arrives, the browser uses the next font in your <span class="term">font stack</span>. Pick a fallback that's similar in width and feel, so the page doesn't jump around when the real font swaps in. <code>font-display</code> decides what visitors see in the meantime; <code>swap</code>, which shows the fallback right away and switches when the font arrives, is a good default.</p>
+    <p>Each weight and style is a separate file. Regular, italic, bold and bold italic are four downloads. Two families and three or four weights in total is plenty for most sites.</p>
+    <div class="callout warn"><p class="callout-title">Watch out</p><p>If you use <code>font-weight: 700</code> but only downloaded weight 400, the browser fakes a bold by smearing the regular letters. And a misspelled font name fails silently: CSS just falls back, with no error. Check DevTools to see which font actually rendered.</p></div>
+  </div>
 
   <div class="tools" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:14px">
     <div class="panel" style="display:grid;gap:8px;align-content:start"><span class="eyebrow">The easy way: Google Fonts</span>
@@ -49,7 +66,7 @@
       <ol class="steps-list"><li>Put the <code>.woff2</code> files in a <code>fonts/</code> folder in your project.</li><li>Add an <code>@font-face</code> rule naming the font and pointing to the file.</li><li>Use that name in <code>font-family</code> like any other font.</li></ol></div>
   </div>
 
-  <div class="section-title"><span class="eyebrow">Part 1</span><h2>Always include a fallback</h2><p>If the font fails to load, or hasn't loaded yet, the browser uses the next font in your list. Pick one that's similar.</p></div>
+  <div class="section-title"><span class="eyebrow">Play</span><h2>Always include a fallback</h2><p>If the font fails to load, or hasn't loaded yet, the browser uses the next font in your list. Pick one that's similar.</p></div>
   <section class="playground">
     <div class="panel controls">
       <div class="control"><label for="ff">web font</label><select id="ff">
@@ -60,12 +77,12 @@
       <label class="check"><input type="checkbox" id="fail">Pretend the font failed to load</label>
     </div>
     <div class="stage-col">
-      <div class="specimen" id="spec"><span class="tag" id="spec-tag"></span><h3>Weekend Hikes Near Boulder</h3><p>Pack water, layers and a map. Afternoon storms roll in fast above treeline, so start early and turn back by noon.</p></div>
+      <div class="specimen" id="spec"><span class="tag" id="spec-tag" style="color:#5a6280"></span><h3>Weekend Hikes Near Boulder</h3><p>Pack water, layers and a map. Afternoon storms roll in fast above treeline, so start early and turn back by noon.</p></div>
       <p class="status" id="fb-status" aria-live="polite"></p>
     </div>
   </section>
 
-  <div class="section-title"><span class="eyebrow">Part 2</span><h2>What visitors see while it loads</h2><p><code>font-display</code> decides what happens during the download. Pick a setting and simulate a slow connection where the font takes 2.5 seconds.</p></div>
+  <div class="section-title"><span class="eyebrow">Play</span><h2>What visitors see while it loads</h2><p><code>font-display</code> decides what happens during the download. Pick a setting and simulate a slow connection where the font takes 2.5 seconds.</p></div>
   <section class="playground">
     <div class="panel controls">
       <div class="control"><label for="fd">font-display</label><select id="fd"><option>swap</option><option>block</option><option>fallback</option><option>optional</option></select></div>
@@ -80,11 +97,14 @@
     </div>
   </section>
 
-  <div class="section-title"><span class="eyebrow">Part 3</span><h2>Only load what you use</h2><p>Every weight and style is a separate file to download. These sizes are rough estimates for a typical font.</p></div>
+  <div class="section-title"><span class="eyebrow">Play</span><h2>Only load what you use</h2><p>Every weight and style is a separate file to download. These sizes are rough estimates for a typical font.</p></div>
   <section class="playground">
     <div class="panel controls weights" id="weights"></div>
     <div class="panel" style="display:grid;gap:6px;align-content:start"><span class="eyebrow">Extra download</span><span class="kb" id="kb"></span><p class="hint" id="kb-note"></p></div>
   </section>
+
+  <div class="section-title"><span class="eyebrow">Practice</span><h2>Load a web font properly</h2><p>The font names and fallbacks here are broken. Fix them so text always shows, in the right font when it arrives.</p></div>
+  <div id="ex-fonts"></div>
 
   <section class="notes">
     <div class="panel">
@@ -107,8 +127,11 @@
     </div>
   </section>
 
+  <div class="section-title"><span class="eyebrow">Check yourself</span><h2>Quick check</h2></div>
+  <div class="panel quiz" id="quiz"></div>
+
   <footer class="page-foot" data-book-nav><a href="index.html">← Contents</a></footer>
-</div>
+</main>
 
 <script>
   const $ = (id) => document.getElementById(id);
@@ -157,6 +180,51 @@
     $("kb-note").textContent = on.length > 4 ? `${on.length} files is a lot. Most sites need regular and bold, plus maybe an italic.` : on.length ? `${on.length} file${on.length > 1 ? "s" : ""}. That's a sensible amount.` : "No web font, so the page uses system fonts and loads fastest.";
   }
   $("weights").addEventListener("input", kb); kb();
+</script>
+<script>
+  makeQuiz(document.getElementById("quiz"), [
+    { id: "q1", q: "Where do the Google Fonts <link> tags go?", opts: ["At the end of the body", "In the head, above your own stylesheet", "Inside your CSS file"], a: 1, why: "They load the font, so they belong in the head before the CSS that uses it." },
+    { id: "q2", q: "What does font-display: swap do?", opts: ["Never uses the web font", "Hides text until the font loads", "Shows the fallback right away, then switches when the font loads"], a: 2, why: "Text stays readable during the download." },
+    { id: "q3", q: "You use font-weight: 700 but only downloaded 400. What happens?", opts: ["The browser fakes a blurry bold", "The text stays regular", "The font doesn't load"], a: 0, why: "Without a real bold file, the browser synthesizes one, and it looks smudged." },
+    { id: "q4", q: "You misspell the font name in CSS. What happens?", opts: ["An error appears in the console", "The browser silently uses the next font in the list", "The page won't load"], a: 1, why: "CSS ignores fonts it can't find and falls back without warning." },
+  ]);
+</script>
+<script>
+  makeExercise(document.getElementById("ex-fonts"), {
+    title: "Fonts with fallbacks",
+    task: `<ol>
+      <li>The body's font name has a number in it and no quotes, so the whole declaration is thrown away. Quote it.</li>
+      <li>End both font lists with a generic family.</li>
+      <li>Add <code>font-display: swap</code> to the <code>@font-face</code> rule.</li>
+    </ol>`,
+    html: `<h1>Trail Club</h1>
+<p>Spring hikes start in April.</p>`,
+    css: `@font-face {
+  font-family: "Trail Sans";
+  src: url("fonts/trail-sans.woff2") format("woff2");
+}
+
+h1 { font-family: "Trail Sans"; }
+body { font-family: Source Sans 3; }`,
+    solution: { css: `@font-face {
+  font-family: "Trail Sans";
+  src: url("fonts/trail-sans.woff2") format("woff2");
+  font-display: swap;
+}
+
+h1 { font-family: "Trail Sans", system-ui, sans-serif; }
+body { font-family: "Source Sans 3", system-ui, sans-serif; }` },
+    hints: [
+      "Font names with spaces or numbers go in quotes: \"Source Sans 3\".",
+      "A generic family (sans-serif, serif) is the last resort the browser always has.",
+      "font-display goes inside the @font-face block.",
+    ],
+    checks: [
+      { label: "The body uses \"Source Sans 3\"", test: ({ style }) => style("body", "font-family").includes("Source Sans 3") },
+      { label: "Both font lists end with a generic family", test: ({ style }) => ["h1", "body"].every((s) => /,\s*(serif|sans-serif|monospace|system-ui)$/.test(style(s, "font-family"))) },
+      { label: "@font-face uses font-display: swap", test: ({ doc }) => [...doc.styleSheets[0].cssRules].some((r) => r instanceof doc.defaultView.CSSFontFaceRule && r.style.getPropertyValue("font-display") === "swap") },
+    ],
+  });
 </script>
 </body>
 </html>

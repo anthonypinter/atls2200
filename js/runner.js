@@ -44,6 +44,95 @@
     return String(v);
   }
 
+  // Loop guard. Student code runs on the page itself (lessons need its document), so an endless loop would freeze the
+  // tab. protect() adds a __guard() call to every loop, on the same line so error line numbers don't move, and
+  // __guard() throws once a single uninterrupted run has spent LOOP_LIMIT ms inside loops.
+  const LOOP_LIMIT = 1500;
+  let loopCount = 0, loopSince = 0;
+  function guard() {
+    if (++loopCount & 1023) return true;   // look at the clock every 1024 iterations
+    const now = performance.now();
+    if (!loopSince) { loopSince = now; setTimeout(() => { loopSince = 0; }); }   // resets once the page is free again
+    else if (now - loopSince > LOOP_LIMIT) {
+      loopSince = 0;
+      throw new RangeError("This loop ran for more than 1.5 seconds, so it was stopped. Check that its condition eventually becomes false.");
+    }
+    return true;
+  }
+
+  // Index just past the string, comment or template literal starting at i, or -1 if there isn't one.
+  function skipNonCode(src, i) {
+    const c = src[i], d = src[i + 1];
+    if (c === "/" && d === "/") { const e = src.indexOf("\n", i); return e < 0 ? src.length : e; }
+    if (c === "/" && d === "*") { const e = src.indexOf("*/", i + 2); return e < 0 ? src.length : e + 2; }
+    if (c === '"' || c === "'") {
+      for (let j = i + 1; j < src.length; j++) { if (src[j] === "\\") j++; else if (src[j] === c || src[j] === "\n") return j + 1; }
+      return src.length;
+    }
+    if (c === "`") {
+      for (let j = i + 1; j < src.length; j++) {
+        if (src[j] === "\\") j++;
+        else if (src[j] === "`") return j + 1;
+        else if (src[j] === "$" && src[j + 1] === "{") j = matching(src, j + 1, "{", "}");
+      }
+      return src.length;
+    }
+    return -1;
+  }
+  // Index of the bracket that closes the one at i (open/close are "(" and ")" or "{" and "}"), skipping strings.
+  function matching(src, i, open, close) {
+    let depth = 0;
+    for (let j = i; j < src.length; j++) {
+      const k = skipNonCode(src, j);
+      if (k >= 0) { j = k - 1; continue; }
+      if (src[j] === open) depth++;
+      else if (src[j] === close && --depth === 0) return j;
+    }
+    return src.length;
+  }
+  // Split the inside of for (…) at its top-level semicolons.
+  function splitHead(head) {
+    const parts = [];
+    let depth = 0, from = 0;
+    for (let j = 0; j < head.length; j++) {
+      const k = skipNonCode(head, j);
+      if (k >= 0) { j = k - 1; continue; }
+      if ("([{".includes(head[j])) depth++;
+      else if (")]}".includes(head[j])) depth--;
+      else if (head[j] === ";" && !depth) { parts.push(head.slice(from, j)); from = j + 1; }
+    }
+    return [...parts, head.slice(from)];
+  }
+  function protect(src) {
+    let out = "";
+    for (let i = 0; i < src.length; i++) {
+      const k = skipNonCode(src, i);
+      if (k >= 0) { out += src.slice(i, k); i = k - 1; continue; }
+      const m = /^(for|while)\b\s*(await\s*)?\(/.exec(src.slice(i, i + 20));
+      if (!m || /[\w$.]/.test(src[i - 1] || "")) { out += src[i]; continue; }
+      const open = i + m[0].length - 1, close = matching(src, open, "(", ")");
+      if (close >= src.length) { out += src.slice(i); break; }
+      const head = src.slice(open + 1, close), parts = m[1] === "for" ? splitHead(head) : [head];
+      if (m[1] === "while") out += `${src.slice(i, open + 1)}__guard() && (${protect(head)}))`;
+      else if (parts.length === 3) {
+        const cond = parts[1].trim() ? `__guard() && (${protect(parts[1])})` : "__guard()";
+        out += `${src.slice(i, open + 1)}${protect(parts[0])};${cond};${protect(parts[2])})`;
+      } else {
+        // for…of / for…in: guard the body when it's a block (iterating a list that keeps growing never ends).
+        out += `${src.slice(i, open + 1)}${protect(head)})`;
+        const brace = /^\s*\{/.exec(src.slice(close + 1));
+        if (brace) { out += brace[0] + "__guard();"; i = close + brace[0].length; continue; }
+      }
+      i = close;
+    }
+    return out;
+  }
+  function compile(code, grab) {
+    const body = (c) => `${c}\n;return { ${grab} };`;
+    try { return new Function("console", "__guard", body(protect(code))); }
+    catch { return new Function("console", "__guard", body(code)); }   // the guard never stops working code from running
+  }
+
   // onLine also receives lines logged later (after a timer or an await), once exec has returned.
   function exec(code, expose = [], onLine = () => {}) {
     const lines = [];
@@ -53,7 +142,8 @@
     const grab = expose.map((n) => `${JSON.stringify(n)}: typeof ${n} === "undefined" ? undefined : ${n}`).join(", ");
     let error = null, values = {};
     try {
-      values = new Function("console", `${code}\n;return { ${grab} };`)(con) || {};
+      loopSince = 0;
+      values = compile(code, grab)(con, guard) || {};
     } catch (err) {
       error = err;
       line("err", `Uncaught ${err.name}: ${err.message}`);

@@ -4,9 +4,6 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Image Formats</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Recursive:slnt,wght,CASL,MONO@-15..0,300..1000,0..1,0..1&display=swap">
 <link rel="stylesheet" href="style.css">
 <style>
   .views { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); gap: 16px; align-items: start; }
@@ -36,15 +33,41 @@
 <script src="js/quiz.js"></script>
 </head>
 <body>
-<div class="wrap">
+<main class="wrap">
   <nav class="crumbs" aria-label="Site"><a class="crumb" href="index.html">← Field Guide</a><a class="crumb" href="glossary.html">Glossary</a></nav>
   <header class="page-head">
     <span class="eyebrow">HTML Foundations · Image Formats</span>
     <h1>Image Formats</h1>
     <p class="lede">The same picture can be a 30 KB file or a 900 KB file depending on its format. Photos, logos and screenshots each have a format that suits them best.</p>
+    <div class="objectives">
+      <p class="callout-title">You'll be able to</p>
+      <ul>
+        <li>Choose JPG, PNG, SVG or WebP for photos, logos, icons and screenshots.</li>
+        <li>Resize and compress an image before uploading it.</li>
+        <li>Explain the difference between lossy and lossless compression.</li>
+      </ul>
+    </div>
   </header>
 
-  <div class="section-title" style="margin-top:0"><span class="eyebrow">Part 1</span><h2>Same image, different files</h2><p>Your browser is really encoding these images right now, so the file sizes are real. Pick a kind of image, then compare the formats. The zoom shows the damage compression does.</p></div>
+  <div class="section-title"><span class="eyebrow">Read</span><h2>The right format for the job</h2></div>
+  <div class="prose">
+    <p>The same photo can be a 60 KB file or a 6 MB file depending on how you save it, and that difference decides whether your page loads in a blink or makes a visitor on a phone wait. Four formats cover nearly everything:</p>
+    <ul>
+      <li><strong>JPG</strong> for photos. It's <span class="term" data-term="Lossy / lossless">lossy</span>: it throws away detail your eye won't miss, which makes files small. Save it too low and you get smudgy blocks.</li>
+      <li><strong>PNG</strong> for screenshots and images with sharp edges or see-through backgrounds. It's lossless, so nothing is thrown away, but photos saved as PNG are huge.</li>
+      <li><span class="term">SVG</span> for logos and icons. It isn't pixels at all, but shapes described in code, so it stays sharp at any size and is often just a few KB.</li>
+      <li><span class="term">WebP</span> does the jobs of both JPG and PNG, usually in a smaller file. Every modern browser supports it.</li>
+    </ul>
+    <p>The format is only half of it. A photo straight off a phone is often 4000 pixels wide. If it shows 800 pixels wide on your page, you're making every visitor download five times more than they can see. Before uploading:</p>
+    <ol>
+      <li>Resize to about twice the width it appears on screen, so it stays sharp on high-density screens.</li>
+      <li>Compress it. A free tool like Squoosh lets you compare quality settings side by side.</li>
+    </ol>
+    <p>Aim for under 200 KB for a large photo, and a few KB for icons and logos.</p>
+    <div class="callout warn"><p class="callout-title">Watch out</p><p>Renaming <code>photo.png</code> to <code>photo.jpg</code> changes the name, not the format. To change format, open the image and export it again.</p></div>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Play</span><h2>Same image, different files</h2><p>Your browser is really encoding these images right now, so the file sizes are real. Pick a kind of image, then compare the formats. The zoom shows the damage compression does.</p></div>
   <section class="playground">
     <div class="panel controls">
       <div class="control"><label>kind of image</label><div class="seg" id="kind">
@@ -73,8 +96,11 @@
     <div class="panel"><h3>GIF <small>.gif · old</small></h3><p class="use"><b>Use for</b> almost nothing now. Only 256 colors.</p><p class="avoid"><b>Instead</b> for an animation, use a short muted MP4 in a <a href="video-audio.html"><code>&lt;video&gt;</code></a>. It's often 10× smaller.</p></div>
   </section>
 
-  <div class="section-title"><span class="eyebrow">Part 2</span><h2>Pick the format</h2></div>
+  <div class="section-title"><span class="eyebrow">Play</span><h2>Pick the format</h2></div>
   <section class="panel quiz" id="quiz"></section>
+
+  <div class="section-title"><span class="eyebrow">Practice</span><h2>Pick the right format</h2><p>Each image has been exported in the wrong format. Pick the one that suits what's in it.</p></div>
+  <div id="ex-formats"></div>
 
   <section class="notes">
     <div class="panel">
@@ -98,7 +124,7 @@
   </section>
 
   <footer class="page-foot" data-book-nav><a href="index.html">← Contents</a></footer>
-</div>
+</main>
 
 <script>
   const $ = (id) => document.getElementById(id);
@@ -216,6 +242,33 @@
     $("fb" + i).textContent = (ok ? "Yes. " : "Not quite. ") + why;
     if (ok) score++; answered++;
     $("score").textContent = `${score} / ${QS.length}` + (answered === QS.length ? " · done" : "");
+  });
+</script>
+<script>
+  makeExercise(document.getElementById("ex-formats"), {
+    title: "Choose a format for each image",
+    task: `<p>Pretend you've exported each image in every format. Change each file extension in <code>src</code> to the best choice:</p>
+    <ol>
+      <li>A photo of the Flatirons at sunset</li>
+      <li>The club's logo, a few flat shapes that must stay sharp at any size</li>
+      <li>A screenshot of a trail map, with small text that must stay crisp</li>
+    </ol>`,
+    html: `<img src="flatirons-sunset.png" alt="The Flatirons glowing orange at sunset" width="400" height="260">
+<img src="club-logo.jpg" alt="Boulder Trail Club" width="120" height="120">
+<img src="trail-map-screenshot.jpg" alt="Map of the Mesa Trail and its side trails" width="400" height="300">`,
+    solution: { html: `<img src="flatirons-sunset.jpg" alt="The Flatirons glowing orange at sunset" width="400" height="260">
+<img src="club-logo.svg" alt="Boulder Trail Club" width="120" height="120">
+<img src="trail-map-screenshot.png" alt="Map of the Mesa Trail and its side trails" width="400" height="300">` },
+    hints: [
+      "Photos have millions of colors and soft edges. A lossy format makes them much smaller with no visible difference.",
+      "Logos and icons drawn from shapes scale perfectly as vectors.",
+      "Lossy compression smudges sharp text. Screenshots want a lossless format.",
+    ],
+    checks: [
+      { label: "The photo is a JPEG, WebP or AVIF", test: ({ $$ }) => /\.(jpe?g|webp|avif)$/i.test($$("img")[0].getAttribute("src")) },
+      { label: "The logo is an SVG", test: ({ $$ }) => /\.svg$/i.test($$("img")[1].getAttribute("src")) },
+      { label: "The screenshot is a PNG (or lossless WebP)", test: ({ $$ }) => /\.(png|webp)$/i.test($$("img")[2].getAttribute("src")) },
+    ],
   });
 </script>
 </body>

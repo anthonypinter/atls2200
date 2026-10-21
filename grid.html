@@ -4,9 +4,6 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>CSS Grid Playground</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Recursive:slnt,wght,CASL,MONO@-15..0,300..1000,0..1,0..1&display=swap">
 <link rel="stylesheet" href="style.css">
 <style>
   .stage { display: grid; grid-auto-rows: minmax(70px, auto); }
@@ -19,13 +16,47 @@
 <script src="js/quiz.js"></script>
 </head>
 <body>
-<div class="wrap">
+<main class="wrap">
   <nav class="crumbs" aria-label="Site"><a class="crumb" href="index.html">← Field Guide</a><a class="crumb" href="glossary.html">Glossary</a></nav>
   <header class="page-head">
     <span class="eyebrow">Layout · CSS Grid</span>
     <h1>CSS Grid Playground</h1>
     <p class="lede">Grid controls rows and columns at the same time. Define the columns on the container, and items fill the cells in order unless you tell one to span more space.</p>
+    <div class="objectives">
+      <p class="callout-title">You'll be able to</p>
+      <ul>
+        <li>Define a grid's columns with grid-template-columns, fr and repeat().</li>
+        <li>Make an item span several columns or rows.</li>
+        <li>Build a responsive card grid with auto-fit and minmax(), without media queries.</li>
+      </ul>
+    </div>
   </header>
+
+  <div class="section-title"><span class="eyebrow">Read</span><h2>Rows and columns at the same time</h2></div>
+  <div class="prose">
+    <p>Flexbox lines items up in one direction. <span class="term">Grid</span> handles two at once: you define columns (and rows, if you need them) on the container, and the items fill the cells in order.</p>
+    <pre class="snippet" data-lang="css">.gallery {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr;
+  gap: 16px;
+}</pre>
+    <p>That makes three columns. The <span class="term" data-term="fr (unit)">fr unit</span> means "a fraction of the leftover space", so the first column is twice as wide as each of the others, whatever the container's width. <code>repeat(3, 1fr)</code> is a shortcut for three equal columns. <span class="term">Gap</span> adds space between cells, just as it does in Flexbox.</p>
+    <p>Items fill the grid left to right, top to bottom, one per cell. Any item can take up more room:</p>
+    <pre class="snippet" data-lang="css">.featured {
+  grid-column: span 2;   /* two columns wide */
+  grid-row: span 2;      /* two rows tall */
+}</pre>
+    <p>The other items flow around it. Spanning rows as well as columns is something only Grid can do.</p>
+    <p>The most useful line of Grid makes a card gallery that adapts to any screen with no media queries at all:</p>
+    <pre class="snippet" data-lang="css">.cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+}</pre>
+    <p>Read it as: "fit as many columns as you can, each at least 220px wide, and share any extra space equally." On a phone you get one column, on a laptop four.</p>
+    <div class="callout warn"><p class="callout-title">Watch out</p><p>Like Flexbox, <code>display: grid</code> and <code>grid-template-columns</code> go on the container, not on the items. The items only need rules when one of them should span or move.</p></div>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Play</span><h2>Build a grid</h2><p>Change the columns, gap and alignment, then make the first item span more cells.</p></div>
 
   <section class="playground">
     <div class="panel controls" aria-label="Grid container settings">
@@ -59,6 +90,9 @@
     </div>
   </section>
 
+  <div class="section-title"><span class="eyebrow">Practice</span><h2>Build a photo grid</h2><p>Three equal columns, with one featured photo that takes up four cells.</p></div>
+  <div id="ex-grid"></div>
+
   <section class="notes">
     <div class="panel">
       <h2>Key ideas</h2>
@@ -80,8 +114,11 @@
     </div>
   </section>
 
+  <div class="section-title"><span class="eyebrow">Check yourself</span><h2>Quick check</h2></div>
+  <div class="panel quiz" id="quiz"></div>
+
   <footer class="page-foot" data-book-nav><a href="index.html">← Contents</a></footer>
-</div>
+</main>
 
 <script>
   const $ = (id) => document.getElementById(id);
@@ -115,6 +152,53 @@
 
   document.querySelectorAll("select, input").forEach((el) => el.addEventListener("input", update));
   update();
+</script>
+<script>
+  makeQuiz(document.getElementById("quiz"), [
+    { id: "q1", q: "grid-template-columns: 1fr 2fr. How do the columns compare?", opts: ["They're equal", "The second is 2px wider", "The second is twice as wide"], a: 2, why: "fr shares out the space: 1 part and 2 parts." },
+    { id: "q2", q: "What does repeat(3, 1fr) mean?", opts: ["Three equal columns", "One column repeated three times down the page", "A 3px gap"], a: 0, why: "It's shorthand for 1fr 1fr 1fr." },
+    { id: "q3", q: "How do you make one item two columns wide?", opts: ["width: 200%", "grid-column: span 2", "columns: 2"], a: 1, why: "span tells an item how many tracks to cover." },
+    { id: "q4", q: "What does repeat(auto-fit, minmax(220px, 1fr)) do as the window narrows?", opts: ["Adds a scrollbar", "Shrinks columns below 220px", "Drops columns so each stays at least 220px"], a: 2, why: "It fits as many 220px+ columns as there's room for." },
+  ]);
+</script>
+<script>
+  makeExercise(document.getElementById("ex-grid"), {
+    title: "A gallery with a featured photo",
+    task: `<ol>
+      <li>Make the gallery a grid with three equal columns (use <code>fr</code>) and a 12px gap.</li>
+      <li>Make the featured photo span two columns and two rows.</li>
+    </ol>`,
+    html: `<div class="gallery">
+  <div class="photo featured">Royal Arch</div>
+  <div class="photo">Mesa</div>
+  <div class="photo">Flagstaff</div>
+  <div class="photo">Bear Peak</div>
+  <div class="photo">Chautauqua</div>
+  <div class="photo">Green Mtn</div>
+</div>`,
+    css: `body { font-family: system-ui, sans-serif; }
+.photo { min-height: 70px; background: #b9c4ef; display: grid; place-items: center; }
+.featured { background: #2340d9; color: white; }`,
+    solution: { css: `body { font-family: system-ui, sans-serif; }
+.gallery {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+.photo { min-height: 70px; background: #b9c4ef; display: grid; place-items: center; }
+.featured { background: #2340d9; color: white; grid-column: span 2; grid-row: span 2; }` },
+    hints: [
+      "display: grid and grid-template-columns go on the gallery, not the photos.",
+      "repeat(3, 1fr) is three equal columns. gap: 12px spaces them.",
+      "grid-column: span 2 and grid-row: span 2 go on the featured photo.",
+    ],
+    checks: [
+      { label: "The gallery has three equal columns", test: ({ style }) => { const c = style(".gallery", "grid-template-columns").split(" ").map(parseFloat); return style(".gallery", "display") === "grid" && c.length === 3 && Math.max(...c) - Math.min(...c) < 1; } },
+      { label: "The gap is 12px", test: ({ style }) => style(".gallery", "column-gap") === "12px" && style(".gallery", "row-gap") === "12px" },
+      { label: "The featured photo is two columns wide", test: ({ $, style }) => { const col = parseFloat(style(".gallery", "grid-template-columns")); return Math.abs($(".featured").getBoundingClientRect().width - (col * 2 + 12)) < 1; } },
+      { label: "The featured photo is two rows tall", test: ({ $, $$ }) => { const one = $$(".photo")[1].getBoundingClientRect().height; return Math.abs($(".featured").getBoundingClientRect().height - (one * 2 + 12)) < 1; } },
+    ],
+  });
 </script>
 </body>
 </html>

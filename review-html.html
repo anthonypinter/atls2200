@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Review: HTML Foundations</title>
+<link rel="stylesheet" href="style.css">
+<script src="book.js"></script>
+<script src="js/progress.js"></script>
+<script src="js/chrome.js"></script>
+<script src="js/quiz.js"></script>
+</head>
+<body>
+<main class="wrap">
+  <nav class="crumbs" aria-label="Site"><a class="crumb" href="index.html">← Field Guide</a><a class="crumb" href="glossary.html">Glossary</a></nav>
+  <header class="page-head">
+    <span class="eyebrow">HTML Foundations · Review</span>
+    <h1>Review: HTML Foundations</h1>
+    <p class="lede">Put the whole part together. Skim the recap, build a complete trail page from plain text, then test yourself with questions that mix every lesson.</p>
+    <div class="objectives">
+      <p class="callout-title">You'll be able to</p>
+      <ul>
+        <li>Mark up a complete page with the right element for every piece of content.</li>
+        <li>Spot structural mistakes in HTML you didn't write.</li>
+        <li>Decide which lesson to revisit, based on the questions you miss.</li>
+      </ul>
+    </div>
+  </header>
+
+  <div class="section-title"><span class="eyebrow">Read</span><h2>What you've covered</h2></div>
+  <div class="prose">
+    <p>This part was about structure and meaning. Before any styling, HTML says what each piece of a page <em>is</em>, and browsers, search engines and screen readers all rely on that.</p>
+    <ul class="recap">
+      <li><a href="how-the-web-works.html">How the Web Works</a>: The browser requests files from a server by URL, and the server answers with a status code.</li>
+      <li><a href="html-syntax.html">HTML Syntax</a>: Elements nest like boxes, and attribute values always go in quotes.</li>
+      <li><a href="document-structure.html">Document Structure</a>: Every page has a doctype, then a head for information and a body for content.</li>
+      <li><a href="head-metadata.html">The Head &amp; Metadata</a>: The title, description and Open Graph tags decide how a page appears in tabs, searches and shared links.</li>
+      <li><a href="text-semantics.html">Text Semantics</a>: One h1, headings in order, and strong or em for meaning rather than looks.</li>
+      <li><a href="lists.html">Lists</a>: ul when order doesn't matter, ol when it does, dl for terms and descriptions.</li>
+      <li><a href="semantic-elements.html">Semantic Elements</a>: header, nav, main, article and footer name the parts of a page.</li>
+      <li><a href="links-paths.html">Links &amp; Paths</a>: Relative paths start from the current file, and ../ climbs one folder.</li>
+      <li><a href="tables.html">Tables</a>: Tables are for data, with th and scope to label rows and columns.</li>
+      <li><a href="forms.html">Forms &amp; Inputs</a>: Every input needs a label, a name and the right type.</li>
+      <li><a href="images.html">Images &amp; Alt Text</a>: Alt text describes what an image means in context, and decoration gets alt="".</li>
+      <li><a href="image-formats.html">Image Formats</a>: JPEG or WebP for photos, SVG for logos, PNG for screenshots, and resize before you upload.</li>
+      <li><a href="video-audio.html">Video &amp; Audio</a>: Players need controls, several sources, and captions.</li>
+      <li><a href="embeds.html">Embeds &amp; iframes</a>: An iframe needs a title, lazy loading, and an aspect-ratio to fit phones.</li>
+    </ul>
+    <div class="callout tip"><p class="callout-title">How to use this page</p><p>Try the project without looking back at the lessons. When you get stuck, or miss a quiz question, the lesson it comes from is linked above.</p></div>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Practice</span><h2>Mini project: a trail page</h2><p>Turn plain text into a complete, meaningful page. Every check is something you learned in this part.</p></div>
+  <div id="ex-project"></div>
+
+  <div class="section-title"><span class="eyebrow">Check yourself</span><h2>Mixed quiz</h2><p>Ten questions from across the part, in no particular order.</p></div>
+  <div class="panel quiz" id="quiz"></div>
+
+  <footer class="page-foot" data-book-nav><a href="index.html">← Contents</a></footer>
+</main>
+
+<script>
+  makeQuiz(document.getElementById("quiz"), [
+    { id: "q1", q: "A page's tab says \"Untitled\". What's missing?", opts: ["A <title> in the head", "An <h1>", "A meta description"], a: 0, why: "The title element sets the tab text, bookmarks and search result headline." },
+    { id: "q2", q: "Which list fits step-by-step directions?", opts: ["<ul>", "<ol>", "<dl>"], a: 1, why: "Order matters in directions, so use an ordered list." },
+    { id: "q3", q: "You're in trails/mesa.html. What path reaches images/arch.jpg at the site's top level?", opts: ["images/arch.jpg", "/trails/images/arch.jpg", "../images/arch.jpg"], a: 2, why: "../ climbs out of the trails folder first." },
+    { id: "q4", q: "What's wrong with <p>Steep <strong>climb</p></strong>?", opts: ["Nothing", "The tags close in the wrong order", "strong can't go in a p"], a: 1, why: "Close the inner element first: </strong></p>." },
+    { id: "q5", q: "A decorative divider image should have:", opts: ["No alt attribute", "alt=\"\"", "alt=\"divider\""], a: 1, why: "An empty alt tells screen readers to skip it. Leaving alt out makes them read the file name." },
+    { id: "q6", q: "Two radio buttons can both be selected at once. What's the likely bug?", opts: ["They need type=\"checkbox\"", "They're missing labels", "They have different name values"], a: 2, why: "Radios in one group share a name, so picking one unpicks the other." },
+    { id: "q7", q: "Which element holds the content that's unique to a page?", opts: ["<main>", "<section>", "<article>"], a: 0, why: "There's one main per page. Headers, navs and footers repeat across pages." },
+    { id: "q8", q: "A table's header cells label rows down the left side. What attribute helps screen readers?", opts: ["colspan=\"1\"", "scope=\"row\"", "headers=\"left\""], a: 1, why: "scope says whether a th labels a row or a column." },
+    { id: "q9", q: "A visitor sees a 404. What does it mean?", opts: ["The server is down", "The page has an HTML error", "There's no file at that path"], a: 2, why: "404 means \"not found\": check the file name and path." },
+    { id: "q10", q: "Which format suits a photo of the Flatirons?", opts: ["JPEG or WebP", "PNG", "SVG"], a: 0, why: "Lossy formats make photos far smaller with no visible difference." },
+  ]);
+</script>
+<script>
+  makeExercise(document.getElementById("ex-project"), {
+    title: "Mark up the Royal Arch page",
+    height: 420,
+    task: `<p>The content is all here as plain text. Mark it up:</p>
+    <ol>
+      <li>A <code>header</code> with the club name and a <code>nav</code> of three links (use <code>href="#"</code>).</li>
+      <li>A <code>main</code> holding everything else, with <em>Royal Arch Trail</em> as the only <code>h1</code>.</li>
+      <li>The packing list as the right kind of list.</li>
+      <li>The trail facts as a table, with a <code>th scope="row"</code> labeling each row.</li>
+      <li>A <code>figure</code> with the photo <code>royal-arch.jpg</code>, useful alt text, and the caption.</li>
+      <li>The sign-up form, with labeled name and email fields (email as <code>type="email"</code>) and a submit button.</li>
+      <li>A <code>footer</code> with the copyright line.</li>
+    </ol>`,
+    html: `Boulder Trail Club
+Trails Events Join
+
+Royal Arch Trail
+A steep 3.4-mile round trip to a sandstone arch above Chautauqua.
+
+Photo: royal-arch.jpg
+Caption: The arch frames a view of the plains.
+
+What to bring
+Water
+Snacks
+Sturdy shoes
+
+Trail facts
+Distance: 3.4 miles
+Elevation gain: 1,400 feet
+Difficulty: Hard
+
+Sign up for the next hike
+Name
+Email
+Sign up
+
+© Boulder Trail Club`,
+    solution: { html: `<header>
+  <p>Boulder Trail Club</p>
+  <nav>
+    <a href="#">Trails</a>
+    <a href="#">Events</a>
+    <a href="#">Join</a>
+  </nav>
+</header>
+
+<main>
+  <h1>Royal Arch Trail</h1>
+  <p>A steep 3.4-mile round trip to a sandstone arch above Chautauqua.</p>
+
+  <figure>
+    <img src="royal-arch.jpg" alt="A sandstone arch with the plains far below" width="400" height="260">
+    <figcaption>The arch frames a view of the plains.</figcaption>
+  </figure>
+
+  <h2>What to bring</h2>
+  <ul>
+    <li>Water</li>
+    <li>Snacks</li>
+    <li>Sturdy shoes</li>
+  </ul>
+
+  <h2>Trail facts</h2>
+  <table>
+    <tr><th scope="row">Distance</th><td>3.4 miles</td></tr>
+    <tr><th scope="row">Elevation gain</th><td>1,400 feet</td></tr>
+    <tr><th scope="row">Difficulty</th><td>Hard</td></tr>
+  </table>
+
+  <h2>Sign up for the next hike</h2>
+  <form>
+    <label for="name">Name</label>
+    <input id="name" name="name" type="text">
+    <label for="email">Email</label>
+    <input id="email" name="email" type="email">
+    <button type="submit">Sign up</button>
+  </form>
+</main>
+
+<footer>© Boulder Trail Club</footer>` },
+    hints: [
+      "Work top to bottom: header, then main, then footer. The headings inside main are h2s.",
+      "A table row with a label and a value: <tr><th scope=\"row\">Distance</th><td>3.4 miles</td></tr>",
+      "Each input needs an id that matches its label's for.",
+    ],
+    checks: [
+      { label: "A header holds a nav with three links", test: ({ $$ }) => $$("header nav a").length === 3 },
+      { label: "“Royal Arch Trail” is the only h1, inside main", test: ({ $, $$ }) => $$("h1").length === 1 && $("main h1").textContent.trim() === "Royal Arch Trail" },
+      { label: "The packing list is a ul with 3 items", test: ({ $$ }) => $$("main ul > li").length === 3 },
+      { label: "The facts are a 3-row table with row headers", test: ({ $$ }) => $$("main table tr").length === 3 && $$("main table tr").every((tr) => tr.querySelector('th[scope="row"]') && tr.querySelector("td")) },
+      { label: "A figure has the photo, alt text and the caption", test: ({ $ }) => $('figure img[src="royal-arch.jpg"]').getAttribute("alt").trim().length >= 10 && $("figure figcaption").textContent.includes("plains") },
+      { label: "The form has labeled name and email fields and a submit button", test: ({ $, $$ }) => { const inputs = $$("form input"); return inputs.length === 2 && inputs.every((i) => i.labels.length > 0) && !!$('form input[type="email"]') && ($("form button") || {}).type === "submit"; } },
+      { label: "A footer has the copyright", test: ({ $ }) => $("footer").textContent.includes("©") },
+    ],
+  });
+</script>
+</body>
+</html>

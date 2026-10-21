@@ -4,9 +4,6 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>HTML Syntax</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Recursive:slnt,wght,CASL,MONO@-15..0,300..1000,0..1,0..1&display=swap">
 <link rel="stylesheet" href="style.css">
 <style>
   .anatomy { font: 1.15rem/2.2 var(--font-code); font-variation-settings: "MONO" 1; background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 18px 20px; overflow-x: auto; white-space: nowrap; }
@@ -33,15 +30,34 @@
 <script src="js/quiz.js"></script>
 </head>
 <body>
-<div class="wrap">
+<main class="wrap">
   <nav class="crumbs" aria-label="Site"><a class="crumb" href="index.html">← Field Guide</a><a class="crumb" href="glossary.html">Glossary</a></nav>
   <header class="page-head">
     <span class="eyebrow">HTML Foundations · HTML Syntax</span>
     <h1>HTML Syntax</h1>
     <p class="lede">HTML is made of elements, and elements are made of tags, attributes and content. Learn the names for each part, then see how the browser treats spaces and special characters.</p>
+    <div class="objectives">
+      <p class="callout-title">You'll be able to</p>
+      <ul>
+        <li>Name the parts of an element: tags, attributes and content.</li>
+        <li>Nest elements correctly and close them in the right order.</li>
+        <li>Show characters like < and & on the page with entities.</li>
+      </ul>
+    </div>
   </header>
 
-  <div class="section-title" style="margin-top:0"><span class="eyebrow">Part 1</span><h2>Anatomy of an element</h2><p>Click any part, or pick a name below.</p></div>
+  <div class="section-title"><span class="eyebrow">Read</span><h2>Elements, tags and attributes</h2></div>
+  <div class="prose">
+    <p>An HTML page is a set of <span class="term">elements</span>, and each element tells the browser what a piece of content is: a heading, a paragraph, a link. Most elements are written as an opening <span class="term">tag</span>, some content, and a closing tag with a slash:</p>
+    <pre class="snippet" data-lang="html">&lt;a href="trails.html" class="button"&gt;See all trails&lt;/a&gt;</pre>
+    <p>Here <code>&lt;a&gt;</code> is the opening tag and <code>&lt;/a&gt;</code> the closing tag. <code>href="trails.html"</code> and <code>class="button"</code> are <span class="term">attributes</span>: extra information that always goes inside the opening tag, written as <code>name="value"</code>. "See all trails" is the content, the part you see.</p>
+    <p>A few elements have no content and no closing tag, like <code>&lt;img&gt;</code> and <code>&lt;br&gt;</code>. Those are <span class="term">empty elements</span>.</p>
+    <p>Elements go inside other elements, which is called <span class="term">nesting</span>. Close them in the reverse order you opened them, like boxes inside boxes: <code>&lt;p&gt;&lt;strong&gt;Go&lt;/strong&gt;&lt;/p&gt;</code>, not <code>&lt;p&gt;&lt;strong&gt;Go&lt;/p&gt;&lt;/strong&gt;</code>.</p>
+    <p>Two things surprise everyone. First, <span class="term">whitespace</span> collapses: any run of spaces, tabs and line breaks shows as a single space, so you can't line things up by typing spaces. Second, some characters mean something to HTML. A <code>&lt;</code> starts a tag, so to show one as text you write a <span class="term">character entity</span>: <code>&amp;lt;</code> for &lt; and <code>&amp;amp;</code> for &amp;.</p>
+    <div class="callout warn"><p class="callout-title">Watch out</p><p>Code pasted from a word processor often has curly “smart quotes” around attribute values. Browsers don't treat them as quotes, so the attribute quietly breaks. Always type code in a code editor.</p></div>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Play</span><h2>Anatomy of an element</h2><p>Click any part, or pick a name below.</p></div>
   <section class="playground even">
     <div class="stage-col">
       <div class="anatomy" id="el" aria-label="An HTML element"></div>
@@ -53,7 +69,7 @@
     <div class="panel explain" id="explain" aria-live="polite" style="display:grid;gap:8px;align-content:start"></div>
   </section>
 
-  <div class="section-title"><span class="eyebrow">Part 2</span><h2>Whitespace collapses</h2><p>Type extra spaces, tabs and blank lines. The browser squashes every run of whitespace into a single space.</p></div>
+  <div class="section-title"><span class="eyebrow">Play</span><h2>Whitespace collapses</h2><p>Type extra spaces, tabs and blank lines. The browser squashes every run of whitespace into a single space.</p></div>
   <div class="two">
     <div class="panel"><label class="eyebrow" for="ws">What you type in your HTML</label><textarea class="src" id="ws">Pack     water,
 snacks,
@@ -62,7 +78,7 @@ snacks,
     <div class="panel"><span class="eyebrow">What the browser shows</span><div class="rendered" id="ws-out"></div><p class="hint">To start a new paragraph, use a new <code>&lt;p&gt;</code>. Use CSS for spacing, not lots of spaces or <code>&lt;br&gt;</code>s.</p></div>
   </div>
 
-  <div class="section-title"><span class="eyebrow">Part 3</span><h2>Special characters</h2><p>Some characters mean something to HTML, like &lt; which starts a tag. To show them as text, write an <em>entity</em>. Type below to see what needs escaping.</p></div>
+  <div class="section-title"><span class="eyebrow">Play</span><h2>Special characters</h2><p>Some characters mean something to HTML, like &lt; which starts a tag. To show them as text, write an <em>entity</em>. Type below to see what needs escaping.</p></div>
   <div class="two">
     <div class="panel"><label class="eyebrow" for="ent">Text you want to show</label><textarea class="src" id="ent">Use <p> for paragraphs & "quotes" for attributes. © 2026</textarea>
       <span class="eyebrow">Write this in your HTML</span><pre class="snippet" id="ent-out"></pre></div>
@@ -76,6 +92,9 @@ snacks,
         <tr><td>&nbsp;</td><td><code>&amp;nbsp;</code></td><td>A space that never breaks the line</td></tr>
       </tbody></table></div>
   </div>
+
+  <div class="section-title"><span class="eyebrow">Practice</span><h2>Fix the broken tags</h2><p>The browser guesses its way around each of these mistakes. Fix them so it doesn't have to.</p></div>
+  <div id="ex-syntax"></div>
 
   <section class="notes">
     <div class="panel">
@@ -98,8 +117,11 @@ snacks,
     </div>
   </section>
 
+  <div class="section-title"><span class="eyebrow">Check yourself</span><h2>Quick check</h2></div>
+  <div class="panel quiz" id="quiz"></div>
+
   <footer class="page-foot" data-book-nav><a href="index.html">← Contents</a></footer>
-</div>
+</main>
 
 <script>
   const $ = (id) => document.getElementById(id);
@@ -135,6 +157,43 @@ snacks,
     $("ent-out").textContent = out;
   }
   $("ent").addEventListener("input", ent); ent();
+</script>
+<script>
+  makeQuiz(document.getElementById("quiz"), [
+    { id: "q1", q: "In <img src=\"mesa.jpg\" alt=\"Mesa Trail\">, what are src and alt?", opts: ["Tags", "Attributes", "Elements"], a: 1, why: "They're attributes: name=\"value\" pairs inside the opening tag." },
+    { id: "q2", q: "Which nesting is correct?", opts: ["<p><em>Go</p></em>", "<p><em>Go</p>", "<p><em>Go</em></p>"], a: 2, why: "Close elements in the reverse order you opened them: the inner one first." },
+    { id: "q3", q: "You type five spaces between two words in your HTML. What does the page show?", opts: ["One space", "Five spaces", "No space"], a: 0, why: "Whitespace collapses: any run of spaces, tabs and line breaks shows as one space." },
+    { id: "q4", q: "How do you show a < character as text on the page?", opts: ["Type < as usual", "Write &lt;", "Put it in quotes"], a: 1, why: "< starts a tag, so text needs the entity &lt; instead." },
+  ]);
+</script>
+<script>
+  makeExercise(document.getElementById("ex-syntax"), {
+    title: "Three syntax mistakes",
+    task: `<p>This snippet has three mistakes. Fix each one:</p>
+    <ol>
+      <li>The heading opens as one element and closes as another.</li>
+      <li>Only <em>3.4 miles</em> should be strong, but the <code>&lt;strong&gt;</code> is never closed.</li>
+      <li>The image's alt text has spaces but no quotes, so only the first word counts.</li>
+    </ol>`,
+    html: `<h1>Royal Arch Trail</h2>
+<p>The trail is <strong>3.4 miles</p>
+<p>Climb steadily through the forest to a sandstone arch.</p>
+<img src="royal-arch.jpg" alt=Royal Arch at sunset width="300" height="200">`,
+    solution: { html: `<h1>Royal Arch Trail</h1>
+<p>The trail is <strong>3.4 miles</strong></p>
+<p>Climb steadily through the forest to a sandstone arch.</p>
+<img src="royal-arch.jpg" alt="Royal Arch at sunset" width="300" height="200">` },
+    hints: [
+      "A closing tag repeats the opening tag's name with a slash: <h1> closes with </h1>.",
+      "Close the strong right after the words it should cover, before </p>.",
+      "Attribute values with spaces need quotes: alt=\"Royal Arch at sunset\".",
+    ],
+    checks: [
+      { label: "The heading opens and closes as an h1", test: ({ code }) => /<h1>[^<]*<\/h1>/.test(code.html) && !/<\/h2>/.test(code.html) },
+      { label: "Only “3.4 miles” is strong", test: ({ $, code }) => $("strong").textContent === "3.4 miles" && /<strong>3\.4 miles<\/strong>/.test(code.html) },
+      { label: "The alt text is “Royal Arch at sunset”", test: ({ $ }) => $("img").getAttribute("alt") === "Royal Arch at sunset" },
+    ],
+  });
 </script>
 </body>
 </html>

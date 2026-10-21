@@ -4,9 +4,6 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Overflow</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Recursive:slnt,wght,CASL,MONO@-15..0,300..1000,0..1,0..1&display=swap">
 <link rel="stylesheet" href="style.css">
 <style>
   .stage.tall { min-height: 380px; padding: 24px; }
@@ -44,13 +41,44 @@
 <script src="js/quiz.js"></script>
 </head>
 <body>
-<div class="wrap">
+<main class="wrap">
   <nav class="crumbs" aria-label="Site"><a class="crumb" href="index.html">← Field Guide</a><a class="crumb" href="glossary.html">Glossary</a></nav>
   <header class="page-head">
     <span class="eyebrow">CSS Basics · Overflow</span>
     <h1>Overflow</h1>
     <p class="lede">Overflow happens when content is bigger than its box. CSS doesn't hide it by default; it lets it spill out so you notice. Here's how to control it, and how to track down the element that makes a whole page scroll sideways.</p>
+    <div class="objectives">
+      <p class="callout-title">You'll be able to</p>
+      <ul>
+        <li>Control content that doesn't fit with overflow: visible, auto, hidden and clip.</li>
+        <li>Shorten one-line text with an ellipsis, and let long words and links wrap.</li>
+        <li>Track down the element that makes a whole page scroll sideways.</li>
+      </ul>
+    </div>
   </header>
+
+  <div class="section-title"><span class="eyebrow">Read</span><h2>When content doesn't fit</h2></div>
+  <div class="prose">
+    <p><span class="term">Overflow</span> is what happens when content is bigger than its box: a long paragraph in a short card, or a giant image in a narrow column. CSS's default is to let it spill out, visibly, so you notice the problem instead of silently losing content.</p>
+    <p>The <code>overflow</code> property decides what happens instead:</p>
+    <ul>
+      <li><code>visible</code>, the default, lets it spill out.</li>
+      <li><code>auto</code> adds a scrollbar only when it's needed. It's usually the right choice.</li>
+      <li><code>hidden</code> and <code>clip</code> cut the extra content off. Be sure nothing important gets lost.</li>
+      <li><code>scroll</code> always shows scrollbars, even with nothing to scroll, so it's rarely what you want.</li>
+    </ul>
+    <p>Two text problems come up constantly. A title that must stay on one line can end in an ellipsis instead of spilling:</p>
+    <pre class="snippet" data-lang="css">.title {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}</pre>
+    <p>And a long URL or word has no spaces to break at, so it pushes its box wider. <code>overflow-wrap: anywhere</code> lets it break where it needs to.</p>
+    <p>The most common overflow bug is a whole page that scrolls sideways on a phone. Somewhere, one element is wider than the screen: a fixed <code>width: 400px</code>, a big image, a long link. The fix is to find that element and make it flexible, not to hide the scrollbar.</p>
+    <div class="callout warn"><p class="callout-title">Watch out</p><p><code>overflow: hidden</code> on the <code>body</code> hides the sideways scroll, but the content is still too wide and now some of it is unreachable. Find the cause with DevTools instead.</p></div>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Play</span><h2>Make the content fit</h2><p>Change overflow and the box's height, then fix the long title and the long link.</p></div>
 
   <section class="playground">
     <div class="panel controls">
@@ -83,6 +111,9 @@
     <div class="panel inspect" id="inspect" aria-live="polite"><span class="eyebrow">Inspector</span><p>Click a part of the page on the left.</p></div>
   </div>
 
+  <div class="section-title"><span class="eyebrow">Practice</span><h2>Tame the overflow</h2><p>Three boxes, three kinds of overflow. Pick the right fix for each.</p></div>
+  <div id="ex-overflow"></div>
+
   <section class="notes">
     <div class="panel">
       <h2>Key ideas</h2>
@@ -104,8 +135,11 @@
     </div>
   </section>
 
+  <div class="section-title"><span class="eyebrow">Check yourself</span><h2>Quick check</h2></div>
+  <div class="panel quiz" id="quiz"></div>
+
   <footer class="page-foot" data-book-nav><a href="index.html">← Contents</a></footer>
-</div>
+</main>
 
 <script>
   const $ = (id) => document.getElementById(id);
@@ -143,6 +177,54 @@
     else html += `<p>${w <= avail ? "This fits inside the screen. Keep looking." : "This one is wide too."}</p>`;
     $("inspect").innerHTML = html;
     const f = $("fix"); if (f) f.addEventListener("click", () => { fixed = true; el.classList.add("fixed"); el.classList.remove("culprit-found"); $("phone").scrollLeft = 0; el.click(); });
+  });
+</script>
+<script>
+  makeQuiz(document.getElementById("quiz"), [
+    { id: "q1", q: "Which overflow value adds a scrollbar only when content doesn't fit?", opts: ["scroll", "auto", "visible"], a: 1, why: "auto scrolls only when needed; scroll always shows scrollbars." },
+    { id: "q2", q: "A long URL pushes a card wider than the phone screen. What lets it break?", opts: ["text-overflow: ellipsis", "white-space: nowrap", "overflow-wrap: anywhere"], a: 2, why: "overflow-wrap: anywhere lets a long word break wherever it needs to." },
+    { id: "q3", q: "What's the default value of overflow?", opts: ["visible", "auto", "hidden"], a: 0, why: "Content spills out visibly by default, so you notice it." },
+    { id: "q4", q: "Your page scrolls sideways on phones. What's the best fix?", opts: ["overflow: hidden on body", "Find the element that's too wide and make it flexible", "Make the font smaller"], a: 1, why: "Hiding the scrollbar leaves content cut off. Fix the cause instead." },
+  ]);
+</script>
+<script>
+  makeExercise(document.getElementById("ex-overflow"), {
+    title: "Long words, wide tables, long logs",
+    task: `<ol>
+      <li>The long URL sticks out of the card. Let it break onto the next line.</li>
+      <li>The wide table pushes the whole page sideways. Make just its wrapper scroll sideways.</li>
+      <li>The trail log should stay 100px tall and scroll when it has more lines.</li>
+    </ol>`,
+    html: `<div class="card">Map: https://www.bouldercolorado.gov/trails/mesa-trail-full-map-with-elevation-profile.pdf</div>
+<div class="table-wrap">
+  <table><tr><td>Mesa</td><td>6.7 mi</td><td>Moderate</td><td>Dogs on leash</td><td>Parking at NCAR and Chautauqua</td><td>Open all year</td></tr></table>
+</div>
+<div class="log">
+  <p>7:02 Started at Chautauqua</p><p>7:30 Bluebell shelter</p><p>8:05 Royal Arch</p><p>8:40 Back at the shelter</p><p>9:00 Finished</p>
+</div>`,
+    css: `body { font-family: system-ui, sans-serif; }
+.card { width: 220px; padding: 8px; border: 2px solid #2340d9; margin-bottom: 12px; }
+table { width: 1400px; border-collapse: collapse; }
+td { border: 1px solid #c8cbd6; padding: 6px; }
+.log { height: 100px; background: #eef1fb; margin-top: 12px; }
+.log p { margin: 4px 8px; }`,
+    solution: { css: `body { font-family: system-ui, sans-serif; }
+.card { width: 220px; padding: 8px; border: 2px solid #2340d9; margin-bottom: 12px; overflow-wrap: anywhere; }
+.table-wrap { overflow-x: auto; }
+table { width: 1400px; border-collapse: collapse; }
+td { border: 1px solid #c8cbd6; padding: 6px; }
+.log { height: 100px; overflow-y: auto; background: #eef1fb; margin-top: 12px; }
+.log p { margin: 4px 8px; }` },
+    hints: [
+      "overflow-wrap: anywhere lets a long word or URL break where it needs to.",
+      "Put overflow-x: auto on the wrapper, not the table, so only the wrapper scrolls.",
+      "overflow: auto adds a scrollbar only when the content doesn't fit.",
+    ],
+    checks: [
+      { label: "The URL stays inside the card", test: ({ $ }) => $(".card").scrollWidth <= $(".card").clientWidth },
+      { label: "Only the table's wrapper scrolls sideways", test: ({ doc, style }) => ["auto", "scroll"].includes(style(".table-wrap", "overflow-x")) && doc.documentElement.scrollWidth <= doc.documentElement.clientWidth },
+      { label: "The log is 100px tall and scrolls", test: ({ $, style }) => Math.round($(".log").getBoundingClientRect().height) === 100 && ["auto", "scroll"].includes(style(".log", "overflow-y")) },
+    ],
   });
 </script>
 </body>

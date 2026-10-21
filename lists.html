@@ -4,9 +4,6 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Lists</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Recursive:slnt,wght,CASL,MONO@-15..0,300..1000,0..1,0..1&display=swap">
 <link rel="stylesheet" href="style.css">
 <style>
   .demo { background: #fff; color: #1d2133; border: 1px solid var(--line); border-radius: var(--radius); padding: 16px 18px; font: 1rem/1.6 Georgia, serif; min-width: 0; }
@@ -17,6 +14,7 @@
   .check { display: flex; gap: 8px; align-items: center; font-size: 0.92rem; cursor: pointer; }
   .check input { accent-color: var(--cobalt); }
   #styled { padding: 16px 18px; }
+  #styled a { color: #2340d9; }
   #styled ul { margin: 0; transition: all 0.2s; }
   #styled.marker ul li::marker { color: #b4410c; font-weight: 700; }
   #styled.nav ul { display: flex; flex-wrap: wrap; gap: 6px; }
@@ -29,15 +27,45 @@
 <script src="js/quiz.js"></script>
 </head>
 <body>
-<div class="wrap">
+<main class="wrap">
   <nav class="crumbs" aria-label="Site"><a class="crumb" href="index.html">← Field Guide</a><a class="crumb" href="glossary.html">Glossary</a></nav>
   <header class="page-head">
     <span class="eyebrow">HTML Foundations · Lists</span>
     <h1>Lists</h1>
     <p class="lede">HTML has three kinds of list. Choose the one that matches your content, then use CSS to change how the markers look, or remove them to build a menu.</p>
+    <div class="objectives">
+      <p class="callout-title">You'll be able to</p>
+      <ul>
+        <li>Choose between unordered, ordered and description lists.</li>
+        <li>Nest one list inside another correctly.</li>
+        <li>Restyle list markers with CSS, or remove them to build a menu.</li>
+      </ul>
+    </div>
   </header>
 
-  <div class="section-title" style="margin-top:0"><span class="eyebrow">Part 1</span><h2>Pick the right list</h2></div>
+  <div class="section-title"><span class="eyebrow">Read</span><h2>Three kinds of list</h2></div>
+  <div class="prose">
+    <p>Lists are everywhere on the web, often where you wouldn't expect them. A row of links in a site's menu is a list. So is a set of steps, a set of product features, or a glossary. HTML gives you three kinds:</p>
+    <ul>
+      <li><code>&lt;ul&gt;</code>, an unordered list, when the order doesn't matter, like gear to pack.</li>
+      <li><code>&lt;ol&gt;</code>, an ordered list, when it does, like directions. The browser numbers the items for you.</li>
+      <li><code>&lt;dl&gt;</code>, a description list, for pairs of terms and descriptions, with <code>&lt;dt&gt;</code> and <code>&lt;dd&gt;</code>.</li>
+    </ul>
+    <p>In the first two, every item is an <code>&lt;li&gt;</code>, and <code>&lt;li&gt;</code>s are the only things allowed directly inside. To make a sub-list, put the inner list <em>inside an item</em>, after its text:</p>
+    <pre class="snippet" data-lang="html">&lt;ul&gt;
+  &lt;li&gt;Water
+    &lt;ul&gt;
+      &lt;li&gt;Two liters in summer&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+  &lt;li&gt;Map&lt;/li&gt;
+&lt;/ul&gt;</pre>
+    <p>Never type your own numbers or dashes into list items. Let the browser draw the markers, then change them with CSS: <code>list-style-type</code> picks the marker, and <code>::marker</code> lets you color it.</p>
+    <p>Navigation menus are usually a <code>&lt;ul&gt;</code> inside a <code>&lt;nav&gt;</code>, with the bullets removed and the items laid out in a row. It's still a list of links, so screen readers announce "list, 4 items" and visitors know what to expect.</p>
+    <div class="callout warn"><p class="callout-title">Watch out</p><p><code>list-style: none</code> removes the bullets but not the indent. Lists also have a default <code>padding-left</code>, so set <code>padding: 0</code> too.</p></div>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Play</span><h2>Pick the right list</h2></div>
   <section class="playground">
     <div class="panel controls">
       <div class="seg" id="kind" role="group" aria-label="List type">
@@ -55,7 +83,7 @@
     <div class="demo" id="demo"></div>
   </section>
 
-  <div class="section-title"><span class="eyebrow">Part 2</span><h2>Style the markers</h2><p>The same unordered list, restyled with CSS. The last option turns it into a navigation menu, which is how most site menus are built.</p></div>
+  <div class="section-title"><span class="eyebrow">Play</span><h2>Style the markers</h2><p>The same unordered list, restyled with CSS. The last option turns it into a navigation menu, which is how most site menus are built.</p></div>
   <section class="playground">
     <div class="panel controls">
       <div class="control"><label for="lst">list-style-type</label>
@@ -70,6 +98,9 @@
       <p class="hint" id="style-note"></p>
     </div>
   </section>
+
+  <div class="section-title"><span class="eyebrow">Practice</span><h2>Turn lines into lists</h2><p>Lines separated by <br> look like a list, but the browser can't tell. Make them real lists.</p></div>
+  <div id="ex-lists"></div>
 
   <section class="notes">
     <div class="panel">
@@ -92,8 +123,11 @@
     </div>
   </section>
 
+  <div class="section-title"><span class="eyebrow">Check yourself</span><h2>Quick check</h2></div>
+  <div class="panel quiz" id="quiz"></div>
+
   <footer class="page-foot" data-book-nav><a href="index.html">← Contents</a></footer>
-</div>
+</main>
 
 <script>
   const $ = (id) => document.getElementById(id);
@@ -142,6 +176,53 @@
   }
   ["lst", "lsp", "pl", "mk", "nav"].forEach((id) => $(id).addEventListener("input", part2));
   part2();
+</script>
+<script>
+  makeQuiz(document.getElementById("quiz"), [
+    { id: "q1", q: "Which list fits step-by-step directions to a trailhead?", opts: ["<ul>", "<ol>", "<dl>"], a: 1, why: "Order matters for directions, so use an ordered list." },
+    { id: "q2", q: "Where does a nested list go?", opts: ["Directly inside the outer <ul>", "After the outer list closes", "Inside an <li>, after its text"], a: 2, why: "A list's only direct children are <li>s, so the sub-list goes inside one." },
+    { id: "q3", q: "You set list-style: none, but the items are still indented. Why?", opts: ["Lists have default padding-left", "The bullets are still there, just invisible", "<li> has a margin"], a: 0, why: "Lists come with padding-left. Set padding: 0 to remove the indent." },
+    { id: "q4", q: "What's the best markup for a site's main menu?", opts: ["Links separated by <br>", "A <ul> of links inside <nav>", "A <dl> of links"], a: 1, why: "It's a list of links, and nav marks it as navigation." },
+  ]);
+</script>
+<script>
+  makeExercise(document.getElementById("ex-lists"), {
+    title: "Pack list and directions",
+    task: `<ol>
+      <li>The pack list can go in any order. Make it the right kind of list.</li>
+      <li>The directions have to be followed in order. Make them the other kind, and let the browser do the numbering.</li>
+      <li>No <code>&lt;br&gt;</code> should be left.</li>
+    </ol>`,
+    html: `<h2>Pack list</h2>
+<p>Water<br>Snacks<br>Rain jacket</p>
+
+<h2>Getting there</h2>
+<p>1. Park at Chautauqua<br>2. Walk up the Bluebell Road<br>3. Turn left at the Royal Arch sign</p>`,
+    solution: { html: `<h2>Pack list</h2>
+<ul>
+  <li>Water</li>
+  <li>Snacks</li>
+  <li>Rain jacket</li>
+</ul>
+
+<h2>Getting there</h2>
+<ol>
+  <li>Park at Chautauqua</li>
+  <li>Walk up the Bluebell Road</li>
+  <li>Turn left at the Royal Arch sign</li>
+</ol>` },
+    hints: [
+      "Order doesn't matter: <ul>. Order matters: <ol>.",
+      "Each item is an <li> directly inside the list.",
+      "An <ol> numbers its items for you, so delete the typed “1.”, “2.” and “3.”.",
+    ],
+    checks: [
+      { label: "The pack list is a <ul> with 3 items", test: ({ $$ }) => $$("ul > li").length === 3 },
+      { label: "The directions are an <ol> with 3 items", test: ({ $$ }) => $$("ol > li").length === 3 },
+      { label: "The directions don't have typed numbers", test: ({ $$ }) => $$("ol > li").length > 0 && $$("ol > li").every((li) => !/^\s*\d/.test(li.textContent)) },
+      { label: "No <br> is left", test: ({ $ }) => !$("br") },
+    ],
+  });
 </script>
 </body>
 </html>

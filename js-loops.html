@@ -4,9 +4,6 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Loops</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Recursive:slnt,wght,CASL,MONO@-15..0,300..1000,0..1,0..1&display=swap">
 <link rel="stylesheet" href="style.css">
 <style>
   .lines { display: grid; grid-template-columns: minmax(0, 1fr); background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 8px 0; overflow-x: auto; }
@@ -39,14 +36,45 @@
 <script src="js/quiz.js"></script>
 </head>
 <body>
-<div class="wrap">
+<main class="wrap">
   <nav class="crumbs" aria-label="Site"><a class="crumb" href="index.html">← Field Guide</a><a class="crumb" href="glossary.html">Glossary</a></nav>
   <header class="page-head">
     <span class="eyebrow">JavaScript Basics · Loops</span>
     <h1>Loops</h1>
     <p class="lede">A loop runs the same code again and again, usually once for each item in a list. Step through each kind of loop to see exactly what runs, and in what order.</p>
+    <div class="objectives">
+      <p class="callout-title">You'll be able to</p>
+      <ul>
+        <li>Write a <code>for...of</code> loop that does something with every item in an array.</li>
+        <li>Choose between <code>for...of</code>, a classic <code>for</code> loop and <code>while</code>.</li>
+        <li>Use a loop to build up a result, like a running total.</li>
+      </ul>
+    </div>
   </header>
 
+  <div class="section-title"><span class="eyebrow">Read</span><h2>Doing the same thing for every item</h2></div>
+  <div class="prose">
+    <p>Say you have a list of 50 trails and want to show each name. You could write <code>console.log()</code> 50 times, or write it once and let a <span class="term">loop</span> repeat it. Loops are how programs work through lists: every product in a cart, every button on a page, every row of data from a server.</p>
+    <p>JavaScript has several kinds of loop. You'll use these three most:</p>
+    <ul>
+      <li><code>for...of</code> goes through every item in an <span class="term">array</span>, one at a time. It's the simplest, so reach for it first.</li>
+      <li>A classic <code>for</code> loop counts: start at 0, keep going while a condition is true, add 1 each time. Use it when you need the <span class="term">index</span>, the item's position in the list.</li>
+      <li><code>while</code> repeats as long as its condition is true. Use it when you don't know in advance how many times to repeat.</li>
+    </ul>
+    <pre class="snippet"><span class="kw">const</span> trails = [<span class="str">"Mesa"</span>, <span class="str">"Royal Arch"</span>, <span class="str">"Flagstaff"</span>];
+
+<span class="kw">for</span> (<span class="kw">const</span> trail <span class="kw">of</span> trails) {
+  console.<span class="fn">log</span>(trail);
+}
+<span class="cmt">// Mesa</span>
+<span class="cmt">// Royal Arch</span>
+<span class="cmt">// Flagstaff</span></pre>
+    <p>Each pass through a loop is one <em>iteration</em>. Inside this loop, <code>trail</code> holds the current item: <code>"Mesa"</code> the first time, then <code>"Royal Arch"</code>, then <code>"Flagstaff"</code>. When the list runs out, the loop ends and the code after it runs.</p>
+    <p>A loop can also build something up as it goes. Start a variable before the loop, like <code>let total = 0;</code>, and change it on every iteration. After the loop, it holds the result. You'll do exactly that in the practice below.</p>
+    <div class="callout warn"><p class="callout-title">Watch out</p><p>Every loop needs a way to stop. A <code>while</code> loop whose condition never becomes false runs forever and freezes the page. If that happens, close the tab, then check what changes the condition on each pass.</p></div>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Play</span><h2>Step through a loop</h2><p>Pick a loop and press Step to run it one piece at a time. The two "bug" versions show the most common loop mistakes.</p></div>
   <section class="playground">
     <div class="panel controls">
       <div class="control"><label for="mode">Loop</label>
@@ -74,7 +102,7 @@
     </div>
   </section>
 
-  <div class="section-title"><span class="eyebrow">Part 2</span><h2>map() and filter()</h2><p>Arrays have methods that do the looping for you. You pass in a small function, and the method calls it once for each item.</p></div>
+  <div class="section-title"><span class="eyebrow">Play</span><h2>map() and filter()</h2><p>Arrays have methods that do the looping for you. You pass in a small function, and the method calls it once for each item.</p></div>
   <section class="playground">
     <div class="panel controls"><div class="seg" id="arrm" role="group" aria-label="Array method"></div><p class="hint" id="arrm-why"></p></div>
     <div class="stage-col"><pre class="snippet" id="arrm-code"></pre><div class="stage flow" id="flow"></div></div>
@@ -102,9 +130,6 @@ for (let i = 0; i < trails.length; i++) {
 
   <div class="section-title"><span class="eyebrow">Practice</span><h2>Add up the miles</h2><p>Adding up a list is one of the most common jobs for a loop: start a total at 0, then add each item to it.</p></div>
   <div id="ex-total"></div>
-
-  <div class="section-title"><span class="eyebrow">Practice</span><h2>Predict the output</h2></div>
-  <div class="panel quiz" id="quiz"></div>
 
   <section class="notes">
     <div class="panel">
@@ -135,8 +160,11 @@ for (let i = 0; i < trails.length; i++) {
     </div>
   </section>
 
+  <div class="section-title"><span class="eyebrow">Check yourself</span><h2>Predict the output</h2></div>
+  <div class="panel quiz" id="quiz"></div>
+
   <footer class="page-foot" data-book-nav><a href="index.html">← Contents</a></footer>
-</div>
+</main>
 
 <script src="js/runner.js"></script>
 <script>

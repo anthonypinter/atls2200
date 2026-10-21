@@ -4,9 +4,6 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Numbers &amp; Strings</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Recursive:slnt,wght,CASL,MONO@-15..0,300..1000,0..1,0..1&display=swap">
 <link rel="stylesheet" href="style.css">
 <style>
   .operand { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 6px; align-items: center; }
@@ -38,13 +35,38 @@
 <script src="js/quiz.js"></script>
 </head>
 <body>
-<div class="wrap">
+<main class="wrap">
   <nav class="crumbs" aria-label="Site"><a class="crumb" href="index.html">← Field Guide</a><a class="crumb" href="glossary.html">Glossary</a></nav>
   <header class="page-head">
     <span class="eyebrow">JavaScript Basics · Numbers &amp; Strings</span>
     <h1>Numbers &amp; Strings</h1>
     <p class="lede">Math works the way you'd expect, until a number turns out to be text. Mix numbers and strings below to see when <code>+</code> adds and when it joins.</p>
+    <div class="objectives">
+      <p class="callout-title">You'll be able to</p>
+      <ul>
+        <li>Do arithmetic with numbers, including remainder and rounding.</li>
+        <li>Predict when + adds and when it joins, and convert between strings and numbers.</li>
+        <li>Build strings with template literals and use common string methods.</li>
+      </ul>
+    </div>
   </header>
+
+  <div class="section-title"><span class="eyebrow">Read</span><h2>When + adds, and when it joins</h2></div>
+  <div class="prose">
+    <p>Numbers work the way you'd expect: <code>+</code>, <code>-</code>, <code>*</code> and <code>/</code>, with parentheses to control the order. Two extra operators are handy. <code>%</code> gives the remainder after dividing, so <code>7 % 2</code> is 1, and <code>**</code> raises to a power.</p>
+    <p>The trouble starts with <code>+</code>, because it does two jobs. With two numbers, it adds. If either side is a <span class="term">string</span>, it joins them instead, which is called <span class="term">concatenation</span>:</p>
+    <pre class="snippet" data-lang="js">5 + 5       // 10
+"5" + 5     // "55"
+"5" * 2     // 10, because * always tries to make numbers</pre>
+    <p>This matters because anything a visitor types into a form arrives as a string. Add 5 to an input's value of <code>"10"</code> and you get <code>"105"</code>. Convert it first with <code>Number(input.value)</code>. If the text isn't a number, you get <span class="term">NaN</span>, short for "not a number."</p>
+    <p>To build a sentence from values, a <span class="term">template literal</span> is easier than joining pieces. Use backticks instead of quotes, and put any value inside <code>${ }</code>:</p>
+    <pre class="snippet" data-lang="js">const miles = 6.7;
+const msg = `Mesa Trail is ${miles} miles long.`;</pre>
+    <p>Strings come with built-in <span class="term">methods</span>: <code>.toUpperCase()</code>, <code>.includes("Mesa")</code>, <code>.trim()</code> and many more. Methods return a new string; the original never changes. <code>.length</code> is a property, not a method, so it has no parentheses.</p>
+    <div class="callout tip"><p class="callout-title">Tip</p><p><code>(0.1 + 0.2)</code> gives <code>0.30000000000000004</code>. Computers store decimals approximately. When showing money or distances, round for display with <code>.toFixed(2)</code>.</p></div>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Play</span><h2>Add or join?</h2><p>Change a and b, and switch between numbers and text, to see what + does.</p></div>
 
   <section class="playground">
     <div class="panel controls">
@@ -56,7 +78,7 @@
     <div class="stage result" id="result" aria-live="polite"></div>
   </section>
 
-  <div class="section-title"><span class="eyebrow">Part 2</span><h2>Useful string methods</h2><p>Every character in a string has an index, starting at 0. Pick a method to see what it returns. Methods return a new value; the original string never changes.</p></div>
+  <div class="section-title"><span class="eyebrow">Play</span><h2>Useful string methods</h2><p>Every character in a string has an index, starting at 0. Pick a method to see what it returns. Methods return a new value; the original string never changes.</p></div>
   <section class="playground">
     <div class="panel controls">
       <div class="control"><label for="txt">const text =</label><input class="text-in" id="txt" value="  Royal Arch Trail " autocomplete="off" spellcheck="false"></div>
@@ -84,8 +106,8 @@ const typed = "12";          // like a value from a form field
 console.log(typed + 3);
 console.log(Number(typed) + 3);</textarea></div>
 
-  <div class="section-title"><span class="eyebrow">Practice</span><h2>Predict the output</h2></div>
-  <div class="panel quiz" id="quiz"></div>
+  <div class="section-title"><span class="eyebrow">Practice</span><h2>Add, don't join</h2><p>A value from a form arrives as text, so + joins instead of adding. Fix the total and tidy the output.</p></div>
+  <div id="ex-strings"></div>
 
   <section class="notes">
     <div class="panel">
@@ -119,8 +141,11 @@ console.log(Number(typed) + 3);</textarea></div>
     </div>
   </section>
 
+  <div class="section-title"><span class="eyebrow">Check yourself</span><h2>Predict the output</h2></div>
+  <div class="panel quiz" id="quiz"></div>
+
   <footer class="page-foot" data-book-nav><a href="index.html">← Contents</a></footer>
-</div>
+</main>
 
 <script src="js/runner.js"></script>
 <script>
@@ -197,6 +222,41 @@ console.log(Number(typed) + 3);</textarea></div>
   ]);
 
   calc(); strings();
+</script>
+<script>
+  makeExercise(document.getElementById("ex-strings"), {
+    title: "Total distance",
+    task: `<ol>
+      <li><code>miles</code> came from a form, so it's a string. Convert it so <code>total</code> is the number <code>8.2</code>.</li>
+      <li>Log <code>Total: 8.2 miles</code> using a template literal.</li>
+      <li>Log the trail's name in capital letters, using a string method.</li>
+    </ol>`,
+    js: `const miles = "6.7";   // came from a form
+const extra = 1.5;
+const total = miles + extra;
+const name = "royal arch";
+
+console.log("Total: " + total + " miles");
+console.log(name);`,
+    solution: `const miles = "6.7";   // came from a form
+const extra = 1.5;
+const total = Number(miles) + extra;
+const name = "royal arch";
+
+console.log(\`Total: \${total} miles\`);
+console.log(name.toUpperCase());`,
+    expose: ["total"],
+    hints: [
+      "Number(\"6.7\") turns text into the number 6.7.",
+      "Template literals use backticks, with values inside ${ }.",
+      "name.toUpperCase() returns a capitalized copy.",
+    ],
+    checks: [
+      { label: "total is the number 8.2", test: ({ fns }) => fns.total === 8.2 },
+      { label: "Logs “Total: 8.2 miles” with a template literal", test: ({ logs, code }) => logs.includes("Total: 8.2 miles") && /`Total: \$\{/.test(code.js) },
+    { label: "Logs ROYAL ARCH using a method", test: ({ logs, code }) => logs.includes("ROYAL ARCH") && !/ROYAL ARCH/.test(code.js) },
+  ],
+});
 </script>
 </body>
 </html>

@@ -4,9 +4,6 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>CSS Variables</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Recursive:slnt,wght,CASL,MONO@-15..0,300..1000,0..1,0..1&display=swap">
 <link rel="stylesheet" href="style.css">
 <style>
   /* The sample site's own variables. Controls on this page change them live. */
@@ -18,7 +15,7 @@
   #site .pill { background: var(--accent); color: #fff; border-radius: 999px; padding: 4px 12px; font-size: 0.85rem; font-weight: 700; }
   #site .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: var(--space); }
   #site .tcard { background: var(--card); border-radius: var(--radius); padding: var(--space); display: grid; gap: 8px; border-top: 5px solid var(--brand); }
-  #site .tcard h4 { margin: 0; font-size: 1.05rem; color: var(--brand); }
+  #site .tcard h3 { margin: 0; font-size: 1.05rem; color: var(--brand); }
   #site .tcard p { margin: 0; font-size: 0.9rem; }
   #site .tcard button { font: 700 0.9rem var(--font-body); background: var(--brand); color: #fff; border: 0; border-radius: calc(var(--radius) / 2); padding: 8px 12px; cursor: pointer; justify-self: start; }
   #site .tcard .sale { color: var(--sale, crimson); font-weight: 700; font-size: 0.85rem; }
@@ -38,13 +35,44 @@
 <script src="js/quiz.js"></script>
 </head>
 <body>
-<div class="wrap">
+<main class="wrap">
   <nav class="crumbs" aria-label="Site"><a class="crumb" href="index.html">← Field Guide</a><a class="crumb" href="glossary.html">Glossary</a></nav>
   <header class="page-head">
     <span class="eyebrow">CSS Basics · CSS Variables</span>
     <h1>CSS Variables</h1>
     <p class="lede">A CSS variable (custom property) stores a value once so you can reuse it everywhere. Change one variable here and every part of the site that uses it updates at once.</p>
+    <div class="objectives">
+      <p class="callout-title">You'll be able to</p>
+      <ul>
+        <li>Define a CSS variable on :root and use it with var().</li>
+        <li>Redefine a variable on one element to change just that part of the page.</li>
+        <li>Build a simple dark theme by redefining a few color variables.</li>
+      </ul>
+    </div>
   </header>
+
+  <div class="section-title"><span class="eyebrow">Read</span><h2>Store a value once, use it everywhere</h2></div>
+  <div class="prose">
+    <p>Say your site's brand color is teal, and it appears in forty places in your stylesheet: buttons, links, borders, headings. Then the client asks for a darker teal. With a <span class="term">CSS variable</span>, that's a one-line change:</p>
+    <pre class="snippet" data-lang="css">:root {
+  --brand: #0b6b5e;
+  --space: 16px;
+}
+.btn {
+  background: var(--brand);
+  padding: var(--space);
+}</pre>
+    <p>You define a variable with two dashes at the start of its name, and use it with <code>var()</code>. Defining variables on <code>:root</code>, which is the <code>&lt;html&gt;</code> element, makes them available to the whole page.</p>
+    <p>Variables follow the same <span class="term">inheritance</span> as text styles: an element sees the value defined on itself or its nearest ancestor. That makes them powerful. Redefine <code>--brand</code> on one featured card, and only that card and its children see the new color, while everything else keeps the original.</p>
+    <p>The same idea gives you a dark theme almost for free. Define your colors as variables, then redefine just those variables for dark mode:</p>
+    <pre class="snippet" data-lang="css">@media (prefers-color-scheme: dark) {
+  :root { --bg: #10131d; --text: #e7e9f3; }
+}</pre>
+    <p>If a variable might not be defined, give a fallback: <code>var(--sale, crimson)</code> uses crimson when there's no <code>--sale</code>.</p>
+    <div class="callout warn"><p class="callout-title">Watch out</p><p><code>color: --brand;</code> does nothing. You always need <code>var()</code> to read a variable. And names are case-sensitive, so <code>--Brand</code> is a different variable.</p></div>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Play</span><h2>Change a variable</h2><p>Change one variable and watch every part of the site that uses it update. Then try the dark theme and the overrides.</p></div>
 
   <section class="playground">
     <div class="panel controls">
@@ -64,14 +92,17 @@
       <div id="site">
         <div class="top"><span class="logo" data-uses="--brand">Trailhead</span><span class="pill" data-uses="--accent">3 new trails</span></div>
         <div class="cards">
-          <div class="tcard" data-uses="--brand --radius --space"><h4 data-uses="--brand">Royal Arch</h4><p>3.4 mi · Hard</p><span class="sale" data-uses="--sale">Guided hike: 20% off</span><button data-uses="--brand --radius">Save</button></div>
-          <div class="featured"><div class="tcard" data-uses="--brand --radius --space"><h4 data-uses="--brand">Mesa Trail</h4><p>6.7 mi · Featured</p><button data-uses="--brand --radius">Save</button></div></div>
-          <div class="tcard" data-uses="--brand --radius --space"><h4 data-uses="--brand">Chautauqua</h4><p>1.2 mi · Easy</p><button data-uses="--brand --radius">Save</button></div>
+          <div class="tcard" data-uses="--brand --radius --space"><h3 data-uses="--brand">Royal Arch</h3><p>3.4 mi · Hard</p><span class="sale" data-uses="--sale">Guided hike: 20% off</span><button data-uses="--brand --radius">Save</button></div>
+          <div class="featured"><div class="tcard" data-uses="--brand --radius --space"><h3 data-uses="--brand">Mesa Trail</h3><p>6.7 mi · Featured</p><button data-uses="--brand --radius">Save</button></div></div>
+          <div class="tcard" data-uses="--brand --radius --space"><h3 data-uses="--brand">Chautauqua</h3><p>1.2 mi · Easy</p><button data-uses="--brand --radius">Save</button></div>
         </div>
       </div>
       <p class="hint" id="explain"></p>
     </div>
   </section>
+
+  <div class="section-title"><span class="eyebrow">Practice</span><h2>Use a variable</h2><p>One brand color is typed three times. Store it once, then make a sale card that changes it.</p></div>
+  <div id="ex-vars"></div>
 
   <section class="notes">
     <div class="panel">
@@ -95,8 +126,11 @@
     </div>
   </section>
 
+  <div class="section-title"><span class="eyebrow">Check yourself</span><h2>Quick check</h2></div>
+  <div class="panel quiz" id="quiz"></div>
+
   <footer class="page-foot" data-book-nav><a href="index.html">← Contents</a></footer>
-</div>
+</main>
 
 <script>
   const $ = (id) => document.getElementById(id);
@@ -128,6 +162,54 @@
   }
   document.querySelectorAll(".controls input").forEach((el) => el.addEventListener("input", update));
   update(); highlight();
+</script>
+<script>
+  makeQuiz(document.getElementById("quiz"), [
+    { id: "q1", q: "How do you use a variable named --brand?", opts: ["color: var(--brand);", "color: --brand;", "color: $brand;"], a: 0, why: "You always read a variable with var()." },
+    { id: "q2", q: "Why define variables on :root?", opts: ["It's required syntax", "So every element on the page can use them", "So they load faster"], a: 1, why: ":root is the top of the page, and variables inherit down from it." },
+    { id: "q3", q: "You redefine --brand on one .card. What changes?", opts: ["Every element on the page", "That card and its children", "Nothing; variables can't be redefined"], a: 1, why: "Elements see the value from their nearest ancestor that defines it." },
+    { id: "q4", q: "What does var(--sale, crimson) do if --sale isn't defined?", opts: ["Uses crimson", "Uses black", "Breaks the rule"], a: 0, why: "The second value is a fallback for a missing variable." },
+  ]);
+</script>
+<script>
+  makeExercise(document.getElementById("ex-vars"), {
+    title: "One color, defined once",
+    task: `<ol>
+      <li>Define <code>--brand: #0b6b5e</code> on <code>:root</code> and use <code>var(--brand)</code> in all three places.</li>
+      <li>Make the sale card crimson by redefining <code>--brand</code> on <code>.sale</code>, in just one declaration.</li>
+    </ol>`,
+    html: `<div class="card">
+  <h2>Mesa Trail map</h2>
+  <button>Buy · $8</button>
+</div>
+<div class="card sale">
+  <h2>Royal Arch map</h2>
+  <button>Sale · $5</button>
+</div>`,
+    css: `body { font-family: system-ui, sans-serif; }
+.card { border: 2px solid #0b6b5e; padding: 12px; margin-bottom: 12px; }
+.card h2 { color: #0b6b5e; margin: 0 0 8px; }
+.card button { background: #0b6b5e; color: white; border: 0; padding: 6px 12px; font: inherit; }`,
+    solution: { css: `:root { --brand: #0b6b5e; }
+
+body { font-family: system-ui, sans-serif; }
+.card { border: 2px solid var(--brand); padding: 12px; margin-bottom: 12px; }
+.card h2 { color: var(--brand); margin: 0 0 8px; }
+.card button { background: var(--brand); color: white; border: 0; padding: 6px 12px; font: inherit; }
+
+.sale { --brand: crimson; }` },
+    hints: [
+      ":root { --brand: #0b6b5e; } defines it for the whole page.",
+      "Use it with var(): color: var(--brand);",
+      "Variables inherit, so .sale { --brand: crimson; } changes it for that card and everything inside.",
+    ],
+    checks: [
+      { label: "--brand is defined on :root", test: ({ doc, style }) => style(doc.documentElement, "--brand").toLowerCase() === "#0b6b5e" },
+      { label: "#0b6b5e is typed only once", test: ({ code }) => (code.css.match(/#0b6b5e/gi) || []).length === 1 },
+      { label: "The normal card is still green", test: ({ $, style }) => { const c = $(".card:not(.sale)"); return style(c, "border-top-color") === "rgb(11, 107, 94)" && style(c.querySelector("h2"), "color") === "rgb(11, 107, 94)" && style(c.querySelector("button"), "background-color") === "rgb(11, 107, 94)"; } },
+      { label: "The sale card is crimson, from one declaration", test: ({ $, style, code }) => { const c = $(".sale"); return style(c, "border-top-color") === "rgb(220, 20, 60)" && style(c.querySelector("h2"), "color") === "rgb(220, 20, 60)" && style(c.querySelector("button"), "background-color") === "rgb(220, 20, 60)" && (code.css.match(/crimson|#dc143c/gi) || []).length === 1; } },
+    ],
+  });
 </script>
 </body>
 </html>

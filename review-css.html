@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Review: CSS Basics</title>
+<link rel="stylesheet" href="style.css">
+<script src="book.js"></script>
+<script src="js/progress.js"></script>
+<script src="js/chrome.js"></script>
+<script src="js/quiz.js"></script>
+</head>
+<body>
+<main class="wrap">
+  <nav class="crumbs" aria-label="Site"><a class="crumb" href="index.html">← Field Guide</a><a class="crumb" href="glossary.html">Glossary</a></nav>
+  <header class="page-head">
+    <span class="eyebrow">CSS Basics · Review</span>
+    <h1>Review: CSS Basics</h1>
+    <p class="lede">Put the whole part together. Skim the recap, style a trail card from scratch, then test yourself with questions that mix every lesson.</p>
+    <div class="objectives">
+      <p class="callout-title">You'll be able to</p>
+      <ul>
+        <li>Style a component using selectors, the box model, variables and states together.</li>
+        <li>Predict which rule wins when several match.</li>
+        <li>Decide which lesson to revisit, based on the questions you miss.</li>
+      </ul>
+    </div>
+  </header>
+
+  <div class="section-title"><span class="eyebrow">Read</span><h2>What you've covered</h2></div>
+  <div class="prose">
+    <p>This part was about how the browser decides what each element looks like: which rules match, which one wins, and how boxes, colors and text are sized.</p>
+    <ul class="recap">
+      <li><a href="css-basics.html">How CSS Is Applied</a>: A rule is a selector plus declarations, and one missing semicolon can break the next line.</li>
+      <li><a href="selectors.html">Selectors &amp; Specificity</a>: A space means inside, > means direct child, and IDs outrank classes, which outrank elements.</li>
+      <li><a href="pseudo-classes.html">Pseudo-classes &amp; States</a>: Style :hover and :focus-visible together, and use :nth-child for patterns.</li>
+      <li><a href="pseudo-elements.html">Pseudo-elements</a>: ::before and ::after add decoration, and need a content property.</li>
+      <li><a href="cascade.html">Cascade &amp; Inheritance</a>: Text properties inherit, box properties don't, and later rules win ties.</li>
+      <li><a href="box-model.html">The Box Model</a>: Padding and border add to the width unless box-sizing is border-box.</li>
+      <li><a href="display.html">Display Types</a>: Block elements stack, inline elements flow, and inline-block flows but accepts a width.</li>
+      <li><a href="sizing.html">Sizing Items</a>: width: 100% with a max-width adapts; min-height lets boxes grow.</li>
+      <li><a href="overflow.html">Overflow</a>: Content that doesn't fit spills out; overflow and overflow-wrap control it.</li>
+      <li><a href="colors-units.html">Colors &amp; Units</a>: rem for text, % or max-width for widths, and a fourth value for transparency.</li>
+      <li><a href="css-variables.html">CSS Variables</a>: Store a value once on :root, use it with var(), and redefine it to theme a part of the page.</li>
+      <li><a href="backgrounds-borders.html">Backgrounds &amp; Borders</a>: Gradients are background images, and border-radius: 50% makes a circle.</li>
+      <li><a href="shadows.html">Shadows &amp; Filters</a>: Soft, semi-transparent shadows that fall downward look natural.</li>
+      <li><a href="typography.html">Typography</a>: Keep lines 45–75 characters long, with a unitless line-height around 1.5.</li>
+      <li><a href="web-fonts.html">Web Fonts</a>: Quote font names with spaces, end every list with a generic family, and use font-display: swap.</li>
+    </ul>
+    <div class="callout tip"><p class="callout-title">How to use this page</p><p>Try the project without looking back at the lessons. When you get stuck, or miss a quiz question, the lesson it comes from is linked above.</p></div>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Practice</span><h2>Mini project: a trail card</h2><p>Style a card from scratch with variables, the box model, states and good typography.</p></div>
+  <div id="ex-project"></div>
+
+  <div class="section-title"><span class="eyebrow">Check yourself</span><h2>Mixed quiz</h2><p>Ten questions from across the part, in no particular order.</p></div>
+  <div class="panel quiz" id="quiz"></div>
+
+  <footer class="page-foot" data-book-nav><a href="index.html">← Contents</a></footer>
+</main>
+
+<script>
+  makeQuiz(document.getElementById("quiz"), [
+    { id: "q1", q: "Which selector is most specific?", opts: [".nav a", "#nav a", "nav a"], a: 1, why: "An ID outranks any number of classes or elements." },
+    { id: "q2", q: "A box has width: 200px, padding: 20px and a 5px border, with the default box-sizing. How wide is it on the page?", opts: ["200px", "225px", "250px"], a: 2, why: "200 + 20 + 20 + 5 + 5 = 250. border-box would keep it at 200." },
+    { id: "q3", q: "You set color on body. Does a paragraph inside inherit it?", opts: ["Yes", "No", "Only with inherit"], a: 0, why: "Text properties like color and font inherit." },
+    { id: "q4", q: "Why is width ignored on a <span>?", opts: ["Spans can't be styled", "Spans are inline", "It needs !important"], a: 1, why: "Inline elements ignore width. Use inline-block." },
+    { id: "q5", q: "Your ::after doesn't appear. What's most likely missing?", opts: ["position", "display: block", "content"], a: 2, why: "Without content, a pseudo-element isn't created." },
+    { id: "q6", q: "Which unit makes text grow when someone sets a larger default font size?", opts: ["rem", "px", "vw"], a: 0, why: "rem follows the root font size, which the reader controls." },
+    { id: "q7", q: "Where do you usually define CSS variables for the whole page?", opts: ["body only", ":root", "Inside each rule"], a: 1, why: ":root is the top of the page, so every element can use them." },
+    { id: "q8", q: "Two rules with the same specificity set different colors. Which wins?", opts: ["The first", "The one later in the file", "Neither"], a: 1, why: "Source order breaks ties." },
+    { id: "q9", q: "A long URL pushes out of its card. Which property lets it break?", opts: ["overflow-wrap: anywhere", "white-space: nowrap", "overflow: visible"], a: 0, why: "It allows a break inside a long word or URL." },
+    { id: "q10", q: "font-family: Source Sans 3; is ignored. Why?", opts: ["Fonts can't have numbers", "Names with numbers or spaces need quotes", "It needs a fallback first"], a: 1, why: "Quote it: \"Source Sans 3\", and end the list with sans-serif." },
+  ]);
+</script>
+<script>
+  makeExercise(document.getElementById("ex-project"), {
+    title: "Style the trail card",
+    height: 360,
+    task: `<p>The HTML is done. Write CSS so that:</p>
+    <ol>
+      <li><code>:root</code> defines <code>--brand: #2340d9</code>, used for the heading color and the button background. Type the hex value only once.</li>
+      <li>The body uses <code>system-ui</code> with <code>sans-serif</code> as the fallback, and a unitless line-height of 1.5.</li>
+      <li>The card is exactly 320px wide on the page, with 20px of padding and a 2px border.</li>
+      <li>The card has 12px rounded corners and a soft, semi-transparent shadow.</li>
+      <li>The tags sit in line with the text but accept padding on all sides (use <code>inline-block</code>).</li>
+      <li>One rule changes the button's background on both <code>:hover</code> and <code>:focus-visible</code>.</li>
+    </ol>`,
+    html: `<article class="card">
+  <h2>Royal Arch</h2>
+  <p>A steep climb through pine forest to a sandstone arch with views over the plains.</p>
+  <p><span class="tag">3.4 mi</span> <span class="tag">Hard</span></p>
+  <a class="btn" href="#">See the trail</a>
+</article>`,
+    css: `/* Your styles here */
+`,
+    solution: { css: `:root { --brand: #2340d9; }
+
+body { font-family: system-ui, sans-serif; line-height: 1.5; }
+
+.card {
+  box-sizing: border-box;
+  width: 320px;
+  padding: 20px;
+  border: 2px solid #c8cbd6;
+  border-radius: 12px;
+  box-shadow: 0 4px 16px rgb(0 0 0 / 12%);
+}
+
+.card h2 { color: var(--brand); margin-top: 0; }
+
+.tag { display: inline-block; padding: 2px 10px; border-radius: 99px; background: #eef1fb; }
+
+.btn { display: inline-block; padding: 8px 16px; background: var(--brand); color: white; text-decoration: none; }
+.btn:hover,
+.btn:focus-visible { background: #1a2fa6; }` },
+    hints: [
+      "box-sizing: border-box keeps the card at 320px with the padding and border inside it.",
+      "Shadows: box-shadow: 0 4px 16px rgb(0 0 0 / 12%).",
+      "a.btn:hover, a.btn:focus-visible { … } is one rule with two selectors.",
+    ],
+    checks: [
+      { label: "--brand colors the heading and button, typed once", test: ({ style, code }) => style("html", "--brand").toLowerCase() === "#2340d9" && style(".card h2", "color") === "rgb(35, 64, 217)" && style(".btn", "background-color") === "rgb(35, 64, 217)" && (code.css.match(/#2340d9/gi) || []).length === 1 },
+      { label: "Body text: system-ui with a generic fallback, line-height 1.5", test: ({ style }) => /system-ui/.test(style("body", "font-family")) && /sans-serif$/.test(style("body", "font-family")) && Math.abs(parseFloat(style("p", "line-height")) / parseFloat(style("p", "font-size")) - 1.5) < 0.01 },
+      { label: "The card is 320px wide with 20px padding and a 2px border", test: ({ $, style }) => Math.abs($(".card").getBoundingClientRect().width - 320) < 0.5 && style(".card", "padding-left") === "20px" && style(".card", "border-left-width") === "2px" },
+      { label: "Rounded 12px corners and a semi-transparent shadow", test: ({ style }) => style(".card", "border-top-left-radius") === "12px" && /rgba\(\d+, \d+, \d+, 0?\.\d+\)/.test(style(".card", "box-shadow")) },
+      { label: "Tags are inline-block with padding", test: ({ $$, style }) => $$(".tag").every((t) => style(t, "display") === "inline-block" && parseFloat(style(t, "padding-top")) > 0) },
+      { label: "One rule covers the button's :hover and :focus-visible", test: ({ doc }) => [...doc.styleSheets[0].cssRules].some((r) => /:hover/.test(r.selectorText) && /:focus-visible/.test(r.selectorText) && (r.style.backgroundColor || r.style.background)) },
+    ],
+  });
+</script>
+</body>
+</html>

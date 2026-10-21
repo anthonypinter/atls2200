@@ -4,9 +4,6 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Debugging with DevTools</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Recursive:slnt,wght,CASL,MONO@-15..0,300..1000,0..1,0..1&display=swap">
 <link rel="stylesheet" href="style.css">
 <style id="pvstyle"></style>
 <style>
@@ -29,7 +26,7 @@
   .dt-tabs span.on { background: var(--panel); color: var(--ink); font-weight: 700; }
   .dt-body { display: grid; grid-template-rows: auto auto; }
   .tree { padding: 8px; border-bottom: 1px solid var(--line); display: grid; gap: 1px; overflow-x: auto; }
-  .tree button { all: unset; display: block; padding: 1px 6px; border-radius: 4px; cursor: pointer; white-space: pre; }
+  .tree button { all: unset; display: block; padding: 3px 6px; min-height: 24px; box-sizing: border-box; border-radius: 4px; cursor: pointer; white-space: pre; }
   .tree button:hover { background: var(--stage); }
   .tree button:focus-visible { outline: 2px solid var(--cobalt); }
   .tree button.sel { background: var(--cobalt-soft); }
@@ -37,18 +34,19 @@
   .rule { display: grid; gap: 1px; }
   .rule .head { display: flex; justify-content: space-between; gap: 10px; }
   .rule .src { color: var(--muted); font-size: 0.75rem; white-space: nowrap; }
-  .rule.ua { opacity: 0.85; } .rule.ua .head .sel::after { content: ""; }
-  .decl { display: flex; gap: 6px; align-items: center; padding-left: 14px; white-space: nowrap; }
-  .decl input { margin: 0; accent-color: var(--cobalt); }
+  .rule.ua { font-style: italic; } .rule.ua .head .sel::after { content: ""; }
+  .decl { display: flex; gap: 6px; align-items: center; padding-left: 14px; white-space: nowrap; min-height: 24px; }
+  .decl input { margin: 0; width: 16px; height: 16px; accent-color: var(--cobalt); }
   .decl.over .p, .decl.over .v { text-decoration: line-through; color: var(--muted); }
   .decl.off .p, .decl.off .v { text-decoration: line-through; color: var(--muted); opacity: 0.7; }
   .uanote { color: var(--muted); font-style: italic; padding-left: 14px; }
   .box { display: grid; place-items: center; padding: 10px; }
   .bm { position: relative; padding: 18px 26px; text-align: center; border-radius: 3px; }
   .bm > .l { position: absolute; top: 2px; left: 6px; font-size: 0.68rem; }
-  .bm > .n { position: absolute; font-size: 0.72rem; }
+  .bm > .n { position: absolute; font-size: 0.72rem; color: #161a2b; }
   .bm > .n.t { top: 2px; left: 0; right: 0; } .bm > .n.b { bottom: 1px; left: 0; right: 0; }
-  .bm-m { background: #f9cc9d55; border: 1px dashed #c9945c; } .bm-b { background: #fddd9b88; border: 1px solid #222; } .bm-p { background: #c3d08b88; } .bm-c { background: #8cb6c088; padding: 6px 12px; }
+  .bm-m { background: #fbe3c9; border: 1px dashed #c9945c; } .bm-b { background: #feecc4; border: 1px solid #222; } .bm-p { background: #dce4b5; } .bm-c { background: #b9d4da; padding: 6px 12px; }
+  .bm-m, .bm-b, .bm-p, .bm-c { color: #161a2b; }
   .shortcuts { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
   .shortcuts .panel { display: grid; gap: 4px; align-content: start; }
   .shortcuts kbd { font: 600 0.85rem var(--font-code); font-variation-settings: "MONO" 1; border: 1px solid var(--line); border-bottom-width: 2px; border-radius: 4px; padding: 0 5px; background: var(--paper); }
@@ -59,13 +57,38 @@
 <script src="js/quiz.js"></script>
 </head>
 <body>
-<div class="wrap">
+<main class="wrap">
   <nav class="crumbs" aria-label="Site"><a class="crumb" href="index.html">← Field Guide</a><a class="crumb" href="glossary.html">Glossary</a></nav>
   <header class="page-head">
     <span class="eyebrow">Polish &amp; Workflow · Debugging with DevTools</span>
     <h1>Debugging with DevTools</h1>
     <p class="lede">Every browser has developer tools that show exactly which CSS rules apply to an element and which ones lost. This practice version works like the real Elements panel. Use it to fix three bugs on the trail card.</p>
+    <div class="objectives">
+      <p class="callout-title">You'll be able to</p>
+      <ul>
+        <li>Open DevTools and inspect any element on a page.</li>
+        <li>Read the Styles pane to see which rules apply and which were overridden.</li>
+        <li>Try a fix live in DevTools, then copy it into your real file.</li>
+      </ul>
+    </div>
   </header>
+
+  <div class="section-title"><span class="eyebrow">Read</span><h2>Seeing what the browser sees</h2></div>
+  <div class="prose">
+    <p>When your CSS doesn't do what you expect, guessing and reloading is slow. Every browser comes with <span class="term">DevTools</span>, a set of panels that show exactly what the browser built from your code and why. Right-click anything on a page and choose <strong>Inspect</strong>.</p>
+    <p>The Elements panel has two halves. On the left is the element tree: the page as the browser actually built it, which isn't always what you wrote. On the right, the Styles pane lists every rule that matches the selected element, with the winning rules at the top.</p>
+    <p>Three things in the Styles pane solve most bugs:</p>
+    <ul>
+      <li><strong>Crossed-out declarations</strong> lost to a stronger or later rule. Look higher in the list to find the winner, then fix the <span class="term">specificity</span> or order.</li>
+      <li><strong>The file name and line number</strong> next to each rule tell you exactly where to make the fix.</li>
+      <li><strong>"user agent stylesheet"</strong> marks the browser's built-in defaults. You can't edit those, but your own CSS can override them. This is where mystery margins on headings and lists come from.</li>
+    </ul>
+    <p>If a rule you wrote doesn't appear at all, its selector doesn't match, or the stylesheet didn't load. Look for a typo or a broken link.</p>
+    <p>You can also edit any value right in the Styles pane and see the result immediately. The box model diagram at the bottom shows the element's real margin, border, padding and size.</p>
+    <div class="callout warn"><p class="callout-title">Watch out</p><p>Changes made in DevTools disappear when you reload. Once a fix works, copy it into your real CSS file.</p></div>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Play</span><h2>Fix the trail card</h2><p>This practice panel works like the real Elements panel. Complete the three missions.</p></div>
 
   <div class="missions" id="missions"></div>
 
@@ -89,6 +112,9 @@
     <div class="panel"><b>Changes aren't saved</b><span>Edits in DevTools disappear when you reload. Once you've found the fix, copy it into your CSS file.</span></div>
   </div>
 
+  <div class="section-title"><span class="eyebrow">Practice</span><h2>Debug it with DevTools</h2><p>Three styles aren't applying. Right-click the preview and choose Inspect to find out why.</p></div>
+  <div id="ex-devtools"></div>
+
   <section class="notes">
     <div class="panel">
       <h2>Key ideas</h2>
@@ -111,8 +137,11 @@
     </div>
   </section>
 
+  <div class="section-title"><span class="eyebrow">Check yourself</span><h2>Quick check</h2></div>
+  <div class="panel quiz" id="quiz"></div>
+
   <footer class="page-foot" data-book-nav><a href="index.html">← Contents</a></footer>
-</div>
+</main>
 
 <script>
   const $ = (id) => document.getElementById(id);
@@ -193,6 +222,55 @@
   document.querySelector("#pv").addEventListener("click", (e) => { const el = e.target.closest("#pv .page, #pv .page *"); if (el) { selected = el; render(); } });
   selected = document.querySelector("#pv .btn");
   render();
+</script>
+<script>
+  makeQuiz(document.getElementById("quiz"), [
+    { id: "q1", q: "A declaration is crossed out in the Styles pane. What does that mean?", opts: ["Another rule overrode it", "It has a typo", "It's a browser default"], a: 0, why: "Look above it to find the rule that won." },
+    { id: "q2", q: "Headings have margins you never wrote. Where do they come from?", opts: ["A bug in your editor", "The user agent stylesheet", "The HTML file"], a: 1, why: "Browsers have built-in defaults. Your CSS can override them." },
+    { id: "q3", q: "Your rule doesn't appear in the Styles pane at all. What's likely?", opts: ["DevTools hides new rules", "It was overridden", "The selector doesn't match, or the stylesheet didn't load"], a: 2, why: "Overridden rules still appear, crossed out. Missing ones never matched." },
+    { id: "q4", q: "You fixed a bug in DevTools and reloaded. The bug is back. Why?", opts: ["DevTools edits aren't saved to your files", "The cache", "DevTools is broken"], a: 0, why: "Copy the working fix into your real CSS file." },
+  ]);
+</script>
+<script>
+  makeExercise(document.getElementById("ex-devtools"), {
+    title: "Why isn't it working?",
+    task: `<p>The card should have a crimson heading, 16px of padding and a pale blue background. None of those is showing. Inspect each element, find what's overriding or breaking each style, and fix it. Don't use <code>!important</code>.</p>`,
+    html: `<div class="card" id="card">
+  <h2 class="title">Royal Arch</h2>
+  <p>Steep, rocky and worth it.</p>
+</div>`,
+    css: `body { font-family: system-ui, sans-serif; }
+
+#card h2 { color: #333; }
+
+.title { color: crimson; }
+
+.card {
+  padding: 16px;
+  backgound: #eef1fb;
+}
+
+.card { padding: 4px; }`,
+    solution: { css: `body { font-family: system-ui, sans-serif; }
+
+.title { color: crimson; }
+
+.card {
+  padding: 16px;
+  background: #eef1fb;
+}` },
+    hints: [
+      "In the Styles pane, a crossed-out declaration lost to another rule. An ID selector beats a class.",
+      "A rule further down the file wins a tie. Look for a second .card rule.",
+      "DevTools marks a misspelled property with a warning icon.",
+    ],
+    checks: [
+      { label: "The heading is crimson", test: ({ style }) => style("h2", "color") === "rgb(220, 20, 60)" },
+      { label: "The card has 16px of padding", test: ({ style }) => style(".card", "padding-top") === "16px" && style(".card", "padding-left") === "16px" },
+      { label: "The card's background is #eef1fb", test: ({ style }) => style(".card", "background-color") === "rgb(238, 241, 251)" },
+      { label: "No !important", test: ({ code }) => !/!\s*important/.test(code.css) },
+    ],
+  });
 </script>
 </body>
 </html>

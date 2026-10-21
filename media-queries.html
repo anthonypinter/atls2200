@@ -4,9 +4,6 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Media Query Lab</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Recursive:slnt,wght,CASL,MONO@-15..0,300..1000,0..1,0..1&display=swap">
 <link rel="stylesheet" href="style.css">
 <style>
   .lab { display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; }
@@ -38,7 +35,7 @@
   .demo .card i { display: block; height: 56px; border-radius: 4px; background: #2340d9; opacity: 0.85; }
   .demo .card:nth-child(2) i { background: #b4410c; } .demo .card:nth-child(3) i { background: #0b6b5e; }
   .demo .card b { font-size: 0.95rem; } .demo .card small { color: #5a6280; }
-  .demo aside { background: #fff4ec; border: 1px solid #f2d3bf; border-radius: 6px; padding: 12px; font-size: 0.9rem; }
+  .demo .aside { background: #fff4ec; border: 1px solid #f2d3bf; border-radius: 6px; padding: 12px; font-size: 0.9rem; }
   .demo h2 { font-size: 1.3rem; }
 
   .viewport.bp-600 .demo .cards { grid-template-columns: 1fr 1fr; }
@@ -65,13 +62,42 @@
 <script src="js/quiz.js"></script>
 </head>
 <body>
-<div class="wrap">
+<main class="wrap">
   <nav class="crumbs" aria-label="Site"><a class="crumb" href="index.html">← Field Guide</a><a class="crumb" href="glossary.html">Glossary</a></nav>
   <header class="page-head">
     <span class="eyebrow">Responsive · Media Queries</span>
     <h1>Media Query Lab</h1>
     <p class="lede">A media query applies CSS only when a condition is true, usually "the screen is at least this wide." Drag the slider to change the pretend screen width and watch which rules switch on.</p>
+    <div class="objectives">
+      <p class="callout-title">You'll be able to</p>
+      <ul>
+        <li>Write a min-width media query that changes a layout on wider screens.</li>
+        <li>List media queries in the right order so later rules win when they should.</li>
+        <li>Choose breakpoints based on your content rather than on devices.</li>
+      </ul>
+    </div>
   </header>
+
+  <div class="section-title"><span class="eyebrow">Read</span><h2>CSS that depends on the screen</h2></div>
+  <div class="prose">
+    <p>A <span class="term">media query</span> wraps some CSS in a condition, so those rules apply only when the condition is true. Almost always, the condition is the screen's width:</p>
+    <pre class="snippet" data-lang="css">.cards {
+  display: grid;
+  gap: 16px;
+}
+@media (min-width: 600px) {
+  .cards { grid-template-columns: 1fr 1fr; }
+}
+@media (min-width: 1000px) {
+  .cards { grid-template-columns: 1fr 1fr 1fr; }
+}</pre>
+    <p>Read <code>min-width: 600px</code> as "600px or wider". On a phone, neither query applies and the cards stack in one column. At 700px, the first applies: two columns. At 1200px, <em>both</em> apply, and since they conflict, the later one wins: three columns. That's why queries are listed from smallest to largest.</p>
+    <p>The width where a query kicks in is called a <span class="term">breakpoint</span>. Don't choose breakpoints from a list of phone and tablet sizes; there are thousands of devices, and new ones every year. Instead, widen your browser window slowly, and add a breakpoint wherever your layout starts to look wrong.</p>
+    <p>This approach, a simple base layout plus <code>min-width</code> queries that add complexity, is called <span class="term">mobile first</span>, and it's the subject of <a href="mobile-first.html">Mobile-First Workflow</a>.</p>
+    <div class="callout warn"><p class="callout-title">Watch out</p><p>Media queries on phones depend on the <span class="term">viewport meta tag</span> in your head. Without it, the phone pretends to be a 980px-wide desktop, and your phone styles never switch on.</p></div>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Play</span><h2>Change the screen width</h2><p>Drag the slider to change the pretend screen width and watch which rules switch on.</p></div>
 
   <section class="lab">
     <div class="panel" style="display:grid;gap:14px">
@@ -103,13 +129,16 @@
                 <div class="card"><i></i><b>Mesa Trail</b><small>6.7 mi · Moderate</small></div>
                 <div class="card"><i></i><b>Chautauqua Loop</b><small>1.2 mi · Easy</small></div>
               </div>
-              <aside><b>Trail conditions</b><br>Muddy below 7,000 ft. Bring layers.</aside>
+              <div class="aside"><b>Trail conditions</b><br>Muddy below 7,000 ft. Bring layers.</div>
             </div>
           </div>
         </div>
       </div>
     </div>
   </section>
+
+  <div class="section-title"><span class="eyebrow">Practice</span><h2>Rewrite the queries mobile first</h2><p>These queries start from the desktop and undo it. Flip them to start small and add.</p></div>
+  <div id="ex-mq"></div>
 
   <section class="notes">
     <div class="panel">
@@ -132,8 +161,11 @@
     </div>
   </section>
 
+  <div class="section-title"><span class="eyebrow">Check yourself</span><h2>Quick check</h2></div>
+  <div class="panel quiz" id="quiz"></div>
+
   <footer class="page-foot" data-book-nav><a href="index.html">← Contents</a></footer>
-</div>
+</main>
 
 <script>
   const $ = (id) => document.getElementById(id);
@@ -182,6 +214,67 @@
   document.querySelectorAll(".presets button").forEach((btn) => btn.addEventListener("click", () => { $("w").value = btn.dataset.w; update(); }));
   window.addEventListener("resize", () => { update(); showReal(); });
   update(); showReal();
+</script>
+<script>
+  makeQuiz(document.getElementById("quiz"), [
+    { id: "q1", q: "What does @media (min-width: 600px) mean?", opts: ["600px or wider", "600px or narrower", "Exactly 600px"], a: 0, why: "min-width sets a minimum: the rules apply at 600px and up." },
+    { id: "q2", q: "Two min-width queries both apply and conflict. Which wins?", opts: ["The first one", "The later one", "The smaller breakpoint"], a: 1, why: "Normal source order: the later rule wins. List queries from smallest to largest." },
+    { id: "q3", q: "How should you pick breakpoints?", opts: ["Use the widths of popular phones", "Every 100px", "Where your layout starts to look wrong"], a: 2, why: "Content-based breakpoints work on every device, including ones not made yet." },
+    { id: "q4", q: "Your media queries work in a narrow desktop window but not on a real phone. What's missing?", opts: ["The viewport meta tag", "A max-width query", "!important"], a: 0, why: "Without it, phones lay out the page at desktop width." },
+  ]);
+</script>
+<script>
+  makeExercise(document.getElementById("ex-mq"), {
+    title: "One, two, three columns",
+    task: `<p>The cards should be one column on phones, two from 600px, and three from 900px. Rewrite the CSS so:</p>
+    <ol>
+      <li>The base <code>.cards</code> rule (outside any query) is the one-column phone layout.</li>
+      <li>A <code>min-width: 600px</code> query adds two columns.</li>
+      <li>A <code>min-width: 900px</code> query, after it, adds three.</li>
+      <li>No <code>max-width</code> queries are left.</li>
+    </ol>`,
+    html: `<div class="cards">
+  <div class="card">Mesa</div><div class="card">Royal Arch</div><div class="card">Flagstaff</div>
+</div>`,
+    css: `body { font-family: system-ui, sans-serif; }
+.card { padding: 20px; background: #b9c4ef; }
+
+.cards { display: grid; gap: 12px; grid-template-columns: 1fr 1fr 1fr; }
+
+@media (max-width: 900px) {
+  .cards { grid-template-columns: 1fr 1fr; }
+}
+@media (max-width: 600px) {
+  .cards { grid-template-columns: 1fr; }
+}`,
+    solution: { css: `body { font-family: system-ui, sans-serif; }
+.card { padding: 20px; background: #b9c4ef; }
+
+.cards { display: grid; gap: 12px; }
+
+@media (min-width: 600px) {
+  .cards { grid-template-columns: 1fr 1fr; }
+}
+@media (min-width: 900px) {
+  .cards { grid-template-columns: 1fr 1fr 1fr; }
+}` },
+    hints: [
+      "A grid with no grid-template-columns has one column. That's your phone layout.",
+      "min-width: 600px means “600px or wider”.",
+      "List the queries smallest first, so the later, wider one wins when both apply.",
+    ],
+    checks: (() => {
+      const tracks = (v) => { const m = /^repeat\((\d+)/.exec(v); return m ? Number(m[1]) : v.trim().split(/\s+/).length; };
+      const rules = (doc) => [...doc.styleSheets[0].cssRules];
+      const cols = (doc, width) => { const m = rules(doc).find((r) => r.media && r.conditionText.replace(/\s/g, "") === `(min-width:${width}px)`); const r = m && [...m.cssRules].find((x) => x.selectorText === ".cards"); return r ? tracks(r.style.gridTemplateColumns) : 0; };
+      return [
+        { label: "Outside any query, the cards are one column", test: ({ doc }) => rules(doc).filter((r) => r.selectorText === ".cards").every((r) => !r.style.gridTemplateColumns || tracks(r.style.gridTemplateColumns) === 1) && rules(doc).some((r) => r.selectorText === ".cards" && r.style.display === "grid") },
+        { label: "min-width: 600px gives two columns", test: ({ doc }) => cols(doc, 600) === 2 },
+        { label: "min-width: 900px gives three, after the 600px query", test: ({ doc }) => { const i = (w) => rules(doc).findIndex((r) => r.media && r.conditionText.replace(/\s/g, "") === `(min-width:${w}px)`); return cols(doc, 900) === 3 && i(600) < i(900); } },
+        { label: "No max-width queries are left", test: ({ doc }) => !rules(doc).some((r) => r.media && /max-width/.test(r.conditionText)) },
+      ];
+    })(),
+  });
 </script>
 </body>
 </html>

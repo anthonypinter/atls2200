@@ -4,9 +4,6 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>The Console &amp; Errors</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Recursive:slnt,wght,CASL,MONO@-15..0,300..1000,0..1,0..1&display=swap">
 <link rel="stylesheet" href="style.css">
 <style>
   .actions { display: grid; gap: 8px; }
@@ -37,13 +34,38 @@
 <script src="js/quiz.js"></script>
 </head>
 <body>
-<div class="wrap">
+<main class="wrap">
   <nav class="crumbs" aria-label="Site"><a class="crumb" href="index.html">← Field Guide</a><a class="crumb" href="glossary.html">Glossary</a></nav>
   <header class="page-head">
     <span class="eyebrow">JavaScript Basics · The Console &amp; Errors</span>
     <h1>The Console &amp; Errors</h1>
     <p class="lede">When JavaScript breaks, the page usually just stops working with no message. The explanation is in the browser's console. This guessing game has five bugs: use the console to track them down.</p>
+    <div class="objectives">
+      <p class="callout-title">You'll be able to</p>
+      <ul>
+        <li>Open the browser console and read an error message, including its line number.</li>
+        <li>Tell syntax errors, runtime errors and logic errors apart.</li>
+        <li>Track down a bug that shows no error by logging values with console.log().</li>
+      </ul>
+    </div>
   </header>
+
+  <div class="section-title"><span class="eyebrow">Read</span><h2>Where JavaScript tells you what went wrong</h2></div>
+  <div class="prose">
+    <p>When HTML or CSS has a mistake, you can usually see it: something's in the wrong place or the wrong color. When JavaScript breaks, the page often just stops responding, with no message at all. The explanation is waiting in the browser's console. Open <span class="term">DevTools</span> and click the Console tab.</p>
+    <p>Errors come in three kinds:</p>
+    <ul>
+      <li>A <span class="term">syntax error</span> is a typo in the grammar of the code, like a missing bracket or quote. The browser can't understand the file, so none of the script runs.</li>
+      <li>A runtime error happens while the code is running, like calling something that isn't a function. The script runs up to that line, then stops.</li>
+      <li>A logic error shows no message at all. The code runs fine, but does the wrong thing: the score goes down instead of up.</li>
+    </ul>
+    <p>Every error message tells you what went wrong and where. <code>game.js:21:13</code> means line 21, character 13. Click it and the browser jumps straight to that line. Read the message slowly: "guess is not defined" tells you that on that line, the name <code>guess</code> doesn't exist. Usually it's misspelled, or declared somewhere else.</p>
+    <p>Fix the first error first. One error stops the code after it from running, so later problems can't even show up yet. Fix it, reload, and see what's next.</p>
+    <p>For logic errors, use <span class="term">console.log()</span> to print values as the code runs. Is the number what you expected? Is that line running at all? Each answer narrows down where the bug is hiding.</p>
+    <div class="callout tip"><p class="callout-title">Tip</p><p>Label what you log: <code>console.log("guess:", guess)</code>. When there are five values in the console, you'll want to know which is which.</p></div>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Play</span><h2>Debug the guessing game</h2><p>Play the game, then open the console to find the five bugs.</p></div>
 
   <section class="playground">
     <div class="panel controls">
@@ -66,7 +88,7 @@
     </div>
   </section>
 
-  <div class="section-title"><span class="eyebrow">Part 2</span><h2>Error message decoder</h2><p>These are the errors you'll see most often in Chrome. Firefox and Safari word some of them differently, but the type at the start (<code>SyntaxError</code>, <code>TypeError</code>, <code>ReferenceError</code>) is the same everywhere.</p></div>
+  <div class="section-title"><span class="eyebrow">Play</span><h2>Error message decoder</h2><p>These are the errors you'll see most often in Chrome. Firefox and Safari word some of them differently, but the type at the start (<code>SyntaxError</code>, <code>TypeError</code>, <code>ReferenceError</code>) is the same everywhere.</p></div>
   <section class="playground">
     <div class="panel decoder" id="decoder" role="group" aria-label="Error messages"></div>
     <div class="stage-col"><div class="decode-out" id="decode-out"></div></div>
@@ -80,6 +102,9 @@ console.log(trail.toUppercase());
 const rating = 4;
 rating = 5;
 console.log(`${trail}: ${miles} miles, ${rating} stars`);</textarea></div>
+
+  <div class="section-title"><span class="eyebrow">Practice</span><h2>Debug the script</h2><p>This script has a syntax error, a runtime error and a logic error. Fix them one at a time, starting with the first message.</p></div>
+  <div id="ex-debug"></div>
 
   <section class="notes">
     <div class="panel">
@@ -110,8 +135,11 @@ console.log(`${trail}: ${miles} miles, ${rating} stars`);</textarea></div>
     </div>
   </section>
 
+  <div class="section-title"><span class="eyebrow">Check yourself</span><h2>Quick check</h2></div>
+  <div class="panel quiz" id="quiz"></div>
+
   <footer class="page-foot" data-book-nav><a href="index.html">← Contents</a></footer>
-</div>
+</main>
 
 <script src="js/runner.js"></script>
 <script>
@@ -267,6 +295,56 @@ console.log(`${trail}: ${miles} miles, ${rating} stars`);</textarea></div>
   $("decoder").addEventListener("click", (e) => { const b = e.target.closest("button"); if (b) { pick = +b.dataset.i; renderDecoder(); } });
 
   renderCode(); actLoad(); renderDecoder();
+</script>
+<script>
+  makeQuiz(document.getElementById("quiz"), [
+    { id: "q1", q: "A missing closing bracket is which kind of error?", opts: ["Syntax error", "Runtime error", "Logic error"], a: 0, why: "It breaks the grammar of the code, so none of the script runs." },
+    { id: "q2", q: "The code runs with no errors, but the score goes down when it should go up. What kind of error is that?", opts: ["Syntax error", "Logic error", "Runtime error"], a: 1, why: "Logic errors produce no message. Use console.log() to check values." },
+    { id: "q3", q: "What does app.js:14:7 tell you?", opts: ["Error code 147", "14 errors, 7 warnings", "Line 14, character 7"], a: 2, why: "Click it to jump straight to that spot." },
+    { id: "q4", q: "The console shows four errors. Which should you fix first?", opts: ["The first one", "The last one", "The longest one"], a: 0, why: "One error can stop the rest of the code, causing or hiding later ones." },
+  ]);
+</script>
+<script>
+  makeExercise(document.getElementById("ex-debug"), {
+    title: "Three bugs, one at a time",
+    task: `<p>When it works, the script logs:</p>
+    <pre class="snippet">Mesa is 6.7 miles long.
+Round trip: 13.4 miles</pre>
+    <p>Press Run, read the first error, fix it, and run again.</p>`,
+    js: `const trail = "Mesa";
+const miles = 6.7;
+
+function describe(name, length {
+  return name + " is " + length + " miles long.";
+}
+
+const roundTrip = miles + 2;
+
+console.log(describe(trial, miles));
+console.log("Round trip: " + roundTrip + " miles");`,
+    solution: `const trail = "Mesa";
+const miles = 6.7;
+
+function describe(name, length) {
+  return name + " is " + length + " miles long.";
+}
+
+const roundTrip = miles * 2;
+
+console.log(describe(trail, miles));
+console.log("Round trip: " + roundTrip + " miles");`,
+    expose: ["describe"],
+    hints: [
+      "SyntaxError: the function's list of parameters is missing its closing parenthesis.",
+      "ReferenceError: “trial is not defined”. Compare that name with the variable at the top.",
+      "No error, wrong answer: a round trip is twice the distance, not two more miles.",
+    ],
+    checks: [
+      { label: "Runs without an error", test: ({ error }) => !error },
+      { label: "Logs “Mesa is 6.7 miles long.”", test: ({ logs }) => logs.includes("Mesa is 6.7 miles long.") },
+      { label: "Logs “Round trip: 13.4 miles”", test: ({ logs }) => logs.includes("Round trip: 13.4 miles") },
+    ],
+  });
 </script>
 </body>
 </html>

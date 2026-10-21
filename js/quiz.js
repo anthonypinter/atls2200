@@ -10,6 +10,7 @@
   const esc = (s) => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 
   function makeQuiz(el, items) {
+    el.quizItems = items;   // print.html reads the questions from here
     const P = window.Progress;
     const quizId = `${P ? P.page : "page"}/${el.id || "quiz"}`;
     items.forEach((x, i) => {

@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Review: Responsive Design</title>
+<link rel="stylesheet" href="style.css">
+<script src="book.js"></script>
+<script src="js/progress.js"></script>
+<script src="js/chrome.js"></script>
+<script src="js/quiz.js"></script>
+</head>
+<body>
+<main class="wrap">
+  <nav class="crumbs" aria-label="Site"><a class="crumb" href="index.html">← Field Guide</a><a class="crumb" href="glossary.html">Glossary</a></nav>
+  <header class="page-head">
+    <span class="eyebrow">Responsive Design · Review</span>
+    <h1>Review: Responsive Design</h1>
+    <p class="lede">Put the whole part together. Skim the recap, build a profile card that works from phone to desktop, then test yourself with mixed questions.</p>
+    <div class="objectives">
+      <p class="callout-title">You'll be able to</p>
+      <ul>
+        <li>Build a component mobile first, with fluid images and type.</li>
+        <li>Choose between media queries and fluid sizing for a given change.</li>
+        <li>Decide which lesson to revisit, based on the questions you miss.</li>
+      </ul>
+    </div>
+  </header>
+
+  <div class="section-title"><span class="eyebrow">Read</span><h2>What you've covered</h2></div>
+  <div class="prose">
+    <p>This part was about one page working on every screen: layouts that change at breakpoints, images that fit and download efficiently, and sizes that grow smoothly.</p>
+    <ul class="recap">
+      <li><a href="media-queries.html">Media Queries</a>: min-width queries add rules on wider screens, and later queries win when several apply.</li>
+      <li><a href="responsive-images.html">Responsive Images</a>: max-width: 100% and height: auto keep images inside their containers; srcset offers smaller files.</li>
+      <li><a href="picture.html">Picture &amp; Lazy Loading</a>: sizes tells the browser how wide an image will be, picture swaps the crop, and lazy loading waits.</li>
+      <li><a href="mobile-first.html">Mobile-First Workflow</a>: Write the phone layout first, outside any query, then add for wider screens.</li>
+      <li><a href="fluid-sizing.html">Fluid Sizing</a>: clamp(), min(), max() and calc() let sizes grow smoothly within limits.</li>
+    </ul>
+    <div class="callout tip"><p class="callout-title">How to use this page</p><p>Try the project without looking back at the lessons. When you get stuck, or miss a quiz question, the lesson it comes from is linked above.</p></div>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Practice</span><h2>Mini project: a responsive profile card</h2><p>Build it mobile first, with an image and a heading that adapt to any width.</p></div>
+  <div id="ex-project"></div>
+
+  <div class="section-title"><span class="eyebrow">Check yourself</span><h2>Mixed quiz</h2><p>Ten questions from across the part, in no particular order.</p></div>
+  <div class="panel quiz" id="quiz"></div>
+
+  <footer class="page-foot" data-book-nav><a href="index.html">← Contents</a></footer>
+</main>
+
+<script>
+  makeQuiz(document.getElementById("quiz"), [
+    { id: "q1", q: "What does @media (min-width: 700px) mean?", opts: ["700px or wider", "Up to 700px", "Exactly 700px"], a: 0, why: "min-width sets the smallest width the rules apply at." },
+    { id: "q2", q: "In mobile-first CSS, where's the phone layout?", opts: ["In a max-width query", "Outside any media query", "In a separate file"], a: 1, why: "Base styles are for the smallest screen; queries add to them." },
+    { id: "q3", q: "Media queries work in a narrow browser window but not on a real phone. What's missing?", opts: ["!important", "A max-width query", "The viewport meta tag"], a: 2, why: "Without it, phones lay out the page at desktop width." },
+    { id: "q4", q: "Which two lines stop images overflowing their containers?", opts: ["max-width: 100%; height: auto;", "width: 100vw; height: 100vh;", "overflow: hidden;"], a: 0, why: "They let images shrink, never stretch, and keep their shape." },
+    { id: "q5", q: "What does srcset save?", opts: ["Lines of CSS", "Download size on small screens", "Alt text"], a: 1, why: "The browser picks the smallest file that will look sharp." },
+    { id: "q6", q: "You want a tighter crop of a photo on phones. What do you use?", opts: ["object-position", "srcset alone", "<picture> with a <source media>"], a: 2, why: "Changing the image itself is art direction, which is picture's job." },
+    { id: "q7", q: "What order do clamp()'s values go in?", opts: ["min, preferred, max", "max, preferred, min", "preferred, min, max"], a: 0, why: "Minimum, preferred value, maximum." },
+    { id: "q8", q: "Which image shouldn't be lazy-loaded?", opts: ["Gallery photos far down", "The large photo at the top", "Footer logos"], a: 1, why: "Visitors see it straight away, so it should load immediately." },
+    { id: "q9", q: "How should you choose breakpoints?", opts: ["Every 200px", "From a list of phone sizes", "Where your layout starts to look wrong"], a: 2, why: "Content-based breakpoints work on every device." },
+    { id: "q10", q: "width: min(100%, 600px) on a 400px phone. How wide is the box?", opts: ["400px", "600px", "100px"], a: 0, why: "min() picks the smaller: 100% of 400px." },
+  ]);
+</script>
+<script>
+  makeExercise(document.getElementById("ex-project"), {
+    title: "Profile card, phone to desktop",
+    height: 420,
+    task: `<ol>
+      <li>Images never overflow their container and keep their proportions.</li>
+      <li>The avatar is a 120px circle, cropped rather than squashed.</li>
+      <li>The name's size uses <code>clamp()</code>, staying between 24px and 40px.</li>
+      <li>The card fills narrow screens but is never wider than 480px, and is centered.</li>
+      <li>Mobile first: the stats stack in one column by default, and a <code>min-width: 500px</code> query makes them three columns. No <code>max-width</code> queries.</li>
+    </ol>
+    <p class="hint">The cover photo doesn't exist, so you'll see an empty box. The avatar is a wide placeholder drawing, so you can see it get squashed or cropped.</p>`,
+    html: `<article class="profile">
+  <img class="cover" src="flatirons-wide.jpg" alt="The Flatirons at sunrise" width="1200" height="400">
+  <img class="avatar" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='200'%3E%3Crect width='300' height='200' fill='%23b9c4ef'/%3E%3Ccircle cx='150' cy='80' r='42' fill='%232340d9'/%3E%3Crect x='80' y='130' width='140' height='70' rx='60' fill='%232340d9'/%3E%3C/svg%3E" alt="Sam" width="300" height="200">
+  <h1>Sam Rivera</h1>
+  <p>Leads the Saturday hikes. Favorite trail: Royal Arch.</p>
+  <ul class="stats">
+    <li><b>42</b> hikes</li>
+    <li><b>310</b> miles</li>
+    <li><b>12</b> peaks</li>
+  </ul>
+</article>`,
+    css: `body { font-family: system-ui, sans-serif; margin: 0; padding: 12px; }
+.profile { width: 480px; background: #eef1fb; padding: 16px; box-sizing: border-box; }
+.avatar { width: 120px; height: 120px; border-radius: 50%; }
+h1 { font-size: 40px; }
+.stats { list-style: none; padding: 0; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+.stats li { background: white; padding: 8px; text-align: center; }
+
+@media (max-width: 499px) {
+  .stats { grid-template-columns: 1fr; }
+}`,
+    solution: { css: `body { font-family: system-ui, sans-serif; margin: 0; padding: 12px; }
+img { max-width: 100%; height: auto; }
+.profile { width: 100%; max-width: 480px; margin: 0 auto; background: #eef1fb; padding: 16px; box-sizing: border-box; }
+.avatar { width: 120px; height: 120px; border-radius: 50%; object-fit: cover; }
+h1 { font-size: clamp(1.5rem, 1rem + 3vw, 2.5rem); }
+.stats { list-style: none; padding: 0; display: grid; gap: 8px; }
+.stats li { background: white; padding: 8px; text-align: center; }
+
+@media (min-width: 500px) {
+  .stats { grid-template-columns: 1fr 1fr 1fr; }
+}` },
+    hints: [
+      "img { max-width: 100%; height: auto; } then the avatar's own width and height still apply to it.",
+      "clamp(1.5rem, 1rem + 3vw, 2.5rem) stays between 24px and 40px.",
+      "Move the three-column rule into @media (min-width: 500px) and delete the max-width query.",
+    ],
+    checks: (() => {
+      const rules = (doc) => [...doc.styleSheets[0].cssRules];
+      const tracks = (v) => { const m = /^repeat\((\d+)/.exec(v); return m ? Number(m[1]) : v.trim().split(/\s+/).length; };
+      return [
+        { label: "Images can't overflow and keep their shape", test: ({ $, doc, style }) => style(".cover", "max-width") === "100%" && rules(doc).some((r) => r.style && r.style.height === "auto" && $(".cover").matches(r.selectorText)) },
+        { label: "The avatar is a cropped 120px circle", test: ({ style }) => { return style(".avatar", "width") === "120px" && style(".avatar", "height") === "120px" && style(".avatar", "border-top-left-radius") === "50%" && style(".avatar", "object-fit") === "cover"; } },
+        { label: "The name uses clamp(), between 24 and 40px", test: ({ doc, style }) => { const px = parseFloat(style("h1", "font-size")); return rules(doc).some((r) => r.selectorText === "h1" && /^clamp\(/.test(r.style.fontSize)) && px >= 24 && px <= 40; } },
+        { label: "The card is at most 480px, fills narrow screens, and is centered", test: ({ $, doc, style }) => { const r = $(".profile").getBoundingClientRect(), w = doc.documentElement.clientWidth; return style(".profile", "max-width") === "480px" && !rules(doc).some((x) => x.selectorText === ".profile" && x.style.width === "480px") && Math.abs(r.left - (w - r.right)) < 1; } },
+        { label: "Stats: one column by default, three from min-width: 500px", test: ({ doc }) => rules(doc).filter((r) => r.selectorText === ".stats").every((r) => !r.style.gridTemplateColumns || tracks(r.style.gridTemplateColumns) === 1) && rules(doc).some((m) => m.media && m.conditionText.replace(/\s/g, "") === "(min-width:500px)" && [...m.cssRules].some((r) => r.selectorText === ".stats" && tracks(r.style.gridTemplateColumns) === 3)) && !rules(doc).some((m) => m.media && /max-width/.test(m.conditionText)) },
+      ];
+    })(),
+  });
+</script>
+</body>
+</html>

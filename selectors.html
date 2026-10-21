@@ -4,9 +4,6 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Selectors &amp; Specificity</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Recursive:slnt,wght,CASL,MONO@-15..0,300..1000,0..1,0..1&display=swap">
 <link rel="stylesheet" href="style.css">
 <style>
   .sel-input { display: grid; gap: 6px; }
@@ -51,13 +48,41 @@
 <script src="js/quiz.js"></script>
 </head>
 <body>
-<div class="wrap">
+<main class="wrap">
   <nav class="crumbs" aria-label="Site"><a class="crumb" href="index.html">← Field Guide</a><a class="crumb" href="glossary.html">Glossary</a></nav>
   <header class="page-head">
     <span class="eyebrow">CSS Basics · Selectors &amp; Specificity</span>
     <h1>Selectors &amp; Specificity</h1>
     <p class="lede">A selector picks which elements a rule applies to. Type one below and the matching elements light up. When two rules disagree, specificity decides which one wins.</p>
+    <div class="objectives">
+      <p class="callout-title">You'll be able to</p>
+      <ul>
+        <li>Select elements by type, class, ID and attribute.</li>
+        <li>Combine selectors with descendant, child and sibling combinators.</li>
+        <li>Work out which of two rules wins using specificity.</li>
+      </ul>
+    </div>
   </header>
+
+  <div class="section-title"><span class="eyebrow">Read</span><h2>Picking the right elements</h2></div>
+  <div class="prose">
+    <p>A <span class="term">selector</span> is how a rule says which elements it styles. Three kinds do most of the work:</p>
+    <ul>
+      <li>A <span class="term">type selector</span> like <code>p</code> picks every paragraph.</li>
+      <li>A <span class="term">class</span> selector like <code>.card</code> picks every element with <code>class="card"</code>. Classes are reusable, so they're what you'll use most.</li>
+      <li>An <span class="term">ID</span> selector like <code>#top</code> picks the one element with <code>id="top"</code>.</li>
+    </ul>
+    <p>You can combine them. A <span class="term">combinator</span> describes how elements relate:</p>
+    <pre class="snippet" data-lang="css">.card .title { }   /* a .title anywhere inside a .card */
+.card > h2 { }     /* an h2 that's a direct child of .card */
+h2 + p { }         /* the p right after an h2 */
+.tag.hard { }      /* one element with both classes */</pre>
+    <p>Look closely at the first and last lines. A space means "inside", and no space means "both at once". That one space is behind a lot of confusing bugs. An <span class="term">attribute selector</span>, like <code>a[href$=".pdf"]</code>, picks elements by their attributes: here, links to PDF files.</p>
+    <p>When two rules set the same property on the same element, <span class="term">specificity</span> decides which wins. The browser scores each selector by counting IDs, then classes, then element types, and compares column by column. One ID outranks any number of classes, and one class outranks any number of types. Only if the scores tie does the rule written later win.</p>
+    <div class="callout tip"><p class="callout-title">Tip</p><p>Style with classes and keep selectors short. IDs and long chains score so high that the next time you want to change something, you'll need an even stronger selector to beat them.</p></div>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Play</span><h2>Type a selector</h2><p>Type any selector and the matching elements light up. Try the suggestions, then write your own.</p></div>
 
   <section class="playground">
     <div class="panel controls">
@@ -112,6 +137,9 @@
   </div>
   <div class="verdict" aria-live="polite"><span class="sample" id="sample">Mesa Trail</span><span id="verdict"></span></div>
 
+  <div class="section-title"><span class="eyebrow">Practice</span><h2>Write the selectors</h2><p>The declarations are done. Write a selector for each rule so it matches only what the comment describes.</p></div>
+  <div id="ex-select"></div>
+
   <section class="notes">
     <div class="panel">
       <h2>Key ideas</h2>
@@ -135,8 +163,11 @@
     </div>
   </section>
 
+  <div class="section-title"><span class="eyebrow">Check yourself</span><h2>Quick check</h2></div>
+  <div class="panel quiz" id="quiz"></div>
+
   <footer class="page-foot" data-book-nav><a href="index.html">← Contents</a></footer>
-</div>
+</main>
 
 <script>
   const $ = (id) => document.getElementById(id);
@@ -233,6 +264,60 @@
   }
   $("a").addEventListener("input", compare); $("b").addEventListener("input", compare);
   compare();
+</script>
+<script>
+  makeQuiz(document.getElementById("quiz"), [
+    { id: "q1", q: "What does .card .title select?", opts: ["A .title anywhere inside a .card", "Elements with both classes", "A .title right after a .card"], a: 0, why: "The space is the descendant combinator: inside, at any depth." },
+    { id: "q2", q: "Which rule wins: .nav a or #menu a?", opts: [".nav a", "#menu a", "Whichever comes last"], a: 1, why: "An ID outranks any number of classes." },
+    { id: "q3", q: "Two rules have exactly the same specificity. Which wins?", opts: ["The first one", "The one written later", "Neither applies"], a: 1, why: "On a tie, source order decides: later wins." },
+    { id: "q4", q: "You wrote card { } to style class=\"card\" and nothing happens. Why?", opts: ["Classes need a dot: .card", "Classes need a #", "card is a reserved word"], a: 0, why: "Without the dot, the browser looks for a <card> element." },
+    { id: "q5", q: "Which selector picks links to PDF files?", opts: ["a.pdf", "a[href$=\".pdf\"]", "a > pdf"], a: 1, why: "$= matches attribute values that end with the given text." },
+  ]);
+</script>
+<script>
+  makeExercise(document.getElementById("ex-select"), {
+    title: "Target exactly the right elements",
+    task: `<p>Replace each <code>SELECTOR</code> placeholder. Don't change the HTML or the declarations.</p>
+    <ol>
+      <li>Only the links in the nav, not the one in the paragraph</li>
+      <li>Only tags that have both the <code>tag</code> and <code>hard</code> classes</li>
+      <li>Only the list items directly inside <code>.trails</code>, not the nested one</li>
+    </ol>`,
+    html: `<nav><a href="#">Trails</a> <a href="#">Events</a></nav>
+<ul class="trails">
+  <li>Mesa <span class="tag">easy</span>
+    <ul><li>Bear Canyon spur</li></ul>
+  </li>
+  <li>Royal Arch <span class="tag hard">hard</span></li>
+</ul>
+<p>More at <a href="#">the city's site</a>.</p>`,
+    css: `/* 1. Only the links in the nav */
+SELECTOR-1 { color: crimson; }
+
+/* 2. Tags that are also hard */
+SELECTOR-2 { background: gold; }
+
+/* 3. Only the direct list items of .trails */
+SELECTOR-3 { border-bottom: 2px solid #2340d9; }`,
+    solution: { css: `/* 1. Only the links in the nav */
+nav a { color: crimson; }
+
+/* 2. Tags that are also hard */
+.tag.hard { background: gold; }
+
+/* 3. Only the direct list items of .trails */
+.trails > li { border-bottom: 2px solid #2340d9; }` },
+    hints: [
+      "A space means “inside”: nav a matches links inside a nav.",
+      "No space between classes means “both at once”: .tag.hard.",
+      "> means “direct child only”.",
+    ],
+    checks: [
+      { label: "Nav links are crimson, the paragraph link isn't", test: ({ $, $$, style }) => $$("nav a").every((a) => style(a, "color") === "rgb(220, 20, 60)") && style($("p a"), "color") !== "rgb(220, 20, 60)" },
+      { label: "Only the hard tag is gold", test: ({ $, style }) => style(".tag.hard", "background-color") === "rgb(255, 215, 0)" && style(".tag:not(.hard)", "background-color") !== "rgb(255, 215, 0)" },
+      { label: "Only the top-level trail items have a border", test: ({ $$, style }) => $$(".trails > li").every((li) => style(li, "border-bottom-width") === "2px") && style(".trails ul li", "border-bottom-width") === "0px" },
+    ],
+  });
 </script>
 </body>
 </html>

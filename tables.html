@@ -4,9 +4,6 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Tables</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Recursive:slnt,wght,CASL,MONO@-15..0,300..1000,0..1,0..1&display=swap">
 <link rel="stylesheet" href="style.css">
 <style>
   .table-wrap { overflow-x: auto; background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 14px; }
@@ -39,13 +36,41 @@
 <script src="js/quiz.js"></script>
 </head>
 <body>
-<div class="wrap">
+<main class="wrap">
   <nav class="crumbs" aria-label="Site"><a class="crumb" href="index.html">← Field Guide</a><a class="crumb" href="glossary.html">Glossary</a></nav>
   <header class="page-head">
     <span class="eyebrow">HTML Foundations · Tables</span>
     <h1>Tables</h1>
     <p class="lede">Tables are for data with rows and columns, like a schedule or a comparison. Build up this table one feature at a time, and click any cell to hear what a screen reader says.</p>
+    <div class="objectives">
+      <p class="callout-title">You'll be able to</p>
+      <ul>
+        <li>Build a table with header cells, a caption, and head and body sections.</li>
+        <li>Use scope so screen readers know which header labels each cell.</li>
+        <li>Merge cells with colspan and rowspan, and decide when a table is the wrong tool.</li>
+      </ul>
+    </div>
   </header>
+
+  <div class="section-title"><span class="eyebrow">Read</span><h2>Tables are for data</h2></div>
+  <div class="prose">
+    <p>A table is the right element when your data has rows <em>and</em> columns that both mean something, like a hike schedule or a comparison of trails. Each row is a <code>&lt;tr&gt;</code>, and each row holds cells: <code>&lt;th&gt;</code> for headers, <code>&lt;td&gt;</code> for data.</p>
+    <pre class="snippet" data-lang="html">&lt;table&gt;
+  &lt;caption&gt;Boulder-area trails&lt;/caption&gt;
+  &lt;thead&gt;
+    &lt;tr&gt;&lt;th scope="col"&gt;Trail&lt;/th&gt;&lt;th scope="col"&gt;Miles&lt;/th&gt;&lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+    &lt;tr&gt;&lt;th scope="row"&gt;Mesa&lt;/th&gt;&lt;td&gt;6.7&lt;/td&gt;&lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;</pre>
+    <p>Every piece of that markup helps someone. The <code>&lt;caption&gt;</code> is the table's title. <code>&lt;thead&gt;</code> and <code>&lt;tbody&gt;</code> group the header row and the data. And <code>scope</code> tells a <span class="term">screen reader</span> which cells a header labels. Without it, a listener moving through the table hears "6.7" and has to remember which trail and which column that was. With it, they hear "Mesa, Miles: 6.7".</p>
+    <p>Sometimes a cell needs to stretch: <code>colspan="2"</code> makes it two columns wide, and <code>rowspan="2"</code> makes it two rows tall. Every row still has to add up to the same number of columns, or the cells after it shift out of line.</p>
+    <p>Tables used to be how whole pages were laid out, because there was nothing better. Now there is. If your "rows and columns" are really a grid of cards or a page layout, use <a href="flexbox.html">Flexbox</a> or <a href="grid.html">CSS Grid</a>, and keep tables for data.</p>
+    <div class="callout tip"><p class="callout-title">Tip</p><p>Wide tables don't fit on phones. Wrap the table in a <code>&lt;div&gt;</code> with <code>overflow-x: auto</code> so it scrolls sideways instead of stretching the whole page.</p></div>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Play</span><h2>Build a table one feature at a time</h2><p>Turn on each feature, and click any cell to hear what a screen reader says about it.</p></div>
 
   <section class="playground">
     <div class="panel controls">
@@ -65,7 +90,7 @@
     </div>
   </section>
 
-  <div class="section-title"><span class="eyebrow">Part 2</span><h2>Cells that span, footers and column groups</h2><p>Some cells need to stretch across columns or down rows. Turn each feature on to see the problem it solves.</p></div>
+  <div class="section-title"><span class="eyebrow">Play</span><h2>Cells that span, footers and column groups</h2><p>Some cells need to stretch across columns or down rows. Turn each feature on to see the problem it solves.</p></div>
   <section class="playground">
     <div class="panel controls">
       <label class="check"><input type="checkbox" id="s-row"><span><span class="tagn">rowspan="2"</span> on the long hike</span></label>
@@ -81,6 +106,9 @@
 
   <div class="section-title"><span class="eyebrow">Practice</span><h2>Table or not?</h2><p>Tables used to be used for page layout. Now they're only for data. Decide for each one.</p></div>
   <div class="panel quiz" id="quiz"></div>
+
+  <div class="section-title"><span class="eyebrow">Practice</span><h2>Structure a table</h2><p>This table has the right data but no structure, so screen readers can't tell headers from data.</p></div>
+  <div id="ex-table"></div>
 
   <section class="notes">
     <div class="panel">
@@ -105,7 +133,7 @@
   </section>
 
   <footer class="page-foot" data-book-nav><a href="index.html">← Contents</a></footer>
-</div>
+</main>
 
 <script>
   const $ = (id) => document.getElementById(id);
@@ -166,6 +194,44 @@
     { id: "q4", q: "A page with a sidebar on the left and content on the right.", a: 1, why: "Page layout belongs in CSS, not tables." },
   ];
   makeQuiz($("quiz"), QUIZ.map((x) => ({ ...x, opts: ["Use a table", "Not a table"] })));
+</script>
+<script>
+  makeExercise(document.getElementById("ex-table"), {
+    title: "Trail table",
+    task: `<ol>
+      <li>Add the caption <em>Boulder trails</em>.</li>
+      <li>Put the first row in a <code>&lt;thead&gt;</code> and turn its cells into header cells with <code>scope="col"</code>.</li>
+      <li>Put the two trail rows in a <code>&lt;tbody&gt;</code>.</li>
+    </ol>`,
+    html: `<table>
+  <tr><td>Trail</td><td>Miles</td><td>Difficulty</td></tr>
+  <tr><td>Mesa</td><td>6.7</td><td>Moderate</td></tr>
+  <tr><td>Royal Arch</td><td>3.4</td><td>Hard</td></tr>
+</table>`,
+    css: `table { border-collapse: collapse; font-family: system-ui, sans-serif; }
+th, td { border: 1px solid #c8cbd6; padding: 6px 12px; text-align: left; }
+caption { font-weight: bold; margin-bottom: 6px; }`,
+    solution: { html: `<table>
+  <caption>Boulder trails</caption>
+  <thead>
+    <tr><th scope="col">Trail</th><th scope="col">Miles</th><th scope="col">Difficulty</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>Mesa</td><td>6.7</td><td>Moderate</td></tr>
+    <tr><td>Royal Arch</td><td>3.4</td><td>Hard</td></tr>
+  </tbody>
+</table>` },
+    hints: [
+      "<caption> goes right after the opening <table> tag.",
+      "Header cells are <th>, not <td>. Add scope=\"col\" because each one labels a column.",
+    ],
+    checks: [
+      { label: "The caption says “Boulder trails”", test: ({ $ }) => $("table > caption").textContent.trim() === "Boulder trails" },
+      { label: "The first row is in a <thead>", test: ({ $$ }) => $$("thead tr").length === 1 },
+      { label: "The header cells are <th scope=\"col\">", test: ({ $$ }) => $$("thead th").length === 3 && $$("thead th").every((th) => th.getAttribute("scope") === "col") && $$("thead td").length === 0 },
+      { label: "The two trails are in the <tbody>", test: ({ $$ }) => $$("tbody tr").length === 2 && $$("tbody td").length === 6 },
+    ],
+  });
 </script>
 </body>
 </html>

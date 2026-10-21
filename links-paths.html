@@ -4,9 +4,6 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Links &amp; Paths</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Recursive:slnt,wght,CASL,MONO@-15..0,300..1000,0..1,0..1&display=swap">
 <link rel="stylesheet" href="style.css">
 <style>
   .tree { list-style: none; margin: 0; padding: 0; font: 0.92rem/1.4 var(--font-code); font-variation-settings: "MONO" 1; display: grid; gap: 2px; }
@@ -36,13 +33,42 @@
 <script src="js/quiz.js"></script>
 </head>
 <body>
-<div class="wrap">
+<main class="wrap">
   <nav class="crumbs" aria-label="Site"><a class="crumb" href="index.html">← Field Guide</a><a class="crumb" href="glossary.html">Glossary</a></nav>
   <header class="page-head">
     <span class="eyebrow">HTML Foundations · Links &amp; Paths</span>
     <h1>Links &amp; Paths</h1>
     <p class="lede">A relative path is directions from the file you're writing in to the file you want. Pick where you are, click where you want to go, then try writing the path yourself.</p>
+    <div class="objectives">
+      <p class="callout-title">You'll be able to</p>
+      <ul>
+        <li>Write a relative path from one file to another, including ../ to go up a folder.</li>
+        <li>Choose between relative, root-relative and absolute links.</li>
+        <li>Write link text that says where the link goes.</li>
+      </ul>
+    </div>
   </header>
+
+  <div class="section-title"><span class="eyebrow">Read</span><h2>Directions from here to there</h2></div>
+  <div class="prose">
+    <p>Every link has an <code>href</code> that says where it goes. Links to other sites use an <span class="term">absolute path</span>, the full address: <code>https://www.nps.gov/romo/</code>. Links between your own files use a <span class="term">relative path</span>, which is directions from the file you're writing in to the file you want.</p>
+    <p>Picture this project:</p>
+    <pre class="snippet">trail-club/
+├── index.html
+├── about.html
+├── css/
+│   └── style.css
+└── hikes/
+    ├── mesa.html
+    └── photos/
+        └── mesa.jpg</pre>
+    <p>From <code>index.html</code>, the path to the Mesa page is <code>hikes/mesa.html</code>: into the <code>hikes</code> folder, then the file. From <code>mesa.html</code>, the photo is <code>photos/mesa.jpg</code>. And from <code>mesa.html</code> back to the home page is <code>../index.html</code>. The <code>../</code> means "go up one folder", and you use it once for each level you need to climb.</p>
+    <p>Two details catch everyone. A path inside a CSS file, like <code>url(...)</code>, starts from the CSS file's folder, not the page's. And web paths always use forward slashes and are case-sensitive once they're online.</p>
+    <p>Finally, make the link text say where it goes. "Read the Mesa Trail guide" tells a screen reader user, who may be skimming a list of every link on the page, exactly what they'll get. "Click here" tells them nothing.</p>
+    <div class="callout warn"><p class="callout-title">Watch out</p><p>A path like <code>C:\Users\you\Desktop\mesa.jpg</code> or <code>file:///…</code> points at your own computer. It works for you and for nobody else, so the image breaks as soon as the site is online.</p></div>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Play</span><h2>Find the path</h2><p>Pick the file you're writing in, click the file you want, and see the path. Then try writing one yourself.</p></div>
 
   <section class="playground">
     <div class="panel controls">
@@ -74,6 +100,9 @@
     <div class="panel"><h3>Email</h3><code>mailto:you@example.com</code><p class="hint">Opens the visitor's email app, if they have one set up.</p></div>
   </div>
 
+  <div class="section-title"><span class="eyebrow">Practice</span><h2>Fix the paths</h2><p>This page lives in a subfolder, so each link needs a path that starts from there.</p></div>
+  <div id="ex-paths"></div>
+
   <section class="notes">
     <div class="panel">
       <h2>Key ideas</h2>
@@ -95,8 +124,11 @@
     </div>
   </section>
 
+  <div class="section-title"><span class="eyebrow">Check yourself</span><h2>Quick check</h2></div>
+  <div class="panel quiz" id="quiz"></div>
+
   <footer class="page-foot" data-book-nav><a href="index.html">← Contents</a></footer>
-</div>
+</main>
 
 <script>
   const $ = (id) => document.getElementById(id);
@@ -165,6 +197,53 @@
   $("guess").addEventListener("input", update);
   $("show").addEventListener("click", () => { revealed = true; update(); });
   update();
+</script>
+<script>
+  makeQuiz(document.getElementById("quiz"), [
+    { id: "q1", q: "You're in hikes/mesa.html. What's the path to index.html one folder up?", opts: ["index.html", "/hikes/index.html", "../index.html"], a: 2, why: "../ goes up one folder, out of hikes/, to where index.html lives." },
+    { id: "q2", q: "From index.html, what's the path to hikes/photos/mesa.jpg?", opts: ["hikes/photos/mesa.jpg", "../photos/mesa.jpg", "mesa.jpg"], a: 0, why: "Go into hikes, then photos, then the file." },
+    { id: "q3", q: "Your image works on your laptop but breaks online. The src is Photo.JPG and the file is photo.jpg. Why?", opts: ["JPG images don't work online", "Servers are case-sensitive", "The path needs ../"], a: 1, why: "Your laptop may forgive the capital letters. Most web servers won't." },
+    { id: "q4", q: "Which link text is best?", opts: ["Click here", "Link", "Read the Mesa Trail guide"], a: 2, why: "Link text should make sense on its own and say where it goes." },
+  ]);
+</script>
+<script>
+  makeExercise(document.getElementById("ex-paths"), {
+    title: "Links from inside a folder",
+    task: `<p>This code is in <code>trails/mesa.html</code>. The site looks like this:</p>
+    <pre class="snippet">site/
+  index.html
+  images/mesa.jpg
+  trails/mesa.html        ← you are here
+  trails/royal-arch.html</pre>
+    <ol>
+      <li>Point <em>Home</em> to <code>index.html</code> and <em>Royal Arch</em> to its page, using relative paths.</li>
+      <li>Fix the image's <code>src</code>.</li>
+      <li>Rewrite “click here” so the link text says where it goes.</li>
+    </ol>`,
+    html: `<nav>
+  <a href="">Home</a>
+  <a href="">Royal Arch</a>
+</nav>
+<img src="" alt="Mesa Trail in spring" width="300" height="200">
+<p>For the full trail guide, <a href="https://www.bouldercolorado.gov/trails">click here</a>.</p>`,
+    solution: { html: `<nav>
+  <a href="../index.html">Home</a>
+  <a href="royal-arch.html">Royal Arch</a>
+</nav>
+<img src="../images/mesa.jpg" alt="Mesa Trail in spring" width="300" height="200">
+<p>Read the <a href="https://www.bouldercolorado.gov/trails">city's full trail guide</a>.</p>` },
+    hints: [
+      "royal-arch.html is in the same folder as this page, so its name alone is enough.",
+      "index.html and images/ are one level up. ../ climbs one folder.",
+      "Good link text makes sense on its own, like “the city's full trail guide”.",
+    ],
+    checks: [
+      { label: "Home points to ../index.html", test: ({ $$ }) => ["../index.html", "../"].includes($$("nav a")[0].getAttribute("href")) },
+      { label: "Royal Arch points to royal-arch.html", test: ({ $$ }) => ["royal-arch.html", "./royal-arch.html"].includes($$("nav a")[1].getAttribute("href")) },
+      { label: "The image path is ../images/mesa.jpg", test: ({ $ }) => $("img").getAttribute("src") === "../images/mesa.jpg" },
+      { label: "The link text says where it goes", test: ({ $ }) => { const t = $("p a").textContent.trim(); return t.length >= 8 && !/click|here/i.test(t); } },
+    ],
+  });
 </script>
 </body>
 </html>

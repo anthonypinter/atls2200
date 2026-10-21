@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Review: Layout</title>
+<link rel="stylesheet" href="style.css">
+<script src="book.js"></script>
+<script src="js/progress.js"></script>
+<script src="js/chrome.js"></script>
+<script src="js/quiz.js"></script>
+</head>
+<body>
+<main class="wrap">
+  <nav class="crumbs" aria-label="Site"><a class="crumb" href="index.html">← Field Guide</a><a class="crumb" href="glossary.html">Glossary</a></nav>
+  <header class="page-head">
+    <span class="eyebrow">Layout · Review</span>
+    <h1>Review: Layout</h1>
+    <p class="lede">Put the whole part together. Skim the recap, lay out a full page with the right tool for each part, then test yourself with mixed questions.</p>
+    <div class="objectives">
+      <p class="callout-title">You'll be able to</p>
+      <ul>
+        <li>Choose Flexbox, Grid or positioning for each part of a page.</li>
+        <li>Combine layout tools on one page.</li>
+        <li>Decide which lesson to revisit, based on the questions you miss.</li>
+      </ul>
+    </div>
+  </header>
+
+  <div class="section-title"><span class="eyebrow">Read</span><h2>What you've covered</h2></div>
+  <div class="prose">
+    <p>This part was about arranging boxes. Each tool has a job: Flexbox for rows, Grid for rows and columns, floats for wrapping text, and positioning for things that overlap.</p>
+    <ul class="recap">
+      <li><a href="flexbox.html">Flexbox</a>: display: flex on the parent lines its children up in a row, with justify-content and align-items to space and align them.</li>
+      <li><a href="grid.html">CSS Grid</a>: Grid defines columns and rows, fr shares out space, and items can span several cells.</li>
+      <li><a href="flex-vs-grid.html">Flexbox vs Grid</a>: Flexbox for one direction sized by content, Grid when columns must line up.</li>
+      <li><a href="floats.html">Floats</a>: Floats wrap text around an image, clear starts below them, and flow-root contains them.</li>
+      <li><a href="positioning.html">Positioning</a>: absolute places an element inside its nearest positioned ancestor; sticky and fixed stay put while scrolling.</li>
+    </ul>
+    <div class="callout tip"><p class="callout-title">How to use this page</p><p>Try the project without looking back at the lessons. When you get stuck, or miss a quiz question, the lesson it comes from is linked above.</p></div>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Practice</span><h2>Mini project: a trail guide layout</h2><p>Use the right layout tool for each part of the page.</p></div>
+  <div id="ex-project"></div>
+
+  <div class="section-title"><span class="eyebrow">Check yourself</span><h2>Mixed quiz</h2><p>Ten questions from across the part, in no particular order.</p></div>
+  <div class="panel quiz" id="quiz"></div>
+
+  <footer class="page-foot" data-book-nav><a href="index.html">← Contents</a></footer>
+</main>
+
+<script>
+  makeQuiz(document.getElementById("quiz"), [
+    { id: "q1", q: "Which property spreads flex items out along the row?", opts: ["flex-wrap", "align-items", "justify-content"], a: 2, why: "justify-content works along the main axis, which is the row by default." },
+    { id: "q2", q: "In a row, which property centers flex items vertically?", opts: ["align-items: center", "justify-content: center", "vertical-align: middle"], a: 0, why: "align-items works on the cross axis." },
+    { id: "q3", q: "grid-template-columns: 1fr 1fr 2fr. How wide is the last column?", opts: ["2px", "Twice each of the others", "Half the grid"], a: 1, why: "It gets 2 of the 4 shares." },
+    { id: "q4", q: "A card gallery's last row stretches wider than the rest. What fixes it?", opts: ["float: left", "flex-grow: 2", "Grid with repeat(auto-fit, minmax())"], a: 2, why: "Grid keeps every column the same width." },
+    { id: "q5", q: "An absolutely positioned badge ends up in the page's corner. What's missing?", opts: ["position: relative on its card", "z-index", "display: block"], a: 0, why: "The card has to be positioned to become the badge's reference point." },
+    { id: "q6", q: "A heading wraps beside a floated photo. How do you start it below?", opts: ["float: none on the photo", "clear: both", "display: flex"], a: 1, why: "clear moves an element past any floats above it." },
+    { id: "q7", q: "Which keeps a header at the top only while its section scrolls past?", opts: ["position: relative", "position: absolute", "position: sticky; top: 0"], a: 2, why: "sticky scrolls normally until it reaches its top value." },
+    { id: "q8", q: "You want a row of tags that wrap onto new lines. Which tool?", opts: ["Flexbox with flex-wrap: wrap", "Grid with fixed columns", "Floats"], a: 0, why: "Tags are sized by their text, which suits a wrapping flex row." },
+    { id: "q9", q: "Where does display: grid go?", opts: ["On every item", "On the container", "On the body"], a: 1, why: "Like Flexbox, Grid is set on the parent, and its children become the items." },
+    { id: "q10", q: "Can a flex container sit inside a grid cell?", opts: ["Yes", "No", "Only with floats"], a: 0, why: "Layouts nest freely: Grid for the page, Flexbox inside each card." },
+  ]);
+</script>
+<script>
+  makeExercise(document.getElementById("ex-project"), {
+    title: "Lay out the trail guide",
+    height: 460,
+    task: `<ol>
+      <li>The header is a flex row: logo on the left, nav on the right, vertically centered. It sticks to the top of the page as you scroll.</li>
+      <li>The nav's links sit in a row with at least 12px between them.</li>
+      <li>The cards are a grid: <code>repeat(auto-fit, minmax(180px, 1fr))</code> with a 16px gap.</li>
+      <li>The “New” badge is pinned 8px from the top-right corner of its card.</li>
+    </ol>`,
+    html: `<header class="site">
+  <a class="logo" href="#">Trail Club</a>
+  <nav><ul>
+    <li><a href="#">Trails</a></li>
+    <li><a href="#">Events</a></li>
+    <li><a href="#">Join</a></li>
+  </ul></nav>
+</header>
+<main class="cards">
+  <div class="card"><span class="badge">New</span><h3>Sanitas</h3><p>Wide valley, steep summit.</p></div>
+  <div class="card"><h3>Mesa</h3><p>Rolling, 6.7 miles.</p></div>
+  <div class="card"><h3>Royal Arch</h3><p>Steep, 3.4 miles.</p></div>
+  <div class="card"><h3>Flagstaff</h3><p>Views of Boulder.</p></div>
+  <div class="card"><h3>Bear Peak</h3><p>Big climb.</p></div>
+</main>
+<p class="spacer">Scroll down to test the sticky header.</p>`,
+    css: `body { font-family: system-ui, sans-serif; margin: 0; }
+.site { background: #1d2a3a; padding: 12px 16px; }
+.site a { color: white; text-decoration: none; }
+.logo { font-weight: bold; font-size: 1.2rem; }
+nav ul { list-style: none; margin: 0; padding: 0; }
+.cards { padding: 16px; }
+.card { background: #eef1fb; padding: 12px; }
+.card h3 { margin: 0 0 4px; }
+.badge { background: crimson; color: white; padding: 2px 8px; font-size: 0.8rem; }
+.spacer { height: 600px; padding: 16px; }`,
+    solution: { css: `body { font-family: system-ui, sans-serif; margin: 0; }
+.site {
+  background: #1d2a3a; padding: 12px 16px;
+  display: flex; justify-content: space-between; align-items: center;
+  position: sticky; top: 0;
+}
+.site a { color: white; text-decoration: none; }
+.logo { font-weight: bold; font-size: 1.2rem; }
+nav ul { list-style: none; margin: 0; padding: 0; display: flex; gap: 16px; }
+.cards { padding: 16px; display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; }
+.card { background: #eef1fb; padding: 12px; position: relative; }
+.card h3 { margin: 0 0 4px; }
+.badge { background: crimson; color: white; padding: 2px 8px; font-size: 0.8rem; position: absolute; top: 8px; right: 8px; }
+.spacer { height: 600px; padding: 16px; }` },
+    hints: [
+      "Header: display: flex; justify-content: space-between; align-items: center; plus position: sticky; top: 0.",
+      "The links are in a ul, so make nav ul a flex row with a gap.",
+      "Badge: position: absolute on the badge, position: relative on .card.",
+    ],
+    checks: [
+      { label: "The header is a flex row: logo left, nav right, centered", test: ({ $, style }) => { const h = $(".site").getBoundingClientRect(), l = $(".logo").getBoundingClientRect(), n = $(".site nav").getBoundingClientRect(); return style(".site", "display") === "flex" && style(".site", "align-items") === "center" && l.left - h.left < 20 && h.right - n.right < 20 && n.left > l.right; } },
+      { label: "The header sticks to the top", test: ({ style }) => style(".site", "position") === "sticky" && style(".site", "top") === "0px" },
+      { label: "Nav links are in a row, 12px+ apart", test: ({ $$ }) => { const r = $$(".site nav li").map((li) => li.getBoundingClientRect()); return r.every((x) => Math.abs(x.top - r[0].top) < 1) && r.slice(1).every((x, i) => x.left - r[i].right >= 12); } },
+      { label: "Cards use repeat(auto-fit, minmax(180px, 1fr)) with a 16px gap", test: ({ doc, style }) => [...doc.styleSheets[0].cssRules].some((r) => r.selectorText === ".cards" && /^repeat\(auto-(fit|fill),\s*minmax\(180px,\s*1fr\)\)$/.test(r.style.gridTemplateColumns)) && style(".cards", "column-gap") === "16px" && style(".cards", "row-gap") === "16px" },
+      { label: "The badge is 8px from its card's top-right corner", test: ({ $ }) => { const c = $(".card").getBoundingClientRect(), b = $(".badge").getBoundingClientRect(); return Math.abs(b.top - c.top - 8) < 1 && Math.abs(c.right - b.right - 8) < 1; } },
+    ],
+  });
+</script>
+</body>
+</html>

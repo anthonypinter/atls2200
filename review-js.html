@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Review: JavaScript Basics</title>
+<link rel="stylesheet" href="style.css">
+<script src="book.js"></script>
+<script src="js/progress.js"></script>
+<script src="js/chrome.js"></script>
+<script src="js/quiz.js"></script>
+</head>
+<body>
+<main class="wrap">
+  <nav class="crumbs" aria-label="Site"><a class="crumb" href="index.html">← Field Guide</a><a class="crumb" href="glossary.html">Glossary</a></nav>
+  <header class="page-head">
+    <span class="eyebrow">JavaScript Basics · Review</span>
+    <h1>Review: JavaScript Basics</h1>
+    <p class="lede">Put the whole part together. Skim the recap, write a set of functions that summarize trail data, then test yourself with mixed questions.</p>
+    <div class="objectives">
+      <p class="callout-title">You'll be able to</p>
+      <ul>
+        <li>Combine variables, arrays, objects, loops, conditionals and functions in one program.</li>
+        <li>Predict what short programs log.</li>
+        <li>Decide which lesson to revisit, based on the questions you miss.</li>
+      </ul>
+    </div>
+  </header>
+
+  <div class="section-title"><span class="eyebrow">Read</span><h2>What you've covered</h2></div>
+  <div class="prose">
+    <p>This part was the JavaScript language itself: storing values, making decisions, repeating work and packaging it into functions. None of it touches the page yet; that's the next part.</p>
+    <ul class="recap">
+      <li><a href="js-intro.html">What Is JavaScript?</a>: JavaScript adds behavior; link it with a script tag and defer.</li>
+      <li><a href="js-errors.html">The Console &amp; Errors</a>: The console shows errors with a line number. Fix the first one first.</li>
+      <li><a href="js-variables.html">Variables &amp; Data Types</a>: const by default, let when the value changes.</li>
+      <li><a href="js-strings-numbers.html">Numbers &amp; Strings</a>: + joins if either side is a string; convert form values with Number().</li>
+      <li><a href="js-arrays.html">Arrays</a>: Arrays are ordered lists indexed from 0, with methods to add and remove items.</li>
+      <li><a href="js-conditionals.html">Conditionals</a>: if runs the first true branch only, so put specific conditions first, and compare with ===.</li>
+      <li><a href="js-loops.html">Loops</a>: for...of visits every item; a total starts at 0 and grows inside the loop.</li>
+      <li><a href="js-functions.html">Functions</a>: Parameters take values in, return sends one back, and scope keeps variables local.</li>
+      <li><a href="js-objects-json.html">Objects &amp; JSON</a>: Objects group values under keys; JSON.parse and JSON.stringify convert to and from text.</li>
+    </ul>
+    <div class="callout tip"><p class="callout-title">How to use this page</p><p>Try the project without looking back at the lessons. When you get stuck, or miss a quiz question, the lesson it comes from is linked above.</p></div>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Practice</span><h2>Mini project: trail stats</h2><p>Write three functions that describe and summarize a list of trails.</p></div>
+  <div id="ex-project"></div>
+
+  <div class="section-title"><span class="eyebrow">Check yourself</span><h2>Mixed quiz</h2><p>Ten questions from across the part, in no particular order.</p></div>
+  <div class="panel quiz" id="quiz"></div>
+
+  <footer class="page-foot" data-book-nav><a href="index.html">← Contents</a></footer>
+</main>
+
+<script>
+  makeQuiz(document.getElementById("quiz"), [
+    { id: "q1", q: "What does \"5\" + 2 give?", opts: ["7", "NaN", "\"52\""], a: 2, why: "If either side is a string, + joins." },
+    { id: "q2", q: "const n = 1; n = 2; What happens?", opts: ["A TypeError", "n becomes 2", "Nothing"], a: 0, why: "A const can't be reassigned. Use let for values that change." },
+    { id: "q3", q: "const a = [\"Mesa\", \"Arch\", \"Bear\"]; What's a[a.length - 1]?", opts: ["\"Arch\"", "\"Bear\"", "undefined"], a: 1, why: "length is 3, so the last index is 2." },
+    { id: "q4", q: "\"5\" === 5 is:", opts: ["true", "an error", "false"], a: 2, why: "=== checks the type too: a string isn't a number." },
+    { id: "q5", q: "A function has no return. What does calling it give back?", opts: ["undefined", "0", "An error"], a: 0, why: "Without return, a function returns undefined." },
+    { id: "q6", q: "if (temp > 50) {...} else if (temp > 80) {...} What's wrong?", opts: ["The second branch can never run", "Nothing", "else if needs ==="], a: 0, why: "Anything over 80 is also over 50, so the first branch catches it. Put specific conditions first." },
+    { id: "q7", q: "Which of these is falsy?", opts: ["\"0\"", "[]", "0"], a: 2, why: "The number 0 is falsy; the string \"0\" and empty arrays are truthy." },
+    { id: "q8", q: "How do you read the key stored in a variable called key from an object hike?", opts: ["hike[key]", "hike.key", "hike->key"], a: 0, why: "Brackets use the variable's value; a dot looks for a key literally named key." },
+    { id: "q9", q: "let total = 0; for (const n of [2, 3, 4]) total += n; What's total?", opts: ["4", "9", "234"], a: 1, why: "Each number is added in turn: 2 + 3 + 4." },
+    { id: "q10", q: "What turns JSON text into an object?", opts: ["Number()", "JSON.stringify()", "JSON.parse()"], a: 2, why: "parse reads text; stringify writes it." },
+  ]);
+</script>
+<script>
+  makeExercise(document.getElementById("ex-project"), {
+    title: "Summarize the trails",
+    task: `<p>Each trail is an object like <code>{ name: "Mesa", miles: 6.7, difficulty: "moderate" }</code>.</p>
+    <ol>
+      <li><code>lengthLabel(miles)</code> returns <code>"short"</code> under 3 miles, <code>"medium"</code> under 6, and <code>"long"</code> otherwise.</li>
+      <li><code>describe(trail)</code> returns text like <code>Mesa: 6.7 miles (moderate)</code>, built with a template literal.</li>
+      <li><code>summarize(trails)</code> returns an object with <code>count</code>, <code>totalMiles</code>, <code>longest</code> (the longest trail's name) and <code>hard</code> (how many are <code>"hard"</code>). For an empty list: <code>{ count: 0, totalMiles: 0, longest: null, hard: 0 }</code>.</li>
+    </ol>
+    <p class="hint">The checks call your functions with different trails from the ones below.</p>`,
+    js: `const trails = [
+  { name: "Mesa", miles: 6.7, difficulty: "moderate" },
+  { name: "Royal Arch", miles: 3.4, difficulty: "hard" },
+  { name: "Flagstaff", miles: 2.8, difficulty: "moderate" },
+];
+
+function lengthLabel(miles) {
+  // Your code here
+}
+
+function describe(trail) {
+  // Your code here
+}
+
+function summarize(trails) {
+  // Your code here
+}
+
+console.log(lengthLabel(3.4));
+console.log(describe(trails[0]));
+console.log(summarize(trails));`,
+    solution: `const trails = [
+  { name: "Mesa", miles: 6.7, difficulty: "moderate" },
+  { name: "Royal Arch", miles: 3.4, difficulty: "hard" },
+  { name: "Flagstaff", miles: 2.8, difficulty: "moderate" },
+];
+
+function lengthLabel(miles) {
+  if (miles < 3) {
+    return "short";
+  } else if (miles < 6) {
+    return "medium";
+  }
+  return "long";
+}
+
+function describe(trail) {
+  return \`\${trail.name}: \${trail.miles} miles (\${trail.difficulty})\`;
+}
+
+function summarize(trails) {
+  let totalMiles = 0;
+  let longest = null;
+  let hard = 0;
+  for (const trail of trails) {
+    totalMiles += trail.miles;
+    if (longest === null || trail.miles > longest.miles) {
+      longest = trail;
+    }
+    if (trail.difficulty === "hard") {
+      hard++;
+    }
+  }
+  return { count: trails.length, totalMiles, longest: longest ? longest.name : null, hard };
+}
+
+console.log(lengthLabel(3.4));
+console.log(describe(trails[0]));
+console.log(summarize(trails));`,
+    expose: ["lengthLabel", "describe", "summarize"],
+    hints: [
+      "lengthLabel: check the smallest range first, then the next, then return \"long\".",
+      "In summarize, start totals at 0 and longest at null, then update them inside a for...of loop.",
+      "Compare each trail's miles with the longest so far, and keep the whole trail so you can return its name at the end.",
+    ],
+    checks: (() => {
+      const data = [
+        { name: "Bear Peak", miles: 8.1, difficulty: "hard" },
+        { name: "Sanitas", miles: 3.1, difficulty: "hard" },
+        { name: "Wonderland", miles: 1.5, difficulty: "easy" },
+        { name: "Mesa", miles: 6.7, difficulty: "moderate" },
+      ];
+      return [
+        { label: "lengthLabel: short, medium and long, at the edges too", test: ({ fns }) => fns.lengthLabel(1) === "short" && fns.lengthLabel(2.99) === "short" && fns.lengthLabel(3) === "medium" && fns.lengthLabel(5.9) === "medium" && fns.lengthLabel(6) === "long" && fns.lengthLabel(12) === "long" },
+        { label: "describe builds “Name: N miles (difficulty)”", test: ({ fns, code }) => fns.describe(data[1]) === "Sanitas: 3.1 miles (hard)" && fns.describe(data[2]) === "Wonderland: 1.5 miles (easy)" && /`/.test(code.js) },
+      { label: "summarize counts the trails and adds the miles", test: ({ fns }) => { const s = fns.summarize(data); return s.count === 4 && Math.abs(s.totalMiles - 19.4) < 1e-9; } },
+      { label: "summarize finds the longest trail's name", test: ({ fns }) => fns.summarize(data).longest === "Bear Peak" && fns.summarize(data.slice(1)).longest === "Mesa" },
+      { label: "summarize counts the hard trails", test: ({ fns }) => fns.summarize(data).hard === 2 && fns.summarize(data.slice(2)).hard === 0 },
+      { label: "summarize handles an empty list", test: ({ fns }) => JSON.stringify(fns.summarize([])) === JSON.stringify({ count: 0, totalMiles: 0, longest: null, hard: 0 }) },
+    ];
+  })(),
+});
+</script>
+</body>
+</html>

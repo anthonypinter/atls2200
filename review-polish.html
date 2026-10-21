@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Review: Polish &amp; Workflow</title>
+<link rel="stylesheet" href="style.css">
+<script src="book.js"></script>
+<script src="js/progress.js"></script>
+<script src="js/chrome.js"></script>
+<script src="js/quiz.js"></script>
+</head>
+<body>
+<main class="wrap">
+  <nav class="crumbs" aria-label="Site"><a class="crumb" href="index.html">← Field Guide</a><a class="crumb" href="glossary.html">Glossary</a></nav>
+  <header class="page-head">
+    <span class="eyebrow">Polish &amp; Workflow · Review</span>
+    <h1>Review: Polish &amp; Workflow</h1>
+    <p class="lede">Put the whole part together. Skim the recap, polish a rough sign-up section, then test yourself with mixed questions.</p>
+    <div class="objectives">
+      <p class="callout-title">You'll be able to</p>
+      <ul>
+        <li>Find and fix accessibility, styling and code-quality problems in one component.</li>
+        <li>Use DevTools and validators to explain why something isn't working.</li>
+        <li>Decide which lesson to revisit, based on the questions you miss.</li>
+      </ul>
+    </div>
+  </header>
+
+  <div class="section-title"><span class="eyebrow">Read</span><h2>What you've covered</h2></div>
+  <div class="prose">
+    <p>This part was about the difference between a page that works and one that's finished: motion, forms, accessibility, tidy code, and the tools that catch mistakes before visitors do.</p>
+    <ul class="recap">
+      <li><a href="transforms.html">Transforms</a>: Transforms move, rotate and scale without affecting layout.</li>
+      <li><a href="transitions.html">Transitions &amp; Animations</a>: Transitions smooth changes between states; animations run keyframes; respect reduced motion.</li>
+      <li><a href="form-styling.html">Styling Forms</a>: font: inherit, border-box inputs and a visible focus style fix most forms.</li>
+      <li><a href="accessibility.html">Accessibility Basics</a>: Real buttons and labels, keyboard access, enough contrast, and never color alone.</li>
+      <li><a href="organizing-css.html">Organizing CSS</a>: Sections in a consistent order, names that describe purpose, variables, and low specificity.</li>
+      <li><a href="devtools.html">Debugging with DevTools</a>: The Styles pane shows which rules apply, which lost, and where each one lives.</li>
+      <li><a href="validation.html">Validating Your Code</a>: Validators catch mistakes browsers silently repair. Fix from the top down.</li>
+      <li><a href="publishing.html">Project Structure &amp; Publishing</a>: index.html at the top, lowercase file names, relative paths, then GitHub Pages.</li>
+    </ul>
+    <div class="callout tip"><p class="callout-title">How to use this page</p><p>Try the project without looking back at the lessons. When you get stuck, or miss a quiz question, the lesson it comes from is linked above.</p></div>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Practice</span><h2>Mini project: polish a sign-up section</h2><p>Fix accessibility, form styling, motion and code quality in one component.</p></div>
+  <div id="ex-project"></div>
+
+  <div class="section-title"><span class="eyebrow">Check yourself</span><h2>Mixed quiz</h2><p>Ten questions from across the part, in no particular order.</p></div>
+  <div class="panel quiz" id="quiz"></div>
+
+  <footer class="page-foot" data-book-nav><a href="index.html">← Contents</a></footer>
+</main>
+
+<script>
+  makeQuiz(document.getElementById("quiz"), [
+    { id: "q1", q: "A card scales up on hover. Do its neighbors move?", opts: ["No", "Yes", "Only with flex"], a: 0, why: "Transforms don't affect layout." },
+    { id: "q2", q: "Where should transition go so a hover animates both ways?", opts: ["In @keyframes", "On :hover only", "On the normal state"], a: 2, why: "The normal state's transition applies in both directions." },
+    { id: "q3", q: "Why do inputs often show a different font from the page?", opts: ["Form controls don't inherit fonts", "Inputs ignore CSS", "Browsers block web fonts in forms"], a: 0, why: "Add font: inherit to inputs, selects and buttons." },
+    { id: "q4", q: "What's the quickest accessibility test you can do?", opts: ["Zoom out", "Use the page with only the Tab key", "Turn off CSS"], a: 1, why: "Everything clickable should be reachable and visible from the keyboard." },
+    { id: "q5", q: "Which class name will age best?", opts: [".blue-box", ".left2", ".trail-card"], a: 2, why: "Name things for their purpose, not their looks." },
+    { id: "q6", q: "A declaration is crossed out in DevTools. What does it mean?", opts: ["Another rule overrode it", "It has a typo", "It's a browser default"], a: 0, why: "Look above it for the rule that won." },
+    { id: "q7", q: "The HTML validator lists 12 errors. Where do you start?", opts: ["The last one", "The first one", "The shortest one"], a: 1, why: "One early mistake can cause many later ones." },
+    { id: "q8", q: "An image works locally but not online. The file is flatirons.jpg, the HTML says Flatirons.jpg. Why?", opts: ["The cache", "JPEGs are blocked", "Servers are case-sensitive"], a: 2, why: "Use lowercase names everywhere." },
+    { id: "q9", q: "Errors are shown only by turning a field red. What's the problem?", opts: ["Some people can't tell red apart", "Red is too bright", "Nothing"], a: 0, why: "Add a text message so color isn't the only signal." },
+    { id: "q10", q: "Which properties animate most smoothly?", opts: ["width and height", "transform and opacity", "top and left"], a: 1, why: "They don't make the browser redo the layout every frame." },
+  ]);
+</script>
+<script>
+  makeExercise(document.getElementById("ex-project"), {
+    title: "Finish the sign-up section",
+    height: 380,
+    task: `<ol>
+      <li>“Join” is a div. Make it a real submit button.</li>
+      <li>The email field has only placeholder text. Give it a label.</li>
+      <li>Give the input and button the page's font.</li>
+      <li>Replace <code>outline: none</code> with a visible <code>:focus-visible</code> style.</li>
+      <li>Transition the button's <code>background-color</code> over 400ms or less (not <code>all</code>).</li>
+      <li>Darken the small print to a contrast of at least 4.5 to 1 on its white background.</li>
+    </ol>`,
+    html: `<section class="signup">
+  <h2>Trail news</h2>
+  <form>
+    <input type="email" placeholder="Email address">
+    <div class="btn">Join</div>
+  </form>
+  <p class="small">One email a month. Unsubscribe anytime.</p>
+</section>`,
+    css: `body { font-family: Georgia, serif; font-size: 18px; background: white; }
+.signup { max-width: 360px; }
+form { display: flex; gap: 8px; flex-wrap: wrap; }
+input { padding: 8px; border: 2px solid #c8cbd6; }
+input:focus { outline: none; }
+.btn { background: #2340d9; color: white; padding: 8px 16px; border: 0; transition: all 1s; }
+.btn:hover { background: #1a2fa6; }
+.small { color: #c0c0c0; font-size: 0.85rem; }`,
+    solution: {
+      html: `<section class="signup">
+  <h2>Trail news</h2>
+  <form>
+    <label for="news-email">Email address</label>
+    <input id="news-email" type="email" placeholder="you@example.com">
+    <button class="btn" type="submit">Join</button>
+  </form>
+  <p class="small">One email a month. Unsubscribe anytime.</p>
+</section>`,
+      css: `body { font-family: Georgia, serif; font-size: 18px; background: white; }
+.signup { max-width: 360px; }
+form { display: flex; gap: 8px; flex-wrap: wrap; }
+label { flex-basis: 100%; }
+input, button { font: inherit; }
+input { padding: 8px; border: 2px solid #c8cbd6; }
+input:focus-visible, .btn:focus-visible { outline: 3px solid #2340d9; outline-offset: 2px; }
+.btn { background: #2340d9; color: white; padding: 8px 16px; border: 0; transition: background-color 200ms ease; }
+.btn:hover { background: #1a2fa6; }
+.small { color: #595959; font-size: 0.85rem; }`,
+    },
+    hints: [
+      "<button class=\"btn\" type=\"submit\">Join</button>, and connect a <label for> to the input's id.",
+      "input, button { font: inherit; }",
+      "transition: background-color 200ms ease; and a color like #595959 for the small print.",
+    ],
+    checks: [
+      { label: "Join is a real submit button", test: ({ $$ }) => $$("form button").some((b) => b.textContent.trim() === "Join" && b.type === "submit") && !$$("div").some((d) => d.textContent.trim() === "Join") },
+      { label: "The email field has a label", test: ({ $ }) => $('input[type="email"]').labels.length > 0 && $('input[type="email"]').labels[0].textContent.trim() !== "" },
+      { label: "The input and button use the page's font", test: ({ $, style }) => ["input", "button"].every((s) => $(s) && style(s, "font-family") === style("body", "font-family") && style(s, "font-size") === "18px") },
+      { label: "A visible :focus-visible style, and no outline: none on :focus", test: ({ doc }) => { const r = [...doc.styleSheets[0].cssRules]; return r.some((x) => /:focus-visible/.test(x.selectorText) && ((x.style.outlineStyle && x.style.outlineStyle !== "none") || x.style.boxShadow)) && !r.some((x) => /:focus(?!-)/.test(x.selectorText) && /none|0px/.test(x.style.outline || x.style.outlineStyle || "")); } },
+      { label: "The button transitions background-color in 400ms or less", test: ({ style }) => { const p = style(".btn", "transition-property").split(", "), d = style(".btn", "transition-duration").split(", "); const i = p.indexOf("background-color"); return i >= 0 && !p.includes("all") && parseFloat(d[i] ?? d[0]) > 0 && parseFloat(d[i] ?? d[0]) <= 0.4; } },
+      { label: "The small print has 4.5:1 contrast", test: ({ style }) => { const lum = (c) => { const [r, g, b] = c.match(/\d+(\.\d+)?/g).slice(0, 3).map((v) => { v /= 255; return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4; }); return 0.2126 * r + 0.7152 * g + 0.0722 * b; }; return 1.05 / (lum(style(".small", "color")) + 0.05) >= 4.5; } },
+    ],
+  });
+</script>
+</body>
+</html>

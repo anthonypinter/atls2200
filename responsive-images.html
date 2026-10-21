@@ -4,9 +4,6 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Responsive Images</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Recursive:slnt,wght,CASL,MONO@-15..0,300..1000,0..1,0..1&display=swap">
 <link rel="stylesheet" href="style.css">
 <style>
   .stage.scroll { overflow-x: auto; min-height: 0; }
@@ -32,15 +29,40 @@
 <script src="js/quiz.js"></script>
 </head>
 <body>
-<div class="wrap">
+<main class="wrap">
   <nav class="crumbs" aria-label="Site"><a class="crumb" href="index.html">← Field Guide</a><a class="crumb" href="glossary.html">Glossary</a></nav>
   <header class="page-head">
     <span class="eyebrow">Responsive Design · Responsive Images</span>
     <h1>Responsive Images</h1>
     <p class="lede">Images have a fixed size, but screens don't. Here's how to stop images from overflowing, crop them to fit a shape, and send phones a smaller file.</p>
+    <div class="objectives">
+      <p class="callout-title">You'll be able to</p>
+      <ul>
+        <li>Stop images from overflowing with max-width: 100% and height: auto.</li>
+        <li>Crop an image to fit a box with object-fit and object-position.</li>
+        <li>Offer several file sizes with srcset so phones download less.</li>
+      </ul>
+    </div>
   </header>
 
-  <div class="section-title" style="margin-top:0"><span class="eyebrow">Part 1</span><h2>Make it shrink</h2><p>This photo is 800 × 500 pixels. Make the container narrower and see what each setting does.</p></div>
+  <div class="section-title"><span class="eyebrow">Read</span><h2>Images that fit every screen</h2></div>
+  <div class="prose">
+    <p>An image has a fixed size in pixels, but your layout doesn't. Put a 1200px photo in a 360px-wide phone screen and it sticks out, pushing the whole page sideways. Two lines, which belong in nearly every stylesheet, fix that:</p>
+    <pre class="snippet" data-lang="css">img {
+  max-width: 100%;
+  height: auto;
+}</pre>
+    <p><code>max-width: 100%</code> lets an image shrink to fit its container but never stretch past its real size, and <code>height: auto</code> keeps its proportions. Keep the <code>width</code> and <code>height</code> attributes in your HTML too: the browser uses them to reserve the right space before the image arrives.</p>
+    <p>Sometimes an image must fill a box of a different shape, like a square profile photo cut from a wide picture. Setting both width and height would squash it. <span class="term">object-fit</span> crops instead: <code>cover</code> fills the box and trims the edges, while <code>contain</code> shows the whole image and leaves empty space. <code>object-position</code> chooses which part stays in view.</p>
+    <p>Shrinking a big image with CSS still makes a phone download the whole big file. <span class="term">srcset</span> lists several copies at different widths and lets the browser pick the smallest one that will look sharp:</p>
+    <pre class="snippet" data-lang="html">&lt;img src="arch-800.jpg"
+     srcset="arch-400.jpg 400w, arch-800.jpg 800w, arch-1600.jpg 1600w"
+     alt="The sandstone arch at the top of the trail"&gt;</pre>
+    <p>The <code>w</code> after each file is its real width in pixels. The browser does the math, including the screen's pixel density.</p>
+    <div class="callout tip"><p class="callout-title">Tip</p><p>When an image isn't full-width, add a <code>sizes</code> attribute so the browser knows how wide it will actually be. That's covered in <a href="picture.html">Picture &amp; Lazy Loading</a>.</p></div>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Play</span><h2>Make it shrink</h2><p>This photo is 800 × 500 pixels. Make the container narrower and see what each setting does.</p></div>
   <section class="playground">
     <div class="panel controls">
       <div class="control"><label for="cw">container width</label><input id="cw" type="range" min="200" max="900" step="10" value="420"><span class="readout" id="cw-out"></span></div>
@@ -54,7 +76,7 @@
     </div>
   </section>
 
-  <div class="section-title"><span class="eyebrow">Part 2</span><h2>Fit it to a shape with object-fit</h2><p>When an image has to fill a box of a different shape, like a square profile photo or a wide banner, <code>object-fit</code> decides whether to stretch, shrink or crop it.</p></div>
+  <div class="section-title"><span class="eyebrow">Play</span><h2>Fit it to a shape with object-fit</h2><p>When an image has to fill a box of a different shape, like a square profile photo or a wide banner, <code>object-fit</code> decides whether to stretch, shrink or crop it.</p></div>
   <section class="playground">
     <div class="panel controls">
       <div class="control"><label>box shape</label><div class="seg" id="shape">
@@ -70,7 +92,7 @@
     </div>
   </section>
 
-  <div class="section-title"><span class="eyebrow">Part 3</span><h2>Send the right file with srcset</h2><p>With <code>srcset</code> you list several copies of the same image at different widths. The browser downloads the smallest one that still looks sharp on the visitor's screen.</p></div>
+  <div class="section-title"><span class="eyebrow">Play</span><h2>Send the right file with srcset</h2><p>With <code>srcset</code> you list several copies of the same image at different widths. The browser downloads the smallest one that still looks sharp on the visitor's screen.</p></div>
   <section class="playground">
     <div class="panel controls">
       <div class="control"><label for="dw">image shows at (CSS px)</label><input id="dw" type="range" min="200" max="1200" step="20" value="380"><span class="readout" id="dw-out"></span></div>
@@ -86,6 +108,9 @@
       <div class="panel" style="display:grid;gap:4px" aria-live="polite"><span class="saving" id="saving"></span><span class="hint" id="saving-note"></span></div>
     </div>
   </section>
+
+  <div class="section-title"><span class="eyebrow">Practice</span><h2>Make the images fit</h2><p>A big photo breaks the layout and an avatar gets squashed. Fix both, and offer smaller files.</p></div>
+  <div id="ex-img"></div>
 
   <section class="notes">
     <div class="panel">
@@ -108,8 +133,11 @@
     </div>
   </section>
 
+  <div class="section-title"><span class="eyebrow">Check yourself</span><h2>Quick check</h2></div>
+  <div class="panel quiz" id="quiz"></div>
+
   <footer class="page-foot" data-book-nav><a href="index.html">← Contents</a></footer>
-</div>
+</main>
 
 <script>
   const $ = (id) => document.getElementById(id);
@@ -169,6 +197,47 @@
   $("dpr").addEventListener("click", (e) => { const b = e.target.closest("button"); if (b) { dpr = +b.dataset.d; part3(); } });
   $("dw").addEventListener("input", part3);
   part3();
+</script>
+<script>
+  makeQuiz(document.getElementById("quiz"), [
+    { id: "q1", q: "Which two lines stop images from overflowing on small screens?", opts: ["width: 100vw; height: 100vh;", "max-width: 100%; height: auto;", "overflow: hidden;"], a: 1, why: "Images shrink to fit but never grow past their real size, and keep their shape." },
+    { id: "q2", q: "A wide photo must fill a square box without stretching. What do you use?", opts: ["background-size: contain", "width: 100%; height: 100%;", "object-fit: cover"], a: 2, why: "cover fills the box and crops the edges instead of squashing." },
+    { id: "q3", q: "What does srcset save?", opts: ["Download size on small screens", "Code in your stylesheet", "Alt text"], a: 0, why: "The browser downloads the smallest copy that will look sharp." },
+    { id: "q4", q: "In srcset, what does 800w mean?", opts: ["Show it 800px wide", "This file is 800px wide", "Use it on screens 800px wide"], a: 1, why: "w descriptors give each file's real width; the browser decides which to use." },
+  ]);
+</script>
+<script>
+  makeExercise(document.getElementById("ex-img"), {
+    title: "Fluid images and srcset",
+    task: `<p>The image files don't exist, so you'll see empty boxes, but the checks read your code.</p>
+    <ol>
+      <li>In the CSS, let every image shrink to fit its container but never stretch past its real size, and keep its proportions.</li>
+      <li>The avatar is a wide photo in a square box. Crop it to fill the box instead of squashing it.</li>
+      <li>Give the big photo a <code>srcset</code> with <code>arch-400.jpg</code>, <code>arch-800.jpg</code> and <code>arch-1600.jpg</code>, using <code>w</code> descriptors.</li>
+    </ol>`,
+    html: `<img class="hero" src="arch-1600.jpg" alt="The sandstone arch at the top of the trail" width="1600" height="1000">
+<img class="avatar" src="sam.jpg" alt="Sam, the hike leader" width="96" height="96">`,
+    css: `.avatar { width: 96px; height: 96px; border-radius: 50%; }`,
+    solution: {
+      html: `<img class="hero" src="arch-1600.jpg"
+     srcset="arch-400.jpg 400w, arch-800.jpg 800w, arch-1600.jpg 1600w"
+     alt="The sandstone arch at the top of the trail" width="1600" height="1000">
+<img class="avatar" src="sam.jpg" alt="Sam, the hike leader" width="96" height="96">`,
+      css: `img { max-width: 100%; height: auto; }
+.avatar { width: 96px; height: 96px; border-radius: 50%; object-fit: cover; }`,
+    },
+    hints: [
+      "img { max-width: 100%; height: auto; } belongs in nearly every stylesheet.",
+      "object-fit: cover fills the box and trims the edges.",
+      "srcset=\"arch-400.jpg 400w, arch-800.jpg 800w, arch-1600.jpg 1600w\"",
+    ],
+    checks: [
+      { label: "Images have max-width: 100%", test: ({ style }) => style(".hero", "max-width") === "100%" },
+      { label: "Images keep their proportions (height: auto)", test: ({ $, doc }) => [...doc.styleSheets[0].cssRules].some((r) => r.style && r.style.height === "auto" && $(".hero").matches(r.selectorText)) },
+      { label: "The avatar is cropped, not squashed", test: ({ style }) => style(".avatar", "object-fit") === "cover" },
+      { label: "The photo offers 400w, 800w and 1600w files", test: ({ $ }) => { const s = ($(".hero").getAttribute("srcset") || "").replace(/\s+/g, " "); return ["arch-400.jpg 400w", "arch-800.jpg 800w", "arch-1600.jpg 1600w"].every((x) => s.includes(x)); } },
+    ],
+  });
 </script>
 </body>
 </html>

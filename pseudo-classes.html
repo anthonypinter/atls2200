@@ -4,9 +4,6 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Pseudo-classes &amp; States</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Recursive:slnt,wght,CASL,MONO@-15..0,300..1000,0..1,0..1&display=swap">
 <link rel="stylesheet" href="style.css">
 <style>
   .lab { display: grid; gap: 16px; padding: 22px; background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); align-content: start; }
@@ -61,15 +58,40 @@
 <script src="js/quiz.js"></script>
 </head>
 <body>
-<div class="wrap">
+<main class="wrap">
   <nav class="crumbs" aria-label="Site"><a class="crumb" href="index.html">← Field Guide</a><a class="crumb" href="glossary.html">Glossary</a></nav>
   <header class="page-head">
     <span class="eyebrow">CSS Basics · Pseudo-classes &amp; States</span>
     <h1>Pseudo-classes &amp; States</h1>
     <p class="lede">A pseudo-class, written with one colon, selects an element when it's in a certain state or position. Hover, click, tab and type on the controls below and watch which states switch on.</p>
+    <div class="objectives">
+      <p class="callout-title">You'll be able to</p>
+      <ul>
+        <li>Style hover, focus and active states, including for keyboard users.</li>
+        <li>Select items by position with :nth-child().</li>
+        <li>Style the four link states in the right order.</li>
+      </ul>
+    </div>
   </header>
 
-  <div class="section-title" style="margin-top:0"><span class="eyebrow">Part 1</span><h2>Interactive states</h2></div>
+  <div class="section-title"><span class="eyebrow">Read</span><h2>Styling states and positions</h2></div>
+  <div class="prose">
+    <p>A <span class="term">pseudo-class</span> selects an element when it's in a certain state, or in a certain position. It's written with one colon after a normal selector:</p>
+    <pre class="snippet" data-lang="css">.btn:hover,
+.btn:focus-visible {
+  background: #1a2fa8;
+}
+li:nth-child(even) {
+  background: #f2f4fa;
+}</pre>
+    <p>State pseudo-classes respond to what the visitor is doing. <code>:hover</code> applies while the mouse is over an element, <code>:active</code> while it's being pressed, and <code>:focus</code> when it's ready for keyboard input. Forms add more, like <code>:checked</code> and <code>:invalid</code>.</p>
+    <p>Notice that the first rule styles <code>:hover</code> and <code>:focus-visible</code> together. Many people use a keyboard instead of a mouse, pressing Tab to move between links and buttons. <code>:focus-visible</code> shows them where they are, the way hover feedback shows a mouse user. Style the two together and nobody misses out. And since phones have no hover at all, never hide anything important behind <code>:hover</code> alone.</p>
+    <p>Position pseudo-classes pick elements by where they sit among their siblings. <code>:first-child</code> and <code>:last-child</code> do what they say. <code>:nth-child()</code> takes a pattern: <code>odd</code>, <code>even</code>, a number, or a formula like <code>3n</code> for every third item.</p>
+    <p>Links have four states, and their order in your stylesheet matters because later rules win: <code>:link</code>, <code>:visited</code>, <code>:hover</code>, <code>:active</code>. A handy way to remember it is "LoVe HAte".</p>
+    <div class="callout warn"><p class="callout-title">Watch out</p><p>Never remove the focus outline with <code>outline: none</code> unless you add a clear <code>:focus-visible</code> style in its place. Without it, keyboard users can't see where they are on the page.</p></div>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Play</span><h2>Interactive states</h2></div>
   <section class="playground even">
     <div class="lab" id="lab">
       <div class="row" data-name="button"><span class="who">button</span><button class="s-btn" type="button">Save trail</button></div>
@@ -86,7 +108,7 @@
     </div>
   </section>
 
-  <div class="section-title"><span class="eyebrow">Part 2</span><h2>Position: :nth-child()</h2><p>The formula <code>an+b</code> is calculated for n = 0, 1, 2, 3... and every result picks an item.</p></div>
+  <div class="section-title"><span class="eyebrow">Play</span><h2>Position: :nth-child()</h2><p>The formula <code>an+b</code> is calculated for n = 0, 1, 2, 3... and every result picks an item.</p></div>
   <section class="playground">
     <div class="panel controls">
       <div class="formula"><span class="sel">li</span><span>:nth-child(</span><input id="f" value="3n+1" spellcheck="false" aria-label="nth-child formula"><span>)</span></div>
@@ -99,7 +121,7 @@
     </div>
   </section>
 
-  <div class="section-title"><span class="eyebrow">Part 3</span><h2>Styling links and building a menu</h2><p>Links have four states. Write them in this order, or later ones get overridden: <strong>:link, :visited, :hover, :active</strong>. A common memory trick is "LoVe HAte." Then add <code>:focus-visible</code> for keyboard users. Build up a menu one step at a time below.</p></div>
+  <div class="section-title"><span class="eyebrow">Play</span><h2>Styling links and building a menu</h2><p>Links have four states. Write them in this order, or later ones get overridden: <strong>:link, :visited, :hover, :active</strong>. A common memory trick is "LoVe HAte." Then add <code>:focus-visible</code> for keyboard users. Build up a menu one step at a time below.</p></div>
   <section class="playground">
     <div class="panel controls">
       <label class="check3"><input type="checkbox" id="n1"> Remove bullets and indent</label>
@@ -114,6 +136,9 @@
       <p class="hint" id="nav-note"></p>
     </div>
   </section>
+
+  <div class="section-title"><span class="eyebrow">Practice</span><h2>Style the states</h2><p>Stripes, hover feedback and a first-item highlight, all without adding a single class.</p></div>
+  <div id="ex-states"></div>
 
   <section class="notes">
     <div class="panel">
@@ -137,8 +162,11 @@
     </div>
   </section>
 
+  <div class="section-title"><span class="eyebrow">Check yourself</span><h2>Quick check</h2></div>
+  <div class="panel quiz" id="quiz"></div>
+
   <footer class="page-foot" data-book-nav><a href="index.html">← Contents</a></footer>
-</div>
+</main>
 
 <script>
   const $ = (id) => document.getElementById(id);
@@ -218,6 +246,54 @@
   }
   $("f").addEventListener("input", nth);
   nth();
+</script>
+<script>
+  makeQuiz(document.getElementById("quiz"), [
+    { id: "q1", q: "Why style :focus-visible along with :hover?", opts: ["To make links load faster", "Because :hover doesn't work without it", "So keyboard users get the same feedback as mouse users"], a: 2, why: "Keyboard users never hover, so they rely on focus styles to see where they are." },
+    { id: "q2", q: "Which selector stripes every other row?", opts: ["tr:nth-child(even)", "tr:even", "tr + tr"], a: 0, why: ":nth-child(even) picks the 2nd, 4th, 6th… rows." },
+    { id: "q3", q: "Does p:first-child select the first paragraph on the page?", opts: ["Yes, always", "Only if that p is the very first child of its parent", "No, it selects the p's first child"], a: 1, why: "It matches a p that is the first child of its parent, nothing else." },
+    { id: "q4", q: "What's the right order for link state rules?", opts: [":hover, :link, :active, :visited", ":active, :hover, :visited, :link", ":link, :visited, :hover, :active"], a: 2, why: "LoVe HAte: later rules win, so :hover and :active must come after :link and :visited." },
+  ]);
+</script>
+<script>
+  makeExercise(document.getElementById("ex-states"), {
+    title: "A trail list with states",
+    task: `<ol>
+      <li>Give every second list item (the 2nd and 4th) the background <code>#eef1fb</code>.</li>
+      <li>In one rule, give links a <code>#2340d9</code> background and white text both on hover and when focused with the keyboard.</li>
+      <li>Make the first trail bold with a pseudo-class.</li>
+    </ol>`,
+    html: `<ul class="trails">
+  <li><a href="#">Mesa</a></li>
+  <li><a href="#">Royal Arch</a></li>
+  <li><a href="#">Flagstaff</a></li>
+  <li><a href="#">Chautauqua</a></li>
+</ul>`,
+    css: `.trails { list-style: none; padding: 0; font-family: system-ui, sans-serif; }
+.trails a { display: block; padding: 8px 12px; color: #2340d9; text-decoration: none; }`,
+    solution: { css: `.trails { list-style: none; padding: 0; font-family: system-ui, sans-serif; }
+.trails a { display: block; padding: 8px 12px; color: #2340d9; text-decoration: none; }
+
+.trails li:nth-child(even) { background: #eef1fb; }
+
+.trails a:hover,
+.trails a:focus-visible {
+  background: #2340d9;
+  color: white;
+}
+
+.trails li:first-child { font-weight: bold; }` },
+    hints: [
+      ":nth-child(even) matches the 2nd, 4th, 6th…",
+      "Two selectors separated by a comma share one rule: a:hover, a:focus-visible { … }",
+      ":first-child matches an element that's the first child of its parent.",
+    ],
+    checks: [
+      { label: "The 2nd and 4th items are striped", test: ({ $$, style }) => { const li = $$(".trails li"); return style(li[1], "background-color") === "rgb(238, 241, 251)" && style(li[3], "background-color") === "rgb(238, 241, 251)" && style(li[0], "background-color") !== "rgb(238, 241, 251)"; } },
+      { label: "One rule covers :hover and :focus-visible", test: ({ doc }) => [...doc.styleSheets[0].cssRules].some((r) => /:hover/.test(r.selectorText) && /:focus-visible/.test(r.selectorText) && r.style.color && (r.style.backgroundColor || r.style.background)) },
+      { label: "Only the first trail is bold", test: ({ $$, style }) => { const a = $$(".trails a"); return Number(style(a[0], "font-weight")) >= 700 && Number(style(a[1], "font-weight")) < 700; } },
+    ],
+  });
 </script>
 </body>
 </html>

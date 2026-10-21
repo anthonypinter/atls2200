@@ -4,9 +4,6 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Images &amp; Alt Text</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Recursive:slnt,wght,CASL,MONO@-15..0,300..1000,0..1,0..1&display=swap">
 <link rel="stylesheet" href="style.css">
 <style>
   .article { background: #fff; color: #1d2133; border-radius: var(--radius); border: 1px solid var(--line); padding: 18px; display: grid; gap: 12px; font-family: Georgia, serif; min-width: 0; }
@@ -43,13 +40,40 @@
 <script src="js/quiz.js"></script>
 </head>
 <body>
-<div class="wrap">
+<main class="wrap">
   <nav class="crumbs" aria-label="Site"><a class="crumb" href="index.html">← Field Guide</a><a class="crumb" href="glossary.html">Glossary</a></nav>
   <header class="page-head">
     <span class="eyebrow">HTML Foundations · Images &amp; Alt Text</span>
     <h1>Images &amp; Alt Text</h1>
     <p class="lede">The <code>alt</code> attribute is what people hear when they can't see an image. Pick alt text for each image in this article, then switch to the screen reader view to hear the result.</p>
+    <div class="objectives">
+      <p class="callout-title">You'll be able to</p>
+      <ul>
+        <li>Add an image with src, alt, width and height.</li>
+        <li>Write alt text that describes what an image means in context.</li>
+        <li>Caption an image with figure and figcaption.</li>
+      </ul>
+    </div>
   </header>
+
+  <div class="section-title"><span class="eyebrow">Read</span><h2>Every image needs a text version</h2></div>
+  <div class="prose">
+    <p>Adding an image takes one element: <code>&lt;img&gt;</code>. It's an empty element, so there's no closing tag, and everything goes in attributes:</p>
+    <pre class="snippet" data-lang="html">&lt;img src="photos/royal-arch.jpg"
+     alt="Hikers standing under the sandstone arch at the top of the trail"
+     width="1200" height="800"&gt;</pre>
+    <p><code>src</code> is the path to the file. <code>width</code> and <code>height</code> tell the browser the image's shape before it downloads, so the page doesn't jump around while it loads. CSS can still resize it.</p>
+    <p>The most important attribute is <code>alt</code>. <span class="term">Alt text</span> is what a <span class="term">screen reader</span> reads aloud, what search engines index, and what appears if the image fails to load. Good alt text describes what the image <em>means on this page</em>, not every detail. Ask yourself: if I were reading this page aloud to a friend, what would I say about this picture?</p>
+    <ul>
+      <li>A photo in a trail report: describe what it shows that matters to the report.</li>
+      <li>An image inside a link, like a logo linking home: describe where the link goes, "Boulder Trail Club home".</li>
+      <li>A purely decorative image, like a background flourish: use an empty <code>alt=""</code> so screen readers skip it. Don't leave <code>alt</code> out, or many screen readers read the file name instead.</li>
+    </ul>
+    <p>When an image needs a visible caption, wrap it in <code>&lt;figure&gt;</code> and put the caption in <code>&lt;figcaption&gt;</code>. The browser then knows the two belong together.</p>
+    <div class="callout tip"><p class="callout-title">Tip</p><p>Don't start alt text with "Image of" or "Photo of". Screen readers already announce that it's an image, so the words just slow people down.</p></div>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Play</span><h2>Write alt text for an article</h2><p>Choose alt text for each image, then switch to the screen reader view to hear the result.</p></div>
 
   <section class="playground">
     <div class="panel controls">
@@ -80,6 +104,9 @@
   </section>
   <div class="panel" style="display:grid;gap:8px;margin-top:14px"><span class="eyebrow">alt text vs caption</span><p><strong>alt</strong> replaces the image for people who can't see it. A <strong>caption</strong> is visible to everyone and adds information, like who took the photo or when. Don't repeat the same words in both: a screen reader would read them twice.</p></div>
 
+  <div class="section-title"><span class="eyebrow">Practice</span><h2>Write useful alt text</h2><p>Each image needs alt text that fits its job on the page, and the photo needs a visible caption.</p></div>
+  <div id="ex-alt"></div>
+
   <section class="notes">
     <div class="panel">
       <h2>Key ideas</h2>
@@ -103,8 +130,11 @@
     </div>
   </section>
 
+  <div class="section-title"><span class="eyebrow">Check yourself</span><h2>Quick check</h2></div>
+  <div class="panel quiz" id="quiz"></div>
+
   <footer class="page-foot" data-book-nav><a href="index.html">← Contents</a></footer>
-</div>
+</main>
 
 <script>
   const $ = (id) => document.getElementById(id);
@@ -193,6 +223,46 @@
   $("fig-p").addEventListener("click", () => { figMode = "p"; fig(); });
   $("fig-f").addEventListener("click", () => { figMode = "f"; fig(); });
   fig();
+</script>
+<script>
+  makeQuiz(document.getElementById("quiz"), [
+    { id: "q1", q: "A purely decorative swirl sits between two sections. What alt should it have?", opts: ["alt=\"swirl\"", "alt=\"\"", "No alt attribute"], a: 1, why: "An empty alt tells screen readers to skip it. Leaving alt out makes many read the file name." },
+    { id: "q2", q: "Your logo links to the home page. What's the best alt text?", opts: ["Boulder Trail Club home", "Logo", "Image of a mountain logo"], a: 0, why: "For a linked image, describe where the link goes." },
+    { id: "q3", q: "Why set width and height on an <img>?", opts: ["They're required for the image to show", "So the page doesn't jump around while the image loads", "To make the file smaller"], a: 1, why: "The browser can reserve the right amount of space before the file arrives." },
+    { id: "q4", q: "Which element pairs an image with a visible caption?", opts: ["<p> after the image", "<img caption=\"…\">", "<figure> with <figcaption>"], a: 2, why: "figure groups the image and figcaption holds its caption." },
+  ]);
+</script>
+<script>
+  makeExercise(document.getElementById("ex-alt"), {
+    title: "Alt text for three images",
+    task: `<p>The images don't exist, so the preview shows their alt text. That's what a screen reader would say.</p>
+    <ol>
+      <li>The logo is a link to the home page. Its alt text should say where the link goes.</li>
+      <li>The divider is pure decoration. Screen readers should skip it.</li>
+      <li>Wrap the photo and its paragraph in a <code>&lt;figure&gt;</code>, turn the paragraph into a <code>&lt;figcaption&gt;</code>, and give the photo a real description.</li>
+    </ol>`,
+    html: `<a href="index.html"><img src="logo.svg" alt="logo.svg" width="60" height="60"></a>
+<img src="divider.png" width="400" height="20">
+<img src="royal-arch.jpg" alt="image" width="400" height="260">
+<p>Royal Arch, at the top of a steep 1.7-mile climb.</p>`,
+    solution: { html: `<a href="index.html"><img src="logo.svg" alt="Boulder Trail Club home" width="60" height="60"></a>
+<img src="divider.png" alt="" width="400" height="20">
+<figure>
+  <img src="royal-arch.jpg" alt="A sandstone arch framing a view of the plains" width="400" height="260">
+  <figcaption>Royal Arch, at the top of a steep 1.7-mile climb.</figcaption>
+</figure>` },
+    hints: [
+      "For an image that's the only thing in a link, describe the destination: “Boulder Trail Club home”.",
+      "Decorative images get an empty alt: alt=\"\". Leaving alt out entirely makes screen readers read the file name.",
+      "Don't start with “image of”. Say what someone would need to know if they couldn't see it.",
+    ],
+    checks: [
+      { label: "The logo's alt says it goes home", test: ({ $ }) => { const a = $("a img").getAttribute("alt"); return /home/i.test(a) && !/logo|\.svg/i.test(a); } },
+      { label: "The divider has an empty alt", test: ({ $ }) => { const d = $('img[src="divider.png"]'); return d.hasAttribute("alt") && d.getAttribute("alt") === ""; } },
+      { label: "The photo is in a <figure> with a <figcaption>", test: ({ $ }) => !!$('figure img[src="royal-arch.jpg"]') && $("figure figcaption").textContent.includes("Royal Arch") },
+      { label: "The photo's alt describes it", test: ({ $ }) => { const a = $('img[src="royal-arch.jpg"]').getAttribute("alt").trim(); return a.length >= 12 && !/^(image|photo|picture)\b|\.jpg/i.test(a); } },
+    ],
+  });
 </script>
 </body>
 </html>

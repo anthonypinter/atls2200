@@ -4,9 +4,6 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Text Semantics</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Recursive:slnt,wght,CASL,MONO@-15..0,300..1000,0..1,0..1&display=swap">
 <link rel="stylesheet" href="style.css">
 <style>
   .art { background: #fff; color: #1d2133; border: 1px solid var(--line); border-radius: var(--radius); padding: 20px; font: 1.02rem/1.65 Georgia, serif; display: grid; gap: 12px; min-width: 0; }
@@ -34,13 +31,40 @@
 <script src="js/quiz.js"></script>
 </head>
 <body>
-<div class="wrap">
+<main class="wrap">
   <nav class="crumbs" aria-label="Site"><a class="crumb" href="index.html">← Field Guide</a><a class="crumb" href="glossary.html">Glossary</a></nav>
   <header class="page-head">
     <span class="eyebrow">HTML Foundations · Text Semantics</span>
     <h1>Text Semantics</h1>
     <p class="lede">Elements like <code>&lt;strong&gt;</code> and <code>&lt;em&gt;</code> say what text <em>means</em>, and the look comes from that meaning. Click any highlighted text in this trail report to see which element it uses and why.</p>
+    <div class="objectives">
+      <p class="callout-title">You'll be able to</p>
+      <ul>
+        <li>Build a heading outline with one h1 and levels that don't skip.</li>
+        <li>Choose between strong and b, and between em and i, by meaning.</li>
+        <li>Mark up quotes, citations and code with the right elements.</li>
+      </ul>
+    </div>
   </header>
+
+  <div class="section-title"><span class="eyebrow">Read</span><h2>Choose elements for meaning</h2></div>
+  <div class="prose">
+    <p>HTML has two dozen elements for text, and the trick is to choose them for what the text <em>means</em>, not how it looks. The look is CSS's job, and you can always change it. The meaning is what screen readers, search engines and browser reading modes rely on.</p>
+    <p>Start with <span class="term">headings</span>. They form an outline of the page: one <code>&lt;h1&gt;</code> for the page's main title, <code>&lt;h2&gt;</code> for each section, <code>&lt;h3&gt;</code> for parts of a section. Screen reader users jump between headings to scan a page, the way you skim bold titles, so don't skip levels just because <code>&lt;h4&gt;</code> looks the right size. Pick the right level, then resize it with CSS.</p>
+    <pre class="snippet" data-lang="html">&lt;h1&gt;Royal Arch Trail&lt;/h1&gt;
+&lt;h2&gt;Before you go&lt;/h2&gt;
+&lt;p&gt;&lt;strong&gt;Bring water.&lt;/strong&gt; There's none on the trail.&lt;/p&gt;
+&lt;h2&gt;The route&lt;/h2&gt;</pre>
+    <p>Inside paragraphs, pairs of elements look alike but mean different things:</p>
+    <ul>
+    <li><code>&lt;strong&gt;</code> means important, and <code>&lt;b&gt;</code> just draws attention without extra importance.</li>
+    <li><code>&lt;em&gt;</code> means stressed, the word you'd say louder, and <code>&lt;i&gt;</code> sets text apart, like a scientific name or a book title in another language.</li>
+    </ul>
+    <p>For quotations, use <code>&lt;blockquote&gt;</code> for a long, standalone quote and <code>&lt;q&gt;</code> for a short one inside a sentence. <code>&lt;cite&gt;</code> marks the title of a work, and <code>&lt;code&gt;</code> marks a piece of code.</p>
+    <div class="callout tip"><p class="callout-title">Tip</p><p>If you're reaching for an element because of its default look, stop and ask what the text is. The answer tells you the element; CSS handles the rest. This is the core idea of <span class="term">semantic HTML</span>.</p></div>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Play</span><h2>Inspect a trail report</h2><p>Click any highlighted text to see which element it uses and why.</p></div>
 
   <section class="playground even">
     <div class="stage-col">
@@ -55,6 +79,9 @@
 
   <div class="section-title"><span class="eyebrow">Practice</span><h2>Which element?</h2></div>
   <div class="panel quiz" id="quiz"></div>
+
+  <div class="section-title"><span class="eyebrow">Practice</span><h2>Give the text meaning</h2><p>This notice looks like a heading and some bold text, but its HTML says nothing about what anything is.</p></div>
+  <div id="ex-semantics"></div>
 
   <section class="notes">
     <div class="panel">
@@ -78,7 +105,7 @@
   </section>
 
   <footer class="page-foot" data-book-nav><a href="index.html">← Contents</a></footer>
-</div>
+</main>
 
 <script>
   const $ = (id) => document.getElementById(id);
@@ -145,6 +172,40 @@
     { id: "q5", q: "A three-paragraph quote from a park ranger.", opts: ["<q>", "<blockquote>", "<p> with quote marks"], a: 1, why: "Long, standalone quotes go in blockquote." },
   ];
   makeQuiz($("quiz"), QUIZ);
+</script>
+<script>
+  makeExercise(document.getElementById("ex-semantics"), {
+    title: "Mark up a trail notice",
+    task: `<p>Rewrite the HTML so it says what each piece is:</p>
+    <ol>
+      <li><em>Trail Conditions</em> is the page's <code>h1</code>, and <em>Fire danger</em> is an <code>h2</code>.</li>
+      <li><em>Closed:</em> is important, and <em>very</em> is stressed. Use the meaningful elements, not <code>b</code> and <code>i</code>.</li>
+      <li>Each of the three paragraphs goes in its own <code>&lt;p&gt;</code>, with no <code>&lt;br&gt;</code>.</li>
+    </ol>`,
+    html: `<div class="big">Trail Conditions</div>
+<b>Closed:</b> Mesa Trail is closed between Bear Canyon and NCAR.<br><br>
+The rest of the trail is <i>very</i> muddy, so wear boots.
+<div class="medium">Fire danger</div>
+<p>Fire danger is high. No campfires anywhere in the park.</p>`,
+    css: `.big { font-size: 2em; font-weight: bold; }
+.medium { font-size: 1.4em; font-weight: bold; }`,
+    solution: { html: `<h1>Trail Conditions</h1>
+<p><strong>Closed:</strong> Mesa Trail is closed between Bear Canyon and NCAR.</p>
+<p>The rest of the trail is <em>very</em> muddy, so wear boots.</p>
+<h2>Fire danger</h2>
+<p>Fire danger is high. No campfires anywhere in the park.</p>` },
+    hints: [
+      "A div with big text is still just a box. Headings are h1, h2 and so on.",
+      "<strong> means important; <em> means stressed.",
+      "Replace <br><br> by ending one <p> and starting the next.",
+    ],
+    checks: [
+      { label: "“Trail Conditions” is the only h1", test: ({ $, $$ }) => $$("h1").length === 1 && $("h1").textContent.trim() === "Trail Conditions" },
+      { label: "“Fire danger” is an h2", test: ({ $ }) => $("h2").textContent.trim() === "Fire danger" },
+      { label: "“Closed:” is strong and “very” is em", test: ({ $ }) => $("strong").textContent.trim() === "Closed:" && $("em").textContent.trim() === "very" && !$("b") && !$("i") },
+      { label: "Three paragraphs and no <br>", test: ({ $, $$ }) => $$("p").length === 3 && !$("br") },
+    ],
+  });
 </script>
 </body>
 </html>

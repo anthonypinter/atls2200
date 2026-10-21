@@ -4,9 +4,6 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Backgrounds &amp; Borders</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Recursive:slnt,wght,CASL,MONO@-15..0,300..1000,0..1,0..1&display=swap">
 <link rel="stylesheet" href="style.css">
 <style>
   .stage.center { display: grid; place-items: center; min-height: 340px; }
@@ -27,13 +24,40 @@
 <script src="js/quiz.js"></script>
 </head>
 <body>
-<div class="wrap">
+<main class="wrap">
   <nav class="crumbs" aria-label="Site"><a class="crumb" href="index.html">← Field Guide</a><a class="crumb" href="glossary.html">Glossary</a></nav>
   <header class="page-head">
     <span class="eyebrow">CSS Basics · Backgrounds &amp; Borders</span>
     <h1>Backgrounds &amp; Borders</h1>
     <p class="lede">Backgrounds can be a color, a gradient, an image, or several layered together. Borders frame a box and <code>border-radius</code> rounds its corners. Build a trail card from the pieces.</p>
+    <div class="objectives">
+      <p class="callout-title">You'll be able to</p>
+      <ul>
+        <li>Use colors, gradients and images as backgrounds, and layer them.</li>
+        <li>Control a background image with size, position and repeat.</li>
+        <li>Add borders and round corners with border-radius.</li>
+      </ul>
+    </div>
   </header>
+
+  <div class="section-title"><span class="eyebrow">Read</span><h2>Fill and frame a box</h2></div>
+  <div class="prose">
+    <p>A box's background can be a solid color, a <span class="term">gradient</span>, an image, or several of those stacked together. A gradient counts as an image, so it goes in <code>background-image</code>, not <code>background-color</code>.</p>
+    <p>Layering is the trick behind a classic look: white text on a photo, with a dark gradient over the photo so the text stays readable.</p>
+    <pre class="snippet" data-lang="css">.hero {
+  background-image:
+    linear-gradient(rgb(0 0 0 / 60%), transparent),
+    url("../img/flatirons.jpg");
+  background-size: cover;
+  background-position: center;
+  color: white;
+}</pre>
+    <p>Layers are separated by commas, and the first one is drawn on top. <code>background-size: cover</code> scales the image to fill the box, cropping as needed, and <code>background-position</code> chooses which part stays in view. The path inside <code>url()</code> starts from the CSS file's folder, not the page's.</p>
+    <p>A <span class="term">border</span> needs three things: a width, a style and a color, as in <code>border: 2px solid #2340d9</code>. Leave out the style and nothing appears, because the default style is <code>none</code>. <span class="term">border-radius</span> rounds the corners: <code>10px</code> for a gentle curve, and <code>50%</code> on a square for a perfect circle.</p>
+    <div class="callout warn"><p class="callout-title">Watch out</p><p>A background image never appears on an element with no height. Backgrounds fill the box, so an empty div with a background is invisible until you give it content, padding or a height.</p></div>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Play</span><h2>Build a trail card</h2><p>Combine a background and a border into a card, then see how size, position and corner radius change it.</p></div>
 
   <section class="playground">
     <div class="panel controls">
@@ -63,6 +87,9 @@
     </div>
   </section>
 
+  <div class="section-title"><span class="eyebrow">Practice</span><h2>Backgrounds and borders</h2><p>A gradient banner, a round avatar and a rounded card.</p></div>
+  <div id="ex-bg"></div>
+
   <section class="notes">
     <div class="panel">
       <h2>Key ideas</h2>
@@ -85,8 +112,11 @@
     </div>
   </section>
 
+  <div class="section-title"><span class="eyebrow">Check yourself</span><h2>Quick check</h2></div>
+  <div class="panel quiz" id="quiz"></div>
+
   <footer class="page-foot" data-book-nav><a href="index.html">← Contents</a></footer>
-</div>
+</main>
 
 <script>
   const $ = (id) => document.getElementById(id);
@@ -124,6 +154,49 @@
   }
   document.querySelectorAll(".controls select, .controls input").forEach((el) => el.addEventListener("input", update));
   update();
+</script>
+<script>
+  makeQuiz(document.getElementById("quiz"), [
+    { id: "q1", q: "Where does a linear-gradient go?", opts: ["background-color", "background-image", "border-color"], a: 1, why: "Gradients are images, so they go in background-image (or the background shorthand)." },
+    { id: "q2", q: "You layer a gradient and a photo with commas. Which is drawn on top?", opts: ["The darker one", "The last one listed", "The first one listed"], a: 2, why: "The first background layer is drawn on top of the rest." },
+    { id: "q3", q: "You set border-width: 4px and border-color: navy, but see no border. What's missing?", opts: ["border-style", "border-radius", "A background"], a: 0, why: "The default border-style is none, so nothing is drawn without it." },
+    { id: "q4", q: "How do you turn a square image into a circle?", opts: ["border-radius: circle", "border-radius: 50%", "shape: round"], a: 1, why: "50% rounds each corner by half the box's size." },
+  ]);
+</script>
+<script>
+  makeExercise(document.getElementById("ex-bg"), {
+    title: "Gradient, circle and rounded corners",
+    task: `<ol>
+      <li>Give the banner a <code>linear-gradient</code> from <code>#1d2a3a</code> to <code>#2340d9</code>.</li>
+      <li>Turn the square avatar into a circle.</li>
+      <li>Give the card a 2px solid border and 12px rounded corners.</li>
+    </ol>`,
+    html: `<div class="banner"><h1>Trail Club</h1></div>
+<div class="card">
+  <div class="avatar"></div>
+  <p>Sam leads the Saturday hikes.</p>
+</div>`,
+    css: `body { font-family: system-ui, sans-serif; }
+.banner { color: white; padding: 24px; background-color: #1d2a3a; }
+.banner h1 { margin: 0; }
+.card { margin-top: 12px; padding: 12px; display: flex; gap: 12px; align-items: center; }
+.avatar { width: 64px; height: 64px; background: #f2a900; }`,
+    solution: { css: `body { font-family: system-ui, sans-serif; }
+.banner { color: white; padding: 24px; background-image: linear-gradient(#1d2a3a, #2340d9); }
+.banner h1 { margin: 0; }
+.card { margin-top: 12px; padding: 12px; display: flex; gap: 12px; align-items: center; border: 2px solid #2340d9; border-radius: 12px; }
+.avatar { width: 64px; height: 64px; background: #f2a900; border-radius: 50%; }` },
+    hints: [
+      "Gradients are images: background-image: linear-gradient(#1d2a3a, #2340d9). background-color can't hold one.",
+      "border-radius: 50% on a square makes a circle.",
+    ],
+    checks: [
+      { label: "The banner has a linear gradient", test: ({ style }) => style(".banner", "background-image").startsWith("linear-gradient") && style(".banner", "background-image").includes("rgb(35, 64, 217)") },
+      { label: "The avatar is a circle", test: ({ style }) => style(".avatar", "border-top-left-radius") === "50%" },
+      { label: "The card has a 2px solid border", test: ({ style }) => style(".card", "border-top-width") === "2px" && style(".card", "border-top-style") === "solid" },
+      { label: "The card has 12px corners", test: ({ style }) => style(".card", "border-top-left-radius") === "12px" },
+    ],
+  });
 </script>
 </body>
 </html>

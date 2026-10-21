@@ -4,9 +4,6 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Variables &amp; Data Types</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Recursive:slnt,wght,CASL,MONO@-15..0,300..1000,0..1,0..1&display=swap">
 <link rel="stylesheet" href="style.css">
 <style>
   .steps { display: grid; grid-template-columns: minmax(0, 1fr); background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 8px 0; overflow-x: auto; }
@@ -28,7 +25,7 @@
   .var .kind.const { color: var(--prop); }
   .var .value { font: 0.95rem var(--font-code); font-variation-settings: "MONO" 1; background: var(--stage); border-radius: 4px; padding: 4px 8px; overflow-wrap: anywhere; }
   .var .type { font-size: 0.8rem; color: var(--muted); }
-  .type-number { color: var(--prop); } .type-string { color: var(--val); } .type-boolean { color: var(--cobalt); } .type-undefined { color: var(--muted); font-style: italic; } .type-object { color: var(--item-4); }
+  .type-number { color: var(--prop); } .type-string { color: var(--val); } .type-boolean { color: var(--cobalt); } .type-undefined { color: var(--muted); font-style: italic; } .type-object { color: var(--fn); }
   .explain { font-size: 0.95rem; min-height: 3em; }
   .explain.err { color: var(--bad); }
 
@@ -48,13 +45,36 @@
 <script src="js/quiz.js"></script>
 </head>
 <body>
-<div class="wrap">
+<main class="wrap">
   <nav class="crumbs" aria-label="Site"><a class="crumb" href="index.html">← Field Guide</a><a class="crumb" href="glossary.html">Glossary</a></nav>
   <header class="page-head">
     <span class="eyebrow">JavaScript Basics · Variables &amp; Data Types</span>
     <h1>Variables &amp; Data Types</h1>
     <p class="lede">A variable is a labeled box that holds a value. <code>let</code> boxes can be refilled; <code>const</code> boxes can't. Step through the code and watch the boxes change.</p>
+    <div class="objectives">
+      <p class="callout-title">You'll be able to</p>
+      <ul>
+        <li>Store values in variables with const and let, and choose between them.</li>
+        <li>Name variables so they're valid and easy to read.</li>
+        <li>Identify the main data types and check a value's type with typeof.</li>
+      </ul>
+    </div>
   </header>
+
+  <div class="section-title"><span class="eyebrow">Read</span><h2>Giving values a name</h2></div>
+  <div class="prose">
+    <p>A program needs to remember things: a player's score, a visitor's name, whether the menu is open. A <span class="term">variable</span> is a name that holds a value, so you can use it later.</p>
+    <pre class="snippet" data-lang="js">const trail = "Mesa Trail";
+let miles = 6.7;
+miles = miles + 1;</pre>
+    <p>There are two ways to make one. <span class="term">const</span> creates a variable that can't be given a new value. <span class="term">let</span> creates one that can. Use <code>const</code> by default, and <code>let</code> only when the value really needs to change, like a counter or a score. That way, anyone reading your code knows which values move.</p>
+    <p>You declare a variable once, with <code>let</code> or <code>const</code>. After that, use just its name. Writing <code>let miles</code> a second time is an error.</p>
+    <p>Names can contain letters, numbers, <code>_</code> and <code>$</code>, but can't start with a number or contain spaces. JavaScript developers write multi-word names in camelCase: <code>trailName</code>, <code>isOpen</code>. Names are case-sensitive, so <code>score</code> and <code>Score</code> are two different variables.</p>
+    <p>Every value has a type. The main ones are numbers (<code>42</code>, <code>6.7</code>), <span class="term">strings</span> of text in quotes (<code>"Mesa"</code>), and <span class="term">booleans</span>, which are just <code>true</code> or <code>false</code>. Arrays and objects hold groups of values, and you'll meet them soon. <span class="term">typeof</span> tells you a value's type.</p>
+    <div class="callout warn"><p class="callout-title">Watch out</p><p>Quotes always make a string. <code>"42"</code> is text that happens to look like a number, and that difference causes surprising bugs, as the next lesson shows.</p></div>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Play</span><h2>Watch the boxes change</h2><p>Step through the code one line at a time and watch each variable's value.</p></div>
 
   <section class="playground even">
     <div class="stage-col">
@@ -73,7 +93,7 @@
     </div>
   </section>
 
-  <div class="section-title"><span class="eyebrow">Part 2</span><h2>Name checker</h2><p>Some names break your code, and others just make it hard to read. Type a variable name, or try one of the examples.</p></div>
+  <div class="section-title"><span class="eyebrow">Play</span><h2>Name checker</h2><p>Some names break your code, and others just make it hard to read. Type a variable name, or try one of the examples.</p></div>
   <section class="playground">
     <div class="panel namer">
       <label class="eyebrow" for="name">Variable name</label>
@@ -101,8 +121,8 @@ console.log(typeof isOpen, typeof trails, typeof hike);
 let notSetYet;
 console.log(notSetYet);</textarea></div>
 
-  <div class="section-title"><span class="eyebrow">Practice</span><h2>Check yourself</h2></div>
-  <div class="panel quiz" id="quiz"></div>
+  <div class="section-title"><span class="eyebrow">Practice</span><h2>Pick const or let</h2><p>Each of these variables is declared the wrong way. Fix them so the code runs and says what it means.</p></div>
+  <div id="ex-vars"></div>
 
   <section class="notes">
     <div class="panel">
@@ -133,8 +153,11 @@ console.log(notSetYet);</textarea></div>
     </div>
   </section>
 
+  <div class="section-title"><span class="eyebrow">Check yourself</span><h2>Quick check</h2></div>
+  <div class="panel quiz" id="quiz"></div>
+
   <footer class="page-foot" data-book-nav><a href="index.html">← Contents</a></footer>
-</div>
+</main>
 
 <script src="js/runner.js"></script>
 <script>
@@ -219,6 +242,44 @@ console.log(notSetYet);</textarea></div>
   ]);
 
   render(); checkName();
+</script>
+<script>
+  makeExercise(document.getElementById("ex-vars"), {
+    title: "Declare them properly",
+    task: `<ol>
+      <li>Use <code>const</code> for values that never change and <code>let</code> for the one that does. No <code>var</code>.</li>
+      <li><code>miles</code> should be a number, not a string.</li>
+      <li>The code should run and log <code>10</code> and then <code>number</code>.</li>
+    </ol>`,
+    js: `var trail = "Mesa Trail";
+let miles = "6.7";
+const score = 0;
+
+score = score + 10;
+
+console.log(score);
+console.log(typeof miles);`,
+    solution: `const trail = "Mesa Trail";
+const miles = 6.7;
+let score = 0;
+
+score = score + 10;
+
+console.log(score);
+console.log(typeof miles);`,
+    expose: ["trail", "miles", "score"],
+    hints: [
+      "score changes, so it needs let. Assigning to a const throws a TypeError.",
+      "Quotes make a string. Remove them to make 6.7 a number.",
+      "trail and miles never change, so they should be const.",
+    ],
+    checks: [
+      { label: "Runs and logs 10, then number", test: ({ error, logs }) => !error && logs.join("|") === "10|number" },
+      { label: "No var", test: ({ code }) => !/\bvar\b/.test(code.js) },
+      { label: "trail and miles are const; score is let", test: ({ code }) => /const\s+trail\b/.test(code.js) && /const\s+miles\b/.test(code.js) && /let\s+score\b/.test(code.js) },
+      { label: "miles is the number 6.7", test: ({ fns }) => fns.miles === 6.7 },
+    ],
+  });
 </script>
 </body>
 </html>

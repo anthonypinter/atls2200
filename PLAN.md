@@ -92,35 +92,31 @@ Every lesson moves toward the same order. The existing playground stays at the c
 - [x] Search across every lesson section and glossary term: `search-index.js` built by `check.mjs --write`, which the publish workflow runs before every deploy (a stale local copy is only a warning), loaded only when search opens. Search button, Ctrl/⌘ + K, or /; results link to sections
 
 ### Phase 5 — Content pass (the bulk of the work)
-- [ ] Create `templates/lesson.html` in the target lesson anatomy
-- [ ] Pilot the full anatomy on 3 lessons, one per kind: `box-model.html` (CSS concept), `flexbox.html` (layout playground), `js-loops.html` (JS stepper), then revise the template from what's learned
-- [ ] Add objectives and time estimates to all 60 lessons (in `book.js` and the page header)
-- [ ] Add a "Read" prose section to each lesson. Track it per part:
-  - [ ] HTML Foundations (14)
-  - [ ] CSS Basics (15)
-  - [ ] Layout (5)
-  - [ ] Responsive Design (5)
-  - [ ] Polish & Workflow (8)
-  - [ ] JavaScript Basics (9)
-  - [ ] JavaScript in the Browser (4)
-- [ ] Add a quiz to the 44 lessons that have none
-- [ ] Add at least one graded exercise per lesson
-- [ ] End-of-part review page: mixed quiz plus a mini project (e.g. "build a responsive profile card")
-- [ ] Cross-link related chapters (e.g. Flexbox ↔ Grid ↔ Flex vs Grid)
+- [x] Create `templates/lesson.html` in the target lesson anatomy: header with objectives (reading time from `book.js`), Read (~300 words, glossary terms, one callout), Play, Practice, Key ideas / Common mistakes, Check yourself
+- [x] Pilot the full anatomy on 3 lessons, one per kind: `box-model.html` (CSS concept), `flexbox.html` (layout playground), `js-loops.html` (JS stepper). Box Model gained an exercise and quiz, Flexbox a quiz, Loops its quiz moved to the end. The checker counts lessons in the format (3 of 60)
+- [x] Add objectives (page header) and `minutes` (`book.js`) to the remaining 57 lessons
+- [x] Convert each lesson to the template (objectives, Read, section labels, quiz at the end). All 7 parts done; the checker reports 60 of 60 in the format
+- [x] Add a quiz to every lesson that had none: 166 new questions, with the correct answer spread across option positions. Organizing CSS keeps its two hand-built quizzes. JS lessons' "Check yourself" quizzes moved to the end
+- [x] Add at least one graded exercise per lesson: all 60 have one (47 HTML/CSS, 13 JavaScript). Each was tested in headless Chrome: the starter code fails at least one check and the official solution passes all of them
+- [x] End-of-part review page for each of the 7 parts (`review-*.html`, last in each part in `book.js`): a recap linking every lesson, a graded mini project that uses the whole part (Responsive Design's is the profile card), and a 10-question mixed quiz
+- [x] Cross-link related chapters: `related` in `book.js` (each pair listed once), shown on both lessons as "Related lessons" above the footer. The checker confirms every related slug exists
 
 ### Phase 6 — Quality, accessibility & polish
-- [ ] Accessibility audit of the chrome and every component (keyboard-only pass, VoiceOver pass, focus order, `aria-live` on results)
-- [ ] Respect `prefers-reduced-motion` in playgrounds and transitions
-- [ ] Mobile pass at 360px: sidebar drawer, editors, playground controls
-- [ ] Self-host the two Google Fonts so the book works offline (optional service worker for full offline reading)
-- [ ] Performance check: no page over ~150 KB before fonts, lazy-init editors below the fold
-- [ ] Run student JavaScript (runner and exercises) in a Worker with a timeout, so an accidental infinite loop can't freeze the tab
-- [ ] Decide whether to move templating to Eleventy (only if header/footer drift or manifest sync becomes painful)
+- [x] Accessibility audit of the chrome and every component. axe-core (WCAG 2.1 A/AA plus best practices) ran on all 69 pages in light and dark themes: about 460 findings went to 0, apart from the deliberate teaching examples listed below. Fixes: one `<main class="wrap">` landmark per page (the checker now requires it), contrast tokens (`--fn` for code function names; darker dark-mode fills behind white text; `--good`), about 20 lesson-specific contrast fixes, dimmed "didn't run" code now uses the muted color instead of opacity, scroll boxes get `tabindex="0"` so they can be scrolled from the keyboard, a list, an ARIA role and a heading level. A scripted keyboard pass on every page checked the skip link, drawer focus in and out, Escape, `inert` behind the drawer, and that every control has a name. Results already used `aria-live`
+  - Left on purpose (the lesson is about the mistake): the missing alt in the Images alt-text picker and the Accessibility "broken" sample, that sample's pale text, Forms' unlabeled checkbox, and the `<main>` inside the Selecting & Changing Elements demo page (students select `main > .card`)
+  - [ ] VoiceOver pass (needs a person): ⌘F5 on a Mac, then on one lesson try VO + U (rotor) for landmarks and headings, open the drawer, answer a quiz question (feedback should be read), run an exercise check (the result should be read), and open a glossary pop-up
+- [x] Respect `prefers-reduced-motion`: the global rule now covers `::before`/`::after` and smooth scrolling. JavaScript timers in playgrounds are user-started step-throughs, not decorative motion, so they stay
+- [x] Mobile pass at 360px: no page scrolls sideways (fixed How the Web Works' table and long URLs in quiz questions). The drawer, editors and controls were checked on every page; small buttons in Cascade and DevTools were enlarged to at least 24px
+- [x] Self-host the two Google Fonts (`fonts/`, Latin and Latin Extended only). Recursive's variable file is ~300 KB, the same file Google sent before
+  - Service worker: not added. Lessons change during the semester, and a cached copy could show students last week's version until they reload twice. Revisit if offline reading becomes a real need
+- [x] Performance check: every page loads under 150 KB on a first visit, not counting fonts (largest: Forms, 133 KB). Exercises (and the editors they need) start only when they scroll near the screen; `makeExercise.startAll()` starts them all, and runs before printing
+- [x] Stop accidental infinite loops: student JavaScript gets a loop guard instead of a Worker, because many lessons need the page's `document`, which Workers don't have. Every `for`/`while` loop gets a check, inserted on the same line so error line numbers don't move, and a loop that runs 1.5 seconds without stopping throws a RangeError. Recursion was already safe (the browser stops it). If the rewrite ever fails to parse, the original code runs unguarded
+- [x] Decide on Eleventy: **not now.** The things it would solve haven't been problems: `book.js` already drives the contents, numbering, sidebar and prev/next, and `scripts/check.mjs` catches head and script drift on every publish. Plain HTML files also keep "view source" useful for students. Reconsider if pages need shared markup that JavaScript can't add (for example, the header has to work without JavaScript), or if the head block changes often enough that editing 70 files is a chore
 
 ### Phase 7 — Instructor features (optional)
 - [ ] Instructor notes toggle (`?instructor=1` reveals `.instructor` blocks with answers and discussion prompts)
 - [ ] Map lessons to course weeks/assignments in `book.js` and show a "This week" view on the cover
-- [ ] Printable/PDF chapter export for students who need it
+- [x] Printable/PDF chapter export: `print.html?part=N` or `?lesson=slug` builds one document from the finished lessons (header and objectives, Read, exercise tasks with starter code, Key ideas and Common mistakes, quiz), lists each playground under "Try it online" with the lesson's link, and ends with answers, hints and solutions (optional). Each lesson starts on a new page. Linked from the contents page ("Print this part") and each lesson's top bar. Loading lessons for printing doesn't count as a visit
 
 ---
 

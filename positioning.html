@@ -4,9 +4,6 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Positioning Playground</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Recursive:slnt,wght,CASL,MONO@-15..0,300..1000,0..1,0..1&display=swap">
 <link rel="stylesheet" href="style.css">
 <style>
   /* The frame plays the browser window: its transform makes it the containing block for position: fixed. */
@@ -35,13 +32,45 @@
 <script src="js/quiz.js"></script>
 </head>
 <body>
-<div class="wrap">
+<main class="wrap">
   <nav class="crumbs" aria-label="Site"><a class="crumb" href="index.html">← Field Guide</a><a class="crumb" href="glossary.html">Glossary</a></nav>
   <header class="page-head">
     <span class="eyebrow">Layout · Positioning</span>
     <h1>Positioning Playground</h1>
     <p class="lede">The <code>position</code> property decides what <code>top</code> and <code>left</code> are measured from, and whether the element still takes up space. Change the settings, then scroll inside the window to compare.</p>
+    <div class="objectives">
+      <p class="callout-title">You'll be able to</p>
+      <ul>
+        <li>Explain what static, relative, absolute, fixed and sticky are each positioned against.</li>
+        <li>Place a badge inside a card with absolute positioning.</li>
+        <li>Control which overlapping element is on top with z-index.</li>
+      </ul>
+    </div>
   </header>
+
+  <div class="section-title"><span class="eyebrow">Read</span><h2>Taking an element out of the flow</h2></div>
+  <div class="prose">
+    <p>Normally every element sits where the <span class="term">normal flow</span> puts it, one after another. The <span class="term">position</span> property lets you move an element from there. The question each value answers is: measured from where?</p>
+    <ul>
+      <li><code>static</code> is the default. <code>top</code> and <code>left</code> do nothing.</li>
+      <li><code>relative</code> nudges the element from where it would have been. Its original space stays reserved, so nothing else moves.</li>
+      <li><code>absolute</code> takes the element out of the flow completely and places it inside its nearest positioned ancestor.</li>
+      <li><code>fixed</code> places it relative to the browser window, so it stays put while you scroll.</li>
+      <li><code>sticky</code> scrolls normally until it reaches its <code>top</code> value, then sticks there until its parent scrolls away.</li>
+    </ul>
+    <p>The pattern you'll use most combines two of them. To pin a "New" badge to the corner of a card, make the card the reference point with <code>position: relative</code>, then place the badge with <code>absolute</code>:</p>
+    <pre class="snippet" data-lang="css">.card { position: relative; }
+.card .badge {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+}</pre>
+    <p>Without <code>position: relative</code> on the card, the badge looks for the next positioned ancestor up the page and often ends up in the corner of the whole page.</p>
+    <p>When positioned elements overlap, <span class="term">z-index</span> decides which is on top: higher numbers come forward. It only works on positioned elements (and flex and grid items).</p>
+    <div class="callout warn"><p class="callout-title">Watch out</p><p>Don't build whole layouts with absolute positioning. Absolutely placed boxes don't make room for each other, so they overlap as soon as the text or screen size changes. Use Flexbox or Grid for layout, and positioning for overlays, badges and sticky headers.</p></div>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Play</span><h2>Move the box</h2><p>Change the position value and offsets, then scroll inside the window to see how each one behaves.</p></div>
 
   <section class="playground">
     <div class="panel controls">
@@ -75,6 +104,9 @@
     </div>
   </section>
 
+  <div class="section-title"><span class="eyebrow">Practice</span><h2>Pin a badge to a card</h2><p>Place a badge in each card's corner, so it stays put whatever the card's size.</p></div>
+  <div id="ex-badge"></div>
+
   <section class="notes">
     <div class="panel">
       <h2>Key ideas</h2>
@@ -97,8 +129,11 @@
     </div>
   </section>
 
+  <div class="section-title"><span class="eyebrow">Check yourself</span><h2>Quick check</h2></div>
+  <div class="panel quiz" id="quiz"></div>
+
   <footer class="page-foot" data-book-nav><a href="index.html">← Contents</a></footer>
-</div>
+</main>
 
 <script>
   const $ = (id) => document.getElementById(id);
@@ -129,6 +164,50 @@
   }
   document.querySelectorAll(".controls select, .controls input").forEach((el) => el.addEventListener("input", update));
   update();
+</script>
+<script>
+  makeQuiz(document.getElementById("quiz"), [
+    { id: "q1", q: "An absolutely positioned badge flies to the corner of the page instead of its card. What's missing?", opts: ["display: block on the badge", "z-index on the badge", "position: relative on the card"], a: 2, why: "absolute is placed inside the nearest positioned ancestor. Make the card that ancestor." },
+    { id: "q2", q: "Which value keeps a header visible while the page scrolls under it?", opts: ["fixed", "relative", "static"], a: 0, why: "fixed is positioned against the window, so it doesn't scroll. sticky works too, inside its parent." },
+    { id: "q3", q: "You move an element with position: relative; top: 20px. What happens to the space it used to take up?", opts: ["It closes up", "It stays reserved", "It doubles"], a: 1, why: "relative only nudges where the element is drawn. Its original space remains." },
+    { id: "q4", q: "z-index: 10 on a static element does nothing. Why?", opts: ["It needs !important", "10 is too small", "z-index only works on positioned (or flex/grid) items"], a: 2, why: "Static elements don't take part in stacking with z-index." },
+  ]);
+</script>
+<script>
+  makeExercise(document.getElementById("ex-badge"), {
+    title: "A “New” badge",
+    task: `<ol>
+      <li>Take the badge out of the flow and pin it 8px from the top and 8px from the right of its card.</li>
+      <li>Make sure it's positioned against its own card, not the page.</li>
+    </ol>`,
+    html: `<div class="card">
+  <span class="badge">New</span>
+  <h3>Sanitas Valley</h3>
+  <p>A gentle walk up a wide valley, with a steep option to the summit.</p>
+</div>
+<div class="card">
+  <span class="badge">New</span>
+  <h3>Bear Peak</h3>
+  <p>Big climb, bigger views.</p>
+</div>`,
+    css: `body { font-family: system-ui, sans-serif; }
+.card { max-width: 360px; padding: 16px; margin-bottom: 16px; background: #eef1fb; }
+.card h3 { margin-top: 0; }
+.badge { background: crimson; color: white; padding: 2px 8px; font-size: 0.8rem; }`,
+    solution: { css: `body { font-family: system-ui, sans-serif; }
+.card { max-width: 360px; padding: 16px; margin-bottom: 16px; background: #eef1fb; position: relative; }
+.card h3 { margin-top: 0; }
+.badge { background: crimson; color: white; padding: 2px 8px; font-size: 0.8rem; position: absolute; top: 8px; right: 8px; }` },
+    hints: [
+      "position: absolute takes the badge out of the flow. top and right place it.",
+      "Absolute elements are placed inside their nearest positioned ancestor. position: relative on the card makes it that ancestor.",
+    ],
+    checks: [
+      { label: "The badge is out of the flow", test: ({ style }) => style(".badge", "position") === "absolute" },
+      { label: "The card is the badge's reference point", test: ({ style }) => style(".card", "position") === "relative" },
+      { label: "Each badge is 8px from its card's top-right corner", test: ({ $$ }) => $$(".card").every((c) => { const r = c.getBoundingClientRect(), b = c.querySelector(".badge").getBoundingClientRect(); return Math.abs(b.top - r.top - 8) < 1 && Math.abs(r.right - b.right - 8) < 1; }) },
+    ],
+  });
 </script>
 </body>
 </html>

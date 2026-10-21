@@ -1,0 +1,215 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Printable Chapters</title>
+<link rel="stylesheet" href="style.css">
+<style>
+  /* Printable chapters: lessons are loaded in a hidden frame, and their finished content is copied into #doc. */
+  .print-opts { display: flex; flex-wrap: wrap; gap: 12px 20px; align-items: end; }
+  .print-opts label { display: grid; gap: 4px; font-weight: 700; }
+  .print-opts label { min-width: 0; max-width: 100%; }
+  .print-opts select { font: inherit; padding: 6px 8px; width: 100%; max-width: 32rem; }
+  .print-opts .check { display: flex; gap: 8px; align-items: center; font-weight: 400; }
+  .print-opts .check input { width: 18px; height: 18px; accent-color: var(--cobalt); }
+  #status { margin: 12px 0 0; color: var(--muted); }
+  #loader { position: absolute; left: -10000px; top: 0; width: 1000px; height: 700px; border: 0; }
+
+  .print-doc { display: grid; gap: 40px; margin-top: 28px; }
+  .print-doc > *, .pl > * { min-width: 0; }
+  .print-doc { overflow-wrap: anywhere; }
+  .pl-cover h1 { font-size: 2.2rem; }
+  .pl-cover ol { padding-left: 1.4em; display: grid; gap: 4px; }
+  .pl { display: grid; gap: 18px; padding-top: 28px; border-top: 2px solid var(--line); }
+  .pl > header { display: grid; gap: 8px; }
+  .pl h2 { font-size: 1.7rem; }
+  .pl h3 { font-size: 1.2rem; margin-top: 6px; }
+  .pl h4 { margin: 0; font-size: 1rem; }
+  .pl .lede { margin: 0; max-width: 68ch; }
+  .pl .notes { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); }
+  .pl .notes .panel h2 { font-size: 1.05rem; }
+  .pl-online { padding: 12px 16px; border: 1px dashed var(--line); border-radius: var(--radius); }
+  .pl-online p, .pl-online ul { margin: 6px 0 0; }
+  .pl-ex { display: grid; gap: 10px; }
+  .pl-code-label { margin: 6px 0 0; font: 600 0.78rem var(--font-code); font-variation-settings: "MONO" 1; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); }
+  .pl pre, .pl-answers pre { white-space: pre-wrap; overflow-wrap: anywhere; }
+  .pl-quiz { display: grid; gap: 14px; padding-left: 1.4em; margin: 0; }
+  .pl-quiz ol { list-style: upper-alpha; padding-left: 1.6em; margin: 6px 0 0; }
+  .pl-answers { display: grid; gap: 14px; padding-top: 28px; border-top: 2px solid var(--line); }
+  .pl-answers h3 { font-size: 1.1rem; margin-top: 10px; }
+  .pl-answers ol { margin: 0; padding-left: 1.4em; display: grid; gap: 6px; }
+
+  @page { margin: 16mm 15mm; }
+  @media print {
+    .print-controls, #status { display: none !important; }
+    .print-doc { margin-top: 0; gap: 0; }
+    .pl, .pl-answers { break-before: page; border-top: 0; padding-top: 0; }
+    .pl .notes { display: block; }   /* a grid of unbreakable panels overlaps the next section in Chrome's print layout */
+    .pl .notes .panel { margin-bottom: 12px; }
+    .pl-quiz > li, .pl .notes .panel, .pl .callout, .pl .objectives { break-inside: avoid; }
+    .pl-code-label, .pl h3, .pl h4, .pl-answers h3, .pl-answers h4 { break-after: avoid; }
+    .pl-online a::after { content: none !important; }   /* the link text is already the address */
+    .pl-online { border-color: #999; }
+  }
+</style>
+<script src="book.js"></script>
+<script src="js/progress.js"></script>
+<script src="js/chrome.js"></script>
+<script src="js/quiz.js"></script>
+</head>
+<body>
+<main class="wrap">
+  <nav class="crumbs" aria-label="Site"><a class="crumb" href="index.html">← Field Guide</a><a class="crumb" href="glossary.html">Glossary</a></nav>
+
+  <div class="print-controls">
+    <header class="page-head">
+      <span class="eyebrow">Print</span>
+      <h1>Printable Chapters</h1>
+      <p class="lede">Put a whole part, or one lesson, on a single page, then print it or save it as a PDF. Playgrounds only work on screen, so each one is listed with a link instead.</p>
+    </header>
+
+    <form class="panel print-opts" id="opts">
+      <label>What to print
+        <select id="pick"></select>
+      </label>
+      <label class="check"><input type="checkbox" id="opt-ex" checked> Exercises</label>
+      <label class="check"><input type="checkbox" id="opt-ans" checked> Answers at the end</label>
+      <button class="btn run" type="button" id="print" disabled>Print or save as PDF</button>
+    </form>
+    <p id="status" aria-live="polite"></p>
+  </div>
+
+  <div class="print-doc" id="doc"></div>
+
+  <footer class="page-foot print-controls"><a href="index.html">← Contents</a><span class="mono">To save a PDF, choose “Save as PDF” as the printer.</span></footer>
+</main>
+<iframe id="loader" title="Lesson loader" aria-hidden="true" tabindex="-1"></iframe>
+
+<script>
+(function () {
+  const $ = (id) => document.getElementById(id);
+  const esc = (s) => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+  const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+  const book = window.BOOK;
+  const lessons = book.lessons;   // numbered by js/chrome.js
+
+  // The picker: every part, then every lesson under it.
+  $("pick").innerHTML = book.parts.map((p) => `<option value="part-${p.num}">Part ${p.num}: ${esc(p.title)} (whole part)</option>`
+    + p.lessons.map((l) => `<option value="lesson-${l.slug}">&nbsp;&nbsp;${l.num} ${esc(l.title)}</option>`).join("")).join("");
+  const params = new URLSearchParams(location.search);
+  if (params.get("lesson") && lessons.some((l) => l.slug === params.get("lesson"))) $("pick").value = "lesson-" + params.get("lesson");
+  else if (params.get("part")) $("pick").value = "part-" + params.get("part");
+
+  // Copy a node from the loaded lesson into this page, tidied for paper: no ids, no buttons, no hidden bits.
+  function copy(node) {
+    const c = document.importNode(node, true);
+    c.querySelectorAll("[hidden], script, style, .term-tip").forEach((x) => x.remove());
+    c.querySelectorAll("button").forEach((b) => b.replaceWith(document.createTextNode(b.textContent)));
+    [c, ...c.querySelectorAll("[id], [aria-controls], [aria-describedby], [tabindex]")].forEach((x) => {
+      x.removeAttribute("id"); x.removeAttribute("aria-controls"); x.removeAttribute("aria-describedby"); x.removeAttribute("tabindex");
+    });
+    return c;
+  }
+  const html = (node) => { const box = document.createElement("div"); box.append(copy(node)); return box.innerHTML; };
+
+  const load = (src) => new Promise((resolve, reject) => {
+    const f = $("loader");
+    f.onload = () => resolve(f);
+    f.onerror = reject;
+    f.src = src;
+  });
+
+  // Everything printable from one lesson, read from the finished page.
+  async function grab(lesson) {
+    const f = await load(`${lesson.href}?print`);
+    const d = f.contentDocument;   // throws when the book is opened from file:// (see the catch in build())
+    for (let i = 0; i < 30 && [...d.querySelectorAll("pre[data-lang]")].some((p) => !p.querySelector("span")); i++) await wait(100);
+    const titles = [...d.querySelectorAll(".wrap > .section-title")];
+    const label = (t) => t.querySelector(".eyebrow")?.textContent.trim() || "";
+    const read = titles.find((t) => label(t) === "Read");
+    const online = titles.filter((t) => !["Read", "Check yourself"].includes(label(t)) && !t.nextElementSibling?.matches('[id^="ex-"]'))
+      .map((t) => ({ h: t.querySelector("h2")?.textContent.trim() || "", p: t.querySelector("p")?.textContent.trim() || "" }));
+    return {
+      lesson,
+      head: d.querySelector(".page-head"),
+      read: read && { title: read.querySelector("h2").textContent, prose: read.nextElementSibling },
+      online,
+      exercises: [...d.querySelectorAll('[id^="ex-"]')].map((el) => el.exerciseDef).filter(Boolean),
+      notes: d.querySelector(".wrap > .notes"),
+      quizzes: [...d.querySelectorAll(".quiz")].map((el) => el.quizItems).filter(Boolean),
+    };
+  }
+
+  const code = (label, text) => text ? `<p class="pl-code-label">${label}</p><pre class="snippet">${esc(text.trim())}</pre>` : "";
+  const starter = (def) => typeof def.js === "string" ? code("Starting JavaScript", def.js) : code("Starting HTML", def.html) + code("Starting CSS", def.css);
+  const solution = (def) => typeof def.js === "string" ? code("Solution", def.solution) : code("Solution HTML", def.solution?.html) + code("Solution CSS", def.solution?.css);
+
+  function lessonHTML(g, opts) {
+    const l = g.lesson, url = new URL(l.href, location.href).href;
+    const lede = g.head.querySelector(".lede"), obj = g.head.querySelector(".objectives");
+    const quiz = g.quizzes.flat();
+    return `<article class="pl">
+      <header>
+        <span class="eyebrow">${l.num} · ${esc(l.part.title)}${l.minutes ? ` · About ${l.minutes} min` : ""}</span>
+        <h2>${esc(l.title)}</h2>
+        ${lede ? html(lede) : ""}
+        ${obj ? html(obj) : ""}
+      </header>
+      ${g.read ? `<section><h3>${esc(g.read.title)}</h3>${html(g.read.prose)}</section>` : ""}
+      ${g.online.length ? `<div class="pl-online"><h4>Try it online</h4><p>These parts of the lesson are interactive. Open <a href="${url}">${esc(url)}</a> to use them.</p><ul>${g.online.map((o) => `<li><strong>${esc(o.h)}</strong>${o.p ? `: ${esc(o.p)}` : ""}</li>`).join("")}</ul></div>` : ""}
+      ${opts.ex ? g.exercises.map((def) => `<section class="pl-ex"><h3>Practice: ${esc(def.title)}</h3>${def.task || ""}${starter(def)}</section>`).join("") : ""}
+      ${g.notes ? html(g.notes) : ""}
+      ${quiz.length ? `<section><h3>Check yourself</h3><ol class="pl-quiz">${quiz.map((q) => `<li><p>${esc(q.q)}</p>${q.pre ? `<pre class="snippet">${esc(q.pre)}</pre>` : ""}<ol>${q.opts.map((o) => `<li>${esc(o)}</li>`).join("")}</ol></li>`).join("")}</ol></section>` : ""}
+    </article>`;
+  }
+
+  function answersHTML(grabs, opts) {
+    const parts = grabs.map((g) => {
+      const quiz = g.quizzes.flat();
+      const q = quiz.length ? `<h4>Check yourself</h4><ol>${quiz.map((x) => `<li><strong>${"ABCDEFG"[x.a]}. ${esc(x.opts[x.a])}${/[.?!]$/.test(x.opts[x.a]) ? "" : "."}</strong>${x.why ? ` ${esc(x.why)}` : ""}</li>`).join("")}</ol>` : "";
+      const ex = opts.ex ? g.exercises.map((def) => `<h4>Practice: ${esc(def.title)}</h4>${def.hints?.length ? `<p class="pl-code-label">Hints</p><ol>${def.hints.map((h) => `<li>${esc(h)}</li>`).join("")}</ol>` : ""}${solution(def)}`).join("") : "";
+      return q || ex ? `<h3>${g.lesson.num} ${esc(g.lesson.title)}</h3>${q}${ex}` : "";
+    }).join("");
+    return parts ? `<section class="pl-answers"><h2>Answers</h2>${parts}</section>` : "";
+  }
+
+  let building = 0;
+  async function build() {
+    const run = ++building;
+    const [kind, key] = $("pick").value.split(/-(.+)/);
+    const part = kind === "part" ? book.parts[key - 1] : null;
+    const list = part ? part.lessons : lessons.filter((l) => l.slug === key);
+    const opts = { ex: $("opt-ex").checked, ans: $("opt-ans").checked };
+    history.replaceState(null, "", `?${kind}=${key}`);
+    $("print").disabled = true;
+    $("doc").innerHTML = "";
+    const grabs = [];
+    try {
+      for (const [i, l] of list.entries()) {
+        $("status").textContent = `Preparing ${l.num} ${l.title} (${i + 1} of ${list.length})…`;
+        grabs.push(await grab(l));
+        if (run !== building) return;   // the choice changed while loading
+      }
+    } catch (e) {
+      $("status").textContent = "Couldn't read the lessons. Printable chapters only work when the book is served from a website (GitHub Pages or a local server), not opened as a file.";
+      return;
+    }
+    const body = grabs.map((g) => lessonHTML(g, opts)).join("");
+    const cover = part ? `<section class="pl-cover"><span class="eyebrow">${esc(book.title)}</span><h1>Part ${part.num}: ${esc(part.title)}</h1><p>${esc(part.blurb)}</p><ol>${list.map((l) => `<li>${l.num} ${esc(l.title)}</li>`).join("")}</ol></section>` : "";
+    $("doc").innerHTML = cover + body + (opts.ans ? answersHTML(grabs, opts) : "");
+    $("loader").removeAttribute("src");
+    document.title = part ? `Part ${part.num}: ${part.title} (printable)` : `${list[0].num} ${list[0].title} (printable)`;
+    $("status").textContent = `Ready: ${list.length} lesson${list.length > 1 ? "s" : ""}. Use the button, or your browser's Print command.`;
+    $("print").disabled = false;
+  }
+
+  $("pick").addEventListener("change", build);
+  $("opt-ex").addEventListener("change", build);
+  $("opt-ans").addEventListener("change", build);
+  $("print").addEventListener("click", () => print());
+  build();
+})();
+</script>
+</body>
+</html>

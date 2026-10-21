@@ -43,7 +43,7 @@ jobs:
       # Rebuild the search index from the lessons being published, so nobody has to remember to.
       - run: node scripts/check.mjs --write
       # Publish only the site itself, not the repo tooling.
-      - run: rsync -a --exclude '.*' --exclude scripts --exclude '*.md' ./ _site/
+      - run: rsync -a --exclude '.*' --exclude scripts --exclude templates --exclude supabase --exclude '*.md' ./ _site/
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:

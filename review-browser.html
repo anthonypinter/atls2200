@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Review: JavaScript in the Browser</title>
+<link rel="stylesheet" href="style.css">
+<script src="book.js"></script>
+<script src="js/progress.js"></script>
+<script src="js/chrome.js"></script>
+<script src="js/quiz.js"></script>
+</head>
+<body>
+<main class="wrap">
+  <nav class="crumbs" aria-label="Site"><a class="crumb" href="index.html">← Field Guide</a><a class="crumb" href="glossary.html">Glossary</a></nav>
+  <header class="page-head">
+    <span class="eyebrow">JavaScript in the Browser · Review</span>
+    <h1>Review: JavaScript in the Browser</h1>
+    <p class="lede">Put the whole book together. Skim the recap, build an interactive trail list, then test yourself with mixed questions.</p>
+    <div class="objectives">
+      <p class="callout-title">You'll be able to</p>
+      <ul>
+        <li>Build an interactive component that renders data, reacts to events and updates the page.</li>
+        <li>Choose between selecting, creating and delegating for a given job.</li>
+        <li>Decide which lesson to revisit, based on the questions you miss.</li>
+      </ul>
+    </div>
+  </header>
+
+  <div class="section-title"><span class="eyebrow">Read</span><h2>What you've covered</h2></div>
+  <div class="prose">
+    <p>This part connected JavaScript to the page: finding elements, reacting to what people do, building new elements, and loading data from a server.</p>
+    <ul class="recap">
+      <li><a href="js-dom.html">Selecting &amp; Changing Elements</a>: querySelector finds elements with CSS selectors; textContent and classList change them.</li>
+      <li><a href="js-events.html">Events</a>: addEventListener runs a function when something happens; preventDefault stops the browser's own action; events bubble.</li>
+      <li><a href="js-create-elements.html">Creating &amp; Removing Elements</a>: createElement, then fill it, then append it. Use textContent for anything a person typed.</li>
+      <li><a href="js-fetch.html">Fetching Data</a>: fetch returns a promise; await it, check response.ok, parse the JSON, and catch errors.</li>
+    </ul>
+    <div class="callout tip"><p class="callout-title">How to use this page</p><p>Try the project without looking back at the lessons. When you get stuck, or miss a quiz question, the lesson it comes from is linked above.</p></div>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Practice</span><h2>Mini project: an interactive trail list</h2><p>Render a list from data, filter it as someone types, and mark trails done with one listener.</p></div>
+  <div id="ex-project"></div>
+
+  <div class="section-title"><span class="eyebrow">Check yourself</span><h2>Mixed quiz</h2><p>Ten questions from across the part, in no particular order.</p></div>
+  <div class="panel quiz" id="quiz"></div>
+
+  <footer class="page-foot" data-book-nav><a href="index.html">← Contents</a></footer>
+</main>
+
+<script>
+  makeQuiz(document.getElementById("quiz"), [
+    { id: "q1", q: "document.querySelector(\".card\") matches nothing. What does it return?", opts: ["null", "An empty list", "undefined"], a: 0, why: "Using null then throws \"Cannot read properties of null\"." },
+    { id: "q2", q: "How do you loop over every match?", opts: ["querySelector in a while loop", "querySelectorAll with for...of", "getElementById"], a: 1, why: "querySelectorAll returns a list of every match." },
+    { id: "q3", q: "btn.addEventListener(\"click\", save()); What's wrong?", opts: ["save runs immediately instead of on click", "\"click\" needs a capital C", "Nothing"], a: 0, why: "Pass the function itself: save, without parentheses." },
+    { id: "q4", q: "A form reloads the page when submitted. What stops it?", opts: ["e.preventDefault() in the submit handler", "return false in the HTML", "type=\"button\" on the form"], a: 0, why: "preventDefault cancels the browser's default action." },
+    { id: "q5", q: "You add one click listener to a list instead of to each item. What's this called?", opts: ["Event capture", "Event delegation", "Hoisting"], a: 1, why: "It relies on bubbling, and works for items added later." },
+    { id: "q6", q: "You createElement(\"li\") and fill it, but nothing appears. Why?", opts: ["createElement only works in the head", "li needs an id", "It was never appended to the page"], a: 2, why: "New elements live in memory until you append them." },
+    { id: "q7", q: "Why use textContent rather than innerHTML for typed text?", opts: ["innerHTML would run typed HTML as code", "textContent is faster to type", "innerHTML only works on divs"], a: 0, why: "textContent shows exactly what was typed and never runs it." },
+    { id: "q8", q: "fetch() gets a 404. Does it land in catch by itself?", opts: ["No; check response.ok", "Yes", "Only with async"], a: 0, why: "A 404 is a completed request. Throw when response.ok is false." },
+    { id: "q9", q: "Code after fetch() runs:", opts: ["Never", "Only after the response arrives", "Right away, before the response arrives"], a: 2, why: "fetch doesn't block. Use await or .then() for code that needs the data." },
+    { id: "q10", q: "How do you turn a class on and off on each click?", opts: ["el.classList.toggle(\"done\")", "el.className = \"done\"", "el.style.done = true"], a: 0, why: "toggle adds the class if it's missing and removes it if it's there." },
+  ]);
+</script>
+<script>
+  makeExercise(document.getElementById("ex-project"), {
+    title: "Render, filter, mark done",
+    task: `<p>Each trail is an object like <code>{ name: "Mesa", miles: 6.7 }</code>.</p>
+    <ol>
+      <li><code>renderTrails(list, trails)</code> empties <code>list</code>, then adds one <code>&lt;li&gt;</code> per trail with the text <code>Mesa · 6.7 mi</code>. Names must show as text, never as HTML.</li>
+      <li><code>setupFilter(input, list, trails)</code>: whenever someone types in <code>input</code>, show only the trails whose name contains the text, ignoring capital letters.</li>
+      <li><code>setupDone(list)</code>: add <em>one</em> click listener to <code>list</code> that toggles the class <code>done</code> on the clicked <code>li</code>. It must work for items added later.</li>
+    </ol>
+    <p class="hint">The checks build their own lists, type into inputs and click items.</p>`,
+    js: `function renderTrails(list, trails) {
+  // Your code here
+}
+
+function setupFilter(input, list, trails) {
+  // Your code here
+}
+
+function setupDone(list) {
+  // Your code here
+}
+
+// Try it:
+const list = document.createElement("ul");
+renderTrails(list, [{ name: "Mesa", miles: 6.7 }, { name: "Royal Arch", miles: 3.4 }]);
+console.log(list.innerHTML);`,
+    solution: `function renderTrails(list, trails) {
+  list.textContent = "";
+  for (const trail of trails) {
+    const li = document.createElement("li");
+    li.textContent = \`\${trail.name} · \${trail.miles} mi\`;
+    list.append(li);
+  }
+}
+
+function setupFilter(input, list, trails) {
+  input.addEventListener("input", () => {
+    const text = input.value.toLowerCase();
+    renderTrails(list, trails.filter((t) => t.name.toLowerCase().includes(text)));
+  });
+}
+
+function setupDone(list) {
+  list.addEventListener("click", (e) => {
+    const li = e.target.closest("li");
+    if (li) li.classList.toggle("done");
+  });
+}
+
+// Try it:
+const list = document.createElement("ul");
+renderTrails(list, [{ name: "Mesa", miles: 6.7 }, { name: "Royal Arch", miles: 3.4 }]);
+console.log(list.innerHTML);`,
+    expose: ["renderTrails", "setupFilter", "setupDone"],
+    hints: [
+      "Empty the list with list.textContent = \"\" before adding anything, then createElement, fill with textContent, append.",
+      "Listen for \"input\" on the input. Lowercase both the name and the typed text before includes().",
+      "In the list's click handler, e.target.closest(\"li\") finds the item that was clicked.",
+    ],
+    checks: (() => {
+      const data = [{ name: "Mesa", miles: 6.7 }, { name: "Royal Arch", miles: 3.4 }, { name: "Flagstaff", miles: 2.8 }, { name: "Bear Peak", miles: 8.1 }];
+      const texts = (ul) => [...ul.children].map((li) => li.textContent);
+      return [
+        { label: "renderTrails adds one li per trail, as “Name · N mi”", test: ({ fns }) => { const ul = document.createElement("ul"); fns.renderTrails(ul, data); return texts(ul).join("|") === "Mesa · 6.7 mi|Royal Arch · 3.4 mi|Flagstaff · 2.8 mi|Bear Peak · 8.1 mi" && [...ul.children].every((li) => li.tagName === "LI"); } },
+        { label: "renderTrails replaces what was there", test: ({ fns }) => { const ul = document.createElement("ul"); ul.innerHTML = "<li>old</li>"; fns.renderTrails(ul, data); fns.renderTrails(ul, data.slice(0, 2)); return texts(ul).join("|") === "Mesa · 6.7 mi|Royal Arch · 3.4 mi"; } },
+        { label: "Names show as text, not HTML", test: ({ fns }) => { const ul = document.createElement("ul"); fns.renderTrails(ul, [{ name: "<b>Mesa</b>", miles: 1 }]); return ul.children[0].textContent === "<b>Mesa</b> · 1 mi" && !ul.querySelector("b"); } },
+        { label: "Typing filters the list, ignoring capitals", test: ({ fns }) => { const input = document.createElement("input"), ul = document.createElement("ul"); fns.renderTrails(ul, data); fns.setupFilter(input, ul, data); input.value = "AR"; input.dispatchEvent(new Event("input")); const a = texts(ul).join("|"); input.value = ""; input.dispatchEvent(new Event("input")); return a === "Royal Arch · 3.4 mi|Bear Peak · 8.1 mi" && ul.children.length === 4; } },
+        { label: "Clicking an item toggles done, even for items added later", test: ({ fns }) => { const ul = document.createElement("ul"); fns.renderTrails(ul, data.slice(0, 1)); fns.setupDone(ul); const late = document.createElement("li"); late.textContent = "Late"; ul.append(late); late.click(); ul.children[0].click(); const on = late.classList.contains("done") && ul.children[0].classList.contains("done"); late.click(); return on && !late.classList.contains("done"); } },
+      ];
+    })(),
+  });
+</script>
+</body>
+</html>

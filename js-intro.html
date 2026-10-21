@@ -4,9 +4,6 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>What Is JavaScript?</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Recursive:slnt,wght,CASL,MONO@-15..0,300..1000,0..1,0..1&display=swap">
 <link rel="stylesheet" href="style.css">
 <style>
   .layers { display: grid; gap: 8px; }
@@ -41,13 +38,37 @@
 <script src="js/quiz.js"></script>
 </head>
 <body>
-<div class="wrap">
+<main class="wrap">
   <nav class="crumbs" aria-label="Site"><a class="crumb" href="index.html">← Field Guide</a><a class="crumb" href="glossary.html">Glossary</a></nav>
   <header class="page-head">
     <span class="eyebrow">JavaScript Basics · What Is JavaScript?</span>
     <h1>What Is JavaScript?</h1>
     <p class="lede">HTML gives a page its structure, CSS gives it style, and JavaScript gives it behavior. Turn each layer on and off to see what it adds, then find out where the <code>&lt;script&gt;</code> tag needs to go.</p>
+    <div class="objectives">
+      <p class="callout-title">You'll be able to</p>
+      <ul>
+        <li>Describe what HTML, CSS and JavaScript each add to a page.</li>
+        <li>Link a JavaScript file with a script tag and defer.</li>
+        <li>Explain why a script that runs too early can't find elements on the page.</li>
+      </ul>
+    </div>
   </header>
+
+  <div class="section-title"><span class="eyebrow">Read</span><h2>The behavior layer</h2></div>
+  <div class="prose">
+    <p>A web page is built in three layers. <span class="term">HTML</span> says what's on the page: a heading, a button, a form. <span class="term">CSS</span> says how it looks. <span class="term">JavaScript</span> says what it does: what happens when someone clicks the button, types in the form, or scrolls to the bottom.</p>
+    <p>JavaScript is a programming language, and it runs right inside the browser. It can change text and styles after the page has loaded, show and hide things, check a form before it's sent, and fetch new data without reloading the page. Every interactive part of this textbook, from the quizzes to the sidebar, is JavaScript.</p>
+    <p>Like CSS, JavaScript belongs in its own file, linked from the HTML:</p>
+    <pre class="snippet" data-lang="html">&lt;head&gt;
+  &lt;link rel="stylesheet" href="style.css"&gt;
+  &lt;script defer src="script.js"&gt;&lt;/script&gt;
+&lt;/head&gt;</pre>
+    <p>That <span class="term">defer</span> attribute matters. The browser reads your HTML from top to bottom, and without <code>defer</code>, it stops at the script and runs it straight away. A script in the <code>&lt;head&gt;</code> would run before the browser has even reached the <code>&lt;body&gt;</code>, so it can't find the button it's supposed to work with. <code>defer</code> says: download this now, but wait to run it until the whole page has been read.</p>
+    <p>You'll also see <code>type="module"</code>, which waits in the same way. It's what MDN recommends, but it only works when the page is served by a web server, not when you double-click the file to open it.</p>
+    <div class="callout tip"><p class="callout-title">Tip</p><p>JavaScript has nothing to do with Java. The similar name was a marketing decision in 1995, and it has confused people ever since.</p></div>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Play</span><h2>Peel back the layers</h2><p>Turn each layer off and on to see what it adds. Then try the script tag in different places.</p></div>
 
   <section class="playground">
     <div class="panel controls">
@@ -65,7 +86,7 @@
     </div>
   </section>
 
-  <div class="section-title"><span class="eyebrow">Part 2</span><h2>Where does the script tag go?</h2><p>A script often uses elements on the page. If it runs before the browser has read those elements, it finds nothing and fails. Pick a placement and see what happens as the page loads.</p></div>
+  <div class="section-title"><span class="eyebrow">Play</span><h2>Where does the script tag go?</h2><p>A script often uses elements on the page. If it runs before the browser has read those elements, it finds nothing and fails. Pick a placement and see what happens as the page loads.</p></div>
   <section class="playground">
     <div class="panel controls">
       <div class="control"><label for="place">Placement</label>
@@ -87,8 +108,8 @@
     </div>
   </section>
 
-  <div class="section-title"><span class="eyebrow">Practice</span><h2>Check yourself</h2></div>
-  <div class="panel quiz" id="quiz"></div>
+  <div class="section-title"><span class="eyebrow">Practice</span><h2>Your first lines of JavaScript</h2><p>Make the console say something. Press Run to see the output, then Check my work.</p></div>
+  <div id="ex-first"></div>
 
   <section class="notes">
     <div class="panel">
@@ -119,8 +140,11 @@
     </div>
   </section>
 
+  <div class="section-title"><span class="eyebrow">Check yourself</span><h2>Quick check</h2></div>
+  <div class="panel quiz" id="quiz"></div>
+
   <footer class="page-foot" data-book-nav><a href="index.html">← Contents</a></footer>
-</div>
+</main>
 
 <script src="js/runner.js"></script>
 <script>
@@ -215,6 +239,31 @@
   makeQuiz($("quiz"), QUIZ);
 
   renderLayers(); renderPlace();
+</script>
+<script>
+  makeExercise(document.getElementById("ex-first"), {
+    title: "Hello, Boulder",
+    task: `<ol>
+      <li>Log the text <code>Hello, Boulder!</code></li>
+      <li>Log the result of <code>6.7 + 3.4</code>, letting JavaScript do the math.</li>
+      <li>Add a one-line comment above your code that says what it does.</li>
+    </ol>`,
+    js: `// Your code goes here
+`,
+    solution: `// Say hello, then add up two trail lengths
+console.log("Hello, Boulder!");
+console.log(6.7 + 3.4);`,
+    hints: [
+      "console.log(\"Hello, Boulder!\"); Text goes in quotes.",
+      "Numbers don't need quotes: console.log(6.7 + 3.4);",
+      "A comment starts with //. Replace the placeholder comment with your own.",
+    ],
+    checks: [
+      { label: "Logs “Hello, Boulder!”", test: ({ logs }) => logs.includes("Hello, Boulder!") },
+      { label: "Logs the sum of 6.7 and 3.4", test: ({ logs, code }) => logs.includes(String(6.7 + 3.4)) && /6\.7\s*\+\s*3\.4/.test(code.js) },
+      { label: "Has a comment of your own", test: ({ code }) => /\/\/\s*\S/.test(code.js) && !/\/\/ Your code goes here/.test(code.js) },
+    ],
+  });
 </script>
 </body>
 </html>

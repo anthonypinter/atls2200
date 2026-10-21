@@ -4,9 +4,6 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Selecting &amp; Changing Elements</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Recursive:slnt,wght,CASL,MONO@-15..0,300..1000,0..1,0..1&display=swap">
 <link rel="stylesheet" href="style.css">
 <style>
   .sel-in { display: grid; grid-template-columns: minmax(0, 1fr); gap: 6px; }
@@ -37,7 +34,7 @@
   .dom { display: grid; grid-template-columns: minmax(0, 1fr); background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 8px 0; overflow-x: auto; max-height: 420px; overflow-y: auto; }
   .node { font: 0.82rem/1.6 var(--font-code); font-variation-settings: "MONO" 1; white-space: pre; text-align: left; border: 0; background: none; color: var(--ink); padding: 0 12px; cursor: pointer; min-width: max-content; }
   .node:hover { background: var(--stage); }
-  .node .tg { color: var(--cobalt); } .node .at { color: var(--prop); } .node .tx { color: var(--muted); font-style: italic; }
+  .node .tg { color: var(--cobalt); } .node .at { color: color-mix(in srgb, var(--prop) 80%, var(--ink)); } .node .tx { color: var(--muted); font-style: italic; }
   .node.hit { background: var(--cobalt-soft); } .node.first { background: color-mix(in srgb, var(--prop) 18%, transparent); }
   .node[aria-pressed="true"] { outline: 2px solid var(--ink); outline-offset: -2px; }
   .rel { font-size: 0.9rem; display: grid; gap: 4px; }
@@ -51,13 +48,40 @@
 <script src="js/quiz.js"></script>
 </head>
 <body>
-<div class="wrap">
+<main class="wrap">
   <nav class="crumbs" aria-label="Site"><a class="crumb" href="index.html">← Field Guide</a><a class="crumb" href="glossary.html">Glossary</a></nav>
   <header class="page-head">
     <span class="eyebrow">JavaScript in the Browser · Selecting &amp; Changing Elements</span>
     <h1>Selecting &amp; Changing Elements</h1>
     <p class="lede">The browser turns your HTML into a tree of objects called the DOM (Document Object Model). JavaScript finds elements in that tree with the same selectors you use in CSS, then changes them.</p>
+    <div class="objectives">
+      <p class="callout-title">You'll be able to</p>
+      <ul>
+        <li>Find elements with querySelector and querySelectorAll.</li>
+        <li>Change an element's text with textContent and its styles with classList.</li>
+        <li>Describe the DOM as a tree of parents, children and siblings.</li>
+      </ul>
+    </div>
   </header>
+
+  <div class="section-title"><span class="eyebrow">Read</span><h2>The page as JavaScript sees it</h2></div>
+  <div class="prose">
+    <p>When the browser reads your HTML, it builds a tree of objects in memory, one for each element. That tree is the <span class="term">DOM</span>, the Document Object Model. JavaScript can't change your HTML file, but it can change the DOM, and the page updates immediately.</p>
+    <p>The DOM uses the same family words as CSS. A <span class="term">parent</span> element directly contains its <span class="term" data-term="Child">children</span>; children of the same parent are <span class="term">siblings</span>; and anything inside an element, at any depth, is a <span class="term">descendant</span>.</p>
+    <p>To change an element, first find it. <span class="term">querySelector()</span> takes any CSS <span class="term">selector</span> and returns the first match:</p>
+    <pre class="snippet" data-lang="js">const title = document.querySelector(".card h2");
+title.textContent = "Mesa Trail (closed)";
+
+const cards = document.querySelectorAll(".card");
+for (const card of cards) {
+  card.classList.add("dimmed");
+}</pre>
+    <p><code>querySelectorAll()</code> returns every match as a list you can loop over. If nothing matches, <code>querySelector()</code> returns <code>null</code>, and using <code>null</code> gives the error "Cannot read properties of null." That almost always means a typo in your selector, or a script that ran before the element existed.</p>
+    <p><span class="term">textContent</span> reads or replaces an element's text. For appearance, use <span class="term">classList</span>: <code>add()</code>, <code>remove()</code> and <code>toggle()</code> switch classes on and off, while the actual styles stay in your CSS file, where they belong. You can also set <code>el.style.backgroundColor</code> directly; note the camelCase, since hyphens aren't allowed in JavaScript names.</p>
+    <div class="callout tip"><p class="callout-title">Tip</p><p>Write the selector in your CSS file first and make sure it styles the right element. Then use the same selector in JavaScript.</p></div>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Play</span><h2>Select elements</h2><p>Pick a method, type a selector and see what it matches.</p></div>
 
   <section class="playground">
     <div class="panel controls">
@@ -75,13 +99,13 @@
     </div>
   </section>
 
-  <div class="section-title"><span class="eyebrow">Part 2</span><h2>The DOM tree</h2><p>This is the mini page above as the browser sees it. Matches from your selector are highlighted. Click any node to see how it relates to the others.</p></div>
+  <div class="section-title"><span class="eyebrow">Play</span><h2>The DOM tree</h2><p>This is the mini page above as the browser sees it. Matches from your selector are highlighted. Click any node to see how it relates to the others.</p></div>
   <section class="playground even">
     <div class="dom" id="dom" role="group" aria-label="DOM tree"></div>
     <div class="panel rel" id="rel" aria-live="polite"></div>
   </section>
 
-  <div class="section-title"><span class="eyebrow">Part 3</span><h2>Change what you selected</h2><p>These act on whatever your selector matched in Part 1. Try them on <code>.featured</code>, then on <code>h2</code> with querySelectorAll.</p></div>
+  <div class="section-title"><span class="eyebrow">Play</span><h2>Change what you selected</h2><p>These act on whatever your selector matched in Part 1. Try them on <code>.featured</code>, then on <code>h2</code> with querySelectorAll.</p></div>
   <section class="playground">
     <div class="panel controls">
       <div class="actions" id="actions" role="group" aria-label="Changes"></div>
@@ -94,8 +118,8 @@
     </div>
   </section>
 
-  <div class="section-title"><span class="eyebrow">Practice</span><h2>Check yourself</h2></div>
-  <div class="panel quiz" id="quiz"></div>
+  <div class="section-title"><span class="eyebrow">Practice</span><h2>Change a card with the DOM</h2><p>Write a function that finds parts of a trail card and updates them.</p></div>
+  <div id="ex-dom"></div>
 
   <section class="notes">
     <div class="panel">
@@ -127,8 +151,11 @@
     </div>
   </section>
 
+  <div class="section-title"><span class="eyebrow">Check yourself</span><h2>Quick check</h2></div>
+  <div class="panel quiz" id="quiz"></div>
+
   <footer class="page-foot" data-book-nav><a href="index.html">← Contents</a></footer>
-</div>
+</main>
 
 <script src="js/runner.js"></script>
 <script>
@@ -250,6 +277,59 @@
 
   mini.innerHTML = MINI;
   select();
+</script>
+<script>
+  makeExercise(document.getElementById("ex-dom"), {
+    title: "Mark a trail closed",
+    task: `<p><code>markClosed(card)</code> receives one card element shaped like this:</p>
+    <pre class="snippet" data-lang="html">&lt;div class="card"&gt;
+  &lt;h2&gt;Mesa Trail&lt;/h2&gt;
+  &lt;p class="status"&gt;Open&lt;/p&gt;
+&lt;/div&gt;</pre>
+    <ol>
+      <li>Add <code>" (closed)"</code> to the end of the heading's text.</li>
+      <li>Change the status text to <code>Closed</code>.</li>
+      <li>Add the class <code>closed</code> to the card.</li>
+    </ol>
+    <p>Search inside <code>card</code>, not the whole <code>document</code>, so it works on any card.</p>`,
+    js: `function markClosed(card) {
+  // Your code here
+}
+
+// Try it on a test card:
+const test = document.createElement("div");
+test.className = "card";
+test.innerHTML = '<h2>Mesa Trail</h2><p class="status">Open</p>';
+markClosed(test);
+console.log(test.outerHTML);`,
+    solution: `function markClosed(card) {
+  const title = card.querySelector("h2");
+  title.textContent = title.textContent + " (closed)";
+  card.querySelector(".status").textContent = "Closed";
+  card.classList.add("closed");
+}
+
+// Try it on a test card:
+const test = document.createElement("div");
+test.className = "card";
+test.innerHTML = '<h2>Mesa Trail</h2><p class="status">Open</p>';
+markClosed(test);
+console.log(test.outerHTML);`,
+    expose: ["markClosed"],
+    hints: [
+      "card.querySelector(\"h2\") finds the heading inside this card.",
+      "Read and set text with textContent.",
+      "card.classList.add(\"closed\") adds a class without removing the others.",
+    ],
+    checks: (() => {
+      const make = (name) => { const c = document.createElement("div"); c.className = "card"; c.innerHTML = `<h2>${name}</h2><p class="status">Open</p>`; return c; };
+      return [
+        { label: "The heading ends with “ (closed)”", test: ({ fns }) => { const c = make("Royal Arch"); fns.markClosed(c); return c.querySelector("h2").textContent === "Royal Arch (closed)"; } },
+        { label: "The status says Closed", test: ({ fns }) => { const c = make("Mesa Trail"); fns.markClosed(c); return c.querySelector(".status").textContent === "Closed"; } },
+        { label: "The card has the class closed, and keeps card", test: ({ fns }) => { const c = make("Mesa Trail"); fns.markClosed(c); return c.classList.contains("closed") && c.classList.contains("card"); } },
+      ];
+    })(),
+  });
 </script>
 </body>
 </html>

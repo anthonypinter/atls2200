@@ -4,9 +4,6 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Document Structure</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Recursive:slnt,wght,CASL,MONO@-15..0,300..1000,0..1,0..1&display=swap">
 <link rel="stylesheet" href="style.css">
 <style>
   .doc { display: grid; gap: 2px; padding: 12px; background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); font: 0.92rem/1.5 var(--font-code); font-variation-settings: "MONO" 1; overflow-x: auto; }
@@ -52,13 +49,48 @@
 <script src="js/quiz.js"></script>
 </head>
 <body>
-<div class="wrap">
+<main class="wrap">
   <nav class="crumbs" aria-label="Site"><a class="crumb" href="index.html">← Field Guide</a><a class="crumb" href="glossary.html">Glossary</a></nav>
   <header class="page-head">
     <span class="eyebrow">HTML Foundations · Document Structure</span>
     <h1>Document Structure</h1>
     <p class="lede">Every HTML page starts with the same skeleton. Click any line to learn what it does, then remove it to see what breaks.</p>
+    <div class="objectives">
+      <p class="callout-title">You'll be able to</p>
+      <ul>
+        <li>Write the skeleton every HTML page needs from memory.</li>
+        <li>Say what belongs in the head and what belongs in the body.</li>
+        <li>Explain what the doctype and the viewport meta tag are for.</li>
+      </ul>
+    </div>
   </header>
+
+  <div class="section-title"><span class="eyebrow">Read</span><h2>The skeleton every page needs</h2></div>
+  <div class="prose">
+    <p>Every HTML page starts with the same few lines. You'll type them so often that they'll become automatic, but each one is there for a reason:</p>
+    <pre class="snippet" data-lang="html">&lt;!DOCTYPE html&gt;
+&lt;html lang="en"&gt;
+  &lt;head&gt;
+    &lt;meta charset="utf-8"&gt;
+    &lt;meta name="viewport" content="width=device-width, initial-scale=1"&gt;
+    &lt;title&gt;Boulder Trail Club&lt;/title&gt;
+    &lt;link rel="stylesheet" href="style.css"&gt;
+  &lt;/head&gt;
+  &lt;body&gt;
+    &lt;h1&gt;Boulder Trail Club&lt;/h1&gt;
+  &lt;/body&gt;
+&lt;/html&gt;</pre>
+    <p>The <span class="term">DOCTYPE</span> tells the browser to use modern standards mode. Without it, browsers fall back to "quirks mode" and imitate the bugs of 1990s browsers.</p>
+    <p>Everything else lives inside <code>&lt;html&gt;</code>, whose <code>lang</code> attribute tells screen readers and translation tools which language the page is in. Inside it are two parts:</p>
+    <ul>
+      <li>The <span class="term">head</span> holds information <em>about</em> the page: its character set, its title for the browser tab, and links to stylesheets. Nothing in the head shows on the page.</li>
+      <li>The body holds everything visitors see: headings, paragraphs, images, links.</li>
+    </ul>
+    <p>The <span class="term">viewport meta tag</span> deserves a special mention. Without it, phones pretend to be a wide desktop screen and shrink your whole page until it's unreadable. With it, the page fits the phone's real width, which is what makes responsive design possible.</p>
+    <div class="callout tip"><p class="callout-title">Tip</p><p>Indent each nested element by two spaces, as above. The browser ignores the indents, but they let you see at a glance what's inside what, and spot a tag that was never closed.</p></div>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Play</span><h2>Take the skeleton apart</h2><p>Click any line to learn what it does, then remove it and see what breaks.</p></div>
 
   <section class="playground even">
     <div class="stage-col" style="gap:12px">
@@ -87,6 +119,9 @@
     </div>
   </section>
 
+  <div class="section-title"><span class="eyebrow">Practice</span><h2>Write a complete page</h2><p>Turn two lines of content into a full HTML document, from doctype to closing tag.</p></div>
+  <div id="ex-skeleton"></div>
+
   <section class="notes">
     <div class="panel">
       <h2>Key ideas</h2>
@@ -108,8 +143,11 @@
     </div>
   </section>
 
+  <div class="section-title"><span class="eyebrow">Check yourself</span><h2>Quick check</h2></div>
+  <div class="panel quiz" id="quiz"></div>
+
   <footer class="page-foot" data-book-nav><a href="index.html">← Contents</a></footer>
-</div>
+</main>
 
 <script>
   const $ = (id) => document.getElementById(id);
@@ -173,6 +211,51 @@
     $("issues").innerHTML = issues.length ? issues.map((x) => `<li>${x}</li>`).join("") : `<li class="ok">Everything is in place. Remove a line to see what breaks.</li>`;
   }
   render();
+</script>
+<script>
+  makeQuiz(document.getElementById("quiz"), [
+    { id: "q1", q: "Where does the <title> element go?", opts: ["Before the doctype", "In the body", "In the head"], a: 2, why: "The title is information about the page, so it goes in the head. It shows in the browser tab, not on the page." },
+    { id: "q2", q: "Your page looks tiny and zoomed out on a phone. Which line is probably missing?", opts: ["<meta name=\"viewport\" …>", "<meta charset=\"utf-8\">", "<!DOCTYPE html>"], a: 0, why: "Without the viewport meta tag, phones lay the page out at desktop width and shrink it." },
+    { id: "q3", q: "What happens if you leave out <!DOCTYPE html>?", opts: ["Nothing, it's optional", "The browser switches to quirks mode", "The page won't load"], a: 1, why: "The doctype switches on standards mode. Without it, browsers imitate old bugs." },
+    { id: "q4", q: "You put an <h1> inside the <head>. What happens?", opts: ["It shows at the top of the page", "It becomes the tab title", "It's in the wrong place: visible content belongs in the body"], a: 2, why: "The head is for information about the page. Browsers move or mishandle visible content placed there." },
+  ]);
+</script>
+<script>
+  makeExercise(document.getElementById("ex-skeleton"), {
+    title: "Wrap it in a document",
+    task: `<p>Wrap this content in a complete page:</p>
+    <ol>
+      <li>Start with the doctype.</li>
+      <li>Add an <code>&lt;html&gt;</code> element with <code>lang="en"</code>.</li>
+      <li>Give it a head with <code>&lt;meta charset="utf-8"&gt;</code> and the title <em>Mesa Trail</em>.</li>
+      <li>Put the heading and paragraph in the body.</li>
+    </ol>
+    <p class="hint">The preview already sits inside a page, so these checks read your code.</p>`,
+    html: `<h1>Mesa Trail</h1>
+<p>A rolling 6.7-mile trail along the base of the Flatirons.</p>`,
+    solution: { html: `<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Mesa Trail</title>
+  </head>
+  <body>
+    <h1>Mesa Trail</h1>
+    <p>A rolling 6.7-mile trail along the base of the Flatirons.</p>
+  </body>
+</html>` },
+    hints: [
+      "The very first line is <!doctype html>.",
+      "Everything else goes inside <html lang=\"en\"> … </html>, which holds exactly two children: <head> and <body>.",
+      "The title goes in the head: <title>Mesa Trail</title>.",
+    ],
+    checks: [
+      { label: "It starts with <!doctype html>", test: ({ code }) => /^\s*<!doctype html>/i.test(code.html) },
+      { label: "An <html lang=\"en\"> element wraps everything", test: ({ code }) => /^\s*<!doctype html>\s*<html lang="en">[\s\S]*<\/html>\s*$/i.test(code.html) },
+      { label: "The head has a charset and the title “Mesa Trail”", test: ({ code }) => /<head>[\s\S]*<meta charset="utf-8">[\s\S]*<\/head>/i.test(code.html) && /<head>[\s\S]*<title>Mesa Trail<\/title>[\s\S]*<\/head>/i.test(code.html) },
+      { label: "The heading and paragraph are in the body", test: ({ code }) => /<\/head>\s*<body>[\s\S]*<h1>Mesa Trail<\/h1>[\s\S]*<p>[\s\S]*<\/body>/i.test(code.html) },
+    ],
+  });
 </script>
 </body>
 </html>

@@ -4,9 +4,6 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Mobile-First Workflow</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Recursive:slnt,wght,CASL,MONO@-15..0,300..1000,0..1,0..1&display=swap">
 <link rel="stylesheet" href="style.css">
 <style>
   .steps { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
@@ -66,19 +63,49 @@
 <script src="js/quiz.js"></script>
 </head>
 <body>
-<div class="wrap">
+<main class="wrap">
   <nav class="crumbs" aria-label="Site"><a class="crumb" href="index.html">← Field Guide</a><a class="crumb" href="glossary.html">Glossary</a></nav>
   <header class="page-head">
     <span class="eyebrow">Responsive Design · Mobile-First Workflow</span>
     <h1>Mobile-First Workflow</h1>
     <p class="lede">Build the phone version first, then add to it as the screen gets wider. Step through how one page comes together and watch it on three screen sizes at once.</p>
+    <div class="objectives">
+      <p class="callout-title">You'll be able to</p>
+      <ul>
+        <li>Write a page's phone layout first, then add min-width queries for wider screens.</li>
+        <li>Explain why mobile-first CSS ends up simpler than desktop-first.</li>
+        <li>Test a layout properly, including on a real phone.</li>
+      </ul>
+    </div>
   </header>
+
+  <div class="section-title"><span class="eyebrow">Read</span><h2>Start small, then add</h2></div>
+  <div class="prose">
+    <p>There are two ways to make a site responsive. You can design for a laptop and then squeeze it onto a phone, undoing styles as the screen shrinks. Or you can start with the phone and <em>add</em> to it as the screen grows. The second way is called <span class="term">mobile first</span>, and it almost always means less CSS and fewer bugs.</p>
+    <p>The reason is that the phone layout is usually the simplest: one column, everything stacked, full width. That's close to what HTML does with no CSS at all. So your base styles, outside any media query, describe the phone version. Then each <code>min-width</code> media query adds only what changes on wider screens:</p>
+    <pre class="snippet" data-lang="css">/* Phone: everything stacks */
+.page { padding: 16px; }
+
+/* Tablet and up: two columns */
+@media (min-width: 700px) {
+  .page {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 24px;
+  }
+}</pre>
+    <p>Working this way, you never write a rule just to undo another one. And because the phone version is built first, it gets your full attention instead of being an afterthought.</p>
+    <p>Mobile first also applies to content. If something is too much for a phone, ask whether it's needed at all, rather than hiding it on small screens. Phone visitors often want exactly the same information as everyone else.</p>
+    <div class="callout tip"><p class="callout-title">Tip</p><p>Narrowing your browser window is a good first check, but test on a real phone too. Touch targets, real font sizes and the on-screen keyboard only show up on the real thing. DevTools' device mode is a good middle step.</p></div>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Play</span><h2>Build a page step by step</h2><p>Step through how one page comes together, and watch it on three screen sizes at once.</p></div>
 
   <div class="steps" id="steps" role="group" aria-label="Steps"></div>
   <div class="devices">
-    <div class="dev"><span class="cap">Phone · 375px</span><div class="screen" data-w="375"></div></div>
-    <div class="dev"><span class="cap">Tablet · 768px</span><div class="screen" data-w="768"></div></div>
-    <div class="dev"><span class="cap">Laptop · 1280px</span><div class="screen" data-w="1280"></div></div>
+    <div class="dev"><span class="cap">Phone · 375px</span><div class="screen" data-w="375" aria-hidden="true" inert></div></div>
+    <div class="dev"><span class="cap">Tablet · 768px</span><div class="screen" data-w="768" aria-hidden="true" inert></div></div>
+    <div class="dev"><span class="cap">Laptop · 1280px</span><div class="screen" data-w="1280" aria-hidden="true" inert></div></div>
   </div>
   <div class="step-info" style="margin-top:16px">
     <div class="panel" id="what" aria-live="polite"></div>
@@ -88,6 +115,9 @@
 
   <div class="section-title"><span class="eyebrow">Before you hand it in</span><h2>Responsive checklist</h2><p>Tick these off for your own project. Your checks are saved in this browser only.</p></div>
   <ul class="checklist" id="checklist"></ul>
+
+  <div class="section-title"><span class="eyebrow">Practice</span><h2>Flip it to mobile first</h2><p>This page is built for the desktop and then undone for phones. Rewrite it to start with the phone.</p></div>
+  <div id="ex-mf"></div>
 
   <section class="notes">
     <div class="panel">
@@ -110,8 +140,11 @@
     </div>
   </section>
 
+  <div class="section-title"><span class="eyebrow">Check yourself</span><h2>Quick check</h2></div>
+  <div class="panel quiz" id="quiz"></div>
+
   <footer class="page-foot" data-book-nav><a href="index.html">← Contents</a></footer>
-</div>
+</main>
 
 <script>
   const $ = (id) => document.getElementById(id);
@@ -181,6 +214,56 @@
   $("checklist").addEventListener("change", () => {
     const on = ITEMS.map((_, i) => i).filter((i) => $("ck" + i).checked);
     try { localStorage.setItem("mf-checklist", JSON.stringify(on)); } catch (e) {}
+  });
+</script>
+<script>
+  makeQuiz(document.getElementById("quiz"), [
+    { id: "q1", q: "In mobile-first CSS, where do the phone styles go?", opts: ["Outside any media query", "Inside a max-width query", "In a separate stylesheet"], a: 0, why: "The base styles are the phone layout; queries only add changes for wider screens." },
+    { id: "q2", q: "Which kind of media query does mobile first mostly use?", opts: ["max-width", "min-width", "orientation"], a: 1, why: "min-width queries add to the layout as the screen gets wider." },
+    { id: "q3", q: "Why does mobile first usually need less CSS?", opts: ["Phones ignore CSS", "It uses fewer properties", "You add to a simple layout instead of undoing a complex one"], a: 2, why: "Starting simple means no rules that exist only to cancel others." },
+    { id: "q4", q: "Something doesn't fit on phones. What's the mobile-first approach?", opts: ["Rearrange it, or ask whether it's needed at all", "Hide it with display: none", "Make the font tiny"], a: 0, why: "Phone visitors usually need the same content, so rearrange rather than hide." },
+  ]);
+</script>
+<script>
+  makeExercise(document.getElementById("ex-mf"), {
+    title: "Start small, then add",
+    task: `<ol>
+      <li>Outside any media query, write the phone layout: <code>.page</code> isn't a grid and has 16px of padding.</li>
+      <li>Add a <code>min-width: 700px</code> query that makes <code>.page</code> a <code>2fr 1fr</code> grid with a 24px gap and 32px padding.</li>
+      <li>Delete the <code>max-width</code> query. Nothing should need undoing.</li>
+    </ol>`,
+    html: `<div class="page">
+  <main><h1>Trail Club</h1><p>Spring hikes start in April.</p></main>
+  <aside class="sidebar"><h2>Next hike</h2><p>Royal Arch, Saturday 8am.</p></aside>
+</div>`,
+    css: `body { font-family: system-ui, sans-serif; margin: 0; }
+.sidebar { background: #eef1fb; padding: 12px; }
+
+.page { display: grid; grid-template-columns: 2fr 1fr; gap: 24px; padding: 32px; }
+
+@media (max-width: 699px) {
+  .page { display: block; padding: 16px; }
+}`,
+    solution: { css: `body { font-family: system-ui, sans-serif; margin: 0; }
+.sidebar { background: #eef1fb; padding: 12px; }
+
+.page { padding: 16px; }
+
+@media (min-width: 700px) {
+  .page { display: grid; grid-template-columns: 2fr 1fr; gap: 24px; padding: 32px; }
+}` },
+    hints: [
+      "The phone layout is just padding: blocks already stack.",
+      "Move the grid declarations inside @media (min-width: 700px) { .page { … } }.",
+    ],
+    checks: (() => {
+      const rules = (doc) => [...doc.styleSheets[0].cssRules];
+      return [
+        { label: "Outside queries, .page has 16px padding and no grid", test: ({ doc }) => { const base = rules(doc).filter((r) => r.selectorText === ".page"); return base.length > 0 && base.every((r) => r.style.display !== "grid" && !r.style.gridTemplateColumns) && base.some((r) => r.style.padding === "16px" || r.style.paddingTop === "16px"); } },
+        { label: "min-width: 700px makes a 2fr 1fr grid", test: ({ doc }) => rules(doc).some((m) => m.media && m.conditionText.replace(/\s/g, "") === "(min-width:700px)" && [...m.cssRules].some((r) => r.selectorText === ".page" && r.style.display === "grid" && r.style.gridTemplateColumns.replace(/\s+/g, " ") === "2fr 1fr" && r.style.columnGap === "24px")) },
+        { label: "No max-width queries are left", test: ({ doc }) => !rules(doc).some((r) => r.media && /max-width/.test(r.conditionText)) },
+      ];
+    })(),
   });
 </script>
 </body>

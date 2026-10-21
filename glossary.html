@@ -4,9 +4,6 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Field Guide Glossary</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Recursive:slnt,wght,CASL,MONO@-15..0,300..1000,0..1,0..1&display=swap">
 <link rel="stylesheet" href="style.css">
 <style>
   .tools { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--paper); padding-block: 12px; display: grid; gap: 10px; border-bottom: 1px solid var(--line); }
@@ -26,7 +23,7 @@
   .entry { display: grid; gap: 4px; }
   dt { display: flex; flex-wrap: wrap; align-items: baseline; gap: 8px; font: 700 1.1rem var(--font-display); }
   dt .cat { font: 600 0.68rem var(--font-code); font-variation-settings: "MONO" 1; letter-spacing: 0.06em; text-transform: uppercase; padding: 2px 6px; border-radius: 4px; background: var(--stage); color: var(--muted); }
-  dt .cat.html { color: var(--prop); } dt .cat.css { color: var(--cobalt); } dt .cat.layout { color: var(--val); } dt .cat.js { color: var(--item-4); }
+  dt .cat.html { color: var(--prop); } dt .cat.css { color: var(--cobalt); } dt .cat.layout { color: var(--val); } dt .cat.js { color: var(--fn); }
   .entry { scroll-margin-top: 170px; border-radius: 8px; }
   .entry:target { outline: 3px solid var(--cobalt); outline-offset: 6px; background: var(--cobalt-soft); }
   dd { margin: 0; display: grid; gap: 4px; max-width: 70ch; }
@@ -41,7 +38,7 @@
 <script src="js/quiz.js"></script>
 </head>
 <body>
-<div class="wrap">
+<main class="wrap">
   <a class="crumb" href="index.html">← Field Guide</a>
   <header class="page-head">
     <span class="eyebrow">Reference</span>
@@ -57,11 +54,11 @@
     <div class="row"><nav class="letters" id="letters" aria-label="Jump to letter"></nav><span class="count" id="count"></span></div>
   </div>
 
-  <main id="list"></main>
+  <div id="list"></div>
   <p class="empty" id="empty" hidden>No terms match. Try a shorter word, or switch the category back to All.</p>
 
   <footer class="page-foot"><a href="index.html">← All topics</a><span class="mono">Missing a term? Ask your instructor.</span></footer>
-</div>
+</main>
 
 <script src="glossary-terms.js"></script>
 <script>

@@ -4,9 +4,6 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Fluid Sizing</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Recursive:slnt,wght,CASL,MONO@-15..0,300..1000,0..1,0..1&display=swap">
 <link rel="stylesheet" href="style.css">
 <style>
   .rows { display: grid; gap: 10px; }
@@ -41,15 +38,36 @@
 <script src="js/quiz.js"></script>
 </head>
 <body>
-<div class="wrap">
+<main class="wrap">
   <nav class="crumbs" aria-label="Site"><a class="crumb" href="index.html">← Field Guide</a><a class="crumb" href="glossary.html">Glossary</a></nav>
   <header class="page-head">
     <span class="eyebrow">Responsive Design · Fluid Sizing</span>
     <h1>Fluid Sizing</h1>
     <p class="lede">Media queries change things in jumps. <code>clamp()</code>, <code>min()</code>, <code>max()</code> and <code>calc()</code> let sizes change smoothly with the screen, inside limits you set, often with no media query at all.</p>
+    <div class="objectives">
+      <p class="callout-title">You'll be able to</p>
+      <ul>
+        <li>Make text and spacing grow smoothly with clamp().</li>
+        <li>Set upper and lower limits with min() and max().</li>
+        <li>Mix units with calc().</li>
+      </ul>
+    </div>
   </header>
 
-  <div class="section-title" style="margin-top:0"><span class="eyebrow">Part 1</span><h2>Headings that grow with clamp()</h2><p><code>clamp(MIN, PREFERRED, MAX)</code> uses the preferred value, but never goes below the minimum or above the maximum. Drag the window width and compare three ways to size a heading.</p></div>
+  <div class="section-title"><span class="eyebrow">Read</span><h2>Sizes that grow smoothly</h2></div>
+  <div class="prose">
+    <p>Media queries change things in jumps: two columns, then suddenly three. For sizes like headings and padding, a smooth change often looks better. CSS has four functions that do math with sizes, so a value can grow with the screen inside limits you set.</p>
+    <p><span class="term">clamp()</span> takes three values, always in this order: a minimum, a preferred value and a maximum.</p>
+    <pre class="snippet" data-lang="css">h1 {
+  font-size: clamp(1.75rem, 1rem + 3vw, 3.5rem);
+}</pre>
+    <p>The preferred value, <code>1rem + 3vw</code>, grows as the window widens. <code>clamp()</code> keeps it between 28px and 56px, so the heading is never tiny on a phone or enormous on a big monitor. One line replaces several media queries. Mixing in <code>rem</code> also means the heading still grows when someone zooms in.</p>
+    <p><span class="term" data-term="min() / max()">min()</span> and <span class="term" data-term="min() / max()">max()</span> pick one of their values. <code>width: min(100%, 600px)</code> uses whichever is smaller, so the box fills the screen on phones but never grows past 600px. It works like <code>max-width</code>. <code>max()</code> sets a floor instead. The names feel backwards at first: <code>min()</code> sets an upper limit.</p>
+    <p><span class="term">calc()</span> mixes units: <code>calc(100% - 2rem)</code> means "the full width, minus 32px." Inside <code>clamp()</code>, <code>min()</code> and <code>max()</code> you can do math without writing <code>calc()</code>.</p>
+    <div class="callout warn"><p class="callout-title">Watch out</p><p><code>calc(100%-2rem)</code> is silently ignored. The <code>+</code> and <code>-</code> in <code>calc()</code> need a space on each side: <code>calc(100% - 2rem)</code>.</p></div>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Play</span><h2>Headings that grow with clamp()</h2><p><code>clamp(MIN, PREFERRED, MAX)</code> uses the preferred value, but never goes below the minimum or above the maximum. Drag the window width and compare three ways to size a heading.</p></div>
   <section class="playground">
     <div class="panel controls">
       <div class="control"><label for="vw">window width</label><input id="vw" type="range" min="320" max="1600" step="10" value="390"><span class="readout" id="vw-out"></span></div>
@@ -66,7 +84,7 @@
     </div>
   </section>
 
-  <div class="section-title"><span class="eyebrow">Part 2</span><h2>Columns that fit with min() and max()</h2><p><code>min()</code> picks the smallest of its values, <code>max()</code> the largest. They're perfect for "this wide, but never wider than the screen" and "at least this much padding."</p></div>
+  <div class="section-title"><span class="eyebrow">Play</span><h2>Columns that fit with min() and max()</h2><p><code>min()</code> picks the smallest of its values, <code>max()</code> the largest. They're perfect for "this wide, but never wider than the screen" and "at least this much padding."</p></div>
   <section class="playground">
     <div class="panel controls">
       <div class="control"><label for="pw">page width</label><input id="pw" type="range" min="300" max="1000" step="10" value="360"><span class="readout" id="pw-out"></span></div>
@@ -85,8 +103,11 @@
     </div>
   </section>
 
-  <div class="section-title"><span class="eyebrow">Part 3</span><h2>Recipes worth keeping</h2><p>Copy these into your own stylesheet. Each one replaces a media query or two.</p></div>
+  <div class="section-title"><span class="eyebrow">Play</span><h2>Recipes worth keeping</h2><p>Copy these into your own stylesheet. Each one replaces a media query or two.</p></div>
   <section class="recipes" id="recipes"></section>
+
+  <div class="section-title"><span class="eyebrow">Practice</span><h2>Size with clamp(), min() and calc()</h2><p>Replace fixed sizes with ones that grow smoothly, within limits.</p></div>
+  <div id="ex-fluid"></div>
 
   <section class="notes">
     <div class="panel">
@@ -109,8 +130,11 @@
     </div>
   </section>
 
+  <div class="section-title"><span class="eyebrow">Check yourself</span><h2>Quick check</h2></div>
+  <div class="panel quiz" id="quiz"></div>
+
   <footer class="page-foot" data-book-nav><a href="index.html">← Contents</a></footer>
-</div>
+</main>
 
 <script>
   const $ = (id) => document.getElementById(id);
@@ -178,6 +202,46 @@
   $("recipes").addEventListener("click", (e) => {
     const b = e.target.closest(".copy"); if (!b) return;
     navigator.clipboard.writeText($("r" + b.dataset.i).textContent).then(() => { b.textContent = "Copied"; setTimeout(() => (b.textContent = "Copy"), 1200); }).catch(() => {});
+  });
+</script>
+<script>
+  makeQuiz(document.getElementById("quiz"), [
+    { id: "q1", q: "What order do clamp()'s values go in?", opts: ["max, preferred, min", "min, preferred, max", "preferred, min, max"], a: 1, why: "Always minimum, preferred value, maximum." },
+    { id: "q2", q: "width: min(100%, 600px) on a 1200px screen. How wide is the box?", opts: ["100px", "1200px", "600px"], a: 2, why: "min() uses the smaller value: 600px is less than 100% of 1200px." },
+    { id: "q3", q: "Why is calc(100%-2rem) ignored?", opts: ["The minus needs spaces around it", "calc can't mix units", "rem isn't allowed"], a: 0, why: "+ and - in calc() must have a space on each side." },
+    { id: "q4", q: "Why not size headings in vw alone?", opts: ["vw isn't supported", "They'd be tiny on phones, huge on monitors, and ignore zoom", "vw only works on widths"], a: 1, why: "clamp() with rem plus vw keeps text in range and zoomable." },
+  ]);
+</script>
+<script>
+  makeExercise(document.getElementById("ex-fluid"), {
+    title: "Fluid heading, capped box, mixed units",
+    task: `<ol>
+      <li>Make the heading's size <code>clamp(1.75rem, 1rem + 3vw, 3.5rem)</code>.</li>
+      <li>Make the box's width “100%, but never more than 500px” with <code>min()</code>.</li>
+      <li>The inner panel's <code>calc()</code> is being ignored. Fix it, so the panel is the full width minus 2rem.</li>
+    </ol>`,
+    html: `<div class="box">
+  <h1>Trail Club</h1>
+  <div class="panel">Spring hikes start in April.</div>
+</div>`,
+    css: `body { font-family: system-ui, sans-serif; }
+h1 { font-size: 48px; }
+.box { width: 500px; background: #eef1fb; padding: 12px 0; }
+.panel { width: calc(100%-2rem); margin: 0 auto; background: #b9c4ef; padding: 8px 0; }`,
+    solution: { css: `body { font-family: system-ui, sans-serif; }
+h1 { font-size: clamp(1.75rem, 1rem + 3vw, 3.5rem); }
+.box { width: min(100%, 500px); background: #eef1fb; padding: 12px 0; }
+.panel { width: calc(100% - 2rem); margin: 0 auto; background: #b9c4ef; padding: 8px 0; }` },
+    hints: [
+      "clamp() takes a minimum, a preferred value and a maximum, in that order.",
+      "width: min(100%, 500px) uses whichever is smaller.",
+      "+ and - in calc() need a space on each side.",
+    ],
+    checks: [
+      { label: "The heading uses clamp() between 28 and 56px", test: ({ doc, style }) => { const r = [...doc.styleSheets[0].cssRules].find((r) => r.selectorText === "h1"); const px = parseFloat(style("h1", "font-size")); return /^clamp\(/.test(r.style.fontSize) && px >= 28 && px <= 56; } },
+      { label: "The box uses min() and is at most 500px", test: ({ $, doc }) => { const r = [...doc.styleSheets[0].cssRules].find((r) => r.selectorText === ".box"); return /^min\(/.test(r.style.width) && $(".box").getBoundingClientRect().width <= 500.5; } },
+      { label: "The panel is the box's width minus 2rem", test: ({ $ }) => Math.abs($(".panel").getBoundingClientRect().width - ($(".box").clientWidth - 32)) < 1 },
+    ],
   });
 </script>
 </body>

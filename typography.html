@@ -4,9 +4,6 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Typography Tester</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Recursive:slnt,wght,CASL,MONO@-15..0,300..1000,0..1,0..1&family=Lora:wght@400..700&display=swap">
 <link rel="stylesheet" href="style.css">
 <style>
   .reading { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 24px; overflow-x: auto; min-width: 0; }
@@ -29,13 +26,41 @@
 <script src="js/quiz.js"></script>
 </head>
 <body>
-<div class="wrap">
+<main class="wrap">
   <nav class="crumbs" aria-label="Site"><a class="crumb" href="index.html">← Field Guide</a><a class="crumb" href="glossary.html">Glossary</a></nav>
   <header class="page-head">
     <span class="eyebrow">CSS Basics · Typography</span>
     <h1>Typography Tester</h1>
     <p class="lede">Most of a web page is text, so how it reads matters more than almost anything else. Adjust the settings and watch the readability checks respond.</p>
+    <div class="objectives">
+      <p class="callout-title">You'll be able to</p>
+      <ul>
+        <li>Set a readable font size, line height and line length for body text.</li>
+        <li>Write a font stack that ends in a generic fallback.</li>
+        <li>Build a set of heading sizes from a type scale.</li>
+      </ul>
+    </div>
   </header>
+
+  <div class="section-title"><span class="eyebrow">Read</span><h2>Text people can read</h2></div>
+  <div class="prose">
+    <p>Most of what's on a web page is text, so the way it reads matters more than almost any other design choice. A few settings make most of the difference:</p>
+    <pre class="snippet" data-lang="css">body {
+  font-family: "Source Sans 3", Arial, sans-serif;
+  font-size: 1.125rem;
+  line-height: 1.6;
+}
+p {
+  max-width: 65ch;
+}</pre>
+    <p><code>font-family</code> takes a <span class="term">font stack</span>: a list of fonts in order of preference. If the first isn't available, the browser tries the next. Always end with a generic family like <code>sans-serif</code> or <code>serif</code>, so there's a sensible <span class="term">fallback font</span> no matter what. Put quotes around names with spaces.</p>
+    <p>For body text, aim for at least 16px, which is <code>1rem</code>, and a <code>line-height</code> between about 1.4 and 1.8. Write the line height without a unit, so it scales with the text size.</p>
+    <p>Line length is the setting people forget. Lines that run the full width of a big monitor make readers lose their place jumping back to the start of the next line. About 45 to 75 characters per line reads best, and the <code>ch</code> unit, roughly the width of one character, makes that easy: <code>max-width: 65ch</code>.</p>
+    <p>For headings, pick sizes that belong together. A <em>type scale</em> multiplies each level by the same ratio: with a 16px base and a ratio of 1.25, you get 20, 25, 31 and 39px. The sizes feel related instead of random.</p>
+    <div class="callout tip"><p class="callout-title">Tip</p><p>Use two typefaces at most, one for headings and one for body text. Left-align long paragraphs: centered text is fine for a short heading, but hard to read for more than a line or two.</p></div>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Play</span><h2>Tune the text</h2><p>Adjust each setting and watch the readability checks respond.</p></div>
 
   <section class="playground" id="tester">
     <div class="panel controls">
@@ -78,6 +103,9 @@
     <div class="scale" id="scale"></div>
   </section>
 
+  <div class="section-title"><span class="eyebrow">Practice</span><h2>Make it readable</h2><p>The text is set in one long, cramped line. Fix the font, the spacing and the line length.</p></div>
+  <div id="ex-type"></div>
+
   <section class="notes">
     <div class="panel">
       <h2>Key ideas</h2>
@@ -99,8 +127,11 @@
     </div>
   </section>
 
+  <div class="section-title"><span class="eyebrow">Check yourself</span><h2>Quick check</h2></div>
+  <div class="panel quiz" id="quiz"></div>
+
   <footer class="page-foot" data-book-nav><a href="index.html">← Contents</a></footer>
-</div>
+</main>
 
 <script>
   const $ = (id) => document.getElementById(id);
@@ -139,6 +170,43 @@
   }
   ["base", "ratio"].forEach((id) => $(id).addEventListener("input", scale));
   scale();
+</script>
+<script>
+  makeQuiz(document.getElementById("quiz"), [
+    { id: "q1", q: "What's a comfortable line length for paragraphs?", opts: ["About 45 to 75 characters", "The full width of the screen", "About 20 characters"], a: 0, why: "Shorter lines are easier to track. max-width in ch makes it easy to set." },
+    { id: "q2", q: "Why end a font-family list with sans-serif?", opts: ["It's required", "So there's always a sensible fallback", "It makes text bolder"], a: 1, why: "If no named font is available, the generic family still gives a similar style." },
+    { id: "q3", q: "Which line-height is best for body text?", opts: ["1", "16px", "1.6"], a: 2, why: "Around 1.4 to 1.8, without a unit so it scales with the font size." },
+    { id: "q4", q: "Which text should you center?", opts: ["Short headings", "Long paragraphs", "Everything"], a: 0, why: "Centered long text is hard to read because each line starts in a different place." },
+  ]);
+</script>
+<script>
+  makeExercise(document.getElementById("ex-type"), {
+    title: "Comfortable body text",
+    task: `<ol>
+      <li>End the body's font list with a generic family.</li>
+      <li>Give paragraphs a unitless line-height between 1.4 and 1.8.</li>
+      <li>Limit paragraphs to between 45 and 75 characters per line, using <code>ch</code>.</li>
+    </ol>`,
+    html: `<article>
+  <h1>Hiking the Mesa Trail</h1>
+  <p>The Mesa Trail runs nearly seven miles along the base of the Flatirons, from Chautauqua in the north to the South Mesa trailhead. It rolls up and down through meadows and pine forest, crossing a dozen side trails that climb toward the peaks.</p>
+  <p>Start early in summer. The trail has little shade in the open meadows, and afternoon storms build quickly over the mountains.</p>
+</article>`,
+    css: `body { font-family: "Trail Sans"; }
+p { line-height: 20px; }`,
+    solution: { css: `body { font-family: "Trail Sans", system-ui, sans-serif; }
+p { line-height: 1.6; max-width: 65ch; }` },
+    hints: [
+      "\"Trail Sans\" isn't installed, so the browser needs a fallback: add sans-serif at the end.",
+      "A unitless line-height like 1.6 scales with the font size.",
+      "max-width: 65ch is about 65 characters wide.",
+    ],
+    checks: [
+      { label: "The font list ends with a generic family", test: ({ style }) => /(^|,\s*)(serif|sans-serif|monospace|system-ui|cursive)$/.test(style("body", "font-family")) },
+      { label: "Paragraph line-height is unitless, 1.4–1.8", test: ({ doc }) => { const r = [...doc.styleSheets[0].cssRules].find((r) => r.style && r.style.lineHeight && r.selectorText.includes("p")); const n = Number(r && r.style.lineHeight); return n >= 1.4 && n <= 1.8; } },
+      { label: "Paragraphs are 45–75ch wide at most", test: ({ code }) => { const m = /max-width:\s*([\d.]+)ch/.exec(code.css); return !!m && m[1] >= 45 && m[1] <= 75; } },
+    ],
+  });
 </script>
 </body>
 </html>

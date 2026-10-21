@@ -4,9 +4,6 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>How CSS Is Applied</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Recursive:slnt,wght,CASL,MONO@-15..0,300..1000,0..1,0..1&display=swap">
 <link rel="stylesheet" href="style.css">
 <style>
   .anatomy { font: 1.25rem/2 var(--font-code); font-variation-settings: "MONO" 1; background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 18px 20px; overflow-x: auto; white-space: pre; }
@@ -20,7 +17,7 @@
   .ways { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
   @media (max-width: 760px) { .ways { grid-template-columns: 1fr; } }
   .way { display: grid; gap: 8px; align-content: start; }
-  .way.off { opacity: 0.5; }
+  .way.off { opacity: 0.75; }
   .way .top { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
   .way .swatch { display: inline-block; width: 12px; height: 12px; border-radius: 3px; margin-right: 6px; vertical-align: middle; }
   .way label { display: flex; gap: 6px; align-items: center; font-size: 0.85rem; cursor: pointer; white-space: nowrap; }
@@ -35,15 +32,41 @@
 <script src="js/quiz.js"></script>
 </head>
 <body>
-<div class="wrap">
+<main class="wrap">
   <nav class="crumbs" aria-label="Site"><a class="crumb" href="index.html">← Field Guide</a><a class="crumb" href="glossary.html">Glossary</a></nav>
   <header class="page-head">
     <span class="eyebrow">CSS Basics · How CSS Is Applied</span>
     <h1>How CSS Is Applied</h1>
     <p class="lede">A CSS rule picks some elements and gives them styles. Learn the names for each part of a rule, then see the three places CSS can live and which one wins when they disagree.</p>
+    <div class="objectives">
+      <p class="callout-title">You'll be able to</p>
+      <ul>
+        <li>Name the parts of a CSS rule: selector, declaration, property and value.</li>
+        <li>Add CSS with an external stylesheet, a style element or an inline style.</li>
+        <li>Explain why an external stylesheet is the right choice for real projects.</li>
+      </ul>
+    </div>
   </header>
 
-  <div class="section-title" style="margin-top:0"><span class="eyebrow">Part 1</span><h2>Anatomy of a rule</h2><p>Click any part of the rule, or pick a name below.</p></div>
+  <div class="section-title"><span class="eyebrow">Read</span><h2>Rules, and where they live</h2></div>
+  <div class="prose">
+    <p>HTML says what things are. CSS says how they look. A stylesheet is a list of <span class="term">rules</span>, and every rule has the same shape:</p>
+    <pre class="snippet" data-lang="css">h1 {
+  color: #0b6b5e;
+  font-size: 2rem;
+}</pre>
+    <p>The <span class="term">selector</span>, <code>h1</code>, picks which elements the rule applies to. Inside the braces are <span class="term">declarations</span>, each a <span class="term">property</span> and a <span class="term">value</span> separated by a colon and ending with a semicolon. This rule says: make every <code>h1</code> teal and twice the normal text size.</p>
+    <p>CSS can live in three places:</p>
+    <ul>
+      <li><strong>An external stylesheet</strong>, a separate <code>.css</code> file linked from the head with <code>&lt;link rel="stylesheet" href="style.css"&gt;</code>. One file can style every page of a site, so changing a color once changes it everywhere.</li>
+      <li><strong>A <code>&lt;style&gt;</code> element</strong> in the head, which styles only that one page.</li>
+      <li><strong>An <span class="term">inline style</span></strong>, a <code>style=""</code> attribute on a single element. It's handy for quick tests, but it's hard to find later and it beats your stylesheet, which makes it hard to override.</li>
+    </ul>
+    <p>For real projects, use an external stylesheet. When the same element gets styles from more than one place, the browser has rules for deciding which wins, which you'll explore in the playground and in <a href="cascade.html">Cascade &amp; Inheritance</a>.</p>
+    <div class="callout tip"><p class="callout-title">Tip</p><p>If none of your styles show up, the stylesheet probably didn't load. Open DevTools, check the Network tab for a red <code>style.css</code>, and compare the <code>href</code> with the file's real name and folder.</p></div>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Play</span><h2>Anatomy of a rule</h2><p>Click any part of the rule, or pick a name below.</p></div>
   <section class="playground even">
     <div class="stage-col">
       <div class="anatomy" id="rule" aria-label="A CSS rule"></div>
@@ -52,10 +75,13 @@
     <div class="panel explain" id="explain" aria-live="polite" style="display:grid;gap:8px;align-content:start"></div>
   </section>
 
-  <div class="section-title"><span class="eyebrow">Part 2</span><h2>Three places to put CSS</h2><p>All three below try to color the same heading. Turn them on and off and swap the order of the two in the head.</p></div>
+  <div class="section-title"><span class="eyebrow">Play</span><h2>Three places to put CSS</h2><p>All three below try to color the same heading. Turn them on and off and swap the order of the two in the head.</p></div>
   <div class="ways" id="ways"></div>
   <div class="order-row"><span class="hint">In the &lt;head&gt;, the</span><button class="btn" id="swap">Swap order</button><span class="hint" id="order-text"></span></div>
   <div class="result" aria-live="polite"><span class="h" id="h">Trail Report</span><span id="verdict"></span></div>
+
+  <div class="section-title"><span class="eyebrow">Practice</span><h2>Fix the stylesheet</h2><p>One missing character can wipe out a whole rule. Find the three mistakes.</p></div>
+  <div id="ex-rules"></div>
 
   <section class="notes">
     <div class="panel">
@@ -78,8 +104,11 @@
     </div>
   </section>
 
+  <div class="section-title"><span class="eyebrow">Check yourself</span><h2>Quick check</h2></div>
+  <div class="panel quiz" id="quiz"></div>
+
   <footer class="page-foot" data-book-nav><a href="index.html">← Contents</a></footer>
-</div>
+</main>
 
 <script>
   const $ = (id) => document.getElementById(id);
@@ -138,6 +167,51 @@
   $("ways").addEventListener("input", (e) => { const k = e.target.dataset.k; if (k) { on[k] = e.target.checked; ways(); } });
   $("swap").addEventListener("click", () => { headOrder.reverse(); ways(); });
   ways();
+</script>
+<script>
+  makeQuiz(document.getElementById("quiz"), [
+    { id: "q1", q: "In p { color: navy; }, what is color?", opts: ["The selector", "A value", "A property"], a: 2, why: "color is the property; navy is its value; p is the selector." },
+    { id: "q2", q: "Which way of adding CSS can style every page of a site from one file?", opts: ["An external stylesheet", "A <style> element", "Inline style attributes"], a: 0, why: "Every page links the same .css file, so one change updates them all." },
+    { id: "q3", q: "What ends each declaration?", opts: ["A comma", "A semicolon", "A closing brace"], a: 1, why: "Each property: value pair ends with a semicolon." },
+    { id: "q4", q: "Which comment works in a CSS file?", opts: ["<!-- note -->", "// note", "/* note */"], a: 2, why: "CSS only understands /* */ comments." },
+  ]);
+</script>
+<script>
+  makeExercise(document.getElementById("ex-rules"), {
+    title: "Three broken rules",
+    task: `<p>This CSS should make the heading blue and 36px, and the paragraph 18px with a line-height of 1.6. None of it works. Fix the punctuation, without changing any of the values.</p>`,
+    html: `<h1>Mesa Trail</h1>
+<p>A rolling 6.7-mile trail along the base of the Flatirons, with views of the plains the whole way.</p>`,
+    css: `h1 {
+  color: #2340d9
+  font-size: 36px;
+}
+
+p
+  font-size 18px;
+  line-height: 1.6;
+}`,
+    solution: { css: `h1 {
+  color: #2340d9;
+  font-size: 36px;
+}
+
+p {
+  font-size: 18px;
+  line-height: 1.6;
+}` },
+    hints: [
+      "Every declaration ends with a semicolon. Without one, the browser reads two declarations as one broken one.",
+      "Every rule needs an opening { after its selector.",
+      "Property and value are separated by a colon.",
+    ],
+    checks: [
+      { label: "The heading is blue (#2340d9)", test: ({ style }) => style("h1", "color") === "rgb(35, 64, 217)" },
+      { label: "The heading is 36px", test: ({ style }) => style("h1", "font-size") === "36px" },
+      { label: "The paragraph is 18px", test: ({ style }) => style("p", "font-size") === "18px" },
+      { label: "The paragraph's line-height is 1.6", test: ({ style }) => Math.abs(parseFloat(style("p", "line-height")) - 28.8) < 0.1 },
+    ],
+  });
 </script>
 </body>
 </html>

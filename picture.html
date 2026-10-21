@@ -4,9 +4,6 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Picture &amp; Lazy Loading</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Recursive:slnt,wght,CASL,MONO@-15..0,300..1000,0..1,0..1&display=swap">
 <link rel="stylesheet" href="style.css">
 <style>
   .mock { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 10px; display: grid; gap: 8px; }
@@ -28,7 +25,7 @@
   .art-frame .lbl { font: 600 0.75rem var(--font-code); font-variation-settings: "MONO" 1; color: var(--prop); display: block; margin-bottom: 6px; }
   .art-frame svg { display: block; width: 100%; height: auto; border-radius: 4px; }
   .snippet .on { background: var(--cobalt-soft); outline: 1px solid var(--cobalt); border-radius: 3px; }
-  .snippet .off { opacity: 0.45; }
+  .snippet .off, .snippet .off * { color: var(--muted) !important; }
 
   .lazy-wrap { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px; }
   @media (max-width: 760px) { .lazy-wrap { grid-template-columns: 1fr; } }
@@ -47,15 +44,40 @@
 <script src="js/quiz.js"></script>
 </head>
 <body>
-<div class="wrap">
+<main class="wrap">
   <nav class="crumbs" aria-label="Site"><a class="crumb" href="index.html">← Field Guide</a><a class="crumb" href="glossary.html">Glossary</a></nav>
   <header class="page-head">
     <span class="eyebrow">Responsive Design · Picture &amp; Lazy Loading</span>
     <h1>Picture &amp; Lazy Loading</h1>
     <p class="lede">Three more ways to send the right image: tell the browser how wide it will be with <code>sizes</code>, swap in a different crop with <code>&lt;picture&gt;</code>, and skip images nobody scrolls to with <code>loading="lazy"</code>.</p>
+    <div class="objectives">
+      <p class="callout-title">You'll be able to</p>
+      <ul>
+        <li>Tell the browser how wide an image will be with the sizes attribute.</li>
+        <li>Show a different crop on small screens with picture and source.</li>
+        <li>Lazy-load images further down the page, but never the first one.</li>
+      </ul>
+    </div>
   </header>
 
-  <div class="section-title" style="margin-top:0"><span class="eyebrow">Part 1</span><h2>Tell the browser the size with sizes</h2><p>The browser picks a file from <code>srcset</code> <em>before</em> your CSS has loaded, so it doesn't know how wide the image will be. Without <code>sizes</code>, it assumes the full window width. This layout shows 1, 2 or 3 cards per row.</p></div>
+  <div class="section-title"><span class="eyebrow">Read</span><h2>Send the right image, at the right time</h2></div>
+  <div class="prose">
+    <p>With <code>srcset</code>, the browser picks a file based on how wide the image will be. But the browser chooses which file to download before your CSS has loaded, so it doesn't know your layout. Unless you say otherwise, it assumes the image fills the whole window. The <span class="term">sizes</span> attribute tells it:</p>
+    <pre class="snippet" data-lang="html">&lt;img srcset="mesa-400.jpg 400w, mesa-800.jpg 800w, mesa-1600.jpg 1600w"
+     sizes="(min-width: 900px) 33vw, 100vw"
+     src="mesa-800.jpg" alt="Mesa Trail at sunrise"&gt;</pre>
+    <p>Read it as: "on screens 900px and wider, this image is a third of the window wide; otherwise it's the full width." Now a small card image on a laptop downloads a small file.</p>
+    <p>Sometimes a smaller copy isn't enough. A wide landscape shrunk onto a phone turns the arch into a speck. Showing a tighter crop on small screens is called <span class="term">art direction</span>, and <span class="term">picture</span> does it:</p>
+    <pre class="snippet" data-lang="html">&lt;picture&gt;
+  &lt;source media="(max-width: 600px)" srcset="arch-tall.jpg"&gt;
+  &lt;img src="arch-wide.jpg" alt="Royal Arch above the trees"&gt;
+&lt;/picture&gt;</pre>
+    <p>The browser uses the first <code>&lt;source&gt;</code> that matches, or falls back to the <code>&lt;img&gt;</code>. The <code>&lt;img&gt;</code> is required: it's what actually shows the picture.</p>
+    <p>Finally, <code>loading="lazy"</code> waits to download an image until the visitor scrolls near it. On a long page, that saves data for everyone who never scrolls to the bottom. This is called <span class="term">lazy loading</span>.</p>
+    <div class="callout warn"><p class="callout-title">Watch out</p><p>Don't lazy-load the big image at the top of the page. It's the first thing visitors see, so it should start downloading as early as possible.</p></div>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Play</span><h2>Tell the browser the size with sizes</h2><p>The browser picks a file from <code>srcset</code> <em>before</em> your CSS has loaded, so it doesn't know how wide the image will be. Without <code>sizes</code>, it assumes the full window width. This layout shows 1, 2 or 3 cards per row.</p></div>
   <section class="playground">
     <div class="panel controls">
       <div class="control"><label for="vw">window width</label><input id="vw" type="range" min="320" max="1600" step="20" value="1280"><span class="readout" id="vw-out"></span></div>
@@ -77,7 +99,7 @@
     </div>
   </section>
 
-  <div class="section-title"><span class="eyebrow">Part 2</span><h2>Change the crop with &lt;picture&gt;</h2><p>Sometimes a smaller copy isn't enough. A wide landscape shrunk onto a phone makes the arch a speck. <code>&lt;picture&gt;</code> lets you send a different crop at different widths. This is called <strong>art direction</strong>.</p></div>
+  <div class="section-title"><span class="eyebrow">Play</span><h2>Change the crop with &lt;picture&gt;</h2><p>Sometimes a smaller copy isn't enough. A wide landscape shrunk onto a phone makes the arch a speck. <code>&lt;picture&gt;</code> lets you send a different crop at different widths. This is called <strong>art direction</strong>.</p></div>
   <section class="playground">
     <div class="panel controls">
       <div class="control"><label for="aw">window width</label><input id="aw" type="range" min="320" max="1200" step="10" value="420"><span class="readout" id="aw-out"></span></div>
@@ -90,7 +112,7 @@
     </div>
   </section>
 
-  <div class="section-title"><span class="eyebrow">Part 3</span><h2>Skip what nobody sees with loading="lazy"</h2><p>Scroll the page on the left and watch the network log. With lazy loading, images download just before they scroll into view.</p></div>
+  <div class="section-title"><span class="eyebrow">Play</span><h2>Skip what nobody sees with loading="lazy"</h2><p>Scroll the page on the left and watch the network log. With lazy loading, images download just before they scroll into view.</p></div>
   <section class="playground">
     <div class="panel controls">
       <div class="control"><label>loading</label><div class="seg" id="mode"><button class="btn" data-m="eager">eager (default)</button><button class="btn" data-m="lazy" aria-pressed="true">lazy</button></div></div>
@@ -102,6 +124,9 @@
       <div class="panel" style="display:grid;gap:8px;align-content:start"><span class="eyebrow">Downloaded so far</span><span class="total" id="total"></span><div class="netlog" id="netlog" aria-live="polite"></div></div>
     </div>
   </section>
+
+  <div class="section-title"><span class="eyebrow">Practice</span><h2>Send the right image</h2><p>Tell the browser how big one image is, swap the crop of another, and lazy-load the third.</p></div>
+  <div id="ex-picture"></div>
 
   <section class="notes">
     <div class="panel">
@@ -124,8 +149,11 @@
     </div>
   </section>
 
+  <div class="section-title"><span class="eyebrow">Check yourself</span><h2>Quick check</h2></div>
+  <div class="panel quiz" id="quiz"></div>
+
   <footer class="page-foot" data-book-nav><a href="index.html">← Contents</a></footer>
-</div>
+</main>
 
 <script>
   const $ = (id) => document.getElementById(id);
@@ -223,6 +251,48 @@
   $("mode").addEventListener("click", (e) => { const b = e.target.closest("button"); if (b) { mode = b.dataset.m; part3(); } });
   $("reset").addEventListener("click", part3);
   part3();
+</script>
+<script>
+  makeQuiz(document.getElementById("quiz"), [
+    { id: "q1", q: "Why does srcset need sizes when an image isn't full-width?", opts: ["srcset doesn't work without it", "sizes makes the image sharper", "The browser chooses before your CSS loads, so it assumes full width"], a: 2, why: "sizes describes your layout so the browser can pick a smaller file." },
+    { id: "q2", q: "When should you use <picture> instead of srcset?", opts: ["To show a different crop on small screens", "Whenever you have several sizes", "For every image"], a: 0, why: "srcset already handles sizes. picture is for changing the image itself (or its format)." },
+    { id: "q3", q: "You forget the <img> inside <picture>. What shows?", opts: ["The first source", "Nothing", "The alt text"], a: 1, why: "The img is what displays the picture; sources only offer alternatives." },
+    { id: "q4", q: "Which image should NOT get loading=\"lazy\"?", opts: ["Images in a long gallery", "Photos near the bottom", "The large photo at the top of the page"], a: 2, why: "The first image is seen right away, so it should load immediately." },
+  ]);
+</script>
+<script>
+  makeExercise(document.getElementById("ex-picture"), {
+    title: "sizes, picture and loading",
+    task: `<ol>
+      <li>The first image is a third of the window wide on screens 900px and up, and full width below that. Add a <code>sizes</code> attribute that says so.</li>
+      <li>On screens up to 600px wide, show <code>arch-tall.jpg</code> instead of the wide arch photo. Use <code>&lt;picture&gt;</code> and <code>&lt;source&gt;</code>.</li>
+      <li>The gallery photo is far down the page. Lazy-load it, but not the first image.</li>
+    </ol>`,
+    html: `<img src="mesa-800.jpg" srcset="mesa-400.jpg 400w, mesa-800.jpg 800w, mesa-1600.jpg 1600w" alt="Mesa Trail at sunrise" width="800" height="500">
+
+<img src="arch-wide.jpg" alt="Royal Arch above the trees" width="800" height="400">
+
+<img class="gallery" src="flowers.jpg" alt="Wildflowers beside the trail" width="400" height="300">`,
+    solution: { html: `<img src="mesa-800.jpg" srcset="mesa-400.jpg 400w, mesa-800.jpg 800w, mesa-1600.jpg 1600w" sizes="(min-width: 900px) 33vw, 100vw" alt="Mesa Trail at sunrise" width="800" height="500">
+
+<picture>
+  <source media="(max-width: 600px)" srcset="arch-tall.jpg">
+  <img src="arch-wide.jpg" alt="Royal Arch above the trees" width="800" height="400">
+</picture>
+
+<img class="gallery" src="flowers.jpg" alt="Wildflowers beside the trail" width="400" height="300" loading="lazy">` },
+    hints: [
+      "sizes=\"(min-width: 900px) 33vw, 100vw\"",
+      "<picture> wraps a <source media=\"(max-width: 600px)\" srcset=\"arch-tall.jpg\"> and the original <img>, which stays last.",
+      "loading=\"lazy\" on the gallery image only.",
+    ],
+    checks: [
+      { label: "The first image's sizes describes the layout", test: ({ $ }) => /^\(min-width:900px\)(33|33\.3+)vw,100vw$/.test($("img").getAttribute("sizes").replace(/\s/g, "")) },
+      { label: "A <picture> swaps in arch-tall.jpg up to 600px", test: ({ $ }) => { const s = $("picture source"); return s.getAttribute("media").replace(/\s/g, "") === "(max-width:600px)" && s.getAttribute("srcset").trim() === "arch-tall.jpg"; } },
+      { label: "The <picture> still ends with the wide <img>", test: ({ $ }) => $("picture > img:last-child").getAttribute("src") === "arch-wide.jpg" && !!$("picture > img").getAttribute("alt") },
+      { label: "Only the gallery image is lazy", test: ({ $, $$ }) => $(".gallery").getAttribute("loading") === "lazy" && $$("img").filter((i) => i.getAttribute("loading") === "lazy").length === 1 },
+    ],
+  });
 </script>
 </body>
 </html>

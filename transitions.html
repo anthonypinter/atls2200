@@ -4,9 +4,6 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Transitions &amp; Animations</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Recursive:slnt,wght,CASL,MONO@-15..0,300..1000,0..1,0..1&display=swap">
 <link rel="stylesheet" href="style.css">
 <style>
   .track { position: relative; height: 130px; background: var(--stage); border: 2px dashed var(--line); border-radius: var(--radius); overflow: hidden; }
@@ -40,16 +37,50 @@
 <script src="js/quiz.js"></script>
 </head>
 <body>
-<div class="wrap">
+<main class="wrap">
   <nav class="crumbs" aria-label="Site"><a class="crumb" href="index.html">← Field Guide</a><a class="crumb" href="glossary.html">Glossary</a></nav>
   <header class="page-head">
     <span class="eyebrow">Polish &amp; Workflow · Transitions &amp; Animations</span>
     <h1>Transitions &amp; Animations</h1>
     <p class="lede">A transition smooths the change between two states, like on hover. An animation runs a sequence of keyframes by itself. Small, quick motion helps people notice changes; too much distracts.</p>
+    <div class="objectives">
+      <p class="callout-title">You'll be able to</p>
+      <ul>
+        <li>Smooth a hover change with transition.</li>
+        <li>Write a keyframe animation and run it with the animation property.</li>
+        <li>Respect visitors who ask for reduced motion.</li>
+      </ul>
+    </div>
   </header>
+
+  <div class="section-title"><span class="eyebrow">Read</span><h2>Motion between states</h2></div>
+  <div class="prose">
+    <p>When a button changes color on hover, the change is instant by default. A <span class="term">transition</span> tells the browser to blend from the old value to the new one over time:</p>
+    <pre class="snippet" data-lang="css">.btn {
+  background: var(--trail);
+  transition: background 200ms ease, transform 200ms ease;
+}
+.btn:hover {
+  background: var(--trail-dark);
+  transform: translateY(-2px);
+}</pre>
+    <p>Put the <code>transition</code> on the element's normal state, not on <code>:hover</code>, so it animates on the way in <em>and</em> the way out. Name the properties you mean rather than writing <code>transition: all</code>, which ends up animating things you didn't intend.</p>
+    <p>A transition needs something to trigger it, like a hover or a class change. An <span class="term">animation</span> runs by itself, through steps you describe with <code>@keyframes</code>:</p>
+    <pre class="snippet" data-lang="css">@keyframes pulse {
+  from { transform: scale(1); }
+  to   { transform: scale(1.08); }
+}
+.new-badge {
+  animation: pulse 800ms ease-in-out infinite alternate;
+}</pre>
+    <p>Keep interface motion short, about 150 to 400 milliseconds. Longer feels slow. Stick to animating <code>transform</code> and <code>opacity</code> where you can: the browser can draw those smoothly, while animating <code>width</code> or <code>top</code> makes it recalculate the layout on every frame.</p>
+    <p>Some people get dizzy or sick from motion on screen, and they can tell their device to reduce it. Your CSS can listen for that setting with the <code>prefers-reduced-motion</code> media query.</p>
+    <div class="callout tip"><p class="callout-title">Tip</p><p>Wrap big or looping motion in <code>@media (prefers-reduced-motion: no-preference) { … }</code>. Then it only runs for people who haven't asked for less.</p></div>
+  </div>
+
   <p class="motion-note" id="motion-note" hidden>Your device is set to reduce motion. This page plays its demos anyway so you can learn from them, but the rest of this site turns motion off for you. Your own sites should do the same with a <code>prefers-reduced-motion</code> media query.</p>
 
-  <div class="section-title"><span class="eyebrow">Part 1</span><h2>Transitions</h2></div>
+  <div class="section-title"><span class="eyebrow">Play</span><h2>Transitions</h2></div>
   <section class="playground">
     <div class="panel controls">
       <div class="control"><label for="kind">what changes</label>
@@ -69,7 +100,7 @@
     </div>
   </section>
 
-  <div class="section-title"><span class="eyebrow">Part 2</span><h2>Keyframe animations</h2></div>
+  <div class="section-title"><span class="eyebrow">Play</span><h2>Keyframe animations</h2></div>
   <section class="playground">
     <div class="panel controls">
       <div class="control"><label for="name">animation-name</label>
@@ -86,6 +117,9 @@
       <p class="kf" id="kf"></p>
     </div>
   </section>
+
+  <div class="section-title"><span class="eyebrow">Practice</span><h2>Add motion carefully</h2><p>Smooth a hover, add a pulse, and respect visitors who've asked for less motion.</p></div>
+  <div id="ex-motion"></div>
 
   <section class="notes">
     <div class="panel">
@@ -108,8 +142,11 @@
     </div>
   </section>
 
+  <div class="section-title"><span class="eyebrow">Check yourself</span><h2>Quick check</h2></div>
+  <div class="panel quiz" id="quiz"></div>
+
   <footer class="page-foot" data-book-nav><a href="index.html">← Contents</a></footer>
-</div>
+</main>
 
 <script>
   const $ = (id) => document.getElementById(id);
@@ -165,6 +202,54 @@
   $("aplay").addEventListener("click", anim);
   ["name", "adur", "count", "dir"].forEach((id) => $(id).addEventListener("input", anim));
   $("kf").textContent = KF.pulse;
+</script>
+<script>
+  makeQuiz(document.getElementById("quiz"), [
+    { id: "q1", q: "Your hover transition animates in but snaps back instantly. Where is transition probably written?", opts: ["Only on :hover", "On the normal state", "In @keyframes"], a: 0, why: "Put transition on the normal state so it applies in both directions." },
+    { id: "q2", q: "What's the difference between a transition and an animation?", opts: ["Animations are faster", "A transition needs a trigger; an animation can run by itself", "Transitions only work on color"], a: 1, why: "Transitions blend between two states. Animations play keyframes on their own." },
+    { id: "q3", q: "Which properties animate most smoothly?", opts: ["width and height", "top and left", "transform and opacity"], a: 2, why: "They don't make the browser redo the layout every frame." },
+    { id: "q4", q: "How should you handle visitors who've turned on reduced motion?", opts: ["Wrap big motion in a prefers-reduced-motion media query", "Ignore it", "Make animations faster"], a: 0, why: "Only run large or looping motion when no-preference is set." },
+  ]);
+</script>
+<script>
+  makeExercise(document.getElementById("ex-motion"), {
+    title: "Transition and animation",
+    task: `<ol>
+      <li>On the button's normal state, transition <code>background-color</code> over 200ms. Don't use <code>all</code>.</li>
+      <li>Write <code>@keyframes pulse</code> that scales from 1 to 1.08.</li>
+      <li>Run it on the badge (800ms, infinite, alternate), but only inside <code>@media (prefers-reduced-motion: no-preference)</code>.</li>
+    </ol>`,
+    html: `<button class="btn">Save trail</button>
+<span class="new-badge">New</span>`,
+    css: `body { font-family: system-ui, sans-serif; padding: 16px; }
+.btn { background: #2340d9; color: white; border: 0; padding: 8px 16px; font: inherit; }
+.btn:hover { background: #1a2fa6; }
+.new-badge { display: inline-block; margin-left: 12px; background: crimson; color: white; padding: 2px 8px; }`,
+    solution: { css: `body { font-family: system-ui, sans-serif; padding: 16px; }
+.btn { background: #2340d9; color: white; border: 0; padding: 8px 16px; font: inherit; transition: background-color 200ms ease; }
+.btn:hover { background: #1a2fa6; }
+.new-badge { display: inline-block; margin-left: 12px; background: crimson; color: white; padding: 2px 8px; }
+
+@keyframes pulse {
+  from { transform: scale(1); }
+  to { transform: scale(1.08); }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .new-badge { animation: pulse 800ms ease-in-out infinite alternate; }
+}` },
+    hints: [
+      "transition: background-color 200ms ease; goes on .btn, not .btn:hover, so it animates both ways.",
+      "@keyframes pulse { from { transform: scale(1); } to { transform: scale(1.08); } }",
+      "Put the .new-badge animation rule inside the prefers-reduced-motion media query.",
+    ],
+    checks: [
+      { label: "The button transitions background-color in 200ms", test: ({ style }) => { const p = style(".btn", "transition-property").split(", "), d = style(".btn", "transition-duration").split(", "); const i = p.indexOf("background-color"); return i >= 0 && parseFloat(d[i] ?? d[0]) === 0.2 && !p.includes("all"); } },
+      { label: "@keyframes pulse scales to 1.08", test: ({ doc }) => { const k = [...doc.styleSheets[0].cssRules].find((r) => r.name === "pulse" && r.cssRules); return !!k && /scale\(1\.08\)/.test(k.cssText); } },
+      { label: "The badge pulses, 800ms, infinite, alternate", test: ({ style }) => style(".new-badge", "animation-name") === "pulse" && style(".new-badge", "animation-duration") === "0.8s" && style(".new-badge", "animation-iteration-count") === "infinite" && style(".new-badge", "animation-direction") === "alternate" },
+      { label: "The animation is inside a reduced-motion query", test: ({ doc }) => [...doc.styleSheets[0].cssRules].some((m) => m.media && /prefers-reduced-motion:\s*no-preference/.test(m.conditionText) && [...m.cssRules].some((r) => r.style && r.style.animationName === "pulse")) },
+    ],
+  });
 </script>
 </body>
 </html>
