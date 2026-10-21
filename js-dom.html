@@ -45,6 +45,10 @@
   .actions { display: flex; flex-wrap: wrap; gap: 6px; }
   .actions .btn { font-size: 0.8rem; padding: 5px 9px; }
 </style>
+<script src="book.js"></script>
+<script src="js/progress.js"></script>
+<script src="js/chrome.js"></script>
+<script src="js/quiz.js"></script>
 </head>
 <body>
 <div class="wrap">
@@ -123,10 +127,10 @@
     </div>
   </section>
 
-  <footer class="page-foot"><a href="js-objects-json.html">← Objects &amp; JSON</a><a href="js-events.html">Next: Events →</a></footer>
+  <footer class="page-foot" data-book-nav><a href="index.html">← Contents</a></footer>
 </div>
 
-<script src="runner.js"></script>
+<script src="js/runner.js"></script>
 <script>
   const $ = (id) => document.getElementById(id);
   const MINI = `<header><h1 id="title">Boulder Trails</h1><nav><a href="#">Home</a><a href="#">Map</a></nav></header>
@@ -237,11 +241,11 @@
   $("reset").addEventListener("click", () => { mini.innerHTML = MINI; picked = null; lastAction = null; $("act-out").innerHTML = `<li class="muted">Pick a change.</li>`; $("act-why").textContent = ""; select(); });
 
   makeQuiz($("quiz"), [
-    { q: "The page has three .card elements. What does this give you?", pre: 'document.querySelector(".card")', opts: ["All three cards", "The first card", "null"], a: 1, why: "querySelector returns only the first match." },
-    { q: "This logs null. Why?", pre: 'const menu = document.querySelector("menu-button");\nconsole.log(menu);', opts: ["Missing . or #", "Wrong method", "Needs quotes"], a: 0, why: "Without a dot, it looks for a <menu-button> element, not a class." },
-    { q: "How do you set the font size from JavaScript?", opts: ['el.style.font-size = "2rem";', 'el.style.fontSize = "2rem";', 'el.fontSize = "2rem";'], a: 1, why: "CSS properties become camelCase on el.style." },
-    { q: "This throws a TypeError. Why?", pre: 'const cards = document.querySelectorAll(".card");\ncards.classList.add("open");', opts: ["cards is a NodeList, not a single element", "classList only works on buttons", "open isn't a valid class"], a: 0, why: "Loop over the NodeList and call classList.add on each element." },
-    { q: "In <ul><li>A</li><li>B</li></ul>, what are the two li elements to each other?", opts: ["Parent and child", "Siblings", "Ancestors"], a: 1, why: "They have the same parent, the ul, so they're siblings." },
+    { id: "q1", q: "The page has three .card elements. What does this give you?", pre: 'document.querySelector(".card")', opts: ["All three cards", "The first card", "null"], a: 1, why: "querySelector returns only the first match." },
+    { id: "q2", q: "This logs null. Why?", pre: 'const menu = document.querySelector("menu-button");\nconsole.log(menu);', opts: ["Missing . or #", "Wrong method", "Needs quotes"], a: 0, why: "Without a dot, it looks for a <menu-button> element, not a class." },
+    { id: "q3", q: "How do you set the font size from JavaScript?", opts: ['el.style.font-size = "2rem";', 'el.style.fontSize = "2rem";', 'el.fontSize = "2rem";'], a: 1, why: "CSS properties become camelCase on el.style." },
+    { id: "q4", q: "This throws a TypeError. Why?", pre: 'const cards = document.querySelectorAll(".card");\ncards.classList.add("open");', opts: ["cards is a NodeList, not a single element", "classList only works on buttons", "open isn't a valid class"], a: 0, why: "Loop over the NodeList and call classList.add on each element." },
+    { id: "q5", q: "In <ul><li>A</li><li>B</li></ul>, what are the two li elements to each other?", opts: ["Parent and child", "Siblings", "Ancestors"], a: 1, why: "They have the same parent, the ul, so they're siblings." },
   ]);
 
   mini.innerHTML = MINI;

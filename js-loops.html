@@ -33,6 +33,10 @@
   .cell.found { border-color: var(--cobalt); background: var(--cobalt-soft); color: var(--cobalt); }
   .arrow { color: var(--muted); font: 600 0.85rem var(--font-code); font-variation-settings: "MONO" 1; }
 </style>
+<script src="book.js"></script>
+<script src="js/progress.js"></script>
+<script src="js/chrome.js"></script>
+<script src="js/quiz.js"></script>
 </head>
 <body>
 <div class="wrap">
@@ -96,6 +100,9 @@ for (let i = 0; i < trails.length; i++) {
   }
 }</textarea></div>
 
+  <div class="section-title"><span class="eyebrow">Practice</span><h2>Add up the miles</h2><p>Adding up a list is one of the most common jobs for a loop: start a total at 0, then add each item to it.</p></div>
+  <div id="ex-total"></div>
+
   <div class="section-title"><span class="eyebrow">Practice</span><h2>Predict the output</h2></div>
   <div class="panel quiz" id="quiz"></div>
 
@@ -128,10 +135,10 @@ for (let i = 0; i < trails.length; i++) {
     </div>
   </section>
 
-  <footer class="page-foot"><a href="js-conditionals.html">← Conditionals</a><a href="js-functions.html">Next: Functions →</a></footer>
+  <footer class="page-foot" data-book-nav><a href="index.html">← Contents</a></footer>
 </div>
 
-<script src="runner.js"></script>
+<script src="js/runner.js"></script>
 <script>
   const $ = (id) => document.getElementById(id);
   const T = ["Mesa", "Royal Arch", "Flagstaff"];
@@ -247,13 +254,60 @@ for (let i = 0; i < trails.length; i++) {
   }
 
   makeQuiz($("quiz"), [
-    { q: "How many lines does this log?", pre: "for (let i = 0; i < 4; i++) {\n  console.log(i);\n}", opts: ["3", "4", "5"], a: 1, why: "It logs 0, 1, 2 and 3. When i reaches 4, the condition is false." },
-    { q: "What is the last value logged?", pre: "const colors = [\"red\", \"blue\"];\nfor (let i = 0; i <= colors.length; i++) {\n  console.log(colors[i]);\n}", opts: ["\"blue\"", "undefined", "An error"], a: 1, why: "<= runs one extra time, and colors[2] is undefined." },
-    { q: "What does this log?", pre: "const nums = [1, 2, 3, 4];\nconsole.log(nums.filter((n) => n % 2 === 0));", opts: ["[2, 4]", "[1, 3]", "[false, true, false, true]"], a: 0, why: "filter keeps the items where the test is true: the even numbers." },
-    { q: "What does this log?", pre: "const nums = [1, 2, 3];\nconsole.log(nums.map((n) => n * 10));", opts: ["[1, 2, 3]", "60", "[10, 20, 30]"], a: 2, why: "map builds a new array from whatever the function returns for each item." },
+    { id: "q1", q: "How many lines does this log?", pre: "for (let i = 0; i < 4; i++) {\n  console.log(i);\n}", opts: ["3", "4", "5"], a: 1, why: "It logs 0, 1, 2 and 3. When i reaches 4, the condition is false." },
+    { id: "q2", q: "What is the last value logged?", pre: "const colors = [\"red\", \"blue\"];\nfor (let i = 0; i <= colors.length; i++) {\n  console.log(colors[i]);\n}", opts: ["\"blue\"", "undefined", "An error"], a: 1, why: "<= runs one extra time, and colors[2] is undefined." },
+    { id: "q3", q: "What does this log?", pre: "const nums = [1, 2, 3, 4];\nconsole.log(nums.filter((n) => n % 2 === 0));", opts: ["[2, 4]", "[1, 3]", "[false, true, false, true]"], a: 0, why: "filter keeps the items where the test is true: the even numbers." },
+    { id: "q4", q: "What does this log?", pre: "const nums = [1, 2, 3];\nconsole.log(nums.map((n) => n * 10));", opts: ["[1, 2, 3]", "60", "[10, 20, 30]"], a: 2, why: "map builds a new array from whatever the function returns for each item." },
   ]);
 
   reset(); renderArr();
+</script>
+<script>
+  makeExercise(document.getElementById("ex-total"), {
+    title: "Total trail distance",
+    task: "<p>Finish <code>totalMiles(list)</code> so it loops over the trails and returns the sum of their <code>miles</code>. It should work for any list, including an empty one.</p>",
+    js: `const trails = [
+  { name: "Mesa", miles: 6.7 },
+  { name: "Royal Arch", miles: 3.4 },
+  { name: "Flagstaff", miles: 2.8 },
+];
+
+function totalMiles(list) {
+  let total = 0;
+  // Loop over list here and add each trail's miles to total.
+
+  return total;
+}
+
+console.log(totalMiles(trails));`,
+    solution: `const trails = [
+  { name: "Mesa", miles: 6.7 },
+  { name: "Royal Arch", miles: 3.4 },
+  { name: "Flagstaff", miles: 2.8 },
+];
+
+function totalMiles(list) {
+  let total = 0;
+  for (const trail of list) {
+    total += trail.miles;
+  }
+  return total;
+}
+
+console.log(totalMiles(trails));`,
+    expose: ["totalMiles"],
+    hints: [
+      "for...of gives you each trail in turn: for (const trail of list) { … }",
+      "Inside the loop, add this trail's miles to the running total: total += trail.miles;",
+      "Keep return total; after the loop, not inside it, or the function stops after the first trail.",
+    ],
+    checks: [
+      { label: "totalMiles(trails) returns 12.9", test: ({ fns }) => Math.abs(fns.totalMiles([{ miles: 6.7 }, { miles: 3.4 }, { miles: 2.8 }]) - 12.9) < 0.001 },
+      { label: "It works for a different list", test: ({ fns }) => fns.totalMiles([{ miles: 1 }, { miles: 2 }, { miles: 3 }, { miles: 4 }]) === 10 },
+      { label: "An empty list returns 0", test: ({ fns }) => fns.totalMiles([]) === 0 },
+      { label: "The total is logged to the console", test: ({ logs }) => logs.some((l) => Math.abs(parseFloat(l) - 12.9) < 0.001) },
+    ],
+  });
 </script>
 </body>
 </html>

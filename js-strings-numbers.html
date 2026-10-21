@@ -32,6 +32,10 @@
   .method-out { display: grid; grid-template-columns: minmax(0, 1fr); gap: 8px; }
   .method-out .res { font: 600 1.1rem var(--font-code); font-variation-settings: "MONO" 1; padding: 10px 14px; border-radius: 8px; background: var(--panel); border: 1px solid var(--line); overflow-wrap: anywhere; }
 </style>
+<script src="book.js"></script>
+<script src="js/progress.js"></script>
+<script src="js/chrome.js"></script>
+<script src="js/quiz.js"></script>
 </head>
 <body>
 <div class="wrap">
@@ -115,10 +119,10 @@ console.log(Number(typed) + 3);</textarea></div>
     </div>
   </section>
 
-  <footer class="page-foot"><a href="js-variables.html">← Variables &amp; Data Types</a><a href="js-arrays.html">Next: Arrays →</a></footer>
+  <footer class="page-foot" data-book-nav><a href="index.html">← Contents</a></footer>
 </div>
 
-<script src="runner.js"></script>
+<script src="js/runner.js"></script>
 <script>
   const $ = (id) => document.getElementById(id);
   const types = { a: "number", b: "number" };
@@ -185,11 +189,11 @@ console.log(Number(typed) + 3);</textarea></div>
   }
 
   makeQuiz($("quiz"), [
-    { q: "What does this log?", pre: 'console.log("3" + 4);', opts: ["7", "\"34\"", "NaN"], a: 1, why: "One side is a string, so + joins them into \"34\"." },
-    { q: "What does this log?", pre: 'console.log("10" - 4);', opts: ["6", "\"104\"", "NaN"], a: 0, why: "Only + joins strings. - converts both sides to numbers." },
-    { q: "What does this log?", pre: "console.log(17 % 5);", opts: ["3.4", "2", "3"], a: 1, why: "17 ÷ 5 = 3 with 2 left over. % gives the remainder." },
-    { q: "What does this log?", pre: 'const name = "Ava";\nconsole.log("Hi ${name}");', opts: ["Hi Ava", "Hi ${name}", "An error"], a: 1, why: "Placeholders only work inside backticks. In normal quotes, ${name} is plain text." },
-    { q: "What does this log?", pre: 'const word = "Boulder";\nconsole.log(word.slice(0, 3));', opts: ["Boul", "Bou", "oul"], a: 1, why: "slice(0, 3) includes indexes 0, 1 and 2, but not 3." },
+    { id: "q1", q: "What does this log?", pre: 'console.log("3" + 4);', opts: ["7", "\"34\"", "NaN"], a: 1, why: "One side is a string, so + joins them into \"34\"." },
+    { id: "q2", q: "What does this log?", pre: 'console.log("10" - 4);', opts: ["6", "\"104\"", "NaN"], a: 0, why: "Only + joins strings. - converts both sides to numbers." },
+    { id: "q3", q: "What does this log?", pre: "console.log(17 % 5);", opts: ["3.4", "2", "3"], a: 1, why: "17 ÷ 5 = 3 with 2 left over. % gives the remainder." },
+    { id: "q4", q: "What does this log?", pre: 'const name = "Ava";\nconsole.log("Hi ${name}");', opts: ["Hi Ava", "Hi ${name}", "An error"], a: 1, why: "Placeholders only work inside backticks. In normal quotes, ${name} is plain text." },
+    { id: "q5", q: "What does this log?", pre: 'const word = "Boulder";\nconsole.log(word.slice(0, 3));', opts: ["Boul", "Bou", "oul"], a: 1, why: "slice(0, 3) includes indexes 0, 1 and 2, but not 3." },
   ]);
 
   calc(); strings();

@@ -28,6 +28,10 @@
   .outline li.skip { border-color: var(--bad); background: var(--bad-soft); color: var(--bad); }
   .outline .lv { font: 600 0.75rem var(--font-code); font-variation-settings: "MONO" 1; margin-right: 6px; }
 </style>
+<script src="book.js"></script>
+<script src="js/progress.js"></script>
+<script src="js/chrome.js"></script>
+<script src="js/quiz.js"></script>
 </head>
 <body>
 <div class="wrap">
@@ -73,7 +77,7 @@
     </div>
   </section>
 
-  <footer class="page-foot"><a href="head-metadata.html">← The Head &amp; Metadata</a><a href="lists.html">Next: Lists →</a></footer>
+  <footer class="page-foot" data-book-nav><a href="index.html">← Contents</a></footer>
 </div>
 
 <script>
@@ -134,22 +138,13 @@
   render();
 
   const QUIZ = [
-    { q: "A warning: \"Do not feed the wildlife.\"", opts: ["<b>", "<strong>", "<h3>"], a: 1, why: "It's important, not just bold-looking." },
-    { q: "The name of the book \"Walden.\"", opts: ["<cite>", "<q>", "<em>"], a: 0, why: "cite marks the title of a work." },
-    { q: "The scientific name Pinus ponderosa.", opts: ["<em>", "<i>", "<strong>"], a: 1, why: "It's set apart, but you wouldn't stress it when speaking. That's i." },
-    { q: "\"You need this permit\" where the word need is stressed.", opts: ["<em>", "<mark>", "<i>"], a: 0, why: "em marks stress emphasis that changes how it's read." },
-    { q: "A three-paragraph quote from a park ranger.", opts: ["<q>", "<blockquote>", "<p> with quote marks"], a: 1, why: "Long, standalone quotes go in blockquote." },
+    { id: "q1", q: "A warning: \"Do not feed the wildlife.\"", opts: ["<b>", "<strong>", "<h3>"], a: 1, why: "It's important, not just bold-looking." },
+    { id: "q2", q: "The name of the book \"Walden.\"", opts: ["<cite>", "<q>", "<em>"], a: 0, why: "cite marks the title of a work." },
+    { id: "q3", q: "The scientific name Pinus ponderosa.", opts: ["<em>", "<i>", "<strong>"], a: 1, why: "It's set apart, but you wouldn't stress it when speaking. That's i." },
+    { id: "q4", q: "\"You need this permit\" where the word need is stressed.", opts: ["<em>", "<mark>", "<i>"], a: 0, why: "em marks stress emphasis that changes how it's read." },
+    { id: "q5", q: "A three-paragraph quote from a park ranger.", opts: ["<q>", "<blockquote>", "<p> with quote marks"], a: 1, why: "Long, standalone quotes go in blockquote." },
   ];
-  const esc = (s) => s.replace(/</g, "&lt;");
-  let score = 0;
-  $("quiz").innerHTML = `<p class="score" id="score">0 / ${QUIZ.length}</p>` + QUIZ.map((x, i) => `<div class="q"><b>${i + 1}. ${x.q}</b><div class="opts">${x.opts.map((o, j) => `<button class="btn" data-q="${i}" data-o="${j}">${esc(o)}</button>`).join("")}</div><div class="feedback" id="fb${i}"></div></div>`).join("");
-  document.querySelectorAll("#quiz .opts").forEach((g) => g.addEventListener("click", (e) => {
-    const b = e.target.closest("button"); if (!b || g.dataset.done) return;
-    const x = QUIZ[+b.dataset.q], right = +b.dataset.o === x.a;
-    b.classList.add(right ? "right" : "wrong"); g.children[x.a].classList.add("right"); g.dataset.done = "1";
-    if (right) score++; $("score").textContent = `${score} / ${QUIZ.length}`;
-    const fb = $("fb" + b.dataset.q); fb.className = "feedback " + (right ? "right" : "wrong"); fb.textContent = (right ? "Correct. " : "Not quite. ") + x.why;
-  }));
+  makeQuiz($("quiz"), QUIZ);
 </script>
 </body>
 </html>

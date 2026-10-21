@@ -26,6 +26,10 @@
   .status.ok { background: var(--good-soft); color: var(--good); } .status.bad { background: var(--bad-soft); color: var(--bad); }
   .rules { margin: 0; padding-left: 1.2em; display: grid; gap: 6px; font-size: 0.92rem; }
 </style>
+<script src="book.js"></script>
+<script src="js/progress.js"></script>
+<script src="js/chrome.js"></script>
+<script src="js/quiz.js"></script>
 </head>
 <body>
 <div class="wrap">
@@ -128,10 +132,10 @@ console.log(typeof saved);</textarea></div>
     </div>
   </section>
 
-  <footer class="page-foot"><a href="js-functions.html">← Functions</a><a href="js-dom.html">Next: Selecting &amp; Changing Elements →</a></footer>
+  <footer class="page-foot" data-book-nav><a href="index.html">← Contents</a></footer>
 </div>
 
-<script src="runner.js"></script>
+<script src="js/runner.js"></script>
 <script>
   const $ = (id) => document.getElementById(id);
   const hike = {
@@ -222,11 +226,11 @@ console.log(typeof saved);</textarea></div>
   }
 
   makeQuiz($("quiz"), [
-    { q: "What does this log?", pre: 'const user = { name: "Ava", age: 21 };\nconsole.log(user.name);', opts: ["Ava", "name", "undefined"], a: 0, why: "Dot notation reads the value stored under the key name." },
-    { q: "What does this log?", pre: 'const user = { name: "Ava" };\nconst field = "name";\nconsole.log(user.field);', opts: ["Ava", "undefined", "An error"], a: 1, why: "user.field looks for a key called \"field\". Use user[field] instead." },
-    { q: "Which is valid JSON?", opts: ["{ name: \"Ava\" }", "{ \"name\": 'Ava' }", "{ \"name\": \"Ava\" }"], a: 2, why: "Both the key and the string value need double quotes." },
-    { q: "What type is the result?", pre: "const out = JSON.stringify({ a: 1 });\nconsole.log(typeof out);", opts: ["\"object\"", "\"string\""], a: 1, why: "stringify turns an object into JSON text, which is a string." },
-    { q: "How do you get \"Damage resistance\"?", pre: 'const squad = {\n  members: [\n    { name: "Molecule Man", powers: ["Radiation resistance"] },\n    { name: "Madame Uppercut", powers: ["Million tonne punch", "Damage resistance"] }\n  ]\n};', opts: ["squad.members[1].powers[1]", "squad.members[2].powers[2]", "squad.powers[1]"], a: 0, why: "Second member is [1], and the second power is [1]." },
+    { id: "q1", q: "What does this log?", pre: 'const user = { name: "Ava", age: 21 };\nconsole.log(user.name);', opts: ["Ava", "name", "undefined"], a: 0, why: "Dot notation reads the value stored under the key name." },
+    { id: "q2", q: "What does this log?", pre: 'const user = { name: "Ava" };\nconst field = "name";\nconsole.log(user.field);', opts: ["Ava", "undefined", "An error"], a: 1, why: "user.field looks for a key called \"field\". Use user[field] instead." },
+    { id: "q3", q: "Which is valid JSON?", opts: ["{ name: \"Ava\" }", "{ \"name\": 'Ava' }", "{ \"name\": \"Ava\" }"], a: 2, why: "Both the key and the string value need double quotes." },
+    { id: "q4", q: "What type is the result?", pre: "const out = JSON.stringify({ a: 1 });\nconsole.log(typeof out);", opts: ["\"object\"", "\"string\""], a: 1, why: "stringify turns an object into JSON text, which is a string." },
+    { id: "q5", q: "How do you get \"Damage resistance\"?", pre: 'const squad = {\n  members: [\n    { name: "Molecule Man", powers: ["Radiation resistance"] },\n    { name: "Madame Uppercut", powers: ["Million tonne punch", "Damage resistance"] }\n  ]\n};', opts: ["squad.members[1].powers[1]", "squad.members[2].powers[2]", "squad.powers[1]"], a: 0, why: "Second member is [1], and the second power is [1]." },
   ]);
 
   $("json").value = VALID;

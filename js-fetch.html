@@ -33,7 +33,13 @@
   .say { font-size: 0.95rem; min-height: 1.5em; }
   .flowrow { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
   .json-view { max-height: 220px; overflow: auto; }
+  .results { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; align-items: start; }
+  @media (max-width: 600px) { .results { grid-template-columns: 1fr; } }
 </style>
+<script src="book.js"></script>
+<script src="js/progress.js"></script>
+<script src="js/chrome.js"></script>
+<script src="js/quiz.js"></script>
 </head>
 <body>
 <div class="wrap">
@@ -55,9 +61,11 @@
     <div class="stage-col">
       <div class="code" id="code" aria-label="Code"></div>
       <p class="say" id="say" aria-live="polite"></p>
+      <div class="results" id="results">
+        <div class="preview" id="preview"><h3>Boulder trails</h3><p class="msg">Press Send request.</p></div>
+        <ol class="console" id="out" aria-label="Console output"></ol>
+      </div>
       <div class="panel table-wrap"><span class="eyebrow">Network panel</span><table class="net" id="net"></table></div>
-      <ol class="console" id="out" aria-label="Console output"></ol>
-      <div class="preview" id="preview"><h3>Boulder trails</h3><p class="msg">Press Send request.</p></div>
     </div>
   </section>
 
@@ -102,10 +110,10 @@
     </div>
   </section>
 
-  <footer class="page-foot"><a href="js-create-elements.html">← Creating &amp; Removing Elements</a><a href="index.html">All topics →</a></footer>
+  <footer class="page-foot" data-book-nav><a href="index.html">← Contents</a></footer>
 </div>
 
-<script src="runner.js"></script>
+<script src="js/runner.js"></script>
 <script>
   const $ = (id) => document.getElementById(id);
   const TRAILS = [{ name: "Mesa Trail", miles: 6.7 }, { name: "Royal Arch", miles: 3.4 }, { name: "Chautauqua Loop", miles: 1.2 }];
@@ -193,6 +201,8 @@
     const s = SCEN[scen];
     done = []; failed = null; current = null;
     $("out").innerHTML = ""; net("idle");
+    // On shorter screens the results sit below the fold; bring them into view only if they're hidden.
+    $("results").scrollIntoView({ block: "nearest", behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
     const pause = (ms) => new Promise((r) => setTimeout(r, ms));
     for (const st of s.stages) {
       current = st; renderCode(); $("say").textContent = SAY[st];
@@ -218,10 +228,10 @@
   $("show-fn").innerHTML = hlJS(`const list = document.querySelector("#trails");\n\nfunction showTrails(trails) {\n  for (const trail of trails) {\n    const li = document.createElement("li");\n    li.textContent = \`\${trail.name}: \${trail.miles} mi\`;\n    list.append(li);\n  }\n}`);
 
   makeQuiz($("quiz"), [
-    { q: "In what order are these logged?", pre: 'fetch("trails.json")\n  .then((r) => r.json())\n  .then(() => console.log("B"));\nconsole.log("A");', opts: ["A, then B", "B, then A"], a: 0, why: "fetch doesn't block. A logs right away, and B logs later when the data arrives." },
-    { q: "The server returns 404. Without a response.ok check, does .catch() run?", opts: ["Yes, fetch rejects on 404", "No, fetch only rejects on network failures"], a: 1, why: "A 404 is still a response. You have to check response.ok and throw yourself." },
-    { q: "Every fetch fails with \"Failed to fetch\", but the file is definitely there. What's the likely cause?", opts: ["The JSON is invalid", "The page was opened from file://", "You need async/await"], a: 1, why: "Browsers block fetch from file:// pages. Use a local server or GitHub Pages." },
-    { q: "What's missing from this code?", pre: 'fetch("trails.json")\n  .then((response) => {\n    response.json();\n  })\n  .then((trails) => console.log(trails));', opts: ["return before response.json()", "await before fetch", "A catch()"], a: 0, why: "Without return, the next .then() gets undefined. (A catch() is also good practice.)" },
+    { id: "q1", q: "In what order are these logged?", pre: 'fetch("trails.json")\n  .then((r) => r.json())\n  .then(() => console.log("B"));\nconsole.log("A");', opts: ["A, then B", "B, then A"], a: 0, why: "fetch doesn't block. A logs right away, and B logs later when the data arrives." },
+    { id: "q2", q: "The server returns 404. Without a response.ok check, does .catch() run?", opts: ["Yes, fetch rejects on 404", "No, fetch only rejects on network failures"], a: 1, why: "A 404 is still a response. You have to check response.ok and throw yourself." },
+    { id: "q3", q: "Every fetch fails with \"Failed to fetch\", but the file is definitely there. What's the likely cause?", opts: ["The JSON is invalid", "The page was opened from file://", "You need async/await"], a: 1, why: "Browsers block fetch from file:// pages. Use a local server or GitHub Pages." },
+    { id: "q4", q: "What's missing from this code?", pre: 'fetch("trails.json")\n  .then((response) => {\n    response.json();\n  })\n  .then((trails) => console.log(trails));', opts: ["return before response.json()", "await before fetch", "A catch()"], a: 0, why: "Without return, the next .then() gets undefined. (A catch() is also good practice.)" },
   ]);
 
   $("out").innerHTML = `<li class="muted">Press Send request.</li>`;

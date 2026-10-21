@@ -35,6 +35,10 @@
   .verdict { padding: 10px 14px; border-radius: 8px; font-size: 0.95rem; }
   .verdict.good { background: var(--good-soft); color: var(--good); } .verdict.bad { background: var(--bad-soft); color: var(--bad); }
 </style>
+<script src="book.js"></script>
+<script src="js/progress.js"></script>
+<script src="js/chrome.js"></script>
+<script src="js/quiz.js"></script>
 </head>
 <body>
 <div class="wrap">
@@ -115,10 +119,10 @@
     </div>
   </section>
 
-  <footer class="page-foot"><a href="publishing.html">← Project Structure &amp; Publishing</a><a href="js-errors.html">Next: The Console &amp; Errors →</a></footer>
+  <footer class="page-foot" data-book-nav><a href="index.html">← Contents</a></footer>
 </div>
 
-<script src="runner.js"></script>
+<script src="js/runner.js"></script>
 <script>
   const $ = (id) => document.getElementById(id);
   let name = "Chris";
@@ -203,10 +207,10 @@
   $("place").addEventListener("change", renderPlace);
 
   const QUIZ = [
-    { q: "Which layer makes a menu open when you click the hamburger icon?", opts: ["HTML", "CSS", "JavaScript"], a: 2, why: "Responding to a click is behavior, which is JavaScript's job." },
-    { q: "Your script is in the head with no attributes and logs null for every element. The quickest fix?", opts: ["Add defer", "Add async", "Move the CSS link"], a: 0, why: "defer waits until the HTML has been read before running the script." },
-    { q: "You open index.html by double-clicking it, and your type=\"module\" script is blocked. Why?", opts: ["Modules need a server", "The file is too big", "Modules need the .mjs extension"], a: 0, why: "Browsers only load modules over http(s). Use defer locally, or run a local server." },
-    { q: "Which is the recommended way to run code when a button is clicked?", opts: ['onclick="go()" in the HTML', "addEventListener in script.js"], a: 1, why: "MDN advises against inline handlers. Keep behavior in your JavaScript file." },
+    { id: "q1", q: "Which layer makes a menu open when you click the hamburger icon?", opts: ["HTML", "CSS", "JavaScript"], a: 2, why: "Responding to a click is behavior, which is JavaScript's job." },
+    { id: "q2", q: "Your script is in the head with no attributes and logs null for every element. The quickest fix?", opts: ["Add defer", "Add async", "Move the CSS link"], a: 0, why: "defer waits until the HTML has been read before running the script." },
+    { id: "q3", q: "You open index.html by double-clicking it, and your type=\"module\" script is blocked. Why?", opts: ["Modules need a server", "The file is too big", "Modules need the .mjs extension"], a: 0, why: "Browsers only load modules over http(s). Use defer locally, or run a local server." },
+    { id: "q4", q: "Which is the recommended way to run code when a button is clicked?", opts: ['onclick="go()" in the HTML', "addEventListener in script.js"], a: 1, why: "MDN advises against inline handlers. Keep behavior in your JavaScript file." },
   ];
   makeQuiz($("quiz"), QUIZ);
 

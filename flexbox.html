@@ -13,6 +13,10 @@
   .axis { display: flex; gap: 18px; flex-wrap: wrap; font: 0.85rem var(--font-code); font-variation-settings: "MONO" 1; color: var(--muted); }
   .axis b { color: var(--cobalt); }
 </style>
+<script src="book.js"></script>
+<script src="js/progress.js"></script>
+<script src="js/chrome.js"></script>
+<script src="js/quiz.js"></script>
 </head>
 <body>
 <div class="wrap">
@@ -49,6 +53,9 @@
     </div>
   </section>
 
+  <div class="section-title"><span class="eyebrow">Practice</span><h2>Build a nav bar</h2><p>Most site headers are a flex row inside a flex row. Try it on a real nav, then press Check my work.</p></div>
+  <div id="ex-nav"></div>
+
   <section class="notes">
     <div class="panel">
       <h2>Key ideas</h2>
@@ -70,7 +77,7 @@
     </div>
   </section>
 
-  <footer class="page-foot"><a href="web-fonts.html">← Web Fonts</a><a href="grid.html">Next: CSS Grid →</a></footer>
+  <footer class="page-foot" data-book-nav><a href="index.html">← Contents</a></footer>
 </div>
 
 <script>
@@ -107,6 +114,88 @@
 
   document.querySelectorAll("select, input").forEach((el) => el.addEventListener("input", update));
   update();
+</script>
+<script>
+  makeExercise(document.getElementById("ex-nav"), {
+    title: "Lay out the trail site's nav",
+    task: `<p>Change only the CSS so that:</p>
+      <ol>
+        <li>The logo sits on the left and the list of links on the right, on one line.</li>
+        <li>The logo and links are centered vertically in the bar.</li>
+        <li>The links sit side by side, 16px apart.</li>
+      </ol>`,
+    html: `<nav class="site-nav">
+  <a class="logo" href="#">Trailhead</a>
+  <ul class="links">
+    <li><a href="#">Trails</a></li>
+    <li><a href="#">Maps</a></li>
+    <li><a href="#">Conditions</a></li>
+  </ul>
+</nav>`,
+    css: `.site-nav {
+  background: #1d2133;
+  padding: 12px 20px;
+  /* Steps 1 and 2 go here */
+}
+
+.links {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  /* Step 3 goes here */
+}
+
+.site-nav a { color: white; text-decoration: none; font-family: system-ui, sans-serif; }
+.logo { font-size: 1.4rem; font-weight: 700; }`,
+    solution: { css: `.site-nav {
+  background: #1d2133;
+  padding: 12px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.links {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  gap: 16px;
+}
+
+.site-nav a { color: white; text-decoration: none; font-family: system-ui, sans-serif; }
+.logo { font-size: 1.4rem; font-weight: 700; }` },
+    hints: [
+      "Both steps start with display: flex on a parent: .site-nav lines up the logo and the list, and .links lines up the list items.",
+      "justify-content: space-between pushes the first and last items to opposite ends of the row.",
+      "align-items: center centers items on the cross axis, which is vertical in a row. gap: 16px spaces the links without margins.",
+    ],
+    // Checks measure the layout rather than reading the CSS, so any working solution passes (margin-left: auto too).
+    checks: [
+      { label: "The logo and the links are on one line", test: ({ $ }) => {
+        const a = $(".logo").getBoundingClientRect(), b = $(".links").getBoundingClientRect();
+        return a.top < b.bottom && b.top < a.bottom;
+      } },
+      { label: "The logo is at the left and the links reach the right edge", test: ({ $, style }) => {
+        const nav = $(".site-nav").getBoundingClientRect(), pad = parseFloat(style(".site-nav", "padding-right"));
+        return Math.abs($(".logo").getBoundingClientRect().left - nav.left - pad) < 2
+          && Math.abs(nav.right - pad - $(".links li:last-child a").getBoundingClientRect().right) < 2;
+      } },
+      // Compares where the text sits, so it passes whether or not step 3 is done yet, and fails with the default stretch.
+      { label: "The logo and links are centered vertically", test: ({ doc, $, $$ }) => {
+        const mid = (els) => {
+          const rs = els.map((el) => { const r = doc.createRange(); r.selectNodeContents(el); return r.getBoundingClientRect(); });
+          return (Math.min(...rs.map((r) => r.top)) + Math.max(...rs.map((r) => r.bottom))) / 2;
+        };
+        return Math.abs(mid([$(".logo")]) - mid($$(".links a"))) < 3;
+      } },
+      { label: "The links sit side by side", test: ({ $$ }) => new Set($$(".links li").map((li) => Math.round(li.getBoundingClientRect().top))).size === 1 },
+      { label: "The links are 16px apart", test: ({ $$ }) => {
+        const r = $$(".links li").map((li) => li.getBoundingClientRect());
+        return r.slice(1).every((x, i) => Math.abs(x.left - r[i].right - 16) < 1);
+      } },
+    ],
+  });
 </script>
 </body>
 </html>

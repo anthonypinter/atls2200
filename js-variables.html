@@ -42,6 +42,10 @@
   .verdicts .no { background: var(--bad-soft); color: var(--bad); }
   .verdicts .meh { background: var(--stage); color: var(--prop); }
 </style>
+<script src="book.js"></script>
+<script src="js/progress.js"></script>
+<script src="js/chrome.js"></script>
+<script src="js/quiz.js"></script>
 </head>
 <body>
 <div class="wrap">
@@ -129,10 +133,10 @@ console.log(notSetYet);</textarea></div>
     </div>
   </section>
 
-  <footer class="page-foot"><a href="js-errors.html">← The Console &amp; Errors</a><a href="js-strings-numbers.html">Next: Numbers &amp; Strings →</a></footer>
+  <footer class="page-foot" data-book-nav><a href="index.html">← Contents</a></footer>
 </div>
 
-<script src="runner.js"></script>
+<script src="js/runner.js"></script>
 <script>
   const $ = (id) => document.getElementById(id);
   // Each step: code, then what it does to memory. `set` = [name, value, kind?]. `err` = refused change.
@@ -207,11 +211,11 @@ console.log(notSetYet);</textarea></div>
   $("name").addEventListener("input", checkName);
 
   makeQuiz($("quiz"), [
-    { q: "What does typeof \"42\" return?", opts: ["\"number\"", "\"string\"", "\"boolean\""], a: 1, why: "The quotes make it a string, whatever is inside them." },
-    { q: "A score goes up each time the player wins. How should you declare it?", opts: ["const score = 0;", "let score = 0;"], a: 1, why: "The value needs to change, so it has to be let." },
-    { q: "This runs without an error. Why?", pre: "const colors = [\"red\"];\ncolors.push(\"blue\");", opts: ["push doesn't change arrays", "const stops reassignment, not changes to the array's contents", "const only applies to numbers"], a: 1, why: "colors still refers to the same array. Only its contents changed." },
-    { q: "Which name follows MDN's conventions?", opts: ["Total_Price", "totalprice", "totalPrice"], a: 2, why: "Lower camelCase: start lowercase, then capitalize each new word." },
-    { q: "What is the value of this variable?", pre: "let answer;", opts: ["0", "null", "undefined", "\"\""], a: 2, why: "A declared variable with no value holds undefined." },
+    { id: "q1", q: "What does typeof \"42\" return?", opts: ["\"number\"", "\"string\"", "\"boolean\""], a: 1, why: "The quotes make it a string, whatever is inside them." },
+    { id: "q2", q: "A score goes up each time the player wins. How should you declare it?", opts: ["const score = 0;", "let score = 0;"], a: 1, why: "The value needs to change, so it has to be let." },
+    { id: "q3", q: "This runs without an error. Why?", pre: "const colors = [\"red\"];\ncolors.push(\"blue\");", opts: ["push doesn't change arrays", "const stops reassignment, not changes to the array's contents", "const only applies to numbers"], a: 1, why: "colors still refers to the same array. Only its contents changed." },
+    { id: "q4", q: "Which name follows MDN's conventions?", opts: ["Total_Price", "totalprice", "totalPrice"], a: 2, why: "Lower camelCase: start lowercase, then capitalize each new word." },
+    { id: "q5", q: "What is the value of this variable?", pre: "let answer;", opts: ["0", "null", "undefined", "\"\""], a: 2, why: "A declared variable with no value holds undefined." },
   ]);
 
   render(); checkName();

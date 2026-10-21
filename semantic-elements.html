@@ -26,6 +26,10 @@
   .sr { font-size: 0.9rem; padding: 8px 10px; border-radius: 6px; background: var(--stage); }
   .soup-note { font-size: 0.92rem; padding: 10px 12px; border-radius: 6px; background: var(--bad-soft); color: var(--bad); }
 </style>
+<script src="book.js"></script>
+<script src="js/progress.js"></script>
+<script src="js/chrome.js"></script>
+<script src="js/quiz.js"></script>
 </head>
 <body>
 <div class="wrap">
@@ -72,7 +76,7 @@
     </div>
   </section>
 
-  <footer class="page-foot"><a href="lists.html">← Lists</a><a href="links-paths.html">Next: Links &amp; Paths →</a></footer>
+  <footer class="page-foot" data-book-nav><a href="index.html">← Contents</a></footer>
 </div>
 
 <script>
@@ -119,26 +123,14 @@
 
   // Quiz
   const QUIZ = [
-    { q: "The site's logo and main menu across the top of every page.", opts: ["<header>", "<main>", "<aside>"], a: 0, why: "header holds introductory content like the logo and site navigation." },
-    { q: "A list of links to Home, About, Projects, Contact.", opts: ["<ul> only", "<nav>", "<footer>"], a: 1, why: "nav marks major navigation. You'd usually still put a ul inside it." },
-    { q: "One blog post, with its own title, date and text.", opts: ["<section>", "<article>", "<div>"], a: 1, why: "article fits content that would make sense on its own." },
-    { q: "A \"Related posts\" box beside the blog post.", opts: ["<aside>", "<article>", "<nav>"], a: 0, why: "aside holds content related to, but separate from, the main content." },
-    { q: "A wrapper whose only job is to give a flex layout to some cards.", opts: ["<section>", "<div>", "<main>"], a: 1, why: "When a box exists only for styling, div is the right choice." },
-    { q: "Something users click to open a menu.", opts: ["<div onclick>", "<a>", "<button>"], a: 2, why: "button works with the keyboard and screen readers by default. Use a for links to other pages." },
+    { id: "q1", q: "The site's logo and main menu across the top of every page.", opts: ["<header>", "<main>", "<aside>"], a: 0, why: "header holds introductory content like the logo and site navigation." },
+    { id: "q2", q: "A list of links to Home, About, Projects, Contact.", opts: ["<ul> only", "<nav>", "<footer>"], a: 1, why: "nav marks major navigation. You'd usually still put a ul inside it." },
+    { id: "q3", q: "One blog post, with its own title, date and text.", opts: ["<section>", "<article>", "<div>"], a: 1, why: "article fits content that would make sense on its own." },
+    { id: "q4", q: "A \"Related posts\" box beside the blog post.", opts: ["<aside>", "<article>", "<nav>"], a: 0, why: "aside holds content related to, but separate from, the main content." },
+    { id: "q5", q: "A wrapper whose only job is to give a flex layout to some cards.", opts: ["<section>", "<div>", "<main>"], a: 1, why: "When a box exists only for styling, div is the right choice." },
+    { id: "q6", q: "Something users click to open a menu.", opts: ["<div onclick>", "<a>", "<button>"], a: 2, why: "button works with the keyboard and screen readers by default. Use a for links to other pages." },
   ];
-  let score = 0;
-  $("quiz").innerHTML = `<p class="score" id="score">0 / ${QUIZ.length}</p>` + QUIZ.map((x, i) => `<div class="q"><b>${i + 1}. ${x.q}</b><div class="opts">${x.opts.map((o, j) => `<button class="btn" data-q="${i}" data-o="${j}">${esc(o)}</button>`).join("")}</div><div class="feedback" id="fb${i}"></div></div>`).join("");
-  document.querySelectorAll("#quiz .opts").forEach((group) => group.addEventListener("click", (e) => {
-    const b = e.target.closest("button"); if (!b || group.dataset.done) return;
-    const x = QUIZ[+b.dataset.q], right = +b.dataset.o === x.a;
-    b.classList.add(right ? "right" : "wrong");
-    group.children[x.a].classList.add("right");
-    group.dataset.done = "1";
-    if (right) score++;
-    $("score").textContent = `${score} / ${QUIZ.length}`;
-    const fb = $("fb" + b.dataset.q); fb.className = "feedback " + (right ? "right" : "wrong");
-    fb.textContent = (right ? "Correct. " : "Not quite. ") + x.why;
-  }));
+  makeQuiz($("quiz"), QUIZ);
 </script>
 </body>
 </html>

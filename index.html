@@ -1,4 +1,7 @@
-<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1"><style>:root{color-scheme:light}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
 <title>HTML, CSS &amp; JS Field Guide</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -38,6 +41,9 @@
   .status { font: 600 0.7rem/1 var(--font-code); font-variation-settings: "MONO" 1; letter-spacing: 0.06em; text-transform: uppercase; padding: 4px 7px; border-radius: 4px; white-space: nowrap; }
   .status.ready { background: var(--cobalt-soft); color: var(--cobalt); }
   .status.soon { border: 1px dashed var(--line); color: var(--muted); }
+  .status.done { background: var(--good-soft); color: var(--good); }
+  .unit-progress { display: grid; gap: 6px; margin-top: 6px; font: 600 0.8rem var(--font-code); font-variation-settings: "MONO" 1; color: var(--muted); }
+  .hero-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 16px; }
   .dot { width: 9px; height: 9px; border-radius: 50%; display: inline-block; }
 
   /* Tiny live diagrams on the ready cards */
@@ -125,13 +131,19 @@
   .mini.jsfetch { align-items: center; justify-content: center; gap: 10px; } .mini.jsfetch b { font: 800 1rem var(--font-code); font-variation-settings: "MONO" 1; color: var(--prop); } .mini.jsfetch span { color: var(--muted); } .mini.jsfetch i { width: 30%; height: 70%; }
   .empty { padding-block: 28px; color: var(--muted); }
 </style>
-
+<script src="book.js"></script>
+<script src="js/progress.js"></script>
+<script src="js/chrome.js"></script>
+<script src="js/quiz.js"></script>
+</head>
+<body>
 <div class="wrap">
   <header class="hero">
     <div class="hero-text">
       <span class="eyebrow">Intro to HTML, CSS &amp; JS · Student helpers</span>
       <h1>HTML, CSS &amp; JS <span class="sel">Field Guide</span></h1>
       <p class="lede">Hands-on reference pages for the parts of front-end code that trip people up. Change a setting and watch the layout respond, then try the same idea in your own project.</p>
+      <p class="hero-actions"><a class="btn run" id="start" href="how-the-web-works.html">Start reading →</a></p>
     </div>
     <pre aria-label="Example CSS rule"><span class="cmt">/* every page works the same way */</span>
 <span class="sel">.you</span> {
@@ -157,88 +169,11 @@
 
   <footer class="page-foot">
     <span>Pages work in any modern browser. Resize the window to test responsive examples.</span>
-    <span class="mono">Pages are listed in a suggested learning order.</span>
+    <span class="mono">Lessons are numbered in reading order.</span>
   </footer>
 </div>
 
 <script>
-  const UNITS = [
-    { name: "HTML Foundations", blurb: "Structure and meaning before any styling.", topics: [
-      { title: "How the Web Works", href: "how-the-web-works.html", mini: "web", desc: "Browsers, servers and URLs, what happens when a page loads, and setting up your editor.", props: ["URL", "404", "file://"] },
-      { title: "HTML Syntax", href: "html-syntax.html", mini: "syntax", desc: "Elements, tags and attributes, plus how whitespace and special characters behave.", props: ["<tag>", "attribute", "&amp;"] },
-      { title: "Document Structure", href: "document-structure.html", mini: "doc", desc: "The skeleton every page needs: doctype, head, body, and how they nest.", props: ["<!DOCTYPE>", "<head>", "<meta>"] },
-      { title: "The Head & Metadata", href: "head-metadata.html", mini: "head", desc: "Page titles, favicons, meta descriptions, and the preview card when a link is shared.", props: ["<title>", "favicon", "og:image"] },
-      { title: "Text Semantics", href: "text-semantics.html", mini: "textsem", desc: "Headings, strong vs b, em vs i, quotes, code and more, chosen for meaning.", props: ["<h1>–<h6>", "<strong>", "<blockquote>"] },
-      { title: "Lists", href: "lists.html", mini: "lists", desc: "Unordered, ordered and description lists, nesting, and styling markers.", props: ["<ul>", "<ol>", "<dl>"] },
-      { title: "Semantic Elements", href: "semantic-elements.html", mini: "sem", desc: "When to use header, nav, main, section, and article instead of div.", props: ["<main>", "<nav>", "<section>"] },
-      { title: "Links & Paths", href: "links-paths.html", mini: "links", desc: "Relative paths, ../, and why a link works on your laptop but not online.", props: ["href", "../", "#anchor"] },
-      { title: "Tables", href: "tables.html", mini: "table", desc: "Header cells, spanning cells and footers for real data, and when not to use a table.", props: ["<th>", "colspan", "scope"] },
-      { title: "Forms & Inputs", href: "forms.html", mini: "form", desc: "Labels, input types, fieldsets, validation rules, and where the data goes.", props: ["<label>", "<fieldset>", "method"] },
-      { title: "Images & Alt Text", href: "images.html", mini: "img", desc: "Adding images, writing useful alt text, and captioning with figure and figcaption.", props: ["<img>", "alt", "<figure>"] },
-      { title: "Image Formats", href: "image-formats.html", mini: "fmt", desc: "JPG vs PNG vs SVG vs WebP, real file sizes, and resizing before you upload.", props: ["JPG", "SVG", "WebP"] },
-      { title: "Video & Audio", href: "video-audio.html", mini: "video", desc: "Player attributes, why autoplay gets blocked, and adding captions.", props: ["<video>", "controls", "<track>"] },
-      { title: "Embeds & iframes", href: "embeds.html", mini: "embed", desc: "Put YouTube videos and Google Maps on your page, and make them fit on phones.", props: ["<iframe>", "title", "aspect-ratio"] },
-    ]},
-    { name: "CSS Basics", blurb: "How the browser decides what each element looks like.", topics: [
-      { title: "How CSS Is Applied", href: "css-basics.html", mini: "cssbasics", desc: "The parts of a rule, and external vs internal vs inline styles.", props: ["selector", "declaration", "<link>"] },
-      { title: "Selectors & Specificity", href: "selectors.html", mini: "sel", desc: "Classes, IDs, combinators and attribute selectors, and why one rule beats another.", props: [".class", "h2 + p", "[href]"] },
-      { title: "Pseudo-classes & States", href: "pseudo-classes.html", mini: "pseudo", desc: "Hover, focus and link states, nth-child, and building a nav menu.", props: [":hover", ":focus-visible", ":nth-child"] },
-      { title: "Pseudo-elements", href: "pseudo-elements.html", mini: "pseudoel", desc: "Decorate with ::before and ::after, drop caps, placeholders and selections.", props: ["::before", "content", "::first-letter"] },
-      { title: "Cascade & Inheritance", href: "cascade.html", mini: "cascade", desc: "Which styles pass down to children, and how the browser settles conflicts.", props: ["inherit", "!important", "order"] },
-      { title: "The Box Model", href: "box-model.html", mini: "box", desc: "Content, padding, border, margin, and why your 300px box is 352px wide.", props: ["padding", "margin", "box-sizing"] },
-      { title: "Display Types", href: "display.html", mini: "display", desc: "Block vs inline vs inline-block, and why width does nothing on a span.", props: ["block", "inline", "inline-block"] },
-      { title: "Sizing Items", href: "sizing.html", mini: "sizing", desc: "Fixed vs flexible widths, min and max limits, aspect-ratio and vh.", props: ["max-width", "min-height", "aspect-ratio"] },
-      { title: "Overflow", href: "overflow.html", mini: "overflow", desc: "Content that doesn't fit, and hunting down sideways scrolling.", props: ["overflow", "text-overflow", "overflow-wrap"] },
-      { title: "Colors & Units", href: "colors-units.html", mini: "color", desc: "px, rem, %, vw, and the many ways to write a color.", props: ["rem", "vw", "hsl()"] },
-      { title: "CSS Variables", href: "css-variables.html", mini: "vars", desc: "Store a value once and reuse it everywhere, including a dark theme.", props: ["--brand", "var()", ":root"] },
-      { title: "Backgrounds & Borders", href: "backgrounds-borders.html", mini: "bg", desc: "Gradients, background images, layering, borders and rounded corners.", props: ["linear-gradient", "background-size", "border-radius"] },
-      { title: "Shadows & Filters", href: "shadows.html", mini: "shadow", desc: "box-shadow, text-shadow on photos, drop-shadow, and other filters.", props: ["box-shadow", "text-shadow", "filter"] },
-      { title: "Typography", href: "typography.html", mini: "type", desc: "Fonts, sizes, line height, and making text easy to read.", props: ["font-family", "line-height"] },
-      { title: "Web Fonts", href: "web-fonts.html", mini: "fonts", desc: "Loading fonts from Google Fonts, fallbacks, and what happens while they load.", props: ["@font-face", "font-display", "fallback"] },
-    ]},
-    { name: "Layout", blurb: "Putting boxes where you want them.", topics: [
-      { title: "Flexbox", href: "flexbox.html", mini: "flex", desc: "Line items up in a row or column, then space and align them.", props: ["display: flex", "justify-content", "align-items", "gap"] },
-      { title: "CSS Grid", href: "grid.html", mini: "grid", desc: "Rows and columns at the same time, with items that span cells.", props: ["grid-template-columns", "fr", "span"] },
-      { title: "Flexbox vs Grid", href: "flex-vs-grid.html", mini: "fvg", desc: "Six real layouts built both ways, and which one fits each job.", props: ["flex", "grid", "when to use"] },
-      { title: "Floats", href: "floats.html", mini: "float", desc: "Wrap text around an image, clear floats, and fix collapsing parents.", props: ["float", "clear", "flow-root"] },
-      { title: "Positioning", href: "positioning.html", mini: "pos", desc: "relative, absolute, fixed, and sticky, and what each one is relative to.", props: ["position", "top", "z-index"] },
-    ]},
-    { name: "Responsive Design", blurb: "One page that works on a phone and a laptop.", topics: [
-      { title: "Media Queries", href: "media-queries.html", mini: "mq", desc: "Change a layout at specific screen widths with breakpoints.", props: ["@media", "min-width", "breakpoints"] },
-      { title: "Responsive Images", href: "responsive-images.html", mini: "rimg", desc: "Images that shrink to fit and never overflow their container.", props: ["max-width", "srcset", "object-fit"] },
-      { title: "Picture & Lazy Loading", href: "picture.html", mini: "pic", desc: "The sizes attribute, different crops with picture, and loading images only when needed.", props: ["sizes", "<picture>", "loading=\"lazy\""] },
-      { title: "Mobile-First Workflow", href: "mobile-first.html", mini: "mf", desc: "Write the phone layout first, then add complexity as screens grow.", props: ["min-width", "viewport meta"] },
-      { title: "Fluid Sizing", href: "fluid-sizing.html", mini: "fluid", desc: "Sizes that scale smoothly between limits with clamp(), min(), max() and calc().", props: ["clamp()", "min()", "calc()"] },
-    ]},
-    { name: "Polish & Workflow", blurb: "Finishing touches, debugging, and getting your site online.", topics: [
-      { title: "Transforms", href: "transforms.html", mini: "tf", desc: "Move, rotate, scale and skew elements without disturbing the layout around them.", props: ["translate", "rotate", "transform-origin"] },
-      { title: "Transitions & Animations", href: "transitions.html", mini: "motion", desc: "Smooth state changes and keyframe animations, with timing curves.", props: ["transition", "@keyframes", "ease"] },
-      { title: "Styling Forms", href: "form-styling.html", mini: "fstyle", desc: "Turn a default form into a polished one, one layer at a time.", props: ["font: inherit", "accent-color", ":user-invalid"] },
-      { title: "Accessibility Basics", href: "accessibility.html", mini: "a11y", desc: "Seven common problems on one page, and how to find and fix them.", props: ["keyboard", "focus", "contrast"] },
-      { title: "Organizing CSS", href: "organizing-css.html", mini: "organize", desc: "Sections, comments, purposeful class names and BEM, and variables.", props: ["comments", "BEM", "naming"] },
-      { title: "Debugging with DevTools", href: "devtools.html", mini: "devtools", desc: "Read the Styles pane, spot crossed-out rules, and fix three real bugs.", props: ["Inspect", "Styles", "box model"] },
-      { title: "Validating Your Code", href: "validation.html", mini: "valid", desc: "Use the W3C validators, spot common errors, and see how browsers repair bad HTML.", props: ["W3C", "errors", "Elements panel"] },
-      { title: "Project Structure & Publishing", href: "publishing.html", mini: "publish", desc: "Name and organize files, then publish with GitHub Pages.", props: ["index.html", "folders", "GitHub Pages"] },
-    ]},
-    { name: "JavaScript Basics", blurb: "The core language: storing values, making decisions, repeating work and reusing code.", topics: [
-      { title: "What Is JavaScript?", href: "js-intro.html", mini: "jsintro", desc: "What JavaScript adds to HTML and CSS, and where the script tag goes so your code can find the page.", props: ["<script>", "defer", "type=\"module\""] },
-      { title: "The Console & Errors", href: "js-errors.html", mini: "jserr", desc: "Read error messages, find the line that's really broken, and debug with console.log().", props: ["console.log()", "TypeError", "SyntaxError"] },
-      { title: "Variables & Data Types", href: "js-variables.html", mini: "jsvar", desc: "let vs const, naming rules, and the difference between 42 and \"42\".", props: ["let", "const", "typeof"] },
-      { title: "Numbers & Strings", href: "js-strings-numbers.html", mini: "jsstr", desc: "Math operators, why \"5\" + 5 is \"55\", template literals and string methods.", props: ["+", "`${ }`", ".slice()"] },
-      { title: "Arrays", href: "js-arrays.html", mini: "jsarr", desc: "Lists of values with zero-based indexes, and the methods that add, remove and search.", props: ["[0]", ".push()", ".length"] },
-      { title: "Conditionals", href: "js-conditionals.html", mini: "jsif", desc: "if, else if and else, comparing with ===, combining with && and ||, and truthy values.", props: ["if / else", "===", "&&"] },
-      { title: "Loops", href: "js-loops.html", mini: "jsloop", desc: "Step through for, for...of and while loops, then let map() and filter() do the looping.", props: ["for...of", "for", ".map()"] },
-      { title: "Functions", href: "js-functions.html", mini: "jsfn", desc: "Parameters, arguments and return values, arrow functions, and where variables can be seen.", props: ["function", "return", "=>"] },
-      { title: "Objects & JSON", href: "js-objects-json.html", mini: "jsobj", desc: "Group values under named keys, read nested data, and spot invalid JSON.", props: ["{ key: value }", "obj.key", "JSON.parse()"] },
-    ]},
-    { name: "JavaScript in the Browser", blurb: "Find, change, build and load parts of a page while people use it.", topics: [
-      { title: "Selecting & Changing Elements", href: "js-dom.html", mini: "jsdom", desc: "Find elements with CSS selectors, explore the DOM tree, and change text, classes and styles.", props: ["querySelector()", "classList", "textContent"] },
-      { title: "Events", href: "js-events.html", mini: "jsevent", desc: "React to clicks, typing and form submits, and see how events bubble up to parents.", props: ["addEventListener", "preventDefault()", "event.target"] },
-      { title: "Creating & Removing Elements", href: "js-create-elements.html", mini: "jscreate", desc: "Build MDN's shopping list: create elements, add them to the page, and remove them.", props: ["createElement()", "append()", "remove()"] },
-      { title: "Fetching Data", href: "js-fetch.html", mini: "jsfetch", desc: "Load JSON from a server with fetch(), handle 404s and failures, and update the page.", props: ["fetch()", "async / await", "response.ok"] },
-    ]},
-  ];
-
   const esc = (s) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;");
   const minis = {
     flex: '<div class="mini flex" aria-hidden="true"><i></i><i></i><i></i></div>',
@@ -303,21 +238,27 @@
     jsfetch: '<div class="mini jsfetch" aria-hidden="true"><b>{ }</b><span>→</span><i></i></div>',
   };
 
+  // Lessons, their order and their numbers come from book.js (numbered by js/chrome.js).
+  // Saved progress (js/progress.js): completed lessons get a check, each part shows how far along it is.
+  const isDone = (slug) => !!(window.Progress && Progress.isComplete(slug));
+
   function cardHTML(t) {
     const chips = `<div class="chips">${t.props.map((p) => `<code>${esc(p)}</code>`).join("")}</div>`;
-    const top = `<div class="card-top"><h3>${esc(t.title)}</h3><span class="status ready">Open</span></div>`;
-    if (t.href) return `<a class="card" href="${t.href}">${top}<div style="display:grid;gap:10px">${minis[t.mini]}<p>${esc(t.desc)}</p></div>${chips}</a>`;
-    return `<div class="card planned">${top}<p>${esc(t.desc)}</p>${chips}</div>`;
+    const done = isDone(t.slug);
+    const top = `<div class="card-top"><h3>${esc(t.title)}${done ? '<span class="sr-only"> (completed)</span>' : ""}</h3><span class="status ${done ? "done" : "ready"}">${done ? "✓ " : ""}${t.num}</span></div>`;
+    return `<a class="card" href="${t.href}">${top}<div style="display:grid;gap:10px">${minis[t.mini]}<p>${esc(t.desc)}</p></div>${chips}</a>`;
   }
 
   function render(query) {
     const q = query.trim().toLowerCase();
     let shown = 0;
-    document.getElementById("units").innerHTML = UNITS.map((u) => {
-      const topics = u.topics.filter((t) => !q || [t.title, t.desc, ...t.props].join(" ").toLowerCase().includes(q));
+    document.getElementById("units").innerHTML = BOOK.parts.map((u) => {
+      const topics = u.lessons.filter((t) => !q || [t.num, t.title, t.desc, ...t.props].join(" ").toLowerCase().includes(q));
       shown += topics.length;
       if (!topics.length) return "";
-      return `<section class="unit"><div class="unit-head"><span class="eyebrow">${u.topics.length} pages</span><h2>${esc(u.name)}</h2><p>${esc(u.blurb)}</p></div><div class="cards">${topics.map(cardHTML).join("")}</div></section>`;
+      const n = u.lessons.filter((t) => isDone(t.slug)).length;
+      const bar = n ? `<div class="unit-progress"><span>${n} of ${u.lessons.length} complete</span><div class="progress-bar" aria-hidden="true"><i style="width:${(100 * n) / u.lessons.length}%"></i></div></div>` : "";
+      return `<section class="unit" id="part-${u.num}"><div class="unit-head"><span class="eyebrow">Part ${u.num} · ${u.lessons.length} lessons</span><h2>${esc(u.title)}</h2><p>${esc(u.blurb)}</p>${bar}</div><div class="cards">${topics.map(cardHTML).join("")}</div></section>`;
     }).join("");
     document.getElementById("empty").hidden = shown > 0;
   }
@@ -327,8 +268,27 @@
   document.addEventListener("keydown", (e) => {
     if (e.key === "/" && document.activeElement !== filter) { e.preventDefault(); filter.focus(); }
   });
-  document.getElementById("page-count").textContent = UNITS.reduce((n, u) => n + u.topics.length, 0) + " interactive pages";
+  // Continue from the last lesson visited, or the next unfinished one after it if that lesson is complete.
+  function paintStart() {
+    const L = BOOK.lessons;
+    const done = L.filter((t) => isDone(t.slug)).length;
+    document.getElementById("page-count").textContent = `${L.length} interactive lessons${done ? ` · ${done} complete` : ""}`;
+    const last = window.Progress && Progress.last();
+    const at = last ? L.findIndex((t) => t.slug === last.slug) : -1;
+    let next = L[0], label = "Start reading";
+    if (at >= 0) {
+      next = [...L.slice(at), ...L.slice(0, at)].find((t) => !isDone(t.slug));
+      label = next === L[at] ? "Continue where you left off" : "Up next";
+    }
+    const start = document.getElementById("start");
+    if (!next) { start.href = "#units"; start.textContent = "All lessons complete! Browse the contents ↓"; return; }
+    start.href = next.href;
+    start.textContent = `${label}: ${next.num} ${next.title} →`;
+  }
+  paintStart();
   render("");
+  if (window.Progress) Progress.subscribe(() => { paintStart(); render(filter.value); });
 </script>
 
-</body></html>
+</body>
+</html>

@@ -1,7 +1,14 @@
-/* Shared helpers for the JavaScript pages.
+/* Code editors and the JavaScript console.
    - hlJS(code): returns syntax-highlighted HTML for a JS snippet.
    - Any <div class="runner"> with a <textarea> inside becomes an editor with Run / Reset
-     and a console that shows console.log output and errors, like the browser's own console. */
+     and a console that shows console.log output and errors, like the browser's own console.
+   - window.Runner, for other components (js/sandbox.js, js/exercise.js):
+     enhance(textarea, onRun): Tab indents, Escape then Tab leaves, Ctrl/⌘ + Enter calls onRun, rows grow with the code.
+     exec(code, expose, onLine): runs code and returns { lines, error, values }; values holds the top-level names
+       listed in expose (e.g. ["add"]) so a check can call the student's function.
+     render(lines, out): draws console lines into an <ol class="console">.
+   JavaScript lessons load this file with a <script> tag because their own scripts use hlJS. Any other page can just
+   use <div class="runner"> and js/chrome.js loads it. */
 (function () {
   const KEYWORDS = new Set("const let var function return if else for of in while do break continue new true false null undefined typeof async await class this try catch throw switch case default".split(" "));
   const esc = (s) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
@@ -37,25 +44,70 @@
     return String(v);
   }
 
-  function run(code, out) {
-    out.innerHTML = "";
-    const line = (cls, text) => { const li = document.createElement("li"); li.className = cls; li.textContent = text; out.append(li); };
-    const make = (cls) => (...args) => line(cls, args.map((a) => fmt(a)).join(" "));
+  // onLine also receives lines logged later (after a timer or an await), once exec has returned.
+  function exec(code, expose = [], onLine = () => {}) {
+    const lines = [];
+    const line = (cls, text, args = []) => { const l = { cls, text, args }; lines.push(l); onLine(l); };
+    const make = (cls) => (...args) => line(cls, args.map((a) => fmt(a)).join(" "), args);
     const con = { log: make("log"), info: make("log"), warn: make("warn"), error: make("err"), table: make("log") };
+    const grab = expose.map((n) => `${JSON.stringify(n)}: typeof ${n} === "undefined" ? undefined : ${n}`).join(", ");
+    let error = null, values = {};
     try {
-      new Function("console", code)(con);
+      values = new Function("console", `${code}\n;return { ${grab} };`)(con) || {};
     } catch (err) {
+      error = err;
       line("err", `Uncaught ${err.name}: ${err.message}`);
     }
-    if (!out.children.length) line("muted", "No output. Use console.log() to print a value.");
+    return { lines, error, values };
+  }
+
+  const MUTED = "No output. Use console.log() to print a value.";
+  function addLine(out, l) {
+    const muted = out.querySelector("li.muted");
+    if (muted && l.cls !== "muted") muted.remove();
+    const li = document.createElement("li");
+    li.className = l.cls;
+    li.textContent = l.text;
+    out.append(li);
+  }
+  function render(lines, out) {
+    out.innerHTML = "";
+    lines.forEach((l) => addLine(out, l));
+    if (!lines.length) addLine(out, { cls: "muted", text: MUTED });
+  }
+
+  function run(code, out) {
+    let live = false;
+    const { lines } = exec(code, [], (l) => { if (live) addLine(out, l); });
+    render(lines, out);
+    live = true;
+  }
+
+  function enhance(ta, onRun) {
+    ta.spellcheck = false;
+    ta.setAttribute("autocapitalize", "off");
+    ta.setAttribute("autocomplete", "off");
+    const fit = () => { ta.rows = Math.max(3, ta.value.split("\n").length); };
+    fit();
+    ta.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" && (e.metaKey || e.ctrlKey) && onRun) { e.preventDefault(); onRun(); }
+      // Tab inserts two spaces; Escape then Tab still moves focus out of the editor.
+      if (e.key === "Tab" && !e.shiftKey && !ta.dataset.escaped) {
+        e.preventDefault();
+        ta.setRangeText("  ", ta.selectionStart, ta.selectionEnd, "end");
+        ta.dispatchEvent(new Event("input", { bubbles: true }));
+      }
+      ta.dataset.escaped = e.key === "Escape" ? "1" : "";
+    });
+    ta.addEventListener("input", fit);
+    return fit;
   }
 
   function setup(box) {
+    if (box.dataset.ready) return;
+    box.dataset.ready = "1";
     const ta = box.querySelector("textarea");
     const original = ta.value;
-    ta.spellcheck = false;
-    ta.setAttribute("autocapitalize", "off");
-    ta.rows = Math.max(3, original.split("\n").length);
     const bar = document.createElement("div");
     bar.className = "runner-bar";
     bar.innerHTML = `<button class="btn run" type="button">Run ▸</button><button class="btn" type="button">Reset</button><span class="hint">Edit the code, then Run (or Ctrl/⌘ + Enter).</span>`;
@@ -65,44 +117,14 @@
     out.setAttribute("aria-label", "Console output");
     box.append(bar, out);
     const [runBtn, resetBtn] = bar.querySelectorAll("button");
+    const fit = enhance(ta, () => run(ta.value, out));
     runBtn.addEventListener("click", () => run(ta.value, out));
-    resetBtn.addEventListener("click", () => { ta.value = original; ta.rows = Math.max(3, original.split("\n").length); run(ta.value, out); });
-    ta.addEventListener("keydown", (e) => {
-      if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) { e.preventDefault(); run(ta.value, out); }
-      // Tab inserts two spaces; Escape then Tab still moves focus out of the editor.
-      if (e.key === "Tab" && !e.shiftKey && !ta.dataset.escaped) {
-        e.preventDefault();
-        const s = ta.selectionStart;
-        ta.setRangeText("  ", s, ta.selectionEnd, "end");
-      }
-      ta.dataset.escaped = e.key === "Escape" ? "1" : "";
-    });
-    ta.addEventListener("input", () => { ta.rows = Math.max(3, ta.value.split("\n").length); });
+    resetBtn.addEventListener("click", () => { ta.value = original; fit(); run(ta.value, out); });
     run(ta.value, out);
   }
 
-  // Multiple-choice quiz in the same style as the rest of the Field Guide.
-  // items: [{ q, opts: [...], a: indexOfRightAnswer, why }]. Question and option text is plain text.
-  function makeQuiz(el, items) {
-    let score = 0;
-    const e = (s) => esc(String(s));
-    el.innerHTML = `<p class="score">0 / ${items.length}</p>` + items.map((x, i) =>
-      `<div class="q"><b>${i + 1}. ${x.code ? `<code>${e(x.q)}</code>` : e(x.q)}</b>${x.pre ? `<pre class="snippet">${hlJS(x.pre)}</pre>` : ""}<div class="opts">${x.opts.map((o, j) => `<button class="btn" data-q="${i}" data-o="${j}">${e(o)}</button>`).join("")}</div><div class="feedback"></div></div>`).join("");
-    el.addEventListener("click", (ev) => {
-      const b = ev.target.closest("button[data-q]"); if (!b) return;
-      const x = items[b.dataset.q], group = b.parentElement;
-      if (group.dataset.done) return;
-      group.dataset.done = "1";
-      const right = +b.dataset.o === x.a;
-      group.querySelectorAll("button").forEach((o) => { if (+o.dataset.o === x.a) o.classList.add("right"); else if (o === b) o.classList.add("wrong"); });
-      if (right) score++;
-      el.querySelector(".score").textContent = `${score} / ${items.length}`;
-      const fb = group.nextElementSibling; fb.className = "feedback " + (right ? "right" : "wrong"); fb.textContent = (right ? "Correct. " : "Not quite. ") + x.why;
-    });
-  }
-
   window.hlJS = hlJS;
-  window.makeQuiz = makeQuiz;
   window.fmtJS = fmt;
+  window.Runner = { enhance, exec, render, hlJS, fmt };
   document.querySelectorAll(".runner").forEach(setup);
 })();

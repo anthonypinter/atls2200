@@ -26,6 +26,10 @@
   .item-in { font: 0.95rem var(--font-code); font-variation-settings: "MONO" 1; padding: 6px 10px; border: 1px solid var(--line); border-radius: 6px; background: var(--paper); color: var(--ink); width: 100%; }
   .len { font: 600 0.85rem var(--font-code); font-variation-settings: "MONO" 1; color: var(--muted); }
 </style>
+<script src="book.js"></script>
+<script src="js/progress.js"></script>
+<script src="js/chrome.js"></script>
+<script src="js/quiz.js"></script>
 </head>
 <body>
 <div class="wrap">
@@ -101,10 +105,10 @@ console.log(`There are ${names.length} names; the last one is ${names[names.leng
     </div>
   </section>
 
-  <footer class="page-foot"><a href="js-strings-numbers.html">← Numbers &amp; Strings</a><a href="js-conditionals.html">Next: Conditionals →</a></footer>
+  <footer class="page-foot" data-book-nav><a href="index.html">← Contents</a></footer>
 </div>
 
-<script src="runner.js"></script>
+<script src="js/runner.js"></script>
 <script>
   const $ = (id) => document.getElementById(id);
   const START = ["Mesa", "Royal Arch", "Flagstaff"];
@@ -160,10 +164,10 @@ console.log(`There are ${names.length} names; the last one is ${names[names.leng
   $("reset").addEventListener("click", () => { arr = [...START]; marks = { new: [], hit: [] }; render(); });
 
   makeQuiz($("quiz"), [
-    { q: "What does this log?", pre: 'const pets = ["cat", "dog", "fish"];\nconsole.log(pets[1]);', opts: ["cat", "dog", "fish"], a: 1, why: "Indexes start at 0, so [1] is the second item." },
-    { q: "What does this log?", pre: 'const pets = ["cat", "dog"];\nconsole.log(pets.push("bird"));', opts: ["[\"cat\", \"dog\", \"bird\"]", "bird", "3"], a: 2, why: "push() returns the new length, not the array." },
-    { q: "What does this log?", pre: 'const pets = ["cat", "dog"];\nconsole.log(pets.indexOf("Cat"));', opts: ["0", "-1", "false"], a: 1, why: "\"Cat\" with a capital C isn't in the array, and indexOf returns -1 when nothing is found." },
-    { q: "What does this log?", pre: 'const parts = "red,green,blue".split(",");\nconsole.log(parts.length);', opts: ["1", "3", "14"], a: 1, why: "split(\",\") makes an array of three strings." },
+    { id: "q1", q: "What does this log?", pre: 'const pets = ["cat", "dog", "fish"];\nconsole.log(pets[1]);', opts: ["cat", "dog", "fish"], a: 1, why: "Indexes start at 0, so [1] is the second item." },
+    { id: "q2", q: "What does this log?", pre: 'const pets = ["cat", "dog"];\nconsole.log(pets.push("bird"));', opts: ["[\"cat\", \"dog\", \"bird\"]", "bird", "3"], a: 2, why: "push() returns the new length, not the array." },
+    { id: "q3", q: "What does this log?", pre: 'const pets = ["cat", "dog"];\nconsole.log(pets.indexOf("Cat"));', opts: ["0", "-1", "false"], a: 1, why: "\"Cat\" with a capital C isn't in the array, and indexOf returns -1 when nothing is found." },
+    { id: "q4", q: "What does this log?", pre: 'const parts = "red,green,blue".split(",");\nconsole.log(parts.length);', opts: ["1", "3", "14"], a: 1, why: "split(\",\") makes an array of three strings." },
   ]);
 
   render();

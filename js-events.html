@@ -39,6 +39,10 @@
   .tile { aspect-ratio: 1; border-radius: 6px; background: var(--stage); border: 1px solid var(--line); cursor: pointer; }
   .tiles.flash { background: var(--bad-soft); }
 </style>
+<script src="book.js"></script>
+<script src="js/progress.js"></script>
+<script src="js/chrome.js"></script>
+<script src="js/quiz.js"></script>
 </head>
 <body>
 <div class="wrap">
@@ -62,8 +66,8 @@
         <div class="hover-box" id="d-hover">Move the pointer in and out of this box</div>
         <form id="d-form"><label for="d-input">Trail name (type, tab in and out, press Enter)</label><input id="d-input" autocomplete="off"><button class="btn run">Submit</button></form>
       </div>
-      <pre class="snippet" id="ev-code"></pre>
       <ol class="console log" id="ev-log" aria-label="Event log"></ol>
+      <pre class="snippet" id="ev-code"></pre>
     </div>
   </section>
 
@@ -135,10 +139,10 @@
     </div>
   </section>
 
-  <footer class="page-foot"><a href="js-dom.html">← Selecting &amp; Changing Elements</a><a href="js-create-elements.html">Next: Creating &amp; Removing Elements →</a></footer>
+  <footer class="page-foot" data-book-nav><a href="index.html">← Contents</a></footer>
 </div>
 
-<script src="runner.js"></script>
+<script src="js/runner.js"></script>
 <script>
   const $ = (id) => document.getElementById(id);
   // Part 1: live event log on real elements
@@ -240,10 +244,10 @@
   $("guard").addEventListener("change", renderDeleg);
 
   makeQuiz($("quiz"), [
-    { q: "A form's input loses everything you typed when you press Enter. What's missing?", opts: ["e.preventDefault() in the submit listener", "e.stopPropagation()", "A click listener on the button"], a: 0, why: "Submitting a form reloads the page by default. preventDefault() stops that." },
-    { q: "A list item is clicked, and the listener is on the ul. What is e.target?", opts: ["The ul", "The li that was clicked", "document"], a: 1, why: "target is where the event started. currentTarget would be the ul." },
-    { q: "Which event fires every time the text in a field changes?", opts: ["click", "input", "submit"], a: 1, why: "input fires on every keystroke or paste. change only fires when the field loses focus." },
-    { q: "You add new buttons to a list after the page loads, and their clicks aren't handled. The best fix?", opts: ["Add one listener to the list and use e.target", "Use onclick attributes", "Reload the page"], a: 0, why: "Delegation: the parent's listener catches clicks from any child, including ones added later." },
+    { id: "q1", q: "A form's input loses everything you typed when you press Enter. What's missing?", opts: ["e.preventDefault() in the submit listener", "e.stopPropagation()", "A click listener on the button"], a: 0, why: "Submitting a form reloads the page by default. preventDefault() stops that." },
+    { id: "q2", q: "A list item is clicked, and the listener is on the ul. What is e.target?", opts: ["The ul", "The li that was clicked", "document"], a: 1, why: "target is where the event started. currentTarget would be the ul." },
+    { id: "q3", q: "Which event fires every time the text in a field changes?", opts: ["click", "input", "submit"], a: 1, why: "input fires on every keystroke or paste. change only fires when the field loses focus." },
+    { id: "q4", q: "You add new buttons to a list after the page loads, and their clicks aren't handled. The best fix?", opts: ["Add one listener to the list and use e.target", "Use onclick attributes", "Reload the page"], a: 0, why: "Delegation: the parent's listener catches clicks from any child, including ones added later." },
   ]);
 
   renderEvCode(); renderBubbleCode(); renderDeleg();

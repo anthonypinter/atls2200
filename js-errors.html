@@ -31,6 +31,10 @@
   .pair .label { font: 600 0.72rem var(--font-code); font-variation-settings: "MONO" 1; letter-spacing: 0.06em; text-transform: uppercase; display: block; margin-bottom: 4px; }
   .pair .bad-l { color: var(--bad); } .pair .good-l { color: var(--good); }
 </style>
+<script src="book.js"></script>
+<script src="js/progress.js"></script>
+<script src="js/chrome.js"></script>
+<script src="js/quiz.js"></script>
 </head>
 <body>
 <div class="wrap">
@@ -106,10 +110,10 @@ console.log(`${trail}: ${miles} miles, ${rating} stars`);</textarea></div>
     </div>
   </section>
 
-  <footer class="page-foot"><a href="js-intro.html">← What Is JavaScript?</a><a href="js-variables.html">Next: Variables &amp; Data Types →</a></footer>
+  <footer class="page-foot" data-book-nav><a href="index.html">← Contents</a></footer>
 </div>
 
-<script src="runner.js"></script>
+<script src="js/runner.js"></script>
 <script>
   const $ = (id) => document.getElementById(id);
   // Each line of game.js. Lines with a bug have a `fix` and an explanation.

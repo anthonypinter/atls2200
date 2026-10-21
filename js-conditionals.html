@@ -34,6 +34,10 @@
   .truthy-out { font-size: 0.95rem; }
   .table-wrap { overflow-x: auto; }
 </style>
+<script src="book.js"></script>
+<script src="js/progress.js"></script>
+<script src="js/chrome.js"></script>
+<script src="js/quiz.js"></script>
 </head>
 <body>
 <div class="wrap">
@@ -131,10 +135,10 @@ if (!name) {
     </div>
   </section>
 
-  <footer class="page-foot"><a href="js-arrays.html">← Arrays</a><a href="js-loops.html">Next: Loops →</a></footer>
+  <footer class="page-foot" data-book-nav><a href="index.html">← Contents</a></footer>
 </div>
 
-<script src="runner.js"></script>
+<script src="js/runner.js"></script>
 <script>
   const $ = (id) => document.getElementById(id);
   const BRANCHES = [
@@ -200,11 +204,11 @@ if (!name) {
   }
 
   makeQuiz($("quiz"), [
-    { q: "What does this log?", pre: 'const score = 75;\nif (score >= 90) {\n  console.log("A");\n} else if (score >= 70) {\n  console.log("C");\n} else if (score >= 50) {\n  console.log("D");\n}', opts: ["C", "C and D", "D"], a: 0, why: "Only the first true branch runs. 75 >= 70 is true, so the remaining checks are skipped." },
-    { q: "What does this log?", pre: 'console.log("7" === 7);', opts: ["true", "false"], a: 1, why: "=== checks the type too. A string is never equal to a number." },
-    { q: "What does this log?", pre: "const hasTicket = true;\nconst isFull = true;\nconsole.log(hasTicket && !isFull);", opts: ["true", "false"], a: 1, why: "!isFull is false, and && needs both sides to be true." },
-    { q: "What does this log?", pre: 'const input = "";\nconsole.log(input ? "filled" : "empty");', opts: ["filled", "empty"], a: 1, why: "An empty string is falsy, so the ternary picks the second value." },
-    { q: "Which correctly checks for the weekend?", opts: ['day === "Sat" || "Sun"', 'day === "Sat" || day === "Sun"', 'day === ("Sat" || "Sun")'], a: 1, why: "Each side of || needs its own full comparison." },
+    { id: "q1", q: "What does this log?", pre: 'const score = 75;\nif (score >= 90) {\n  console.log("A");\n} else if (score >= 70) {\n  console.log("C");\n} else if (score >= 50) {\n  console.log("D");\n}', opts: ["C", "C and D", "D"], a: 0, why: "Only the first true branch runs. 75 >= 70 is true, so the remaining checks are skipped." },
+    { id: "q2", q: "What does this log?", pre: 'console.log("7" === 7);', opts: ["true", "false"], a: 1, why: "=== checks the type too. A string is never equal to a number." },
+    { id: "q3", q: "What does this log?", pre: "const hasTicket = true;\nconst isFull = true;\nconsole.log(hasTicket && !isFull);", opts: ["true", "false"], a: 1, why: "!isFull is false, and && needs both sides to be true." },
+    { id: "q4", q: "What does this log?", pre: 'const input = "";\nconsole.log(input ? "filled" : "empty");', opts: ["filled", "empty"], a: 1, why: "An empty string is falsy, so the ternary picks the second value." },
+    { id: "q5", q: "Which correctly checks for the weekend?", opts: ['day === "Sat" || "Sun"', 'day === "Sat" || day === "Sun"', 'day === ("Sat" || "Sun")'], a: 1, why: "Each side of || needs its own full comparison." },
   ]);
 
   renderChain(); renderLogic(); renderTruthy();

@@ -33,6 +33,10 @@
   .check input { accent-color: var(--cobalt); }
   .check .tagn { font: 600 0.82rem var(--font-code); font-variation-settings: "MONO" 1; color: var(--prop); }
 </style>
+<script src="book.js"></script>
+<script src="js/progress.js"></script>
+<script src="js/chrome.js"></script>
+<script src="js/quiz.js"></script>
 </head>
 <body>
 <div class="wrap">
@@ -100,7 +104,7 @@
     </div>
   </section>
 
-  <footer class="page-foot"><a href="links-paths.html">← Links &amp; Paths</a><a href="forms.html">Next: Forms &amp; Inputs →</a></footer>
+  <footer class="page-foot" data-book-nav><a href="index.html">← Contents</a></footer>
 </div>
 
 <script>
@@ -156,20 +160,12 @@
   sched();
 
   const QUIZ = [
-    { q: "A class schedule with days across the top and times down the side.", a: 0, why: "Rows and columns that both mean something: that's tabular data." },
-    { q: "A grid of six product cards on a shop's home page.", a: 1, why: "That's a layout. Use CSS Grid or Flexbox." },
-    { q: "Comparing three phone plans by price, data and minutes.", a: 0, why: "Each plan is a row and each feature is a column." },
-    { q: "A page with a sidebar on the left and content on the right.", a: 1, why: "Page layout belongs in CSS, not tables." },
+    { id: "q1", q: "A class schedule with days across the top and times down the side.", a: 0, why: "Rows and columns that both mean something: that's tabular data." },
+    { id: "q2", q: "A grid of six product cards on a shop's home page.", a: 1, why: "That's a layout. Use CSS Grid or Flexbox." },
+    { id: "q3", q: "Comparing three phone plans by price, data and minutes.", a: 0, why: "Each plan is a row and each feature is a column." },
+    { id: "q4", q: "A page with a sidebar on the left and content on the right.", a: 1, why: "Page layout belongs in CSS, not tables." },
   ];
-  let score = 0;
-  $("quiz").innerHTML = `<p class="score" id="score">0 / ${QUIZ.length}</p>` + QUIZ.map((x, i) => `<div class="q"><b>${i + 1}. ${x.q}</b><div class="opts"><button class="btn" data-q="${i}" data-o="0">Use a table</button><button class="btn" data-q="${i}" data-o="1">Not a table</button></div><div class="feedback" id="fb${i}"></div></div>`).join("");
-  document.querySelectorAll("#quiz .opts").forEach((g) => g.addEventListener("click", (e) => {
-    const b = e.target.closest("button"); if (!b || g.dataset.done) return;
-    const x = QUIZ[+b.dataset.q], right = +b.dataset.o === x.a;
-    b.classList.add(right ? "right" : "wrong"); g.children[x.a].classList.add("right"); g.dataset.done = "1";
-    if (right) score++; $("score").textContent = `${score} / ${QUIZ.length}`;
-    const fb = $("fb" + b.dataset.q); fb.className = "feedback " + (right ? "right" : "wrong"); fb.textContent = (right ? "Correct. " : "Not quite. ") + x.why;
-  }));
+  makeQuiz($("quiz"), QUIZ.map((x) => ({ ...x, opts: ["Use a table", "Not a table"] })));
 </script>
 </body>
 </html>

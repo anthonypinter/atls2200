@@ -31,6 +31,10 @@
   .scope-grid .btn.no { background: var(--bad-soft); border-color: var(--bad); color: var(--bad); }
   .scope-out { font-size: 0.95rem; min-height: 1.5em; }
 </style>
+<script src="book.js"></script>
+<script src="js/progress.js"></script>
+<script src="js/chrome.js"></script>
+<script src="js/quiz.js"></script>
 </head>
 <body>
 <div class="wrap">
@@ -121,10 +125,10 @@ console.log(warn("Mesa", false));</textarea></div>
     </div>
   </section>
 
-  <footer class="page-foot"><a href="js-loops.html">← Loops</a><a href="js-objects-json.html">Next: Objects &amp; JSON →</a></footer>
+  <footer class="page-foot" data-book-nav><a href="index.html">← Contents</a></footer>
 </div>
 
-<script src="runner.js"></script>
+<script src="js/runner.js"></script>
 <script>
   const $ = (id) => document.getElementById(id);
   function machine() {
@@ -183,11 +187,11 @@ console.log(warn("Mesa", false));</textarea></div>
   });
 
   makeQuiz($("quiz"), [
-    { q: "What does this log?", pre: "function add(a, b) {\n  console.log(a + b);\n}\nconst sum = add(2, 3);\nconsole.log(sum);", opts: ["5 then 5", "5 then undefined", "undefined"], a: 1, why: "add() logs 5 itself but returns nothing, so sum is undefined." },
-    { q: "What does this log?", pre: "const square = (n) => n * n;\nconsole.log(square(4));", opts: ["16", "undefined", "8"], a: 0, why: "A one-line arrow function without braces returns its value automatically." },
-    { q: "What does this log?", pre: 'function hi(name = "there") {\n  return "Hi " + name;\n}\nconsole.log(hi());', opts: ["Hi undefined", "Hi there", "Hi"], a: 1, why: "No argument was passed, so the default value is used." },
-    { q: "Which runs go() only when the button is clicked?", opts: ['btn.addEventListener("click", go());', 'btn.addEventListener("click", go);'], a: 1, why: "go() calls it right away. Pass go itself and the browser calls it on each click." },
-    { q: "What does this log?", pre: "function check(n) {\n  return n > 0;\n  console.log(\"checked\");\n}\nconsole.log(check(5));", opts: ["checked, then true", "true", "checked"], a: 1, why: "return ends the function, so the line after it never runs." },
+    { id: "q1", q: "What does this log?", pre: "function add(a, b) {\n  console.log(a + b);\n}\nconst sum = add(2, 3);\nconsole.log(sum);", opts: ["5 then 5", "5 then undefined", "undefined"], a: 1, why: "add() logs 5 itself but returns nothing, so sum is undefined." },
+    { id: "q2", q: "What does this log?", pre: "const square = (n) => n * n;\nconsole.log(square(4));", opts: ["16", "undefined", "8"], a: 0, why: "A one-line arrow function without braces returns its value automatically." },
+    { id: "q3", q: "What does this log?", pre: 'function hi(name = "there") {\n  return "Hi " + name;\n}\nconsole.log(hi());', opts: ["Hi undefined", "Hi there", "Hi"], a: 1, why: "No argument was passed, so the default value is used." },
+    { id: "q4", q: "Which runs go() only when the button is clicked?", opts: ['btn.addEventListener("click", go());', 'btn.addEventListener("click", go);'], a: 1, why: "go() calls it right away. Pass go itself and the browser calls it on each click." },
+    { id: "q5", q: "What does this log?", pre: "function check(n) {\n  return n > 0;\n  console.log(\"checked\");\n}\nconsole.log(check(5));", opts: ["checked, then true", "true", "checked"], a: 1, why: "return ends the function, so the line after it never runs." },
   ]);
 
   machine();

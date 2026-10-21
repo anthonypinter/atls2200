@@ -39,6 +39,10 @@
   .stepper { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
   .stepper .count { font: 600 0.85rem var(--font-code); font-variation-settings: "MONO" 1; color: var(--muted); }
 </style>
+<script src="book.js"></script>
+<script src="js/progress.js"></script>
+<script src="js/chrome.js"></script>
+<script src="js/quiz.js"></script>
 </head>
 <body>
 <div class="wrap">
@@ -114,10 +118,10 @@
     </div>
   </section>
 
-  <footer class="page-foot"><a href="js-events.html">← Events</a><a href="js-fetch.html">Next: Fetching Data →</a></footer>
+  <footer class="page-foot" data-book-nav><a href="index.html">← Contents</a></footer>
 </div>
 
-<script src="runner.js"></script>
+<script src="js/runner.js"></script>
 <script>
   const $ = (id) => document.getElementById(id);
   // The exercise code. `k` names the line for highlighting; `alt` is the line when a mistake is on.
@@ -236,10 +240,10 @@
   $("b-reset").addEventListener("click", () => { b = 0; renderBuild(); });
 
   makeQuiz($("quiz"), [
-    { q: "This code runs with no error, but nothing appears. Why?", pre: 'const p = document.createElement("p");\np.textContent = "Hello";', opts: ["textContent is wrong", "p was never appended to the page", "createElement needs a < >"], a: 1, why: "createElement only makes it in memory. Append it to an element that's already on the page." },
-    { q: "Which is safest for showing text a user typed?", opts: ["el.innerHTML = userText;", "el.textContent = userText;"], a: 1, why: "textContent never interprets the text as HTML, so typed code can't run." },
-    { q: "You append an element that's already in list A to list B. What happens?", opts: ["It moves to list B", "It's copied, so it's in both", "An error"], a: 0, why: "An element can only be in one place. Use cloneNode(true) for a copy." },
-    { q: "How do you remove an element you have in a variable called card?", opts: ["card.delete()", "card.remove()", "document.remove(card)"], a: 1, why: "remove() takes the element off the page." },
+    { id: "q1", q: "This code runs with no error, but nothing appears. Why?", pre: 'const p = document.createElement("p");\np.textContent = "Hello";', opts: ["textContent is wrong", "p was never appended to the page", "createElement needs a < >"], a: 1, why: "createElement only makes it in memory. Append it to an element that's already on the page." },
+    { id: "q2", q: "Which is safest for showing text a user typed?", opts: ["el.innerHTML = userText;", "el.textContent = userText;"], a: 1, why: "textContent never interprets the text as HTML, so typed code can't run." },
+    { id: "q3", q: "You append an element that's already in list A to list B. What happens?", opts: ["It moves to list B", "It's copied, so it's in both", "An error"], a: 0, why: "An element can only be in one place. Use cloneNode(true) for a copy." },
+    { id: "q4", q: "How do you remove an element you have in a variable called card?", opts: ["card.delete()", "card.remove()", "document.remove(card)"], a: 1, why: "remove() takes the element off the page." },
   ]);
 
   emptyNote(); renderCode(); renderBuild();
