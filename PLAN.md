@@ -114,7 +114,12 @@ Every lesson moves toward the same order. The existing playground stays at the c
 - [x] Decide on Eleventy: **not now.** The things it would solve haven't been problems: `book.js` already drives the contents, numbering, sidebar and prev/next, and `scripts/check.mjs` catches head and script drift on every publish. Plain HTML files also keep "view source" useful for students. Reconsider if pages need shared markup that JavaScript can't add (for example, the header has to work without JavaScript), or if the head block changes often enough that editing 70 files is a chore
 
 ### Phase 7 — Instructor features (optional)
-- [ ] Instructor notes toggle (`?instructor=1` reveals `.instructor` blocks with answers and discussion prompts)
+- [x] Instructor notes, kept in the backend instead of the pages: `instructor_notes` in Supabase, shown in the lesson only to signed-in instructors (row-level security refuses everyone else), edited on `instructor.html`
+- [x] Student accounts (Supabase, @colorado.edu one-time link or code): progress syncs via `Progress.merge()`, signed-out use still works and is added on first sign-in, sign-out clears the browser's copy
+- [x] Section-level tracking: each "On this page" section records first seen (3 s on screen) and first used (click/keypress/edit); finished sections get a ✓ in the sidebar
+- [x] Instructor dashboard (`instructor.html`): class grid by part/lesson, per-student section detail with latest exercise code, CSV export, roster with roles and course sections
+- [ ] Set up the Supabase project and paste its URL and anon key into `book.js` (steps in `supabase/README.md`, including custom SMTP)
+- [ ] Test the backend end to end with a real project (sign-in on two devices, sync, notes, dashboard)
 - [ ] Map lessons to course weeks/assignments in `book.js` and show a "This week" view on the cover
 - [x] Printable/PDF chapter export: `print.html?part=N` or `?lesson=slug` builds one document from the finished lessons (header and objectives, Read, exercise tasks with starter code, Key ideas and Common mistakes, quiz), lists each playground under "Try it online" with the lesson's link, and ends with answers, hints and solutions (optional). Each lesson starts on a new page. Linked from the contents page ("Print this part") and each lesson's top bar. Loading lessons for printing doesn't count as a visit
 

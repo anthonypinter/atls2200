@@ -31,6 +31,9 @@ Opening `index.html` straight from the file system also works. Use a local serve
 | `js/search.js` | The search dialog (Search button, Ctrl/⌘ + K, or /) |
 | `glossary-terms.js` | All glossary terms, shared by `glossary.html`, the pop-ups and search |
 | `print.html` | Printable chapters: a whole part (or one lesson) on one page, ready to print or save as a PDF, with quiz answers, hints and solutions at the end. Linked from each part on the contents page and from the Print link on every lesson. It only works when the book is served (GitHub Pages or a local server), not opened as a file |
+| `js/backend.js` | Student accounts (optional): sign-in with a university email, progress sync through `Progress.merge()`, and instructor-only notes in lessons. Loads only when `book.js` has a backend configured; see `supabase/README.md` |
+| `instructor.html` | The instructor dashboard: class progress by lesson and section, one student's detail, CSV export, notes editor and roster. Holds no data itself: everything comes from the backend, which only answers instructors |
+| `supabase/` | The backend's database schema and access rules, and the setup steps (`supabase/README.md`). Not published with the site |
 | `glossary.html` | The glossary page. Each term has an anchor, e.g. `glossary.html#term-box-model` |
 | `search-index.js` | **Generated.** GitHub rebuilds it every time it publishes, so the live site's search is always current. The copy in the repo is only for searching while testing locally. Don't edit by hand |
 | `scripts/check.mjs` | Site checker, and builder for the search index (see below) |

@@ -212,6 +212,7 @@
     const trail = [`<li><a href="index.html">Contents</a></li>`];
     if (current) trail.push(`<li><a href="index.html#part-${current.part.num}">Part ${current.part.num} · ${esc(current.part.title)}</a></li>`, `<li aria-current="page">${current.num} ${esc(current.title)}</li>`);
     else if (slug === "glossary") trail.push(`<li aria-current="page">Glossary</li>`);
+    else if (slug === "instructor") trail.push(`<li aria-current="page">Instructor dashboard</li>`);
     bar.innerHTML = `<button class="btn book-menu" type="button" aria-controls="book-toc" aria-expanded="false"><span aria-hidden="true">☰</span> Contents</button>`
       + (slug === "index" ? "" : `<nav class="book-crumbs" aria-label="Breadcrumb"><ol>${trail.join("")}</ol></nav>`)
       + `<div class="book-tools"><button class="btn book-search" type="button" aria-haspopup="dialog" aria-keyshortcuts="Control+K Meta+K"><span aria-hidden="true">⌕</span> Search</button>${current ? `<a class="crumb" href="print.html?lesson=${current.slug}">Print</a>` : ""}${slug === "glossary" ? "" : `<a class="crumb" href="glossary.html">Glossary</a>`}<button class="btn book-theme" type="button"></button></div>`;
