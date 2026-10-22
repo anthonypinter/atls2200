@@ -1,7 +1,7 @@
 /* Book chrome: reads window.BOOK (book.js) and adds the textbook's reading layout to every page.
    - Theme: applies the saved light/dark choice right away (this file loads in <head>, so there's no flash),
      then adds a toggle that cycles System → Light → Dark.
-   - Top bar: Contents button, breadcrumbs (Contents › Part › Lesson), Search and a glossary link. Replaces the static
+   - Top bar: Contents button, breadcrumbs (Home › Part › Lesson), Search and a glossary link. Replaces the static
      .crumbs nav. Search (js/search.js) also opens with Ctrl/⌘ + K, or / on pages without their own filter box.
    - Components: loadScript() loads js/runner.js, js/sandbox.js and the glossary pop-ups only on pages that use them,
      and queues makeExercise() calls until js/exercise.js arrives.
@@ -9,8 +9,8 @@
      Docked beside the page on wide screens (open/closed is remembered), a drawer on narrow ones.
    - Footer: fills <footer data-book-nav> with a Mark complete button and previous/next links in reading order.
    - Progress (js/progress.js): records the visit, then shows checkmarks and per-part counts in the sidebar.
-     Each section is recorded as seen once it has been on screen for a few seconds, and as interacted with on the
-     first click, keypress or edit inside it; "On this page" ticks off finished sections.
+     Each section's active reading time is recorded, and whether the student did what it asks (see trackSections);
+     "On this page" ticks off finished sections.
    - Accounts: when book.js has a backend configured, loads js/backend.js (sign-in, sync, instructor notes).
    - Print: opens every <details> while printing.
    Without JavaScript the static crumbs and footer still link back to the contents. */
@@ -209,7 +209,7 @@
   function buildBar() {
     const bar = document.createElement("div");
     bar.className = "book-bar";
-    const trail = [`<li><a href="index.html">Contents</a></li>`];
+    const trail = [`<li><a href="index.html">Home</a></li>`];
     if (current) trail.push(`<li><a href="index.html#part-${current.part.num}">Part ${current.part.num} · ${esc(current.part.title)}</a></li>`, `<li aria-current="page">${current.num} ${esc(current.title)}</li>`);
     else if (slug === "glossary") trail.push(`<li aria-current="page">Glossary</li>`);
     else if (slug === "instructor") trail.push(`<li aria-current="page">Instructor dashboard</li>`);
@@ -263,8 +263,17 @@
   }
 
   // Which section each part of the page belongs to: everything after a section heading up to the next one, and each
-  // notes panel on its own. A section is seen after SEEN_MS on screen; any click, keypress or edit in it is an interaction.
-  const SEEN_MS = 3000;
+  // notes panel on its own. Then two measures per section (stored by js/progress.js):
+  // - Reading time: a second counts for every section on screen while the tab is visible and the student has
+  //   scrolled, typed or moved the pointer in the last IDLE_MS. A section is seen once that time reaches its bar:
+  //   about 30% of the time it takes to read at 200 words a minute (between 5 and 90 seconds), or 5 seconds for
+  //   sections that ask the student to do something, since those are judged by what they do.
+  // - Used: the components report what happened (Progress.used): Run with edited code, typing in a live editor,
+  //   pressing Check, answering a whole quiz. Playground controls count once the student has changed two different
+  //   ones (or the only one there is). Glossary terms, links and copy buttons don't count.
+  const IDLE_MS = 60000, FLUSH_MS = 15000, MIN_BAR = 5000, MAX_BAR = 90000, MS_PER_WORD = 90;
+  const CONTROL = 'button, input, select, textarea, [role="button"], [role="tab"], [role="slider"], [contenteditable="true"]';
+  const OWN_SIGNALS = ".runner, .sandbox, .exercise, .quiz, .term, .term-btn, .term-tip, .copy";
   function trackSections(wrap, sections) {
     if (!sections.length) return;
     const owner = new Map();
@@ -276,27 +285,75 @@
     }
     const key = (id) => `${slug}/${id}`;
     const ownerOf = (el) => { while (el && !owner.has(el)) el = el.parentElement; return el && owner.get(el); };
+    const partsOf = (id) => [...owner].filter(([, s]) => s === id).map(([el]) => el);
 
-    const showing = new Map(), timers = new Map();
+    const bars = {}, total = {}, pending = {}, seen = {};
+    for (const s of sections) {
+      const words = partsOf(s.id).reduce((n, el) => n + (el.textContent.match(/\S+/g) || []).length, 0);
+      bars[key(s.id)] = P.needsUse(s.kind) ? MIN_BAR : Math.min(MAX_BAR, Math.max(MIN_BAR, words * MS_PER_WORD));
+      const rec = P.section(key(s.id));
+      total[s.id] = rec?.ms || 0;
+      seen[s.id] = !!rec?.seen;
+    }
+
+    const showing = new Map();
     const io = "IntersectionObserver" in window && new IntersectionObserver((entries) => {
       for (const e of entries) {
         const id = owner.get(e.target);
         const set = showing.get(id) || new Set();
         showing.set(id, set);
         if (e.isIntersecting) set.add(e.target); else set.delete(e.target);
-        if (set.size && !timers.has(id)) timers.set(id, setTimeout(() => { P.seeSection(key(id)); done(id); }, SEEN_MS));
-        if (!set.size && timers.has(id)) { clearTimeout(timers.get(id)); timers.delete(id); }
       }
     }, { rootMargin: "-15% 0px -15% 0px" });
-    const done = (id) => { for (const [el, s] of owner) if (s === id) io.unobserve(el); };
-    if (io) for (const [el, id] of owner) if (!P.section(key(id))?.seen) io.observe(el);
+    if (io) for (const el of owner.keys()) io.observe(el);
 
+    let lastActive = Date.now(), lastTick = Date.now();
+    for (const type of ["scroll", "wheel", "pointermove", "pointerdown", "keydown", "touchstart"]) {
+      addEventListener(type, () => { lastActive = Date.now(); }, { passive: true, capture: true });
+    }
+    function flush() {
+      const times = {};
+      for (const id of Object.keys(pending)) { times[key(id)] = pending[id]; total[id] += pending[id]; delete pending[id]; }
+      P.addTime(times, bars);
+      for (const id of Object.keys(times)) if (total[id.split("/")[1]] >= bars[id]) seen[id.split("/")[1]] = true;
+    }
+    setInterval(() => {
+      const t = Date.now(), dt = Math.min(t - lastTick, 2000);
+      lastTick = t;
+      if (document.visibilityState !== "visible" || t - lastActive > IDLE_MS) return;
+      let crossed = false;
+      for (const [id, set] of showing) {
+        if (!set.size) continue;
+        pending[id] = (pending[id] || 0) + dt;
+        if (!seen[id] && total[id] + pending[id] >= bars[key(id)]) crossed = true;
+      }
+      if (crossed) flush();   // tick the sidebar as soon as a section is seen, not at the next flush
+    }, 1000);
+    setInterval(flush, FLUSH_MS);
+    addEventListener("pagehide", flush);
+    document.addEventListener("visibilitychange", () => { if (document.visibilityState === "hidden") flush(); });
+
+    // Used: signals from the components, and distinct playground controls.
+    wrap.addEventListener("book:use", (e) => {
+      const id = ownerOf(e.target), what = e.detail?.what;
+      if (!id) return;
+      if (what === "run" || what === "run-unchanged") P.log("run", key(id), { edited: what === "run" });
+      if (what !== "run-unchanged") P.interact(key(id), what);
+    });
+    const changed = new Map();   // section → controls the student has changed
     const touch = (e) => {
-      if (!e.isTrusted || (e.type === "click" && e.target.closest("a[href]"))) return;
-      const id = ownerOf(e.target);
-      if (id) P.interact(key(id));
+      if (!e.isTrusted) return;
+      const ctl = e.target.closest?.(CONTROL);
+      if (!ctl || ctl.closest(OWN_SIGNALS)) return;
+      const id = ownerOf(ctl);
+      if (!id || P.section(key(id))?.interacted) return;
+      const set = changed.get(id) || new Set();
+      changed.set(id, set);
+      set.add(ctl);
+      const available = partsOf(id).flatMap((el) => [...el.querySelectorAll(CONTROL)]).filter((c) => !c.closest(OWN_SIGNALS)).length;
+      if (set.size >= Math.min(2, Math.max(1, available))) P.interact(key(id), "controls");
     };
-    for (const type of ["click", "input", "change", "keydown"]) wrap.addEventListener(type, touch, true);
+    for (const type of ["click", "input", "change"]) wrap.addEventListener(type, touch, true);
   }
 
   function fillFooter() {

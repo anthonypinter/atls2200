@@ -123,7 +123,7 @@
         try { return !!c.test(ctx); } catch { return false; }
       });
       const score = results.filter(Boolean).length, total = results.length;
-      if (P) P.checked(id, score, total);
+      if (P) { P.checked(id, score, total, get()); P.used(el, "check"); }
       const all = score === total;
       $(".ex-result").className = "ex-result " + (all ? "pass" : "fail");
       $(".ex-result").innerHTML = `<p><strong>${all ? "All checks pass. Nice work!" : `${score} of ${total} checks pass.`}</strong>${!all && ctx.error ? ` Your code stopped with an error: <code>${esc(ctx.error.name + ": " + ctx.error.message)}</code>` : ""}</p>

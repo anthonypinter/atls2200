@@ -168,6 +168,10 @@
 
   function run(code, out) {
     let live = false;
+    const box = out.closest(".runner");
+    // Pressing Run counts as using the editor only when the code was changed first; the run on load doesn't count.
+    if (box?.dataset.started && window.Progress) window.Progress.used(box, code === box.runnerOriginal ? "run-unchanged" : "run");
+    if (box) box.dataset.started = "1";
     const { lines } = exec(code, [], (l) => { if (live) addLine(out, l); });
     render(lines, out);
     live = true;
@@ -198,6 +202,7 @@
     box.dataset.ready = "1";
     const ta = box.querySelector("textarea");
     const original = ta.value;
+    box.runnerOriginal = original;
     const bar = document.createElement("div");
     bar.className = "runner-bar";
     bar.innerHTML = `<button class="btn run" type="button">Run ▸</button><button class="btn" type="button">Reset</button><span class="hint">Edit the code, then Run (or Ctrl/⌘ + Enter).</span>`;

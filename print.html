@@ -33,22 +33,19 @@
   .pl-online p, .pl-online ul { margin: 6px 0 0; }
   .pl-ex { display: grid; gap: 10px; }
   .pl-code-label { margin: 6px 0 0; font: 600 0.78rem var(--font-code); font-variation-settings: "MONO" 1; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); }
-  .pl pre, .pl-answers pre { white-space: pre-wrap; overflow-wrap: anywhere; }
+  .pl pre { white-space: pre-wrap; overflow-wrap: anywhere; }
   .pl-quiz { display: grid; gap: 14px; padding-left: 1.4em; margin: 0; }
   .pl-quiz ol { list-style: upper-alpha; padding-left: 1.6em; margin: 6px 0 0; }
-  .pl-answers { display: grid; gap: 14px; padding-top: 28px; border-top: 2px solid var(--line); }
-  .pl-answers h3 { font-size: 1.1rem; margin-top: 10px; }
-  .pl-answers ol { margin: 0; padding-left: 1.4em; display: grid; gap: 6px; }
 
   @page { margin: 16mm 15mm; }
   @media print {
     .print-controls, #status { display: none !important; }
     .print-doc { margin-top: 0; gap: 0; }
-    .pl, .pl-answers { break-before: page; border-top: 0; padding-top: 0; }
+    .pl { break-before: page; border-top: 0; padding-top: 0; }
     .pl .notes { display: block; }   /* a grid of unbreakable panels overlaps the next section in Chrome's print layout */
     .pl .notes .panel { margin-bottom: 12px; }
     .pl-quiz > li, .pl .notes .panel, .pl .callout, .pl .objectives { break-inside: avoid; }
-    .pl-code-label, .pl h3, .pl h4, .pl-answers h3, .pl-answers h4 { break-after: avoid; }
+    .pl-code-label, .pl h3, .pl h4 { break-after: avoid; }
     .pl-online a::after { content: none !important; }   /* the link text is already the address */
     .pl-online { border-color: #999; }
   }
@@ -74,7 +71,6 @@
         <select id="pick"></select>
       </label>
       <label class="check"><input type="checkbox" id="opt-ex" checked> Exercises</label>
-      <label class="check"><input type="checkbox" id="opt-ans" checked> Answers at the end</label>
       <button class="btn run" type="button" id="print" disabled>Print or save as PDF</button>
     </form>
     <p id="status" aria-live="polite"></p>
@@ -143,7 +139,6 @@
 
   const code = (label, text) => text ? `<p class="pl-code-label">${label}</p><pre class="snippet">${esc(text.trim())}</pre>` : "";
   const starter = (def) => typeof def.js === "string" ? code("Starting JavaScript", def.js) : code("Starting HTML", def.html) + code("Starting CSS", def.css);
-  const solution = (def) => typeof def.js === "string" ? code("Solution", def.solution) : code("Solution HTML", def.solution?.html) + code("Solution CSS", def.solution?.css);
 
   function lessonHTML(g, opts) {
     const l = g.lesson, url = new URL(l.href, location.href).href;
@@ -164,23 +159,13 @@
     </article>`;
   }
 
-  function answersHTML(grabs, opts) {
-    const parts = grabs.map((g) => {
-      const quiz = g.quizzes.flat();
-      const q = quiz.length ? `<h4>Check yourself</h4><ol>${quiz.map((x) => `<li><strong>${"ABCDEFG"[x.a]}. ${esc(x.opts[x.a])}${/[.?!]$/.test(x.opts[x.a]) ? "" : "."}</strong>${x.why ? ` ${esc(x.why)}` : ""}</li>`).join("")}</ol>` : "";
-      const ex = opts.ex ? g.exercises.map((def) => `<h4>Practice: ${esc(def.title)}</h4>${def.hints?.length ? `<p class="pl-code-label">Hints</p><ol>${def.hints.map((h) => `<li>${esc(h)}</li>`).join("")}</ol>` : ""}${solution(def)}`).join("") : "";
-      return q || ex ? `<h3>${g.lesson.num} ${esc(g.lesson.title)}</h3>${q}${ex}` : "";
-    }).join("");
-    return parts ? `<section class="pl-answers"><h2>Answers</h2>${parts}</section>` : "";
-  }
-
   let building = 0;
   async function build() {
     const run = ++building;
     const [kind, key] = $("pick").value.split(/-(.+)/);
     const part = kind === "part" ? book.parts[key - 1] : null;
     const list = part ? part.lessons : lessons.filter((l) => l.slug === key);
-    const opts = { ex: $("opt-ex").checked, ans: $("opt-ans").checked };
+    const opts = { ex: $("opt-ex").checked };
     history.replaceState(null, "", `?${kind}=${key}`);
     $("print").disabled = true;
     $("doc").innerHTML = "";
@@ -197,7 +182,7 @@
     }
     const body = grabs.map((g) => lessonHTML(g, opts)).join("");
     const cover = part ? `<section class="pl-cover"><span class="eyebrow">${esc(book.title)}</span><h1>Part ${part.num}: ${esc(part.title)}</h1><p>${esc(part.blurb)}</p><ol>${list.map((l) => `<li>${l.num} ${esc(l.title)}</li>`).join("")}</ol></section>` : "";
-    $("doc").innerHTML = cover + body + (opts.ans ? answersHTML(grabs, opts) : "");
+    $("doc").innerHTML = cover + body;
     $("loader").removeAttribute("src");
     document.title = part ? `Part ${part.num}: ${part.title} (printable)` : `${list[0].num} ${list[0].title} (printable)`;
     $("status").textContent = `Ready: ${list.length} lesson${list.length > 1 ? "s" : ""}. Use the button, or your browser's Print command.`;
@@ -206,7 +191,6 @@
 
   $("pick").addEventListener("change", build);
   $("opt-ex").addEventListener("change", build);
-  $("opt-ans").addEventListener("change", build);
   $("print").addEventListener("click", () => print());
   build();
 })();

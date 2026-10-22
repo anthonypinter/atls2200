@@ -53,7 +53,10 @@
       return ready;
     }
     let timer, dirty = false;
-    function changed() {
+    let typed = false;
+    function changed(e) {
+      // Typing in the editor (not Reset or Show solution) is what counts as using it, once per editor.
+      if (e?.isTrusted && !typed && window.Progress) { typed = true; window.Progress.used(el, "edit"); }
       dirty = true;
       clearTimeout(timer);
       timer = setTimeout(() => { dirty = false; render(); }, 250);

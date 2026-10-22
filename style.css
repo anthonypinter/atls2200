@@ -391,6 +391,10 @@ a.btn { display: inline-flex; align-items: center; gap: 6px; text-decoration: no
 .acct-body p { margin: 0; }
 .acct-form { display: grid; gap: 6px; }
 .acct-form label { font-weight: 700; }
+.acct-details { gap: 4px; }
+.acct-details label:not(:first-child) { margin-top: 8px; }
+.acct-details input, .acct-details select { font: inherit; padding: 7px 10px; color: var(--ink); background: var(--paper); border: 1px solid var(--line); border-radius: 6px; min-width: 0; }
+.acct-details .acct-actions { margin-top: 10px; }
 .acct-row, .acct-actions { display: flex; flex-wrap: wrap; gap: 8px; }
 .acct-row input { flex: 1 1 12em; min-width: 0; font: inherit; padding: 7px 10px; color: var(--ink); background: var(--paper); border: 1px solid var(--line); border-radius: 6px; }
 .acct-msg { color: var(--bad); }

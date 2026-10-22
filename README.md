@@ -30,7 +30,7 @@ Opening `index.html` straight from the file system also works. Use a local serve
 | `js/glossary.js` | Definition pop-ups for glossary terms in lesson text |
 | `js/search.js` | The search dialog (Search button, Ctrl/⌘ + K, or /) |
 | `glossary-terms.js` | All glossary terms, shared by `glossary.html`, the pop-ups and search |
-| `print.html` | Printable chapters: a whole part (or one lesson) on one page, ready to print or save as a PDF, with quiz answers, hints and solutions at the end. Linked from each part on the contents page and from the Print link on every lesson. It only works when the book is served (GitHub Pages or a local server), not opened as a file |
+| `print.html` | Printable chapters: a whole part (or one lesson) on one page, ready to print or save as a PDF. No answers or solutions are included. Linked from each part on the contents page and from the Print link on every lesson. It only works when the book is served (GitHub Pages or a local server), not opened as a file |
 | `js/backend.js` | Student accounts (optional): sign-in with a university email, progress sync through `Progress.merge()`, and instructor-only notes in lessons. Loads only when `book.js` has a backend configured; see `supabase/README.md` |
 | `instructor.html` | The instructor dashboard: class progress by lesson and section, one student's detail, CSV export, notes editor and roster. Holds no data itself: everything comes from the backend, which only answers instructors |
 | `supabase/` | The backend's database schema and access rules, and the setup steps (`supabase/README.md`). Not published with the site |

@@ -71,7 +71,10 @@
       const i = +b.dataset.q, x = items[i];
       if (x.id in answers) return;
       answers[x.id] = +b.dataset.o;
-      if (P) P.answer(quizId, x.id, answers[x.id], answers[x.id] === x.a, items.length);
+      if (P) {
+        P.answer(quizId, x.id, answers[x.id], answers[x.id] === x.a, items.length);
+        if (items.every((y) => y.id in answers)) P.used(el, "quiz");
+      }
       show(i);
       score();
     });

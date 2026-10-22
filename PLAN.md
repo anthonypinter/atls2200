@@ -118,10 +118,11 @@ Every lesson moves toward the same order. The existing playground stays at the c
 - [x] Student accounts (Supabase, @colorado.edu one-time link or code): progress syncs via `Progress.merge()`, signed-out use still works and is added on first sign-in, sign-out clears the browser's copy
 - [x] Section-level tracking: each "On this page" section records first seen (3 s on screen) and first used (click/keypress/edit); finished sections get a ✓ in the sidebar
 - [x] Instructor dashboard (`instructor.html`): class grid by part/lesson, per-student section detail with latest exercise code, CSV export, roster with roles and course sections
+- [x] Student details on first sign-in: first and last name and recitation (from an instructor-kept list), required by the database before any progress or activity is stored (`0003_student_details.sql`); the dashboard lists students by name with a recitation column and filter
 - [ ] Set up the Supabase project and paste its URL and anon key into `book.js` (steps in `supabase/README.md`, including custom SMTP)
 - [ ] Test the backend end to end with a real project (sign-in on two devices, sync, notes, dashboard)
 - [ ] Map lessons to course weeks/assignments in `book.js` and show a "This week" view on the cover
-- [x] Printable/PDF chapter export: `print.html?part=N` or `?lesson=slug` builds one document from the finished lessons (header and objectives, Read, exercise tasks with starter code, Key ideas and Common mistakes, quiz), lists each playground under "Try it online" with the lesson's link, and ends with answers, hints and solutions (optional). Each lesson starts on a new page. Linked from the contents page ("Print this part") and each lesson's top bar. Loading lessons for printing doesn't count as a visit
+- [x] Printable/PDF chapter export: `print.html?part=N` or `?lesson=slug` builds one document from the finished lessons (header and objectives, Read, exercise tasks with starter code, Key ideas and Common mistakes, quiz), lists each playground under "Try it online" with the lesson's link. Answers, hints and solutions are left out on purpose. Each lesson starts on a new page. Linked from the contents page ("Print this part") and each lesson's top bar. Loading lessons for printing doesn't count as a visit
 
 ---
 

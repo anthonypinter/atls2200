@@ -43,6 +43,10 @@
   .dash-notes li { display: grid; gap: 6px; }
   .dash-notes p { margin: 0; white-space: pre-wrap; }
   .dash-row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+  .dash-table td.dash-what { white-space: normal; min-width: 18em; }
+  .dash-flags summary, .flag { color: var(--bad); font-weight: 700; cursor: pointer; }
+  .dash-flags ul { margin: 6px 0 0; padding-left: 1.2em; white-space: normal; min-width: 16em; }
+  .flag { font-size: 0.85rem; white-space: normal; }
 </style>
 <script src="book.js"></script>
 <script src="js/progress.js"></script>
@@ -74,11 +78,12 @@
       <h2 id="progress">Class progress</h2>
       <div class="panel dash-opts">
         <label>Show <select id="f-part"></select></label>
+        <label>Recitation <select id="f-rec"></select></label>
         <label>Course section <select id="f-section"></select></label>
         <label>Find a student <input id="f-name" type="search" autocomplete="off"></label>
         <button class="btn" type="button" id="csv">Download CSV</button>
       </div>
-      <p class="dash-legend">Each cell is the share of a lesson's work done: sections read (and, for Play, Practice and Check yourself, used), quizzes finished and exercises passed. ✓ means the student marked the lesson complete.</p>
+      <p class="dash-legend">Each cell is the share of a lesson's work done: sections read (and, for Play, Try it, Practice and Check yourself, used), quizzes finished and exercises passed. ✓ means the student marked the lesson complete. A section counts as read after enough active time for its length; used means the student changed playground controls, ran edited code, typed in an editor, pressed Check or answered the whole quiz. Reading time counts only while the page is visible and the student is active. ⚑ flags a pass after under 2 minutes in the lesson, or 5+ Checks without a pass. Students' browsers report this data, so treat it as a signal, not proof.</p>
       <div class="dash-scroll" tabindex="0"><table class="dash-table" id="grid"></table></div>
     </section>
 
@@ -105,6 +110,14 @@
 
     <section class="dash" aria-labelledby="roster">
       <h2 id="roster">Roster</h2>
+      <h3>Recitations</h3>
+      <p class="dash-legend">Students pick their recitation from this list the first time they sign in, and can't save progress until they have. With no recitations listed, students give only their name.</p>
+      <form class="panel dash-form" id="rec-form">
+        <div class="dash-opts"><label>Recitation number <input id="rec-code" required maxlength="12" pattern="[A-Za-z0-9 _\-]{1,12}" placeholder="101"></label><label>Description (optional) <input id="rec-label" maxlength="80" placeholder="Tue 9:00, ATLS 104"></label><button class="btn run" type="submit">Add recitation</button></div>
+        <p class="dash-msg" id="rec-msg" role="status"></p>
+      </form>
+      <div class="dash-scroll" tabindex="0"><table class="dash-table" id="rec-table"></table></div>
+      <h3>People</h3>
       <p class="dash-legend">Anyone with a university email can sign in as a student; the roster adds course sections and shows who hasn't signed in yet. Instructors must be on it.</p>
       <form class="panel dash-form" id="r-form">
         <label>Emails, one per line (add a course section after a comma: <code>ab1234@colorado.edu, 001</code>) <textarea id="r-emails" required></textarea></label>
@@ -126,7 +139,20 @@
   const obj = (x) => (x && typeof x === "object" && !Array.isArray(x) ? x : {});
   const time = (t) => { const d = new Date(t); return t && !isNaN(d) ? d.toLocaleString([], { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }) : ""; };
   const P = window.Progress, book = window.BOOK;
-  let db = null, index = null, people = [], progress = new Map(), roster = [], notes = [];
+  let db = null, index = null, people = [], progress = new Map(), roster = [], notes = [], tries = new Map(), recitations = [];
+  const dur = (ms) => (!ms ? "—" : ms < 60000 ? `${Math.max(1, Math.round(ms / 1000))} s` : `${Math.round(ms / 60000)} min`);
+  // Flags: a pass after very little time in the lesson, or many Checks without a pass.
+  const FAST_MS = 2 * 60000, STUCK_CHECKS = 5;
+  // PostgREST returns at most 1000 rows per request, so read big tables a page at a time.
+  async function all(query) {
+    const rows = [];
+    for (let from = 0; ; from += 1000) {
+      const { data, error } = await query().range(from, from + 999);
+      if (error) return { data: null, error };
+      rows.push(...data);
+      if (data.length < 1000) return { data: rows, error: null };
+    }
+  }
 
   function gate(html) { $("gate").innerHTML = html; $("gate").hidden = false; $("app").hidden = true; }
 
@@ -155,17 +181,21 @@
 
   async function load() {
     gate("<p>Loading the class…</p>");
-    const [a, b, c, d] = await Promise.all([
-      db.from("profiles").select("id, email, display_name, role, course_section"),
-      db.from("progress").select("user_id, data, updated_at"),
-      db.from("roster").select("email, role, course_section, added_at").order("email"),
+    const [a, b, c, d, e, f] = await Promise.all([
+      all(() => db.from("profiles").select("id, email, display_name, role, course_section, first_name, last_name, recitation").order("email")),
+      all(() => db.from("progress").select("user_id, data, updated_at").order("user_id")),
+      all(() => db.from("roster").select("email, role, course_section, added_at").order("email")),
       db.from("instructor_notes").select("id, lesson, section, body, updated_at").order("id"),
+      all(() => db.from("exercise_attempts").select("email, exercise, checks, checks_before_pass, first_pass").order("email")),
+      db.from("recitations").select("code, label, sort").order("sort").order("code"),
     ]);
-    const failed = [a, b, c, d].find((r) => r.error);
+    const failed = [a, b, c, d, e, f].find((r) => r.error);
     if (failed) return gate(`<p class="dash-msg bad">Couldn't load the class: ${esc(failed.error.message)}</p>`);
     progress = new Map(b.data.map((r) => [r.user_id, { data: obj(r.data), at: r.updated_at }]));
     roster = c.data;
     notes = d.data;
+    tries = new Map(e.data.map((t) => [`${t.email}|${t.exercise}`, t]));
+    recitations = f.data;
     // Students: everyone signed in as a student, plus roster students who haven't signed in yet.
     const signed = new Set(a.data.map((p) => p.email));
     people = [
@@ -179,19 +209,27 @@
     drawStudent();
     drawNotes();
     drawRoster(a.data);
+    drawRecitations();
   }
-  const name = (p) => p.display_name || p.email;
+  // "Last, First" once a student has given their details; their email until then.
+  const name = (p) => (p.last_name && p.first_name ? `${p.last_name}, ${p.first_name}` : p.display_name || p.email);
 
   // What a lesson takes and how much of it a student has done.
-  function lessonStats(data, slug) {
+  function lessonStats(data, slug, email) {
     const l = index.get(slug) || { sections: [], quizzes: [], exercises: [] };
     const secs = obj(data.sections), quizzes = obj(data.quizzes), exs = obj(data.exercises);
     const sections = l.sections.map((s) => { const rec = obj(secs[`${slug}/${s.id}`]); return { ...s, rec, done: P.sectionDone(rec, s.kind) }; });
     const qs = l.quizzes.map((id) => { const best = obj(obj(quizzes[id]).best); return { id, best, done: Number.isFinite(best.total) }; });
-    const es = l.exercises.map((id) => { const rec = obj(exs[id]); return { id, rec, done: !!rec.passed }; });
+    const es = l.exercises.map((id) => { const rec = obj(exs[id]); return { id, rec, done: !!rec.passed, tries: email && tries.get(`${email}|${id}`) }; });
     const items = [...sections, ...qs, ...es];
     const done = items.filter((x) => x.done).length;
-    return { sections, qs, es, done, total: items.length, completed: obj(obj(data.lessons)[slug]).completed, visited: obj(obj(data.lessons)[slug]).visited };
+    const ms = sections.reduce((n, s) => n + (Number.isFinite(s.rec.ms) ? s.rec.ms : 0), 0);
+    const flags = [];
+    for (const e of es) {
+      if (e.done && ms < FAST_MS) flags.push(`passed ${e.id.split("/")[1]} after ${dur(ms)} in the lesson`);
+      if (!e.done && e.tries?.checks >= STUCK_CHECKS) flags.push(`${e.tries.checks} Checks on ${e.id.split("/")[1]} without a pass`);
+    }
+    return { sections, qs, es, done, ms, flags, total: items.length, completed: obj(obj(data.lessons)[slug]).completed, visited: obj(obj(data.lessons)[slug]).visited };
   }
   const pctCell = (done, total, extra = "") => {
     const p = total ? Math.round((done / total) * 100) : 0;
@@ -202,6 +240,10 @@
     const part = $("f-part").value;
     $("f-part").innerHTML = `<option value="all">All parts</option>` + book.parts.map((p) => `<option value="${p.num}">Part ${p.num} · ${esc(p.title)}</option>`).join("");
     if (part) $("f-part").value = part;
+    const rec = $("f-rec").value;
+    const recs = [...new Set([...recitations.map((r) => r.code), ...people.map((p) => p.recitation).filter(Boolean)])];
+    $("f-rec").innerHTML = `<option value="">All</option>` + recs.map((r) => `<option>${esc(r)}</option>`).join("") + `<option value="-">Not given yet</option>`;
+    $("f-rec").value = rec && (recs.includes(rec) || rec === "-") ? rec : "";
     const sec = $("f-section").value;
     const sections = [...new Set(people.map((p) => p.course_section).filter(Boolean))].sort();
     $("f-section").innerHTML = `<option value="">All</option>` + sections.map((s) => `<option>${esc(s)}</option>`).join("");
@@ -215,8 +257,9 @@
     fillNoteSections();
   }
   const shownPeople = () => {
-    const sec = $("f-section").value, q = $("f-name").value.trim().toLowerCase();
-    return people.filter((p) => (!sec || p.course_section === sec) && (!q || name(p).toLowerCase().includes(q) || p.email.includes(q)));
+    const sec = $("f-section").value, rec = $("f-rec").value, q = $("f-name").value.trim().toLowerCase();
+    return people.filter((p) => (!sec || p.course_section === sec) && (!rec || (rec === "-" ? !p.recitation : p.recitation === rec))
+      && (!q || name(p).toLowerCase().includes(q) || p.email.includes(q)));
   };
   // Columns: the lessons of one part, or one column per part.
   function columns() {
@@ -226,27 +269,32 @@
   }
   function rowFor(p, cols) {
     const data = obj(progress.get(p.id)?.data);
-    let all = 0, allDone = 0;
+    let all = 0, allDone = 0, ms = 0;
+    const flags = [];
     const cells = cols.map((c) => {
       let done = 0, total = 0, complete = true;
-      for (const s of c.slugs) { const st = lessonStats(data, s); done += st.done; total += st.total; complete &&= !!st.completed; }
+      for (const s of c.slugs) {
+        const st = lessonStats(data, s, p.email);
+        done += st.done; total += st.total; complete &&= !!st.completed; ms += st.ms;
+        flags.push(...st.flags.map((f) => `${index.get(s)?.num || s}: ${f}`));
+      }
       all += total; allDone += done;
       return { done, total, complete };
     });
-    return { cells, all, allDone };
+    return { cells, all, allDone, ms, flags };
   }
   function drawGrid() {
     const cols = columns(), list = shownPeople();
-    const head = `<caption class="sr-only">Progress by student and ${$("f-part").value === "all" ? "part" : "lesson"}</caption><thead><tr><th scope="col">Student</th><th scope="col">Section</th><th scope="col">Last active</th>${cols.map((c) => `<th scope="col" title="${esc(c.title)}">${esc(c.label)}</th>`).join("")}<th scope="col">Overall</th></tr></thead>`;
-    if (!list.length) { $("grid").innerHTML = head + `<tbody><tr><td colspan="${cols.length + 4}">No students to show.</td></tr></tbody>`; return; }
+    const head = `<caption class="sr-only">Progress by student and ${$("f-part").value === "all" ? "part" : "lesson"}</caption><thead><tr><th scope="col">Student</th><th scope="col">Recitation</th><th scope="col">Section</th><th scope="col">Last active</th>${cols.map((c) => `<th scope="col" title="${esc(c.title)}">${esc(c.label)}</th>`).join("")}<th scope="col">Overall</th><th scope="col">Reading time</th><th scope="col">Flags</th></tr></thead>`;
+    if (!list.length) { $("grid").innerHTML = head + `<tbody><tr><td colspan="${cols.length + 7}">No students to show.</td></tr></tbody>`; return; }
     const sums = cols.map(() => 0);
     const body = list.map((p) => {
       const r = rowFor(p, cols);
       r.cells.forEach((c, i) => { sums[i] += c.total ? c.done / c.total : 0; });
-      const who = p.id ? `<button class="link" type="button" data-student="${p.id}">${esc(name(p))}</button>` : `${esc(p.email)} <span class="no">(not signed in)</span>`;
-      return `<tr><th scope="row">${who}</th><td>${esc(p.course_section || "")}</td><td>${esc(time(progress.get(p.id)?.at))}</td>${r.cells.map((c) => `<td>${pctCell(c.done, c.total, c.complete && c.total ? " ✓" : "")}</td>`).join("")}<td>${pctCell(r.allDone, r.all)}</td></tr>`;
+      const who = p.id ? `<button class="link" type="button" data-student="${p.id}">${esc(name(p))}</button>${p.last_name ? "" : ' <span class="no">(no details yet)</span>'}` : `${esc(p.email)} <span class="no">(not signed in)</span>`;
+      return `<tr><th scope="row">${who}</th><td>${esc(p.recitation || "")}</td><td>${esc(p.course_section || "")}</td><td>${esc(time(progress.get(p.id)?.at))}</td>${r.cells.map((c) => `<td>${pctCell(c.done, c.total, c.complete && c.total ? " ✓" : "")}</td>`).join("")}<td>${pctCell(r.allDone, r.all)}</td><td>${dur(r.ms)}</td><td>${r.flags.length ? `<details class="dash-flags"><summary>⚑ ${r.flags.length}</summary><ul>${r.flags.map((f) => `<li>${esc(f)}</li>`).join("")}</ul></details>` : ""}</td></tr>`;
     }).join("");
-    const avg = `<tfoot><tr><th scope="row">Class average</th><td></td><td></td>${sums.map((s) => `<td>${pctCell(s, list.length)}</td>`).join("")}<td></td></tr></tfoot>`;
+    const avg = `<tfoot><tr><th scope="row">Class average</th><td></td><td></td><td></td>${sums.map((s) => `<td>${pctCell(s, list.length)}</td>`).join("")}<td></td><td></td><td></td></tr></tfoot>`;
     $("grid").innerHTML = head + `<tbody>${body}</tbody>` + avg;
   }
 
@@ -254,36 +302,73 @@
     const p = people.find((x) => x.id && x.id === $("f-student").value);
     if (!p) { $("detail").innerHTML = ""; return; }
     const data = obj(progress.get(p.id)?.data);
-    const out = [`<p>${esc(p.email)}${p.course_section ? ` · section ${esc(p.course_section)}` : ""} · last active ${esc(time(progress.get(p.id)?.at) || "never")}</p>`];
+    const out = [`<p><strong>${esc([p.first_name, p.last_name].filter(Boolean).join(" ") || "No name given yet")}</strong> · ${esc(p.email)}${p.recitation ? ` · recitation ${esc(p.recitation)}` : ""}${p.course_section ? ` · section ${esc(p.course_section)}` : ""} · last active ${esc(time(progress.get(p.id)?.at) || "never")}</p>`];
     for (const part of book.parts) {
       out.push(`<h3>Part ${part.num} · ${esc(part.title)}</h3>`);
       for (const l of part.lessons) {
-        const st = lessonStats(data, l.slug);
-        const rows = st.sections.map((s) => `<tr><th scope="row">${esc(s.title)}</th><td>${esc(s.kind)}</td><td>${esc(time(s.rec.seen)) || '<span class="no">—</span>'}</td><td>${esc(time(s.rec.interacted)) || '<span class="no">—</span>'}</td><td>${s.done ? '<span class="yes">✓ done</span>' : '<span class="no">not yet</span>'}</td></tr>`).join("");
+        const st = lessonStats(data, l.slug, p.email);
+        const rows = st.sections.map((s) => `<tr><th scope="row">${esc(s.title)}</th><td>${esc(s.kind)}</td><td>${dur(s.rec.ms)}</td><td>${esc(time(s.rec.seen)) || '<span class="no">—</span>'}</td><td>${esc(time(s.rec.interacted)) || '<span class="no">—</span>'}</td><td>${s.done ? '<span class="yes">✓ done</span>' : '<span class="no">not yet</span>'}</td></tr>`).join("");
         const quiz = st.qs.map((q) => `<p>Quiz <code>${esc(q.id.split("/")[1])}</code>: ${q.done ? `best score ${esc(q.best.score)}/${esc(q.best.total)}` : '<span class="no">not finished</span>'}</p>`).join("");
         const ex = st.es.map((e) => {
           const code = obj(e.rec.code);
           const files = Object.entries(code).filter(([, v]) => typeof v === "string" && v.trim());
-          return `<p>Exercise <code>${esc(e.id.split("/")[1])}</code>: ${e.done ? `<span class="yes">passed ${esc(time(e.rec.passed))}</span>` : '<span class="no">not passed</span>'}</p>`
+          const t = e.tries;
+          const count = t ? ` · ${esc(t.checks)} Check${t.checks == 1 ? "" : "s"}${t.first_pass ? `, passed on try ${esc(Number(t.checks_before_pass) + 1)}` : ""}` : "";
+          return `<p>Exercise <code>${esc(e.id.split("/")[1])}</code>: ${e.done ? `<span class="yes">passed ${esc(time(e.rec.passed))}</span>` : '<span class="no">not passed</span>'}${count}</p>`
             + (files.length ? `<details><summary>Their latest code</summary>${files.map(([k, v]) => `<p class="eyebrow">${esc(k)}</p><pre tabindex="0"><code>${esc(v)}</code></pre>`).join("")}</details>` : "");
         }).join("");
-        out.push(`<details class="dash-lesson"><summary>${l.num} ${esc(l.title)}${st.completed ? ' <span class="yes">✓ marked complete</span>' : ""}${pctCell(st.done, st.total)}</summary><div>
-          <div class="dash-scroll" tabindex="0"><table class="dash-table"><thead><tr><th scope="col">Section</th><th scope="col">Kind</th><th scope="col">Seen</th><th scope="col">Used</th><th scope="col">Status</th></tr></thead><tbody>${rows}</tbody></table></div>${quiz}${ex}</div></details>`);
+        out.push(`<details class="dash-lesson"><summary>${l.num} ${esc(l.title)}${st.completed ? ' <span class="yes">✓ marked complete</span>' : ""}<span class="no">${dur(st.ms)}</span>${st.flags.length ? ` <span class="flag">⚑ ${esc(st.flags.join("; "))}</span>` : ""}${pctCell(st.done, st.total)}</summary><div>
+          <div class="dash-scroll" tabindex="0"><table class="dash-table"><thead><tr><th scope="col">Section</th><th scope="col">Kind</th><th scope="col">Reading time</th><th scope="col">Seen</th><th scope="col">Used</th><th scope="col">Status</th></tr></thead><tbody>${rows}</tbody></table></div>${quiz}${ex}</div></details>`);
       }
     }
+    out.push(`<h3>Activity log</h3><p class="dash-legend">The latest 300 events from the server log, newest first. “Arrived” is when the server stored it; the browser's own time is shown when it differs by more than a minute (work done offline or signed out).</p><div id="timeline"><p class="dash-msg">Loading…</p></div>`);
     $("detail").innerHTML = out.join("");
+    drawTimeline(p);
+  }
+
+  const DESCRIBE = {
+    visit: () => "opened the lesson",
+    seen: (e) => `read “${secTitle(e.target)}”`,
+    time: (e) => `reading time: ${Object.entries(obj(e.detail)).map(([k, v]) => `${secTitle(`${e.lesson}/${k}`)} ${dur(v * 1000)}`).join(", ")}`,
+    used: (e) => `used “${secTitle(e.target)}” (${obj(e.detail).what || "?"})`,
+    run: (e) => `ran ${obj(e.detail).edited ? "edited" : "unchanged"} code in “${secTitle(e.target)}”`,
+    answer: (e) => `answered ${obj(e.detail).q} in ${short(e.target)}: ${obj(e.detail).correct ? "correct" : "wrong"}`,
+    "quiz-done": (e) => `finished ${short(e.target)}: ${obj(e.detail).score}/${obj(e.detail).total}`,
+    check: (e) => `pressed Check on ${short(e.target)}: ${obj(e.detail).score}/${obj(e.detail).total}${obj(e.detail).passed ? " (passed)" : ""}`,
+    complete: () => "marked the lesson complete",
+    uncomplete: () => "unmarked the lesson",
+  };
+  const short = (id) => String(id || "").split("/")[1] || id;
+  function secTitle(id) {
+    const [slug, sec] = String(id || "").split("/");
+    return index.get(slug)?.sections.find((s) => s.id === sec)?.title || sec || slug;
+  }
+  async function drawTimeline(p) {
+    const { data, error } = await db.from("events").select("at, client_at, lesson, kind, target, detail").eq("user_id", p.id).order("at", { ascending: false }).limit(300);
+    const box = $("timeline");
+    if (!box || $("f-student").value !== p.id) return;
+    if (error) { box.innerHTML = `<p class="dash-msg bad">Couldn't load the log: ${esc(error.message)}</p>`; return; }
+    if (!data.length) { box.innerHTML = `<p class="dash-msg">Nothing logged yet.</p>`; return; }
+    box.innerHTML = `<div class="dash-scroll" tabindex="0"><table class="dash-table"><thead><tr><th scope="col">Arrived</th><th scope="col">Lesson</th><th scope="col">What happened</th></tr></thead><tbody>${data.map((e) => {
+      const off = e.client_at && Math.abs(new Date(e.at) - new Date(e.client_at)) > 60000 ? ` <span class="no">(browser: ${esc(time(e.client_at))})</span>` : "";
+      const code = e.kind === "check" && obj(e.detail).passed && obj(e.detail).code
+        ? `<details><summary>Code that passed</summary>${Object.entries(obj(obj(e.detail).code)).filter(([, v]) => typeof v === "string").map(([k, v]) => `<p class="eyebrow">${esc(k)}</p><pre tabindex="0"><code>${esc(v)}</code></pre>`).join("")}</details>` : "";
+      const say = DESCRIBE[e.kind] ? DESCRIBE[e.kind](e) : e.kind;
+      return `<tr><td>${esc(time(e.at))}${off}</td><td>${esc(index.get(e.lesson)?.num || e.lesson || "")}</td><td class="dash-what">${esc(say)}${code}</td></tr>`;
+    }).join("")}</tbody></table></div>`;
   }
 
   function csv() {
-    const rows = [["email", "name", "course_section", "lesson", "title", "sections_done", "sections_total", "quizzes", "exercises_passed", "exercises_total", "marked_complete", "percent"]];
+    const rows = [["email", "first_name", "last_name", "recitation", "course_section", "lesson", "title", "sections_done", "sections_total", "quizzes", "exercises_passed", "exercises_total", "checks", "marked_complete", "percent", "reading_minutes", "flags"]];
     for (const p of shownPeople()) {
       const data = obj(progress.get(p.id)?.data);
       for (const l of book.lessons) {
-        const st = lessonStats(data, l.slug);
-        rows.push([p.email, p.display_name || "", p.course_section || "", l.slug, `${l.num} ${l.title}`,
+        const st = lessonStats(data, l.slug, p.email);
+        rows.push([p.email, p.first_name || "", p.last_name || "", p.recitation || "", p.course_section || "", l.slug, `${l.num} ${l.title}`,
           st.sections.filter((s) => s.done).length, st.sections.length,
           st.qs.map((q) => (q.done ? `${q.best.score}/${q.best.total}` : "")).join(" "),
-          st.es.filter((e) => e.done).length, st.es.length, st.completed ? "yes" : "", st.total ? Math.round((st.done / st.total) * 100) : 0]);
+          st.es.filter((e) => e.done).length, st.es.length, st.es.reduce((n, e) => n + Number(e.tries?.checks || 0), 0),
+          st.completed ? "yes" : "", st.total ? Math.round((st.done / st.total) * 100) : 0, Math.round(st.ms / 6000) / 10, st.flags.join("; ")]);
       }
     }
     // A leading = + - @ would run as a formula in a spreadsheet; students choose their own display names.
@@ -374,6 +459,30 @@
     $("r-msg").textContent = error ? `Couldn't save: ${error.message}` : `Added ${rows.length}.` + (bad.length ? ` Skipped (not a @${domain} address): ${bad.join(", ")}` : "");
     if (!error) { $("r-emails").value = ""; load(); }
   }
+  // Recitations
+  function drawRecitations() {
+    const count = (code) => people.filter((p) => p.recitation === code).length;
+    $("rec-table").innerHTML = `<caption class="sr-only">Recitations</caption><thead><tr><th scope="col">Recitation</th><th scope="col">Description</th><th scope="col">Students</th><th scope="col"><span class="sr-only">Actions</span></th></tr></thead><tbody>`
+      + (recitations.map((r) => `<tr><th scope="row">${esc(r.code)}</th><td>${esc(r.label || "")}</td><td>${count(r.code)}</td><td><button class="btn" type="button" data-rec="${esc(r.code)}">Remove</button></td></tr>`).join("")
+      || `<tr><td colspan="4">No recitations yet, so students give only their name.</td></tr>`) + "</tbody>";
+  }
+  async function addRecitation(e) {
+    e.preventDefault();
+    const row = { code: $("rec-code").value.trim(), label: $("rec-label").value.trim() || null, sort: recitations.length + 1 };
+    const { error } = await db.from("recitations").upsert(row);
+    $("rec-msg").className = "dash-msg" + (error ? " bad" : "");
+    $("rec-msg").textContent = error ? `Couldn't save: ${error.message}` : `Added recitation ${row.code}.`;
+    if (!error) { $("rec-code").value = $("rec-label").value = ""; load(); }
+  }
+  async function recitationAction(e) {
+    const btn = e.target.closest("[data-rec]");
+    if (!btn) return;
+    if (btn.dataset.sure !== "1") { btn.dataset.sure = "1"; btn.textContent = "Press again to remove"; return; }
+    const { error } = await db.from("recitations").delete().eq("code", btn.dataset.rec);
+    $("rec-msg").className = "dash-msg" + (error ? " bad" : "");
+    $("rec-msg").textContent = error ? `Couldn't remove: ${error.message}` : `Removed ${btn.dataset.rec}. Students who picked it will be asked to choose again.`;
+    if (!error) load();
+  }
   async function rosterAction(e) {
     const btn = e.target.closest("[data-remove]");
     if (!btn) return;
@@ -384,7 +493,9 @@
     if (!error) load();
   }
 
-  for (const id of ["f-part", "f-section"]) $(id).addEventListener("change", drawGrid);
+  for (const id of ["f-part", "f-section", "f-rec"]) $(id).addEventListener("change", drawGrid);
+  $("rec-form").addEventListener("submit", addRecitation);
+  $("rec-table").addEventListener("click", recitationAction);
   $("f-name").addEventListener("input", drawGrid);
   $("f-student").addEventListener("change", drawStudent);
   $("grid").addEventListener("click", (e) => {
