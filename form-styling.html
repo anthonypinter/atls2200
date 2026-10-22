@@ -44,7 +44,6 @@
 <main class="wrap">
   <nav class="crumbs" aria-label="Site"><a class="crumb" href="index.html">← Field Guide</a><a class="crumb" href="glossary.html">Glossary</a></nav>
   <header class="page-head">
-    <span class="eyebrow">Polish &amp; Workflow · Styling Forms</span>
     <h1>Styling Forms</h1>
     <p class="lede">Browser-default forms look cramped and inconsistent. A handful of rules fixes most of it. Add them one layer at a time and watch the same form improve.</p>
     <div class="objectives">
@@ -141,8 +140,8 @@
     document.querySelectorAll(".step").forEach((b, i) => { b.setAttribute("aria-current", String(i === step)); b.classList.toggle("done", i < step); });
     $("step-text").innerHTML = `<span class="eyebrow">Layer ${step} of ${STEPS.length - 1}</span><h2>${STEPS[step][0]}</h2><p>${STEPS[step][1]}</p>` +
       `<div class="seg" style="margin-top:6px"><button class="btn" id="prev" ${step === 0 ? "disabled" : ""}>← Remove layer</button><button class="btn" id="next" ${step === STEPS.length - 1 ? "disabled" : ""}>Add next layer →</button></div>`;
-    $("prev").addEventListener("click", () => { step--; render(); });
-    $("next").addEventListener("click", () => { step++; render(); });
+    $("prev").addEventListener("click", () => { step = Math.max(0, step - 1); render(); });
+    $("next").addEventListener("click", () => { step = Math.min(STEPS.length - 1, step + 1); render(); });
   }
   $("fs").addEventListener("submit", (e) => {
     e.preventDefault();

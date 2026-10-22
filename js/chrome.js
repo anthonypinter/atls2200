@@ -1,6 +1,6 @@
 /* Book chrome: reads window.BOOK (book.js) and adds the textbook's reading layout to every page.
    - Theme: applies the saved light/dark choice right away (this file loads in <head>, so there's no flash),
-     then adds a toggle that cycles System → Light → Dark.
+     then (on the home page only) adds a toggle that cycles System → Light → Dark.
    - Top bar: Contents button, breadcrumbs (Home › Part › Lesson), Search and a glossary link. Replaces the static
      .crumbs nav. Search (js/search.js) also opens with Ctrl/⌘ + K, or / on pages without their own filter box.
    - Components: loadScript() loads js/runner.js, js/sandbox.js and the glossary pop-ups only on pages that use them,
@@ -103,11 +103,6 @@
       loadScript("glossary-terms.js").then(() => loadScript("js/glossary.js"));
     }
 
-    const eyebrow = wrap.querySelector(".page-head .eyebrow");
-    if (eyebrow && current) {
-      eyebrow.prepend(`${current.num} · `);
-      if (current.minutes) eyebrow.append(` · About ${current.minutes} min`);
-    }
 
     const bar = buildBar();
     const crumbs = wrap.querySelector(":scope > .crumbs, :scope > .crumb");
@@ -193,15 +188,16 @@
       }
     });
 
+    // The theme toggle is on the home page only; the choice applies everywhere.
     const themeBtn = bar.querySelector(".book-theme");
     const label = () => { themeBtn.textContent = `◐ Theme: ${theme[0].toUpperCase() + theme.slice(1)}`; };
-    themeBtn.addEventListener("click", () => {
+    themeBtn?.addEventListener("click", () => {
       theme = THEMES[(THEMES.indexOf(theme) + 1) % THEMES.length];
       store.set("book:theme", theme);
       applyTheme();
       label();
     });
-    label();
+    if (themeBtn) label();
 
     if (book.backend?.url && !printing) loadScript("js/backend.js");
   });
@@ -215,7 +211,7 @@
     else if (slug === "instructor") trail.push(`<li aria-current="page">Instructor dashboard</li>`);
     bar.innerHTML = `<button class="btn book-menu" type="button" aria-controls="book-toc" aria-expanded="false"><span aria-hidden="true">☰</span> Contents</button>`
       + (slug === "index" ? "" : `<nav class="book-crumbs" aria-label="Breadcrumb"><ol>${trail.join("")}</ol></nav>`)
-      + `<div class="book-tools"><button class="btn book-search" type="button" aria-haspopup="dialog" aria-keyshortcuts="Control+K Meta+K"><span aria-hidden="true">⌕</span> Search</button>${current ? `<a class="crumb" href="print.html?lesson=${current.slug}">Print</a>` : ""}${slug === "glossary" ? "" : `<a class="crumb" href="glossary.html">Glossary</a>`}<button class="btn book-theme" type="button"></button></div>`;
+      + `<div class="book-tools"><button class="btn book-search" type="button" aria-haspopup="dialog" aria-keyshortcuts="Control+K Meta+K"><span aria-hidden="true">⌕</span> Search</button>${current ? `<a class="crumb" href="print.html?lesson=${current.slug}">Print</a>` : ""}${slug === "glossary" ? "" : `<a class="crumb" href="glossary.html">Glossary</a>`}${slug === "index" ? `<button class="btn book-theme" type="button"></button>` : ""}</div>`;
     return bar;
   }
 
