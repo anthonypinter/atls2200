@@ -5,6 +5,7 @@
 <title>HTML, CSS &amp; JS Field Guide</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="minis.css">
 <style>
   .hero { display: grid; grid-template-columns: 1.3fr 1fr; gap: 32px; align-items: end; padding-block: 24px 40px; border-bottom: 1px solid var(--line); }
   @media (max-width: 800px) { .hero { grid-template-columns: 1fr; } }
@@ -41,93 +42,9 @@
   .hero-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 16px; }
   .dot { width: 9px; height: 9px; border-radius: 50%; display: inline-block; }
 
-  /* Tiny live diagrams on the ready cards */
-  .mini { height: 54px; border-radius: 6px; background: var(--stage); padding: 6px; display: flex; gap: 4px; }
-  .mini i { display: block; border-radius: 3px; }
-  .mini.flex { justify-content: space-between; align-items: center; }
-  .mini.flex i { width: 18%; height: 60%; }
-  .mini.flex i:nth-child(2) { height: 85%; }
-  .mini.grid { display: grid; grid-template-columns: 2fr 1fr 1fr; grid-template-rows: 1fr 1fr; }
-  .mini.grid i:first-child { grid-row: span 2; }
-  .mini.box { justify-content: center; align-items: center; }
-  .mini.box i { width: 60%; height: 100%; border: 6px solid var(--item-2); outline: 6px dashed color-mix(in srgb, var(--item-3) 50%, transparent); outline-offset: 0; background: var(--item-1) content-box; padding: 6px; }
-  .mini.mq { gap: 6px; align-items: stretch; }
-  .mini.mq .phone { width: 22%; display: grid; gap: 3px; }
-  .mini.mq .desk { flex: 1; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 3px; }
-  .mini i:nth-child(3n+1) { background: var(--item-1); } .mini i:nth-child(3n+2) { background: var(--item-2); } .mini i:nth-child(3n+3) { background: var(--item-3); }
-  .mini.box i { background-color: var(--item-1); }
-  .unit-print { margin: 0; font-size: 0.9rem; } @media print { .unit-print { display: none; } }
-  .mini.review { flex-direction: column; justify-content: center; gap: 5px; } .mini.review i { height: 9px; border-radius: 99px; } .mini.review i:nth-child(1) { width: 85%; } .mini.review i:nth-child(2) { width: 65%; } .mini.review i:nth-child(3) { width: 75%; }
-  .mini.doc { flex-direction: column; } .mini.doc i:first-child { height: 25%; } .mini.doc i:last-child { flex: 1; }
-  .mini.sem { display: grid; grid-template-columns: 3fr 1fr; grid-template-rows: 1fr 2.4fr 1fr; } .mini.sem i:first-child, .mini.sem i:last-child { grid-column: 1 / -1; }
-  .mini.form { flex-direction: column; justify-content: center; } .mini.form b { width: 30%; height: 5px; border-radius: 2px; background: var(--muted); }
-  .mini.form i:nth-of-type(1) { height: 14px; background: var(--panel) !important; border: 1.5px solid var(--line); } .mini.form i:nth-of-type(2) { width: 34%; height: 14px; }
-  .mini.img { align-items: stretch; } .mini.img i { width: 52%; background: linear-gradient(160deg, var(--item-2) 0 45%, var(--item-3) 45%) !important; }
-  .mini.img b { flex: 1; display: grid; place-items: center; font: 600 0.75rem var(--font-code); font-variation-settings: "MONO" 1; color: var(--val); }
-  .mini.sel { display: grid; grid-template-columns: repeat(3, 1fr); } .mini.sel i { background: var(--line) !important; } .mini.sel i.hit { background: var(--cobalt) !important; }
-  .mini.color i { flex: 1; } .mini.color i:nth-child(n) { background: hsl(225 70% calc(var(--n, 1) * 1%)); }
-  .mini.color i:nth-child(1) { --n: 20; } .mini.color i:nth-child(2) { --n: 32; } .mini.color i:nth-child(3) { --n: 44; } .mini.color i:nth-child(4) { --n: 58; } .mini.color i:nth-child(5) { --n: 72; } .mini.color i:nth-child(6) { --n: 86; }
-  .mini.type { align-items: center; gap: 10px; padding-inline: 10px; } .mini.type b { font: 800 1.7rem/1 var(--font-display); color: var(--cobalt); }
-  .mini.type span { flex: 1; display: grid; gap: 5px; } .mini.type span i { height: 4px; background: var(--muted) !important; opacity: 0.5; } .mini.type span i:last-child { width: 60%; }
-  .mini.pos { position: relative; } .mini.pos i { position: absolute; width: 40%; height: 55%; } .mini.pos i:first-child { left: 10%; top: 12%; } .mini.pos i:last-child { left: 34%; top: 34%; box-shadow: 0 2px 6px rgba(0,0,0,0.25); }
-  .mini.rimg { align-items: flex-end; justify-content: center; gap: 8px; } .mini.rimg i { background: linear-gradient(160deg, var(--item-2) 0 45%, var(--item-3) 45%) !important; }
-  .mini.rimg i:nth-child(1) { width: 14%; height: 40%; } .mini.rimg i:nth-child(2) { width: 26%; height: 65%; } .mini.rimg i:nth-child(3) { width: 40%; height: 100%; }
-  .mini.mf { align-items: flex-end; gap: 6px; } .mini.mf i:nth-child(1) { width: 12%; height: 70%; } .mini.mf i:nth-child(2) { width: 26%; height: 85%; } .mini.mf i:nth-child(3) { flex: 1; height: 100%; }
-  .mini.links { align-items: center; gap: 8px; } .mini.links i { width: 30%; height: 70%; } .mini.links b { font: 700 0.85rem var(--font-code); font-variation-settings: "MONO" 1; color: var(--prop); }
-  .mini.table { display: grid; grid-template-columns: repeat(4, 1fr); gap: 2px; } .mini.table i { background: var(--line) !important; } .mini.table i:nth-child(-n+4) { background: var(--cobalt) !important; }
-  .mini.cascade { position: relative; } .mini.cascade i { position: absolute; width: 50%; height: 50%; border-radius: 4px; }
-  .mini.cascade i:nth-child(1) { left: 8%; top: 10%; } .mini.cascade i:nth-child(2) { left: 22%; top: 25%; } .mini.cascade i:nth-child(3) { left: 36%; top: 40%; }
-  .mini.pseudo { align-items: center; justify-content: center; gap: 10px; } .mini.pseudo i { width: 34%; height: 60%; border-radius: 6px !important; } .mini.pseudo i:last-child { outline: 3px solid var(--prop); outline-offset: 2px; }
-  .mini.display { flex-wrap: wrap; align-content: center; gap: 4px; } .mini.display span { width: 20%; height: 5px; background: var(--muted); opacity: 0.5; border-radius: 2px; align-self: center; } .mini.display i { width: 16%; height: 12px; } .mini.display i.blk { width: 100%; height: 12px; }
-  .mini.vars { align-items: center; gap: 6px; padding-inline: 10px; } .mini.vars b { font: 800 1.2rem var(--font-code); font-variation-settings: "MONO" 1; color: var(--cobalt); } .mini.vars i { flex: 1; height: 60%; background: var(--item-3) !important; }
-  .mini.fvg { gap: 8px; } .mini.fvg div { flex: 1; display: flex; gap: 3px; flex-wrap: wrap; } .mini.fvg div:last-child { display: grid; grid-template-columns: 1fr 1fr; }
-  .mini.fvg div:first-child i { flex: 1 1 35%; } .mini.fvg i { min-height: 8px; }
-  .mini.motion { align-items: center; gap: 0; padding-inline: 10px; } .mini.motion i { width: 18px; height: 18px; border-radius: 50%; margin-right: 14%; } .mini.motion i:nth-child(1) { opacity: 0.3; } .mini.motion i:nth-child(2) { opacity: 0.6; }
-  .mini.fstyle { flex-direction: column; justify-content: center; gap: 5px; } .mini.fstyle i { height: 11px; background: var(--panel) !important; border: 1.5px solid var(--line); border-radius: 4px; } .mini.fstyle i:nth-child(2) { border-color: var(--cobalt); box-shadow: 0 0 0 2px var(--cobalt-soft); } .mini.fstyle i:nth-child(3) { width: 35%; background: var(--cobalt) !important; border: 0; }
-  .mini.a11y { align-items: center; justify-content: center; gap: 8px; } .mini.a11y i { width: 22%; height: 40%; } .mini.a11y i.f { outline: 3px solid var(--cobalt); outline-offset: 2px; }
-  .mini.valid { align-items: center; gap: 10px; padding-inline: 10px; } .mini.valid b { font: 800 1.5rem var(--font-display); color: var(--good); } .mini.valid span { flex: 1; display: grid; gap: 4px; }
-  .mini.valid span i { height: 5px; background: var(--muted) !important; opacity: 0.5; } .mini.valid span i.x { background: var(--bad) !important; opacity: 1; width: 60%; }
-  .mini.publish { align-items: center; justify-content: center; gap: 10px; } .mini.publish i { width: 30%; height: 70%; } .mini.publish b { color: var(--muted); font-size: 1.2rem; }
-  .mini.syntax, .mini.cssbasics { align-items: center; justify-content: center; } .mini.syntax b, .mini.cssbasics b { font: 700 1.05rem var(--font-code); font-variation-settings: "MONO" 1; color: var(--cobalt); }
-  .mini.cssbasics b { color: var(--prop); font-size: 1.2rem; }
-  .mini.textsem { flex-direction: column; gap: 4px; } .mini.textsem i { height: 5px; background: var(--muted) !important; opacity: 0.45; border-radius: 2px; } .mini.textsem i.h { height: 10px; width: 55%; background: var(--cobalt) !important; opacity: 1; }
-  .mini.textsem span { display: flex; gap: 4px; } .mini.textsem span i { flex: 1; } .mini.textsem i.st { background: var(--ink) !important; opacity: 0.9; }
-  .mini.lists { flex-direction: column; justify-content: center; gap: 6px; padding-left: 12px; } .mini.lists span { display: flex; gap: 8px; align-items: center; } .mini.lists b { width: 7px; height: 7px; border-radius: 50%; background: var(--prop); } .mini.lists i { height: 5px; width: 60%; background: var(--muted) !important; opacity: 0.5; }
-  .mini.video { position: relative; background: #1d2133; justify-content: center; align-items: center; } .mini.video b { color: #fff; font-size: 1rem; } .mini.video i { position: absolute; left: 10%; right: 10%; bottom: 8px; height: 4px; background: rgba(255,255,255,0.5) !important; }
-  .mini.web { align-items: center; justify-content: center; gap: 10px; } .mini.web i { width: 26%; height: 70%; } .mini.web i:first-child { border-radius: 3px 3px 8px 8px; } .mini.web b { color: var(--muted); font-size: 1.2rem; }
-  .mini.head { flex-direction: column; gap: 0; } .mini.head span { display: flex; align-items: center; gap: 5px; width: 55%; height: 16px; padding: 0 6px; background: var(--panel); border-radius: 5px 5px 0 0; } .mini.head span b { width: 8px; height: 8px; border-radius: 2px; background: var(--cobalt); } .mini.head span i { flex: 1; height: 4px; background: var(--muted) !important; opacity: 0.5; } .mini.head > i { flex: 1; background: var(--panel) !important; border-radius: 0 5px 5px 5px; }
-  .mini.fmt { align-items: center; justify-content: center; gap: 6px; } .mini.fmt b { font: 700 0.7rem var(--font-code); font-variation-settings: "MONO" 1; color: #fff; padding: 6px 7px; border-radius: 4px; } .mini.fmt b:nth-child(1) { background: var(--item-2); } .mini.fmt b:nth-child(2) { background: var(--item-3); } .mini.fmt b:nth-child(3) { background: var(--item-1); }
-  .mini.embed { align-items: center; justify-content: center; } .mini.embed i { width: 62%; height: 100%; position: relative; background: #1d2133 !important; outline: 2px dashed var(--prop); outline-offset: 2px; } .mini.embed i::after { content: ""; position: absolute; inset: 0; margin: auto; width: 0; height: 0; border: 7px solid transparent; border-left: 11px solid #fff; border-right: 0; }
-  .mini.pic { align-items: center; justify-content: center; gap: 8px; } .mini.pic i { height: 80%; background: linear-gradient(160deg, var(--item-2) 0 45%, var(--item-3) 45%) !important; } .mini.pic i:nth-child(1) { aspect-ratio: 21 / 9; height: 50%; } .mini.pic i:nth-child(2) { aspect-ratio: 16 / 9; height: 65%; } .mini.pic i:nth-child(3) { aspect-ratio: 1; }
-  .mini.fluid { align-items: flex-end; gap: 4px; } .mini.fluid i { flex: 1; } .mini.fluid i:nth-child(-n+2) { height: 30%; } .mini.fluid i:nth-child(3) { height: 50%; } .mini.fluid i:nth-child(4) { height: 70%; } .mini.fluid i:nth-child(n+5) { height: 88%; }
-  .mini.tf { align-items: center; justify-content: center; position: relative; } .mini.tf span { position: absolute; width: 32px; height: 32px; border: 2px dashed var(--muted); border-radius: 4px; } .mini.tf i { width: 32px; height: 32px; transform: translate(14px, -4px) rotate(20deg); }
-  .mini.pseudoel { align-items: center; gap: 6px; padding-inline: 10px; } .mini.pseudoel b { font: 800 2rem/1 Georgia, serif; color: var(--prop); } .mini.pseudoel span { flex: 1; display: grid; gap: 5px; } .mini.pseudoel span i { height: 5px; background: var(--muted) !important; opacity: 0.5; }
-  .mini.sizing { flex-direction: column; gap: 4px; justify-content: center; } .mini.sizing i { height: 10px; } .mini.sizing i:nth-child(1) { width: 100%; } .mini.sizing i:nth-child(2) { width: 50%; } .mini.sizing i:nth-child(3) { width: 75%; }
-  .mini.overflow { align-items: flex-start; padding: 6px 8px; } .mini.overflow div { width: 55%; height: 100%; border: 2px solid var(--cobalt); border-radius: 4px; display: grid; gap: 3px; padding: 3px; overflow: visible; } .mini.overflow div i { height: 6px; background: var(--muted) !important; opacity: 0.6; } .mini.overflow div i:nth-child(2) { width: 160%; background: var(--bad) !important; opacity: 1; }
-  .mini.bg { padding: 6px; } .mini.bg i { flex: 1; border-radius: 10px; background: linear-gradient(135deg, var(--item-3), var(--item-1)) !important; border: 3px dashed var(--prop); }
-  .mini.fonts { align-items: center; justify-content: center; gap: 12px; } .mini.fonts b { font-size: 1.4rem; color: var(--ink); }
-  .mini.devtools { gap: 6px; } .mini.devtools span { flex: 1; display: grid; gap: 4px; align-content: center; } .mini.devtools span i { height: 5px; background: var(--muted) !important; opacity: 0.5; } .mini.devtools span i.x { background: var(--bad) !important; opacity: 1; width: 70%; }
-  .mini.devtools span:last-child { background: var(--panel); border-radius: 4px; padding: 4px; }
-  .mini.shadow { align-items: center; justify-content: center; } .mini.shadow i { width: 50%; height: 60%; border-radius: 6px; background: var(--panel) !important; box-shadow: 0 6px 14px rgb(0 0 0 / 22%); }
-  .mini.float { display: block; padding: 6px; } .mini.float i { float: left; width: 34%; height: 34px; margin: 0 6px 2px 0; } .mini.float span { display: block; height: 5px; margin-bottom: 5px; background: var(--muted); opacity: 0.45; border-radius: 2px; }
-  .mini.organize { flex-direction: column; justify-content: center; gap: 3px; padding-left: 10px; } .mini.organize b { font: 600 0.62rem var(--font-code); font-variation-settings: "MONO" 1; color: var(--muted); line-height: 1; } .mini.organize span { display: flex; flex-direction: column; gap: 3px; } .mini.organize span i { height: 4px; width: 70%; background: var(--cobalt) !important; opacity: 0.6; }
-  /* JavaScript cards */
-  .mini.jsintro { flex-direction: column; justify-content: center; align-items: center; gap: 3px; } .mini.jsintro i { height: 11px; } .mini.jsintro i:nth-child(1) { width: 40%; } .mini.jsintro i:nth-child(2) { width: 60%; } .mini.jsintro i:nth-child(3) { width: 80%; }
-  .mini.jserr { align-items: center; gap: 10px; padding-inline: 10px; } .mini.jserr b { font: 800 1.4rem var(--font-display); color: var(--bad); } .mini.jserr span { flex: 1; display: grid; gap: 4px; }
-  .mini.jserr span i { height: 5px; background: var(--muted) !important; opacity: 0.5; } .mini.jserr span i.x { background: var(--bad) !important; opacity: 1; width: 70%; }
-  .mini.jsvar { align-items: center; justify-content: center; gap: 10px; } .mini.jsvar span { display: grid; gap: 2px; width: 34%; } .mini.jsvar b { font: 600 0.62rem var(--font-code); font-variation-settings: "MONO" 1; color: var(--cobalt); } .mini.jsvar i { height: 22px; border-radius: 4px; }
-  .mini.jsstr { align-items: center; justify-content: center; gap: 12px; } .mini.jsstr b { font: 700 0.9rem var(--font-code); font-variation-settings: "MONO" 1; color: var(--ink); } .mini.jsstr b:last-child { color: var(--val); }
-  .mini.jsarr { align-items: center; justify-content: center; gap: 3px; } .mini.jsarr i { width: 20%; height: 80%; display: grid; place-items: end center; font: 600 0.6rem var(--font-code); font-style: normal; color: #fff; padding-bottom: 2px; }
-  .mini.jsif { align-items: center; gap: 6px; padding-inline: 10px; } .mini.jsif > i { width: 18%; height: 40%; transform: rotate(45deg) scale(0.7); } .mini.jsif span { flex: 1; display: grid; gap: 6px; } .mini.jsif span i { height: 12px; } .mini.jsif span i.off { opacity: 0.25; }
-  .mini.jsloop { align-items: center; gap: 10px; padding-inline: 10px; } .mini.jsloop b { font: 800 1.5rem var(--font-display); color: var(--cobalt); } .mini.jsloop span { flex: 1; display: grid; gap: 4px; } .mini.jsloop span i { height: 8px; background: var(--item-3) !important; }
-  .mini.jsfn { align-items: center; justify-content: center; gap: 8px; } .mini.jsfn i { width: 22%; height: 50%; } .mini.jsfn b { font: 800 1.05rem var(--font-code); font-variation-settings: "MONO" 1; color: var(--fn); }
-  .mini.jsobj { align-items: center; gap: 6px; padding-inline: 10px; } .mini.jsobj b { font: 800 1.6rem var(--font-code); color: var(--cobalt); } .mini.jsobj span { flex: 1; display: grid; gap: 4px; } .mini.jsobj span i { height: 5px; background: var(--prop) !important; opacity: 0.7; } .mini.jsobj span i:nth-child(2) { width: 70%; }
-  .mini.jsdom { display: grid; grid-template-columns: repeat(4, 1fr); grid-template-rows: 1fr 1fr 1fr; gap: 3px; } .mini.jsdom i { background: var(--line) !important; } .mini.jsdom i:nth-child(1) { grid-column: 2 / 4; } .mini.jsdom i:nth-child(2) { grid-column: 1 / 3; } .mini.jsdom i:nth-child(3) { grid-column: 3 / 5; } .mini.jsdom i:nth-child(4) { grid-column: 1 / 2; } .mini.jsdom i:nth-child(5) { grid-column: 3 / 4; } .mini.jsdom i.hit { background: var(--cobalt) !important; }
-  .mini.jsevent { align-items: center; justify-content: center; gap: 10px; } .mini.jsevent i { width: 34%; height: 50%; border-radius: 6px; outline: 3px solid var(--cobalt-soft); } .mini.jsevent b { font: 700 0.75rem var(--font-code); font-variation-settings: "MONO" 1; color: var(--prop); }
-  .mini.jscreate { flex-direction: column; justify-content: center; gap: 3px; padding-inline: 12px; } .mini.jscreate i { height: 10px; background: var(--line) !important; } .mini.jscreate i.new { background: var(--good) !important; width: 70%; }
-  .mini.jsfetch { align-items: center; justify-content: center; gap: 10px; } .mini.jsfetch b { font: 800 1rem var(--font-code); font-variation-settings: "MONO" 1; color: var(--prop); } .mini.jsfetch span { color: var(--muted); } .mini.jsfetch i { width: 30%; height: 70%; }
   .empty { padding-block: 28px; color: var(--muted); }
 </style>
+<script src="js/minis.js"></script>
 <script src="book.js"></script>
 <script src="js/progress.js"></script>
 <script src="js/chrome.js"></script>
@@ -166,69 +83,7 @@
 
 <script>
   const esc = (s) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;");
-  const minis = {
-    flex: '<div class="mini flex" aria-hidden="true"><i></i><i></i><i></i></div>',
-    grid: '<div class="mini grid" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>',
-    box:  '<div class="mini box" aria-hidden="true"><i></i></div>',
-    mq:   '<div class="mini mq" aria-hidden="true"><div class="phone"><i></i><i></i><i></i></div><div class="desk"><i></i><i></i><i></i></div></div>',
-    doc:  '<div class="mini doc" aria-hidden="true"><i></i><i></i></div>',
-    sem:  '<div class="mini sem" aria-hidden="true"><i></i><i></i><i></i><i></i></div>',
-    form: '<div class="mini form" aria-hidden="true"><b></b><i></i><i></i></div>',
-    img:  '<div class="mini img" aria-hidden="true"><i></i><b>alt="…"</b></div>',
-    sel:  '<div class="mini sel" aria-hidden="true"><i></i><i></i><i class="hit"></i><i></i><i class="hit"></i><i></i></div>',
-    color:'<div class="mini color" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></div>',
-    type: '<div class="mini type" aria-hidden="true"><b>Aa</b><span><i></i><i></i><i></i></span></div>',
-    pos:  '<div class="mini pos" aria-hidden="true"><i></i><i></i></div>',
-    rimg: '<div class="mini rimg" aria-hidden="true"><i></i><i></i><i></i></div>',
-    mf:   '<div class="mini mf" aria-hidden="true"><i></i><i></i><i></i></div>',
-    links: '<div class="mini links" aria-hidden="true"><i></i><b>../</b><i></i></div>',
-    table: '<div class="mini table" aria-hidden="true">' + '<i></i>'.repeat(12) + '</div>',
-    cascade: '<div class="mini cascade" aria-hidden="true"><i></i><i></i><i></i></div>',
-    pseudo: '<div class="mini pseudo" aria-hidden="true"><i></i><i></i></div>',
-    display: '<div class="mini display" aria-hidden="true"><span></span><i></i><span></span><i class="blk"></i><span></span></div>',
-    vars: '<div class="mini vars" aria-hidden="true"><b>--</b><i></i><i></i><i></i></div>',
-    fvg: '<div class="mini fvg" aria-hidden="true"><div><i></i><i></i><i></i></div><div><i></i><i></i><i></i><i></i></div></div>',
-    motion: '<div class="mini motion" aria-hidden="true"><i></i><i></i><i></i></div>',
-    fstyle: '<div class="mini fstyle" aria-hidden="true"><i></i><i></i><i></i></div>',
-    a11y: '<div class="mini a11y" aria-hidden="true"><i></i><i class="f"></i><i></i></div>',
-    valid: '<div class="mini valid" aria-hidden="true"><b>✓</b><span><i></i><i></i><i class="x"></i></span></div>',
-    publish: '<div class="mini publish" aria-hidden="true"><i></i><b>→</b><i></i></div>',
-    syntax: '<div class="mini syntax" aria-hidden="true"><b>&lt;a href&gt;</b></div>',
-    textsem: '<div class="mini textsem" aria-hidden="true"><i class="h"></i><span><i></i><i class="st"></i><i></i></span><span><i></i><i></i></span></div>',
-    lists: '<div class="mini lists" aria-hidden="true"><span><b></b><i></i></span><span><b></b><i></i></span><span><b></b><i></i></span></div>',
-    video: '<div class="mini video" aria-hidden="true"><b>▶</b><i></i></div>',
-    web: '<div class="mini web" aria-hidden="true"><i></i><b>⇄</b><i></i></div>',
-    head: '<div class="mini head" aria-hidden="true"><span><b></b><i></i></span><i></i></div>',
-    fmt: '<div class="mini fmt" aria-hidden="true"><b>JPG</b><b>PNG</b><b>SVG</b></div>',
-    embed: '<div class="mini embed" aria-hidden="true"><i></i></div>',
-    pic: '<div class="mini pic" aria-hidden="true"><i></i><i></i><i></i></div>',
-    fluid: '<div class="mini fluid" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></div>',
-    tf: '<div class="mini tf" aria-hidden="true"><span></span><i></i></div>',
-    cssbasics: '<div class="mini cssbasics" aria-hidden="true"><b>{ ; }</b></div>',
-    pseudoel: '<div class="mini pseudoel" aria-hidden="true"><b>“</b><span><i></i><i></i></span></div>',
-    sizing: '<div class="mini sizing" aria-hidden="true"><i></i><i></i><i></i></div>',
-    overflow: '<div class="mini overflow" aria-hidden="true"><div><i></i><i></i><i></i></div></div>',
-    bg: '<div class="mini bg" aria-hidden="true"><i></i></div>',
-    fonts: '<div class="mini fonts" aria-hidden="true"><b style="font-family:Georgia,serif">Ag</b><b>Ag</b><b style="font-family:var(--font-code)">Ag</b></div>',
-    shadow: '<div class="mini shadow" aria-hidden="true"><i></i></div>',
-    float: '<div class="mini float" aria-hidden="true"><i></i><span></span><span></span><span></span><span></span></div>',
-    organize: '<div class="mini organize" aria-hidden="true"><b>/* */</b><span><i></i><i></i></span><b>/* */</b><span><i></i></span></div>',
-    devtools: '<div class="mini devtools" aria-hidden="true"><span><i></i><i class="x"></i><i></i></span><span><i></i><i></i></span></div>',
-    jsintro: '<div class="mini jsintro" aria-hidden="true"><i></i><i></i><i></i></div>',
-    jserr: '<div class="mini jserr" aria-hidden="true"><b>✕</b><span><i></i><i class="x"></i><i></i></span></div>',
-    jsvar: '<div class="mini jsvar" aria-hidden="true"><span><b>let</b><i></i></span><span><b>const</b><i></i></span></div>',
-    jsstr: '<div class="mini jsstr" aria-hidden="true"><b>"5" + 5</b><b>"55"</b></div>',
-    jsarr: '<div class="mini jsarr" aria-hidden="true"><i>0</i><i>1</i><i>2</i><i>3</i></div>',
-    jsif: '<div class="mini jsif" aria-hidden="true"><i></i><span><i></i><i class="off"></i></span></div>',
-    jsloop: '<div class="mini jsloop" aria-hidden="true"><b>↻</b><span><i></i><i></i><i></i></span></div>',
-    jsfn: '<div class="mini jsfn" aria-hidden="true"><i></i><b>ƒ( )</b><i></i></div>',
-    jsobj: '<div class="mini jsobj" aria-hidden="true"><b>{</b><span><i></i><i></i><i></i></span><b>}</b></div>',
-    jsdom: '<div class="mini jsdom" aria-hidden="true"><i></i><i></i><i></i><i class="hit"></i><i></i></div>',
-    jsevent: '<div class="mini jsevent" aria-hidden="true"><i></i><b>click</b></div>',
-    jscreate: '<div class="mini jscreate" aria-hidden="true"><i></i><i></i><i class="new"></i></div>',
-    review: '<div class="mini review" aria-hidden="true"><i></i><i></i><i></i></div>',
-    jsfetch: '<div class="mini jsfetch" aria-hidden="true"><b>{ }</b><span>→</span><i></i></div>',
-  };
+  const minis = window.MINIS;
 
   // Lessons, their order and their numbers come from book.js (numbered by js/chrome.js).
   // Saved progress (js/progress.js): completed lessons get a check, each part shows how far along it is.

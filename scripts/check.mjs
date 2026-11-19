@@ -31,7 +31,10 @@ const DEMO_LINKS = new Set(["selectors.html trail-map.pdf", "core-selectors.html
 const win = {};
 new Function("window", read("book.js"))(win);
 const book = win.BOOK;
-const index = read("book.html");
+// Card diagrams shared by both contents pages (js/minis.js).
+const minisWin = {};
+new Function("window", read("js/minis.js"))(minisWin);
+const MINIS = minisWin.MINIS || {};
 const slugs = new Set();
 book.parts.forEach((part, p) => {
   if (!part.title || !Array.isArray(part.lessons) || !part.lessons.length) err("book.js", `part ${p + 1} needs a title and lessons`);
@@ -41,7 +44,7 @@ book.parts.forEach((part, p) => {
     if (slugs.has(l.slug)) err("book.js", `duplicate slug "${l.slug}"`);
     slugs.add(l.slug);
     if (!existsSync(join(root, l.slug + ".html"))) err("book.js", `${l.slug}.html does not exist`);
-    if (!new RegExp(`\\b${l.mini}:`).test(index)) err("book.js", `${l.slug}: no diagram "${l.mini}" in book.html minis`);
+    if (l.mini && !MINIS[l.mini]) err("book.js", `${l.slug}: no diagram "${l.mini}" in js/minis.js`);
     if (l.minutes !== undefined && !(Number.isInteger(l.minutes) && l.minutes > 0)) err("book.js", `${l.slug}: minutes must be a whole number`);
   }
 });
@@ -59,7 +62,8 @@ const slugs2 = new Set();
 for (const part of book2.parts) {
   if (!part.title || !Array.isArray(part.lessons)) err("book-2.js", `part "${part.title || "?"}" needs a title and a lessons array`);
   for (const l of (part.lessons || []).filter((x) => !x.planned)) {
-    for (const k of ["slug", "title", "desc"]) if (!l[k]) err("book-2.js", `${l.slug || "lesson"} is missing "${k}"`);
+    for (const k of ["slug", "title", "desc", "mini"]) if (!l[k]) err("book-2.js", `${l.slug || "lesson"} is missing "${k}"`);
+    if (l.mini && !MINIS[l.mini]) err("book-2.js", `${l.slug}: no diagram "${l.mini}" in js/minis.js`);
     if (!Array.isArray(l.props)) err("book-2.js", `${l.slug} needs a props array`);
     if (slugs.has(l.slug) || slugs2.has(l.slug)) err("book-2.js", `duplicate slug "${l.slug}"`);
     slugs2.add(l.slug);

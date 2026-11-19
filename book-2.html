@@ -5,6 +5,7 @@
 <title>Core Web Development</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="minis.css">
 <style>
   .hero { display: grid; grid-template-columns: 1.3fr 1fr; gap: 32px; align-items: end; padding-block: 24px 40px; border-bottom: 1px solid var(--line); }
   @media (max-width: 800px) { .hero { grid-template-columns: 1fr; } }
@@ -42,6 +43,7 @@
   .credit { font-size: 0.85rem; }
   @media (prefers-reduced-motion: reduce) { a.card { transition: none; } a.card:hover { transform: none; } }
 </style>
+<script src="js/minis.js"></script>
 <script src="book-2.js"></script>
 <script src="js/progress.js"></script>
 <script src="js/chrome.js"></script>
@@ -82,7 +84,7 @@
     const done = isDone(t.slug);
     const chips = `<div class="chips">${t.props.map((p) => `<code>${esc(p)}</code>`).join("")}</div>`;
     return `<a class="card" href="${t.href}"><div class="card-top"><h3>${esc(t.title)}${done ? '<span class="sr-only"> (completed)</span>' : ""}</h3><span class="status ${done ? "done" : "ready"}">${done ? "✓ " : ""}${t.num}</span></div>
-      <p>${esc(t.desc)}</p>${chips}</a>`;
+      <div style="display:grid;gap:10px">${window.MINIS?.[t.mini] || ""}<p>${esc(t.desc)}</p></div>${chips}</a>`;
   }
   const plannedHTML = (t) => `<div class="card planned"><div class="card-top"><h3>${esc(t.title)}</h3><span class="status soon">${t.num} · Soon</span></div>
     <p>From MDN:</p><div class="src">${t.mdn.map((u) => `<a href="${esc(u)}" target="_blank" rel="noopener">${esc(mdnName(u))}</a>`).join("")}</div></div>`;
