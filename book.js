@@ -13,7 +13,7 @@
    row-level security decides what each person can read. Never put the service_role key here. */
 window.BOOK = {
   title: "HTML, CSS & JS Field Guide",
-  backend: { url: "", anonKey: "", emailDomain: "colorado.edu" },
+  backend: { url: "https://ptbpvlpgkeexeravimyb.supabase.co", anonKey: "sb_publishable_XIPvbndBK5H6lbaNd5sDNg_66iyiHGy", emailDomain: "colorado.edu" },
   parts: [
     { title: "HTML Foundations", blurb: "Structure and meaning before any styling.", lessons: [
       { slug: "how-the-web-works", title: "How the Web Works", minutes: 20, mini: "web", desc: "Browsers, servers and URLs, what happens when a page loads, and setting up your editor.", props: ["URL", "404", "file://"], related: ["links-paths", "publishing"] },
