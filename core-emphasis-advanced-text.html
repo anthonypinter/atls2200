@@ -1,0 +1,285 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Emphasis and Advanced Text · Core Web Development</title>
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="core.css">
+<style>
+  .pick-sentence { font: 1.15rem/1.6 Georgia, serif; }
+  .pick-sentence mark { background: var(--cobalt-soft); color: inherit; padding: 0 3px; border-radius: 3px; }
+  .gallery-list { display: flex; flex-wrap: wrap; gap: 6px; }
+  .rendered blockquote { margin: 0.5em 0 0.5em 1.5em; padding-left: 0.8em; border-left: 3px solid #ccd; }
+  .rendered kbd { font-family: monospace; border: 1px solid #aaa; border-bottom-width: 2px; border-radius: 4px; padding: 0 4px; background: #f4f4f4; }
+  .rendered code, .rendered samp, .rendered pre { font-family: monospace; background: #f1f3f8; }
+  .rendered abbr[title] { text-decoration: underline dotted; }
+  .dt-row { display: grid; grid-template-columns: max-content 1fr; gap: 6px 12px; align-items: center; }
+  .dt-row input, .dt-row select { font: 0.95rem var(--font-body); padding: 6px 8px; border: 1px solid var(--line); border-radius: 6px; background: var(--paper); color: var(--ink); }
+</style>
+<script src="book-2.js"></script>
+<script src="js/progress.js"></script>
+<script src="js/chrome.js"></script>
+<script src="js/quiz.js"></script>
+</head>
+<body>
+<main class="wrap">
+  <nav class="crumbs" aria-label="Site"><a class="crumb" href="book-2.html">← Contents</a><a class="crumb" href="glossary.html">Glossary</a></nav>
+  <header class="page-head">
+    <h1>Emphasis and Advanced Text</h1>
+    <p class="lede">HTML has an element for almost every kind of text: stressed words, important warnings, quotes, abbreviations, code, dates. Learn which to reach for, and why the meaning matters more than the look.</p>
+    <div class="objectives">
+      <p class="callout-title">You'll be able to</p>
+      <ul>
+        <li>Use <code>&lt;em&gt;</code> and <code>&lt;strong&gt;</code> for emphasis and importance, and know when <code>&lt;i&gt;</code>, <code>&lt;b&gt;</code> and <code>&lt;u&gt;</code> fit instead.</li>
+        <li>Mark up quotations and their sources with <code>&lt;blockquote&gt;</code>, <code>&lt;q&gt;</code> and <code>&lt;cite&gt;</code>.</li>
+        <li>Mark up abbreviations, contact details, superscripts, subscripts and code.</li>
+        <li>Give dates and times a machine-readable form with <code>&lt;time datetime&gt;</code>.</li>
+      </ul>
+    </div>
+  </header>
+
+  <!-- ===== Emphasis and importance ===== -->
+  <div class="section-title"><span class="eyebrow">Read</span><h2>Emphasis and importance</h2></div>
+  <div class="prose">
+    <p>When you speak, you stress certain words to change what a sentence means. <code>&lt;em&gt;</code> (emphasis) does that in HTML. Browsers show it in italics, and screen readers can say it with a different tone:</p>
+    <pre class="snippet" data-lang="html">&lt;p&gt;I &lt;em&gt;said&lt;/em&gt; the trail was closed.&lt;/p&gt;</pre>
+    <p><code>&lt;strong&gt;</code> marks text as important: something the reader mustn't miss. Browsers show it in bold:</p>
+    <pre class="snippet" data-lang="html">&lt;p&gt;&lt;strong&gt;Warning:&lt;/strong&gt; the bridge washed out in May.&lt;/p&gt;</pre>
+    <p>They can nest: <code>&lt;strong&gt;Do &lt;em&gt;not&lt;/em&gt; cross the creek.&lt;/strong&gt;</code></p>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Read</span><h2>Italic, bold, underline…</h2></div>
+  <div class="prose">
+    <p><code>&lt;i&gt;</code>, <code>&lt;b&gt;</code> and <code>&lt;u&gt;</code> come from the early web, when HTML described looks. Today each has a narrower meaning, for text that's set apart but <em>not</em> stressed or important:</p>
+    <ul>
+      <li><code>&lt;i&gt;</code>: foreign words, scientific names, titles of ships, a thought. <code>&lt;i lang="la"&gt;Pinus ponderosa&lt;/i&gt;</code></li>
+      <li><code>&lt;b&gt;</code>: keywords or product names you want to draw the eye to, without extra importance.</li>
+      <li><code>&lt;u&gt;</code>: text marked as wrong, like a misspelling. Readers expect underlined text to be a link, so use it rarely.</li>
+    </ul>
+    <p>If you only want the look, use CSS. If none of these meanings fit, you probably want <code>&lt;em&gt;</code> or <code>&lt;strong&gt;</code>.</p>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Play</span><h2>Meaning or just looks?</h2><p>For each highlighted phrase, choose the element that matches its meaning. You'll see the result and the reasoning.</p></div>
+  <div class="two">
+    <div class="panel">
+      <span class="eyebrow" id="pk-count"></span>
+      <p class="pick-sentence" id="pk-sentence"></p>
+      <div class="seg" id="pk-opts" role="group" aria-label="Element"></div>
+      <div class="presets"><button class="btn" type="button" id="pk-next">Next sentence →</button></div>
+    </div>
+    <div class="panel"><span class="eyebrow">Result</span><div class="rendered" id="pk-out"></div><p class="verdict" id="pk-why" aria-live="polite"></p></div>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Practice</span><h2>Let's play with emphasis and importance</h2><p>Add meaning to a trail warning.</p></div>
+  <div id="ex-emphasis"></div>
+
+  <!-- ===== Advanced text features ===== -->
+  <div class="section-title"><span class="eyebrow">Read</span><h2>Quotations</h2></div>
+  <div class="prose">
+    <p>A long quote that stands on its own goes in a <code>&lt;blockquote&gt;</code>; a short one inside a sentence goes in a <code>&lt;q&gt;</code>, which adds quotation marks for you. Both can say where the quote came from with a <code>cite</code> attribute holding a URL:</p>
+    <pre class="snippet" data-lang="html">&lt;blockquote cite="https://www.nps.gov/romo/"&gt;
+  &lt;p&gt;Take only pictures, leave only footprints.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;The ranger called it &lt;q&gt;the best view on the Front Range&lt;/q&gt;.&lt;/p&gt;</pre>
+    <p>Browsers don't show the <code>cite</code> attribute anywhere. To show a source, name it on the page with <code>&lt;cite&gt;</code>, which is for the <em>title of a work</em>: a book, an article, a film. <code>&lt;p&gt;From &lt;cite&gt;Colorado Hiking Guide&lt;/cite&gt;.&lt;/p&gt;</code></p>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Read</span><h2>Abbreviations, contact details, superscript and subscript</h2></div>
+  <div class="prose">
+    <p><code>&lt;abbr&gt;</code> marks an abbreviation. Spell it out in full the first time it appears, or give the full form in a <code>title</code> attribute: <code>&lt;abbr title="Rocky Mountain National Park"&gt;RMNP&lt;/abbr&gt;</code>. (You may see <code>&lt;acronym&gt;</code> in old code. It's been removed from HTML.)</p>
+    <p><code>&lt;address&gt;</code> holds contact details for the page or article it's in, not just any postal address. <code>&lt;sup&gt;</code> and <code>&lt;sub&gt;</code> raise and lower text: the 2 in 14,259 ft<sup>2</sup> or in H<sub>2</sub>O.</p>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Read</span><h2>Representing computer code</h2></div>
+  <div class="prose">
+    <p>Five elements cover code and computers. <code>&lt;code&gt;</code> for a piece of code; <code>&lt;pre&gt;</code> around it to keep its spacing; <code>&lt;var&gt;</code> for a variable's name; <code>&lt;kbd&gt;</code> for keys the reader presses; <code>&lt;samp&gt;</code> for what a program prints:</p>
+    <pre class="snippet" data-lang="html">&lt;p&gt;Press &lt;kbd&gt;Ctrl&lt;/kbd&gt; + &lt;kbd&gt;S&lt;/kbd&gt; to save.&lt;/p&gt;</pre>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Play</span><h2>The advanced text elements</h2><p>Pick an element to see an example, what the browser shows, and what it's for.</p></div>
+  <div class="two">
+    <div class="panel"><div class="gallery-list" id="gal-list" role="group" aria-label="Elements"></div><pre class="snippet" id="gal-code"></pre></div>
+    <div class="panel explain"><span class="eyebrow">What the browser shows</span><div class="rendered" id="gal-out"></div><h3 id="gal-name"></h3><p id="gal-why"></p></div>
+  </div>
+
+  <!-- ===== Times and dates ===== -->
+  <div class="section-title"><span class="eyebrow">Read</span><h2>Marking up times and dates</h2></div>
+  <div class="prose">
+    <p>People write dates in many ways: <em>Saturday, June 14</em>, <em>6/14</em>, <em>14 June 2026</em>. Computers can't reliably read those. <code>&lt;time&gt;</code> wraps the human version and adds one standard version in its <code>datetime</code> attribute, so calendars, search engines and scripts can understand it:</p>
+    <pre class="snippet" data-lang="html">&lt;p&gt;Next group hike: &lt;time datetime="2026-06-14T07:30"&gt;Saturday, June 14 at 7:30am&lt;/time&gt;.&lt;/p&gt;</pre>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Play</span><h2>Build a datetime</h2><p>Pick a date and time. Each line shows a valid <code>datetime</code> value, from the most general to the most precise.</p></div>
+  <div class="two">
+    <div class="panel"><div class="dt-row">
+      <label for="dt-date">Date</label><input type="date" id="dt-date" value="2026-06-14">
+      <label for="dt-time">Time</label><input type="time" id="dt-time" value="07:30">
+      <label for="dt-zone">Time zone</label><select id="dt-zone"><option value="-06:00">Mountain (summer) −06:00</option><option value="-07:00">Mountain (winter) −07:00</option><option value="Z">UTC (Z)</option></select>
+    </div></div>
+    <div class="panel"><span class="eyebrow">datetime values</span><table class="mini-table"><tbody id="dt-out"></tbody></table></div>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Practice</span><h2>Who said that?</h2><p>Mark up a trail newsletter with quotes, a source, an abbreviation and a date.</p></div>
+  <div id="ex-advanced"></div>
+
+  <section class="notes">
+    <div class="panel">
+      <h2>Key ideas</h2>
+      <ul>
+        <li><code>&lt;em&gt;</code> is stress emphasis; <code>&lt;strong&gt;</code> is importance.</li>
+        <li><code>&lt;i&gt;</code>, <code>&lt;b&gt;</code> and <code>&lt;u&gt;</code> have narrow meanings now. For looks alone, use CSS.</li>
+        <li><code>&lt;blockquote&gt;</code> for long quotes, <code>&lt;q&gt;</code> for short ones, <code>&lt;cite&gt;</code> for a work's title.</li>
+        <li><code>&lt;abbr title="…"&gt;</code> expands abbreviations.</li>
+        <li><code>&lt;time datetime="…"&gt;</code> gives dates a form computers understand.</li>
+      </ul>
+    </div>
+    <div class="panel mistake">
+      <h2>Common mistakes</h2>
+      <ul>
+        <li>Using <code>&lt;b&gt;</code> or <code>&lt;i&gt;</code> just to make text bold or italic.</li>
+        <li>Using <code>&lt;blockquote&gt;</code> to indent text that isn't a quote.</li>
+        <li>Putting a person's name in <code>&lt;cite&gt;</code>. It's for the title of a work.</li>
+        <li>Typing quotation marks around a <code>&lt;q&gt;</code>, so they appear twice.</li>
+        <li>A <code>datetime</code> in the wrong format, like <code>datetime="June 14"</code>.</li>
+      </ul>
+    </div>
+  </section>
+
+  <div class="section-title"><span class="eyebrow">Check yourself</span><h2>Quick check</h2></div>
+  <div class="panel quiz" id="quiz"></div>
+
+  <footer class="page-foot" data-book-nav><a href="book-2.html">← Contents</a></footer>
+</main>
+
+<script>
+  const $ = (id) => document.getElementById(id);
+  const esc = (s) => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+  const render = (html) => new DOMParser().parseFromString(`<!doctype html><body>${html}`, "text/html").body.innerHTML;
+
+  // --- Meaning or just looks? ---
+  const PICK = [
+    ["I can't believe you ", "forgot", " the map!", "em", "The speaker stresses the word. That's emphasis."],
+    ["", "Do not", " feed the bears.", "strong", "It's a safety warning the reader must not miss: importance."],
+    ["The ", "Pinus ponderosa", " is Colorado's most common pine.", "i", "A scientific name is set apart from the text but not stressed: <i>, ideally with lang=\"la\"."],
+    ["Bring a ", "headlamp", ", water and a jacket. (Keywords for skimmers, no extra importance.)", "b", "Drawing the eye to keywords without adding importance is what <b> is for."],
+    ["We hiked to the ", "summmit", " (spelling mistake shown on purpose).", "u", "Marking text as misspelled is one of the few remaining uses for <u>."],
+  ];
+  const OPTS = ["em", "strong", "i", "b", "u"];
+  let pk = 0;
+  function drawPick(choice) {
+    const [a, w, c, ans, why] = PICK[pk];
+    $("pk-count").textContent = `Sentence ${pk + 1} of ${PICK.length}`;
+    $("pk-sentence").innerHTML = `${esc(a)}<mark>${esc(w)}</mark>${esc(c)}`;
+    $("pk-opts").innerHTML = OPTS.map((o) => `<button class="btn" type="button" data-o="${o}" aria-pressed="${o === choice}">&lt;${o}&gt;</button>`).join("");
+    if (!choice) { $("pk-out").innerHTML = '<span class="txt" style="color:#888">Choose an element.</span>'; $("pk-why").textContent = ""; $("pk-why").className = "verdict"; return; }
+    $("pk-out").innerHTML = render(`<p>${esc(a)}<${choice}>${esc(w)}</${choice}>${esc(c)}</p>`);
+    const right = choice === ans;
+    $("pk-why").className = "verdict " + (right ? "ok" : "bad");
+    $("pk-why").textContent = (right ? "✓ " : `✗ Better: <${ans}>. `) + why;
+  }
+  $("pk-opts").addEventListener("click", (e) => { const b = e.target.closest("[data-o]"); if (b) drawPick(b.dataset.o); });
+  $("pk-next").addEventListener("click", () => { pk = (pk + 1) % PICK.length; drawPick(); });
+  drawPick();
+
+  // --- Advanced text gallery ---
+  const GAL = [
+    ["blockquote", '<blockquote cite="https://www.nps.gov/romo/">\n  <p>Take only pictures, leave only footprints.</p>\n</blockquote>', "A long quotation set apart from the text. Browsers indent it. cite holds the source's URL, but isn't shown."],
+    ["q", "<p>The ranger called it <q>the best view on the Front Range</q>.</p>", "A short quotation inside a sentence. The browser adds the quotation marks, so don't type your own."],
+    ["cite", "<p>Read more in <cite>Colorado Hiking Guide</cite>.</p>", "The title of a creative work: a book, article, film or song. Not a person's name."],
+    ["abbr", '<p>Camp in <abbr title="Rocky Mountain National Park">RMNP</abbr> with a permit.</p>', "An abbreviation. title gives the full form; many browsers show it when you hover."],
+    ["address", "<address>\n  Boulder Trail Club<br>\n  <a href=\"mailto:hello@trailclub.org\">hello@trailclub.org</a>\n</address>", "Contact details for the page or article it's in. Browsers show it in italics."],
+    ["sup / sub", "<p>Mount Elbert: 14,440 ft<sup>†</sup>. Pack H<sub>2</sub>O.</p>", "Superscript (raised) and subscript (lowered) text, for footnote marks, exponents and chemical formulas."],
+    ["code / pre", "<pre><code>&lt;h1&gt;Mesa Trail&lt;/h1&gt;\n&lt;p&gt;6.7 miles&lt;/p&gt;</code></pre>", "code marks computer code; pre keeps its spaces and line breaks."],
+    ["kbd", "<p>Press <kbd>Ctrl</kbd> + <kbd>F</kbd> to find a trail.</p>", "Keys or input the reader types."],
+    ["var / samp", "<p>The distance is <var>d</var> miles. The console prints <samp>Trail saved</samp>.</p>", "var names a variable; samp shows a program's output."],
+    ["time", '<p>Meet on <time datetime="2026-06-14T07:30">June 14 at 7:30am</time>.</p>', "A date or time, with a machine-readable version in datetime."],
+  ];
+  $("gal-list").innerHTML = GAL.map(([n], i) => `<button class="btn" type="button" data-i="${i}" aria-pressed="false">&lt;${n}&gt;</button>`).join("");
+  function gal(i) {
+    document.querySelectorAll("#gal-list .btn").forEach((b) => b.setAttribute("aria-pressed", String(+b.dataset.i === i)));
+    $("gal-code").textContent = GAL[i][1];
+    $("gal-out").innerHTML = render(GAL[i][1]);
+    $("gal-name").textContent = `<${GAL[i][0]}>`;
+    $("gal-why").textContent = GAL[i][2];
+  }
+  $("gal-list").addEventListener("click", (e) => { const b = e.target.closest("[data-i]"); if (b) gal(+b.dataset.i); });
+  gal(0);
+
+  // --- datetime builder ---
+  function dt() {
+    const d = $("dt-date").value || "2026-06-14", t = $("dt-time").value || "07:30", z = $("dt-zone").value;
+    const [y, m, day] = d.split("-");
+    const date = new Date(`${d}T00:00`);
+    const week = (() => { const x = new Date(Date.UTC(+y, +m - 1, +day)); const dn = x.getUTCDay() || 7; x.setUTCDate(x.getUTCDate() + 4 - dn); const ys = new Date(Date.UTC(x.getUTCFullYear(), 0, 1)); return `${x.getUTCFullYear()}-W${String(Math.ceil(((x - ys) / 86400000 + 1) / 7)).padStart(2, "0")}`; })();
+    const nice = isNaN(date) ? d : date.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric" });
+    const rows = [["Year and month", `${y}-${m}`], ["Date", d], ["Month and day, any year", `${m}-${day}`], ["Week of the year", week], ["Time only", t], ["Date and time", `${d}T${t}`], ["Date, time and zone", `${d}T${t}${z}`]];
+    $("dt-out").innerHTML = rows.map(([k, v]) => `<tr><td>${k}</td><td><code>${esc(v)}</code></td></tr>`).join("")
+      + `<tr><td colspan="2"><code>${esc(`<time datetime="${d}T${t}">${nice}</time>`)}</code></td></tr>`;
+  }
+  ["dt-date", "dt-time", "dt-zone"].forEach((id) => { $(id).addEventListener("input", dt); $(id).addEventListener("change", dt); });
+  dt();
+</script>
+<script>
+  makeExercise(document.getElementById("ex-emphasis"), {
+    title: "A trail warning",
+    task: `<ol>
+      <li>Make <strong>Trail closed</strong> important, so nobody misses it.</li>
+      <li>Stress the word <strong>really</strong>, the way you'd say it out loud.</li>
+      <li>The tree's scientific name, <strong>Populus tremuloides</strong>, should be set apart with <code>&lt;i&gt;</code> and <code>lang="la"</code> (Latin).</li>
+    </ol>`,
+    html: `<h1>Aspen Loop</h1>
+<p>Trail closed until June 1.</p>
+<p>Rangers really mean it: the snow bridges are unsafe.</p>
+<p>The loop is named for its quaking aspen, Populus tremuloides.</p>`,
+    solution: { html: `<h1>Aspen Loop</h1>
+<p><strong>Trail closed</strong> until June 1.</p>
+<p>Rangers <em>really</em> mean it: the snow bridges are unsafe.</p>
+<p>The loop is named for its quaking aspen, <i lang="la">Populus tremuloides</i>.</p>` },
+    hints: ["Importance is <strong>; stress is <em>.", "Attributes go in the opening tag: <i lang=\"la\">…</i>."],
+    checks: [
+      { label: "“Trail closed” is in a strong", test: ({ $ }) => $("strong").textContent.trim() === "Trail closed" },
+      { label: "“really” is in an em", test: ({ $ }) => $("em").textContent.trim() === "really" },
+      { label: "The scientific name is in an i with lang=\"la\"", test: ({ $ }) => $('i[lang="la"]').textContent.trim() === "Populus tremuloides" },
+    ],
+  });
+
+  makeExercise(document.getElementById("ex-advanced"), {
+    title: "Trail club newsletter",
+    task: `<ol>
+      <li>The ranger's long quote is a block quotation. Put the paragraph in a <code>&lt;blockquote&gt;</code> with <code>cite="https://www.nps.gov/romo/"</code>.</li>
+      <li>The guidebook's title, <strong>Colorado Hiking Guide</strong>, is the title of a work.</li>
+      <li><strong>RMNP</strong> is an abbreviation for <em>Rocky Mountain National Park</em>. Give it its full form.</li>
+      <li>The hike date should be machine-readable: <code>2026-06-14</code>.</li>
+    </ol>`,
+    html: `<h1>June newsletter</h1>
+<p>Please stay on the trail. Every shortcut tramples plants that take decades to grow back.</p>
+<p>Our route comes from Colorado Hiking Guide.</p>
+<p>We'll hike in RMNP on June 14.</p>`,
+    solution: { html: `<h1>June newsletter</h1>
+<blockquote cite="https://www.nps.gov/romo/">
+  <p>Please stay on the trail. Every shortcut tramples plants that take decades to grow back.</p>
+</blockquote>
+<p>Our route comes from <cite>Colorado Hiking Guide</cite>.</p>
+<p>We'll hike in <abbr title="Rocky Mountain National Park">RMNP</abbr> on <time datetime="2026-06-14">June 14</time>.</p>` },
+    hints: ["Wrap the whole first paragraph: <blockquote cite=\"…\"><p>…</p></blockquote>.", "<abbr title=\"Rocky Mountain National Park\">RMNP</abbr>", "<time datetime=\"2026-06-14\">June 14</time>"],
+    checks: [
+      { label: "The quote is in a blockquote with the right cite", test: ({ $ }) => $("blockquote").getAttribute("cite") === "https://www.nps.gov/romo/" && $("blockquote").textContent.includes("Please stay on the trail") },
+      { label: "The guidebook title is in a cite element", test: ({ $ }) => $("cite").textContent.trim() === "Colorado Hiking Guide" },
+      { label: "RMNP is an abbr with its full form", test: ({ $ }) => $("abbr").textContent.trim() === "RMNP" && $("abbr").getAttribute("title").trim() === "Rocky Mountain National Park" },
+      { label: "June 14 is a time with datetime=\"2026-06-14\"", test: ({ $ }) => $("time").getAttribute("datetime") === "2026-06-14" },
+    ],
+  });
+
+  makeQuiz(document.getElementById("quiz"), [
+    { id: "q1", q: "Which element says “this word is stressed”?", opts: ["<em>", "<strong>", "<i>"], a: 0, why: "em is stress emphasis, the way you'd stress a word out loud." },
+    { id: "q2", q: "Which element marks a safety warning as important?", opts: ["<b>", "<strong>", "<em>"], a: 1, why: "strong means importance. b only draws attention without adding importance." },
+    { id: "q3", q: "You just want some text to look italic, with no special meaning. What do you use?", opts: ["<i>", "<em>", "CSS"], a: 2, why: "If there's no meaning, it's a style, and styles belong in CSS." },
+    { id: "q4", q: "Where does a <q> element's quotation marks come from?", opts: ["The browser adds them", "You type them", "The cite attribute"], a: 0, why: "Browsers add the marks around q. Typing your own doubles them." },
+    { id: "q5", q: "What belongs in <cite>?", opts: ["The title of a book or article", "The name of the person quoted", "The source's URL"], a: 0, why: "cite is for the title of a work. The URL goes in the cite attribute of blockquote or q." },
+    { id: "q6", q: "Which datetime value is valid?", opts: ["datetime=\"June 14, 2026\"", "datetime=\"2026-06-14\"", "datetime=\"14/06/2026\""], a: 1, why: "datetime uses year-month-day with hyphens, the standard machine-readable format." },
+    { id: "q7", q: "How should you mark up the keys a reader presses?", opts: ["<kbd>", "<code>", "<samp>"], a: 0, why: "kbd is keyboard input. samp is a program's output; code is code." },
+  ]);
+</script>
+</body>
+</html>

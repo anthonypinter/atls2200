@@ -1,0 +1,414 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Creating Links · Core Web Development</title>
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="core.css">
+<style>
+  .ftree { list-style: none; margin: 0; padding: 0; font: 0.92rem/1.4 var(--font-code); font-variation-settings: "MONO" 1; display: grid; gap: 2px; }
+  .ftree ul { list-style: none; margin: 0 0 0 8px; padding-left: 20px; border-left: 1px dashed var(--line); display: grid; gap: 2px; }
+  .ftree .folder { color: var(--prop); font-weight: 600; padding: 3px 6px; }
+  .ftree button { display: flex; gap: 8px; align-items: center; width: 100%; text-align: left; font: inherit; color: var(--ink); background: none; border: 1px solid transparent; border-radius: 5px; padding: 3px 6px; cursor: pointer; }
+  .ftree button:hover { background: var(--stage); }
+  .ftree button.from { background: var(--cobalt-soft); border-color: var(--cobalt); }
+  .ftree button.to { background: var(--good-soft); border-color: var(--good); }
+  .ftree button.landed { outline: 2px dashed var(--bad); }
+  .ftree .tag { margin-left: auto; font-size: 0.7rem; padding: 1px 6px; border-radius: 4px; white-space: nowrap; }
+  .ftree .from .tag { background: var(--cobalt); color: var(--panel); } .ftree .to .tag { background: var(--good); color: var(--panel); }
+  .path-in { font: 1.05rem var(--font-code); font-variation-settings: "MONO" 1; padding: 10px 12px; border: 1px solid var(--line); border-radius: 8px; background: var(--panel); color: var(--val); width: 100%; }
+  .result { padding: 12px 14px; border-radius: 8px; font-size: 0.95rem; }
+  .result.right { background: var(--good-soft); color: var(--good); } .result.wrong { background: var(--bad-soft); color: var(--bad); }
+  .walk { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+  .walk li { display: grid; grid-template-columns: auto 1fr; gap: 10px; align-items: baseline; font-size: 0.95rem; }
+  .frag-page { height: 230px; overflow-y: auto; scroll-behavior: smooth; }
+  .frag-page section { min-height: 160px; padding-bottom: 10px; border-bottom: 1px dashed #ccd; }
+  .frag-page :target, .frag-page .hit { background: #fff6c8; }
+  .form-rows { display: grid; grid-template-columns: max-content 1fr; gap: 8px 10px; align-items: center; }
+</style>
+<script src="book-2.js"></script>
+<script src="js/progress.js"></script>
+<script src="js/chrome.js"></script>
+<script src="js/quiz.js"></script>
+</head>
+<body>
+<main class="wrap">
+  <nav class="crumbs" aria-label="Site"><a class="crumb" href="book-2.html">← Contents</a><a class="crumb" href="glossary.html">Glossary</a></nav>
+  <header class="page-head">
+    <h1>Creating Links</h1>
+    <p class="lede">Links are what make the web a web. Write links to other pages, other sites, spots on a page, files and email addresses, with paths that find their target and text that says where it goes.</p>
+    <div class="objectives">
+      <p class="callout-title">You'll be able to</p>
+      <ul>
+        <li>Write a link with <code>&lt;a href&gt;</code>, around text, a heading or an image.</li>
+        <li>Write relative paths into folders, out of folders, and from the site's root.</li>
+        <li>Link to another site with a full URL, and to a spot on a page with a fragment.</li>
+        <li>Write clear link text, and signpost downloads and new tabs.</li>
+        <li>Build a navigation menu and an email link.</li>
+      </ul>
+    </div>
+  </header>
+
+  <!-- ===== What is a hyperlink? / Anatomy ===== -->
+  <div class="section-title"><span class="eyebrow">Read</span><h2>Anatomy of a link</h2></div>
+  <div class="prose">
+    <p>A hyperlink connects a page to any other document or resource that has a <span class="term">URL</span>. You make one by wrapping content in an <code>&lt;a&gt;</code> (anchor) element and putting the destination in its <code>href</code> (hypertext reference) attribute:</p>
+    <pre class="snippet" data-lang="html">&lt;p&gt;Start with the &lt;a href="https://www.nps.gov/romo/"&gt;Rocky Mountain National Park website&lt;/a&gt;.&lt;/p&gt;</pre>
+    <h3>Block level links and image links</h3>
+    <p>Almost anything can be a link, not just text. Wrap a heading to make the whole heading clickable, or wrap an image to make a clickable logo. An image link's <code>alt</code> text becomes the link's text, so describe where it goes:</p>
+    <pre class="snippet" data-lang="html">&lt;a href="index.html"&gt;
+  &lt;img src="logo.svg" alt="Boulder Trail Club home page"&gt;
+&lt;/a&gt;</pre>
+    <h3>Adding supporting information with the title attribute</h3>
+    <p>A <code>title</code> attribute shows a tooltip when the mouse hovers over the link. Don't rely on it: keyboard and touchscreen users never see it, and many screen readers skip it. Anything important belongs in the link text.</p>
+  </div>
+
+  <!-- ===== URLs and paths ===== -->
+  <div class="section-title"><span class="eyebrow">Read</span><h2>A quick primer on URLs and paths</h2></div>
+  <div class="prose">
+    <p>A path is directions from the page you're writing in to the file you want. Picture your site's folders:</p>
+    <ul>
+      <li><strong>Same directory:</strong> just the file name. <code>about.html</code></li>
+      <li><strong>Moving down into subdirectories:</strong> folder, slash, file. <code>trails/mesa.html</code></li>
+      <li><strong>Moving back up into parent directories:</strong> <code>../</code> means "the folder above". <code>../index.html</code>, or <code>../../index.html</code> for two levels.</li>
+      <li><strong>Linking relative to the root directory:</strong> a leading slash starts at the top of the site. <code>/images/logo.png</code></li>
+      <li><strong>Linking with full URLs:</strong> for another site, write the whole <span class="term">absolute path</span>, starting with <code>https://</code>.</li>
+    </ul>
+    <p>The first four are <span class="term" data-term="Relative path">relative paths</span>: they work inside your own site, wherever it's hosted. Links within your site are <em>internal</em>; links to other sites are <em>external</em> and always need a full URL.</p>
+    <div class="callout warn"><p class="callout-title">Watch out</p><p>Paths starting with <code>/</code> break on GitHub Pages project sites, which live in a folder like <code>you.github.io/trail-club/</code>. Stick to relative paths for your own files.</p></div>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Play</span><h2>Find the path</h2><p>Pick the file you're writing in, click the file you want to link to, then write the path yourself.</p></div>
+  <section class="playground">
+    <div class="panel controls">
+      <div class="control"><label for="from">I'm writing code in</label>
+        <select id="from"><option>index.html</option><option>trails/mesa.html</option><option>trails/notes/week1.html</option><option>css/style.css</option></select></div>
+      <span class="eyebrow" style="margin-top:4px">Click a file to link to it</span>
+      <ul class="ftree" id="ftree" aria-label="Site folder"></ul>
+    </div>
+    <div class="stage-col">
+      <div class="panel" style="display:grid;gap:10px">
+        <label class="eyebrow" for="guess">Type the path you'd write</label>
+        <input class="path-in" id="guess" spellcheck="false" autocomplete="off" placeholder="e.g. images/logo.png">
+        <div class="result" id="result" aria-live="polite"></div>
+        <div class="presets"><button class="btn" type="button" id="show">Show the answer</button></div>
+      </div>
+      <div class="panel" id="answer" hidden style="display:grid;gap:10px"><span class="eyebrow">How to read it</span><ul class="walk" id="walk"></ul></div>
+    </div>
+  </section>
+
+  <div class="section-title"><span class="eyebrow">Read</span><h2>Document fragments</h2></div>
+  <div class="prose">
+    <p>A link can jump to a spot on a page. Give the target element an <code>id</code>, then add <code>#</code> and that id to the end of the link. On the same page, the <code>#</code> part is enough:</p>
+    <pre class="snippet" data-lang="html">&lt;h2 id="parking"&gt;Parking&lt;/h2&gt;
+…
+&lt;a href="#parking"&gt;Where to park&lt;/a&gt;
+&lt;a href="trails/mesa.html#parking"&gt;Mesa Trail parking&lt;/a&gt;</pre>
+    <p>And when a URL ends in a folder, like <code>trails/</code>, the server sends that folder's <code>index.html</code>.</p>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Play</span><h2>Jump to a fragment</h2><p>Click the links in this little page. Each one jumps to the element with the matching id, and highlights it.</p></div>
+  <div class="two">
+    <div class="panel"><pre class="snippet" id="frag-code"></pre></div>
+    <div class="panel"><span class="eyebrow">The page</span>
+      <div class="rendered frag-page" id="frag-page" data-use>
+        <nav><a href="#getting-there">Getting there</a> · <a href="#parking">Parking</a> · <a href="#rules">Rules</a></nav>
+        <section><h3 id="getting-there">Getting there</h3><p>Take Baseline Road west to the park.</p></section>
+        <section><h3 id="parking">Parking</h3><p>The lot fills by 8am on weekends.</p></section>
+        <section><h3 id="rules">Rules</h3><p>Dogs on leash. Stay on the trail.</p><p><a href="#getting-there">Back to the top</a></p></section>
+      </div></div>
+  </div>
+
+  <!-- ===== Link best practices ===== -->
+  <div class="section-title"><span class="eyebrow">Read</span><h2>Link best practices</h2></div>
+  <div class="prose">
+    <h3>Use clear link wording</h3>
+    <p>Screen reader users often pull up a list of every link on the page, and sighted readers skim for blue text. "Click here" means nothing out of context. Make the link text say where it goes: <code>&lt;a href="…"&gt;Download the trail map&lt;/a&gt;</code>, not <code>Click &lt;a href="…"&gt;here&lt;/a&gt;</code>. Don't use the raw URL as the text either, and keep it short.</p>
+    <h3>Linking to non-HTML resources: leave clear signposts</h3>
+    <p>If a link downloads a big file or opens a PDF, say so in the text: <em>Trail map (PDF, 2 MB)</em>. Nobody likes a surprise download on a phone plan.</p>
+    <h3>Use the download attribute when linking to a download</h3>
+    <p><code>download</code> tells the browser to save the file instead of opening it, and can suggest a file name: <code>&lt;a href="maps/mesa.pdf" download="mesa-trail-map.pdf"&gt;</code>.</p>
+    <h3>When to open links in a new tab</h3>
+    <p><code>target="_blank"</code> opens a link in a new tab. Use it sparingly. It takes the choice away from the visitor, and the back button stops working. If you do, say so in the link text.</p>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Play</span><h2>Is this good link text?</h2><p>Type the text you'd put inside a link. It's checked against the rules above.</p></div>
+  <div class="two">
+    <div class="panel">
+      <label class="eyebrow" for="lt-in">Link text</label><input class="src" id="lt-in" value="click here" spellcheck="false">
+      <div class="presets" id="lt-presets" role="group" aria-label="Examples">
+        <button class="btn" type="button">click here</button><button class="btn" type="button">https://www.bouldercolorado.gov/trails</button>
+        <button class="btn" type="button">Trail map (PDF, 2 MB)</button><button class="btn" type="button">read more</button><button class="btn" type="button">Mesa Trail guide</button>
+      </div>
+    </div>
+    <div class="panel"><span class="eyebrow">In a screen reader's list of links</span><div class="rendered" id="lt-list"></div><p class="verdict" id="lt-verdict" aria-live="polite"></p></div>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Practice</span><h2>Links from inside a folder</h2><p>Write relative paths from a page that lives in a folder, and fix vague link text.</p></div>
+  <div id="ex-paths"></div>
+
+  <!-- ===== Navigation menu ===== -->
+  <div class="section-title"><span class="eyebrow">Read</span><h2>Creating a navigation menu</h2></div>
+  <div class="prose">
+    <p>A site's main menu is a list of links, usually wrapped in <code>&lt;nav&gt;</code>. The same menu goes on every page. On the current page, its own item is often left as plain text, or marked with <code>aria-current="page"</code>, so it isn't a link to where you already are:</p>
+    <pre class="snippet" data-lang="html">&lt;nav&gt;
+  &lt;ul&gt;
+    &lt;li&gt;&lt;a href="index.html"&gt;Home&lt;/a&gt;&lt;/li&gt;
+    &lt;li&gt;&lt;a href="trails.html" aria-current="page"&gt;Trails&lt;/a&gt;&lt;/li&gt;
+    &lt;li&gt;&lt;a href="about.html"&gt;About&lt;/a&gt;&lt;/li&gt;
+  &lt;/ul&gt;
+&lt;/nav&gt;</pre>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Practice</span><h2>A navigation menu</h2><p>Build the trail club's menu for its Trails page.</p></div>
+  <div id="ex-nav"></div>
+
+  <!-- ===== Email links ===== -->
+  <div class="section-title"><span class="eyebrow">Read</span><h2>Email links</h2></div>
+  <div class="prose">
+    <p>A link whose <code>href</code> starts with <code>mailto:</code> opens the visitor's email app with a new message: <code>&lt;a href="mailto:hello@trailclub.org"&gt;Email the club&lt;/a&gt;</code>. You can fill in more of the message after a <code>?</code>: <code>subject</code>, <code>cc</code>, <code>bcc</code> and <code>body</code>, joined with <code>&amp;</code>. Spaces and special characters must be encoded: a space becomes <code>%20</code>.</p>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Play</span><h2>Build an email link</h2><p>Fill in the message. The link is encoded for you.</p></div>
+  <div class="two">
+    <div class="panel"><div class="form-rows">
+      <label for="m-to">To</label><input class="text-in" id="m-to" value="hello@trailclub.org">
+      <label for="m-sub">Subject</label><input class="text-in" id="m-sub" value="Saturday hike & carpool">
+      <label for="m-cc">Cc</label><input class="text-in" id="m-cc" value="">
+      <label for="m-body">Body</label><textarea class="text-in" id="m-body" rows="3">Can I join the Royal Arch hike?</textarea>
+    </div></div>
+    <div class="panel"><span class="eyebrow">Your link</span><pre class="snippet" id="m-code" style="white-space:pre-wrap;overflow-wrap:anywhere"></pre></div>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Practice</span><h2>Downloads and email</h2><p>Signpost a download and add an email link with a subject.</p></div>
+  <div id="ex-mail"></div>
+
+  <section class="notes">
+    <div class="panel">
+      <h2>Key ideas</h2>
+      <ul>
+        <li>A link is <code>&lt;a href="destination"&gt;content&lt;/a&gt;</code>. Text, headings and images can all be links.</li>
+        <li><code>file.html</code> stays in this folder, <code>folder/file.html</code> goes in, <code>../file.html</code> goes up.</li>
+        <li>Other sites need a full URL: <code>https://…</code>.</li>
+        <li><code>#id</code> jumps to the element with that id.</li>
+        <li>Link text should make sense on its own, and warn about downloads and new tabs.</li>
+      </ul>
+    </div>
+    <div class="panel mistake">
+      <h2>Common mistakes</h2>
+      <ul>
+        <li>"Click here" or "read more" as link text.</li>
+        <li>Linking another site without <code>https://</code>, so it's treated as a file in your folder.</li>
+        <li>Paths from your own computer, like <code>file:///Users/…</code> or <code>C:\…</code>.</li>
+        <li>A capital letter in the path that doesn't match the file name.</li>
+        <li>Opening every link in a new tab.</li>
+      </ul>
+    </div>
+  </section>
+
+  <div class="section-title"><span class="eyebrow">Check yourself</span><h2>Quick check</h2></div>
+  <div class="panel quiz" id="quiz"></div>
+
+  <footer class="page-foot" data-book-nav><a href="book-2.html">← Contents</a></footer>
+</main>
+
+<script>
+  const $ = (id) => document.getElementById(id);
+  const esc = (s) => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+
+  // --- Find the path ---
+  const FILES = ["index.html", "about.html", "css/style.css", "images/logo.png", "images/Trail-Photo.JPG", "trails/index.html", "trails/mesa.html", "trails/notes/week1.html"];
+  let target = "images/logo.png", landed = null, revealed = false;
+  const dirOf = (f) => f.split("/").slice(0, -1);
+  function drawTree() {
+    const root = {};
+    FILES.forEach((f) => { let node = root; const parts = f.split("/"); parts.forEach((p, i) => { if (i === parts.length - 1) node[p] = f; else node = node[p + "/"] = node[p + "/"] || {}; }); });
+    const from = $("from").value;
+    const draw = (node) => Object.keys(node).sort((a, b) => (b.endsWith("/") - a.endsWith("/")) || a.localeCompare(b)).map((k) => {
+      if (typeof node[k] === "string") {
+        const f = node[k], cls = [f === from ? "from" : "", f === target ? "to" : "", f === landed && f !== target ? "landed" : ""].join(" ");
+        const tag = f === from ? "you are here" : f === target ? "link to" : "";
+        return `<li><button type="button" class="${cls}" data-f="${f}">${k}${tag ? `<span class="tag">${tag}</span>` : ""}</button></li>`;
+      }
+      return `<li><span class="folder">${k}</span><ul>${draw(node[k])}</ul></li>`;
+    }).join("");
+    $("ftree").innerHTML = `<li><span class="folder">my-site/</span><ul>${draw(root)}</ul></li>`;
+  }
+  function answer(from, to) {
+    const a = dirOf(from), b = to.split("/");
+    let i = 0; while (i < a.length && i < b.length - 1 && a[i] === b[i]) i++;
+    return "../".repeat(a.length - i) + b.slice(i).join("/");
+  }
+  function resolve(from, path) {
+    if (/^[a-z]+:/i.test(path) || path.includes("\\")) return { error: path.includes("\\") ? "Web paths use forward slashes (/), not backslashes." : "That's a full URL or a path on your own computer. For your own files, use a relative path." };
+    const parts = path.startsWith("/") ? [] : dirOf(from);
+    for (const seg of path.replace(/^\//, "").split("/")) {
+      if (seg === "" || seg === ".") continue;
+      if (seg === "..") { if (!parts.length) return { error: "That climbs above the my-site folder. Too many ../" }; parts.pop(); }
+      else parts.push(seg);
+    }
+    return { file: parts.join("/"), root: path.startsWith("/") };
+  }
+  function paths() {
+    const from = $("from").value;
+    if (target === from) target = FILES.find((f) => f !== from);
+    const g = $("guess").value.trim(), r = $("result");
+    landed = null;
+    if (!g) { r.className = "result"; r.textContent = `Write a path from ${from} to ${target}.`; }
+    else {
+      const res = resolve(from, g);
+      if (res.error) { r.className = "result wrong"; r.textContent = res.error; }
+      else if (res.file === target) {
+        r.className = "result " + (res.root ? "wrong" : "right");
+        r.textContent = res.root ? "That reaches the file from the site's root. It works on some servers but breaks on GitHub Pages project sites. Try a relative path." : "Correct. That path reaches the file.";
+      } else if (res.file.toLowerCase() === target.toLowerCase()) { r.className = "result wrong"; r.textContent = "Close, but the capitalization doesn't match. Servers treat Photo.JPG and photo.jpg as different files."; }
+      else if (FILES.includes(res.file)) { landed = res.file; r.className = "result wrong"; r.textContent = `That path leads to ${res.file}, not ${target}. It's marked in red in the tree.`; }
+      else { r.className = "result wrong"; r.textContent = `That leads to "${res.file || "(the site folder)"}", which doesn't exist. The browser would show a broken link.`; }
+    }
+    $("answer").hidden = !revealed;
+    if (revealed) {
+      const ans = answer(from, target), steps = [[`start in`, `the folder containing ${esc(from)}: <code>${dirOf(from).join("/") || "my-site"}/</code>`]];
+      ans.split("/").forEach((seg, i, arr) => steps.push([`<code>${seg}${i < arr.length - 1 ? "/" : ""}</code>`, seg === ".." ? "go up one folder" : i < arr.length - 1 ? `go into the ${seg} folder` : "that's the file"]));
+      $("walk").innerHTML = `<li><span class="eyebrow">Answer</span><code style="font-size:1.05rem">${ans}</code></li>` + steps.map(([a, b]) => `<li><span>${a}</span><span>${b}</span></li>`).join("");
+    }
+    drawTree();
+  }
+  $("ftree").addEventListener("click", (e) => { const b = e.target.closest("button"); if (b && b.dataset.f !== $("from").value) { target = b.dataset.f; $("guess").value = ""; revealed = false; paths(); } });
+  $("from").addEventListener("input", () => { $("guess").value = ""; revealed = false; paths(); });
+  $("from").addEventListener("change", () => { $("guess").value = ""; revealed = false; paths(); });
+  $("guess").addEventListener("input", paths);
+  $("show").addEventListener("click", () => { revealed = true; paths(); });
+  paths();
+
+  // --- Fragments: scroll inside the little page instead of changing this page's URL ---
+  $("frag-code").textContent = $("frag-page").innerHTML.replace(/^\s+/gm, "").replace(/<\/section>/g, "</section>\n").trim();
+  $("frag-page").addEventListener("click", (e) => {
+    const a = e.target.closest('a[href^="#"]');
+    if (!a) return;
+    e.preventDefault();
+    const t = $("frag-page").querySelector(a.getAttribute("href"));
+    if (!t) return;
+    $("frag-page").querySelectorAll(".hit").forEach((x) => x.classList.remove("hit"));
+    t.classList.add("hit");
+    $("frag-page").scrollTop = t.offsetTop - $("frag-page").offsetTop - 8;
+  });
+
+  // --- Link text checker ---
+  function linkText() {
+    const t = $("lt-in").value.trim();
+    const issues = [];
+    if (!t) issues.push("Empty: a screen reader would read the URL, or just “link”.");
+    if (/^(click here|here|click|link|this|more|read more|learn more|this link)$/i.test(t)) issues.push("Means nothing out of context. Say where the link goes.");
+    if (/^(https?:\/\/|www\.)/i.test(t)) issues.push("A raw URL is long and hard to listen to. Describe the destination instead.");
+    if (t.length > 80) issues.push("Long. Keep link text to a few words.");
+    $("lt-list").innerHTML = `<ul>${["Home", "Trails", t || "(empty)", "About"].map((x) => `<li><a href="#" onclick="return false">${esc(x)}</a></li>`).join("")}</ul>`;
+    $("lt-verdict").className = "verdict " + (issues.length ? "bad" : "ok");
+    $("lt-verdict").textContent = issues.length ? "✗ " + issues.join(" ") : /pdf|mb|download|new tab/i.test(t) ? "✓ Clear, and it warns what's coming." : "✓ Clear on its own.";
+  }
+  $("lt-in").addEventListener("input", linkText);
+  $("lt-presets").addEventListener("click", (e) => { const b = e.target.closest("button"); if (b) { $("lt-in").value = b.textContent; linkText(); } });
+  linkText();
+
+  // --- mailto builder ---
+  function mail() {
+    const q = [["subject", $("m-sub").value], ["cc", $("m-cc").value], ["body", $("m-body").value]].filter(([, v]) => v.trim()).map(([k, v]) => `${k}=${encodeURIComponent(v)}`);
+    const href = `mailto:${$("m-to").value.trim()}${q.length ? "?" + q.join("&") : ""}`;
+    $("m-code").textContent = `<a href="${href}">Email the club</a>`;
+  }
+  ["m-to", "m-sub", "m-cc", "m-body"].forEach((id) => $(id).addEventListener("input", mail));
+  mail();
+</script>
+<script>
+  makeExercise(document.getElementById("ex-paths"), {
+    title: "Links from inside a folder",
+    task: `<p>This code is in <code>trails/mesa.html</code>. The site looks like this:</p>
+    <pre class="snippet">site/
+  index.html
+  images/mesa.jpg
+  trails/mesa.html        ← you are here
+  trails/royal-arch.html</pre>
+    <ol>
+      <li>Point <em>Home</em> to <code>index.html</code> and <em>Royal Arch</em> to its page, using relative paths.</li>
+      <li>Fix the image's <code>src</code>.</li>
+      <li>Rewrite “click here” so the link text says where it goes.</li>
+    </ol>`,
+    html: `<nav>
+  <a href="">Home</a>
+  <a href="">Royal Arch</a>
+</nav>
+<img src="" alt="Mesa Trail in spring" width="300" height="200">
+<p>For the full trail guide, <a href="https://www.bouldercolorado.gov/trails">click here</a>.</p>`,
+    solution: { html: `<nav>
+  <a href="../index.html">Home</a>
+  <a href="royal-arch.html">Royal Arch</a>
+</nav>
+<img src="../images/mesa.jpg" alt="Mesa Trail in spring" width="300" height="200">
+<p>Read the <a href="https://www.bouldercolorado.gov/trails">city's full trail guide</a>.</p>` },
+    hints: ["royal-arch.html is in the same folder as this page, so its name alone is enough.", "index.html and images/ are one level up. ../ climbs one folder.", "Good link text makes sense on its own, like “the city's full trail guide”."],
+    checks: [
+      { label: "Home points to ../index.html", test: ({ $$ }) => ["../index.html", "../"].includes($$("nav a")[0].getAttribute("href")) },
+      { label: "Royal Arch points to royal-arch.html", test: ({ $$ }) => ["royal-arch.html", "./royal-arch.html"].includes($$("nav a")[1].getAttribute("href")) },
+      { label: "The image path is ../images/mesa.jpg", test: ({ $ }) => $("img").getAttribute("src") === "../images/mesa.jpg" },
+      { label: "The link text says where it goes", test: ({ $ }) => { const t = $("p a").textContent.trim(); return t.length >= 8 && !/click|here/i.test(t); } },
+    ],
+  });
+
+  makeExercise(document.getElementById("ex-nav"), {
+    title: "The trail club's menu",
+    task: `<p>This menu is for <code>trails.html</code>. All four pages are in the same folder.</p>
+    <ol>
+      <li>Wrap the menu in a <code>&lt;nav&gt;</code> with an unordered list inside, one <code>&lt;li&gt;</code> per item.</li>
+      <li>Link <em>Home</em> to <code>index.html</code>, <em>Events</em> to <code>events.html</code> and <em>About</em> to <code>about.html</code>.</li>
+      <li>Link <em>Trails</em> to <code>trails.html</code> and mark it as the current page with <code>aria-current="page"</code>.</li>
+    </ol>`,
+    html: `Home
+Trails
+Events
+About`,
+    solution: { html: `<nav>
+  <ul>
+    <li><a href="index.html">Home</a></li>
+    <li><a href="trails.html" aria-current="page">Trails</a></li>
+    <li><a href="events.html">Events</a></li>
+    <li><a href="about.html">About</a></li>
+  </ul>
+</nav>` },
+    hints: ["The structure is nav > ul > li > a.", "Each link is <a href=\"page.html\">Text</a>, inside its own <li>.", "aria-current=\"page\" goes on the Trails link's opening tag."],
+    checks: [
+      { label: "A nav contains a ul with four items", test: ({ $$ }) => $$("nav ul > li").length === 4 },
+      { label: "Home, Events and About link to their pages", test: ({ $$ }) => { const h = Object.fromEntries($$("nav a").map((a) => [a.textContent.trim(), a.getAttribute("href")])); return h.Home === "index.html" && h.Events === "events.html" && h.About === "about.html"; } },
+      { label: "Trails links to trails.html with aria-current=\"page\"", test: ({ $$ }) => { const a = $$("nav a").find((x) => x.textContent.trim() === "Trails"); return a.getAttribute("href") === "trails.html" && a.getAttribute("aria-current") === "page"; } },
+    ],
+  });
+
+  makeExercise(document.getElementById("ex-mail"), {
+    title: "Map download and contact link",
+    task: `<ol>
+      <li>Make the map link download the file instead of opening it, with the suggested name <code>mesa-trail-map.pdf</code>.</li>
+      <li>Change the map link's text to <strong>Mesa Trail map (PDF, 2 MB)</strong>, so people know what they're getting.</li>
+      <li>Make <strong>Email the club</strong> a link to <code>hello@trailclub.org</code> with the subject <em>Trail question</em>.</li>
+    </ol>`,
+    html: `<p><a href="maps/mesa.pdf">here</a></p>
+<p>Questions? Email the club.</p>`,
+    solution: { html: `<p><a href="maps/mesa.pdf" download="mesa-trail-map.pdf">Mesa Trail map (PDF, 2 MB)</a></p>
+<p>Questions? <a href="mailto:hello@trailclub.org?subject=Trail%20question">Email the club</a>.</p>` },
+    hints: ["The download attribute's value is the suggested file name.", "mailto:address?subject=… Encode the space as %20."],
+    checks: [
+      { label: "The map link downloads as mesa-trail-map.pdf", test: ({ $ }) => $('a[href="maps/mesa.pdf"]').getAttribute("download") === "mesa-trail-map.pdf" },
+      { label: "The map link text signposts the PDF", test: ({ $ }) => $('a[href="maps/mesa.pdf"]').textContent.trim() === "Mesa Trail map (PDF, 2 MB)" },
+      { label: "“Email the club” is a mailto link with the subject “Trail question”", test: ({ $$ }) => { const a = $$("a").find((x) => x.textContent.trim() === "Email the club"); const u = new URL(a.getAttribute("href")); return u.protocol === "mailto:" && u.pathname === "hello@trailclub.org" && u.searchParams.get("subject") === "Trail question"; } },
+    ],
+  });
+
+  makeQuiz(document.getElementById("quiz"), [
+    { id: "q1", q: "You're in hikes/mesa.html. What's the path to index.html one folder up?", opts: ["index.html", "/hikes/index.html", "../index.html"], a: 2, why: "../ goes up one folder, out of hikes/, to where index.html lives." },
+    { id: "q2", q: "From index.html, what's the path to hikes/photos/mesa.jpg?", opts: ["hikes/photos/mesa.jpg", "../photos/mesa.jpg", "mesa.jpg"], a: 0, why: "Go into hikes, then photos, then the file." },
+    { id: "q3", q: "Which link to another website works?", opts: ["<a href=\"www.nps.gov\">", "<a href=\"https://www.nps.gov\">", "<a href=\"nps.gov\">"], a: 1, why: "Without https://, the browser looks for a file called www.nps.gov in your own folder." },
+    { id: "q4", q: "What does href=\"#parking\" link to?", opts: ["The element with id=\"parking\" on this page", "A page called parking.html", "A class called parking"], a: 0, why: "A # followed by an id jumps to that element." },
+    { id: "q5", q: "Which link text is best?", opts: ["Click here", "https://www.bouldercolorado.gov/trails/map.pdf", "Trail map (PDF, 2 MB)"], a: 2, why: "It says where the link goes, and warns that it's a PDF download." },
+    { id: "q6", q: "Why not rely on a link's title attribute?", opts: ["Keyboard and touch users never see the tooltip", "It slows the page down", "It's not valid HTML"], a: 0, why: "The tooltip only appears on mouse hover. Important information belongs in the link text." },
+  ]);
+</script>
+</body>
+</html>

@@ -1,0 +1,505 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Accessibility Essentials · Core Web Development</title>
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="core.css">
+<style>
+  /* Sample site, intentionally its own light look so contrast numbers are fixed. */
+  .site { background: #ffffff; color: #1d2133; border: 1px solid var(--line); border-radius: var(--radius); padding: 18px; display: grid; gap: 14px; font-family: var(--font-body); }
+  .site .bar { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+  .site .logo { font: 800 1.15rem var(--font-display); color: #0b6b5e; }
+  .site .menu { font: 700 0.95rem var(--font-body); background: #0b6b5e; color: #fff; border: 0; border-radius: 6px; padding: 8px 14px; cursor: pointer; }
+  .site .fakehead { font-weight: 700; font-size: 1.35rem; }
+  .site h2 { font: 700 1.35rem var(--font-body); margin: 0; color: #1d2133; }
+  .site p { margin: 0; }
+  .site .faint { color: #b8bcc8; }
+  .site a { color: #2340d9; }
+  .site img { display: block; max-width: 100%; height: auto; border-radius: 6px; }
+  .site .signup { display: flex; gap: 8px; flex-wrap: wrap; align-items: end; }
+  .site .signup .f { display: grid; gap: 4px; }
+  .site .signup label { font-weight: 700; font-size: 0.9rem; }
+  .site input { font: inherit; padding: 8px 10px; border: 1.5px solid #c9cedb; border-radius: 6px; background: #fff; color: #1d2133; }
+  .site .go { font: 700 0.95rem var(--font-body); background: #b4410c; color: #fff; border: 0; border-radius: 6px; padding: 9px 16px; cursor: pointer; }
+  .site.broken .go:focus, .site.broken input:focus { outline: none; }
+  .site.fixed :focus-visible { outline: 3px solid #2340d9; outline-offset: 2px; }
+  .site [data-issue] { position: relative; }
+  .site.broken [data-issue]::after { content: attr(data-issue); position: absolute; top: -9px; right: -9px; width: 20px; height: 20px; border-radius: 50%; background: #b42318; color: #fff; font: 700 0.72rem/20px var(--font-code); text-align: center; z-index: 1; }
+
+  .log { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; font: 0.88rem var(--font-code); font-variation-settings: "MONO" 1; max-height: 230px; overflow-y: auto; }
+  .log li { padding: 5px 8px; border-radius: 5px; background: var(--stage); }
+  .log li.bad { background: var(--bad-soft); color: var(--bad); }
+  .issues { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+  .issues li { display: grid; grid-template-columns: 26px 1fr; gap: 10px; align-items: start; padding: 10px; border-radius: 8px; background: var(--panel); border: 1px solid var(--line); font-size: 0.93rem; }
+  .issues .n { width: 22px; height: 22px; border-radius: 50%; display: grid; place-items: center; font: 700 0.72rem var(--font-code); color: #fff; background: var(--bad); }
+  .issues li.ok .n { background: var(--good); }
+  .issues b { display: block; }
+  .checklist { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 10px; }
+  .checklist li { padding: 12px; border-radius: 8px; background: var(--panel); border: 1px solid var(--line); display: grid; gap: 4px; }
+  .checklist b { font-family: var(--font-display); }
+  .checklist span { font-size: 0.92rem; color: var(--muted); }
+
+  .sim-card { background: #fff; color: #1d2133; border: 1px solid var(--line); border-radius: 10px; padding: 14px; display: grid; gap: 8px; font-family: var(--font-body); transition: filter 0.2s; }
+  .sim-card h4 { margin: 0; font: 800 1.15rem var(--font-display); }
+  .sim-card .row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .sim-card .dot { width: 14px; height: 14px; border-radius: 50%; }
+  .sim-card .fine { color: #a3a8b8; font-size: 0.8rem; margin: 0; }
+  .sim-card .ph { height: 90px; border-radius: 6px; background: linear-gradient(170deg, #f4a261 0 45%, #7d5a7a 45% 70%, #3e4a61 70%); }
+  .sim-card .ph.off { background: #f3f4f7; border: 1px dashed #b8bdcc; color: #5a6280; font-size: 0.85rem; display: grid; place-items: center; padding: 6px; text-align: center; }
+  .sim-card .btns { display: flex; gap: 6px; }
+  .sim-card .btns span { background: #0b6b5e; color: #fff; border-radius: 4px; padding: 3px 8px; font-size: 0.75rem; }
+  .sim-wrap { background: var(--stage); border-radius: 8px; padding: 14px; overflow: hidden; }
+  .cc-sample { border-radius: 8px; padding: 16px; display: grid; gap: 6px; border: 1px solid var(--line); }
+  .cc-sample .big { font: 700 1.5rem var(--font-display); } .cc-sample p { margin: 0; }
+  .cc-res { font: 800 1.6rem var(--font-display); }
+  .cc-tbl { border-collapse: collapse; font: 0.85rem var(--font-code); font-variation-settings: "MONO" 1; }
+  .cc-tbl td { white-space: nowrap; padding: 3px 10px; border-bottom: 1px solid var(--line); }
+  .cc-tbl .y { color: var(--good); font-weight: 700; } .cc-tbl .n { color: var(--bad); font-weight: 700; }
+  .hd-demo { background: #fff; color: #1d2133; border: 1px solid var(--line); border-radius: 8px; padding: 14px; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; position: relative; overflow: hidden; }
+  .hd-demo input { font: inherit; padding: 6px 8px; border: 1.5px solid #c9cedb; border-radius: 6px; }
+  .hd-demo .tgt { background: #fff4ec; outline: 2px dashed #b4410c; padding: 4px 6px; border-radius: 4px; font-weight: 700; }
+  .vh { position: absolute !important; width: 1px !important; height: 1px !important; padding: 0 !important; margin: -1px !important; overflow: hidden !important; clip-path: inset(50%) !important; white-space: nowrap !important; border: 0 !important; }
+</style>
+<script src="book-2.js"></script>
+<script src="js/progress.js"></script>
+<script src="js/chrome.js"></script>
+<script src="js/quiz.js"></script>
+</head>
+<body>
+<main class="wrap">
+  <nav class="crumbs" aria-label="Site"><a class="crumb" href="book-2.html">← Contents</a><a class="crumb" href="glossary.html">Glossary</a></nav>
+  <header class="page-head">
+    <h1>Accessibility Essentials</h1>
+    <p class="lede">An accessible site works for people using a keyboard, a screen reader, zoom, captions, or a phone in bright sun. Most of the work is choosing the right HTML and not breaking it with CSS and JavaScript.</p>
+    <div class="objectives">
+      <p class="callout-title">You'll be able to</p>
+      <ul>
+        <li>Describe the main kinds of disability and the assistive technologies people use.</li>
+        <li>Use semantic HTML so buttons, links, labels, headings and images work for everyone.</li>
+        <li>Check color contrast, keep focus visible, and hide content without hiding it from screen readers.</li>
+        <li>Test a page with only the keyboard.</li>
+      </ul>
+    </div>
+  </header>
+
+  <div class="section-title"><span class="eyebrow">Read</span><h2>So what is accessibility?</h2></div>
+  <div class="prose">
+<p><span class="term">Accessibility</span> is the practice of making your sites usable by as many people as possible: people with disabilities, but also people on slow connections, on small screens, in bright sunlight, or holding a baby in one arm.</p>
+    <p>It isn't an extra feature for a few people. An accessible site has clear structure (which also helps search engines), works on any device, and is easier for everyone to use. In many countries it's also a legal requirement for public and commercial sites.</p>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Read</span><h2>What kinds of disability are we looking at?</h2></div>
+  <div class="prose">
+<p>Around 1 in 6 people worldwide has a significant disability. Many use <strong>assistive technology</strong> (AT) to browse the web.</p>
+    <h3>People with visual impairments</h3>
+    <p>This includes blindness, low vision and color blindness. People may use a <span class="term">screen reader</span> that reads the page aloud (JAWS and NVDA on Windows, VoiceOver on Mac and iPhone, TalkBack on Android), a screen magnifier, or simply the browser's zoom.</p>
+    <h3>People with hearing impairments</h3>
+    <p>Deaf and hard-of-hearing people need text alternatives for audio: captions on video and transcripts for podcasts.</p>
+    <h3>People with mobility impairments</h3>
+    <p>Some people can't use a mouse. They use the keyboard (especially Tab, Enter and Space), switches, voice control or a head pointer. Everything that works with a mouse must work with a keyboard.</p>
+    <h3>People with cognitive impairments</h3>
+    <p>This is the widest group, including learning disabilities, memory problems, ADHD and dyslexia. It's helped by plain language, consistent layouts, clear headings, links that look like links, and helpful error messages.</p>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Play</span><h2>See the same card differently</h2><p>Turn on each condition and notice what stops working.</p></div>
+  <section class="playground">
+    <div class="panel controls">
+      <label class="toggle"><input type="checkbox" id="sim-blur"> blurred vision</label>
+      <label class="toggle"><input type="checkbox" id="sim-gray"> no color vision</label>
+      <label class="toggle"><input type="checkbox" id="sim-zoom"> zoomed to 200%</label>
+      <label class="toggle"><input type="checkbox" id="sim-img"> images don't load</label>
+      <p class="hint" id="sim-out" aria-live="polite"></p>
+    </div>
+    <div class="sim-wrap"><div class="sim-card" id="sim-card">
+      <div class="ph" id="sim-ph"></div>
+      <h4>Royal Arch</h4>
+      <div class="row"><span class="dot" style="background:#c0392b"></span><span id="sim-st">Trail status</span></div>
+      <div class="btns"><span>Map</span><span>Save</span><span>Share</span></div>
+      <p class="fine">Closed after dark. Dogs on leash.</p>
+    </div></div>
+  </section>
+
+  <div class="section-title"><span class="eyebrow">Read</span><h2>Implementing accessibility into your project</h2></div>
+  <div class="prose">
+<p>Accessibility is much cheaper to build in from the start than to bolt on at the end. Use the right HTML as you write it, check contrast when you pick colors, and test as you go: with the keyboard, with zoom, with an automated checker, and, if you can, with disabled users. Many organizations publish an <em>accessibility statement</em> saying what they support and how to report problems.</p>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Read</span><h2>Accessibility guidelines and the law</h2></div>
+  <div class="prose">
+<p>The main standard is the <strong>Web Content Accessibility Guidelines</strong> (WCAG). It's organized under four principles, often remembered as <strong>POUR</strong>:</p>
+    <ul>
+      <li><strong>Perceivable</strong>: people can see or hear the content (alt text, captions, contrast).</li>
+      <li><strong>Operable</strong>: people can use the controls (keyboard access, enough time, no flashing).</li>
+      <li><strong>Understandable</strong>: content and controls are clear (plain language, helpful errors).</li>
+      <li><strong>Robust</strong>: it works with many browsers and assistive technologies (valid, semantic HTML).</li>
+    </ul>
+    <p>Laws in many places, such as Section 508 in the US and EN 301 549 in the EU, point to WCAG.</p>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Read</span><h2>Accessibility APIs</h2></div>
+  <div class="prose">
+<p>How does a screen reader know what's on a page? The browser builds an <strong>accessibility tree</strong> from your HTML: every element's <em>role</em> (button, link, heading, text field), its <em>name</em> (the button's text, the image's alt, the input's label) and its <em>state</em> (checked, expanded). The operating system passes that tree to assistive technology.</p>
+    <p>That's why HTML matters so much. A <code>&lt;button&gt;</code> arrives in the tree as "button, Sign up". A <code>&lt;div&gt;</code> styled to look the same arrives as plain text. <strong>WAI-ARIA</strong> attributes like <code>role</code> and <code>aria-label</code> can patch the tree when HTML has no suitable element, but the first rule of ARIA is: if a native element does the job, use it.</p>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Read</span><h2>HTML: A good basis for accessibility</h2></div>
+  <div class="prose">
+<p>Most accessibility comes from choosing the right element, so <span class="term">semantic HTML</span> brings it with it for free.</p>
+    <h3>Good semantics</h3>
+    <ul>
+      <li><strong>Well-structured text.</strong> Real headings in order (<code>&lt;h1&gt;</code>, <code>&lt;h2&gt;</code>…), paragraphs and lists, not bold <code>&lt;div&gt;</code>s and <code>&lt;br&gt;</code>s. Screen reader users skim by jumping from heading to heading.</li>
+      <li><strong>Clear language.</strong> Write "5 to 7" rather than "5–7", and expand abbreviations, or mark them with <code>&lt;abbr&gt;</code>.</li>
+      <li><strong>Logical page sections.</strong> <code>&lt;header&gt;</code>, <code>&lt;nav&gt;</code>, <code>&lt;main&gt;</code>, <code>&lt;aside&gt;</code> and <code>&lt;footer&gt;</code> become landmarks people can jump to.</li>
+      <li><strong>Semantic UI controls.</strong> A real <code>&lt;button&gt;</code> can be reached with Tab, pressed with Enter or Space, and is announced as a button. A clickable <code>&lt;div&gt;</code> does none of that. Every form control needs a <code>&lt;label&gt;</code>.</li>
+    </ul>
+    <h3>Accessible data tables</h3>
+    <p>Use <code>&lt;th&gt;</code> for headers with a <code>scope</code>, and a <code>&lt;caption&gt;</code>, so a screen reader can say which row and column each cell belongs to.</p>
+    <h3>Text alternatives</h3>
+    <p>Every meaningful image needs <span class="term">alt text</span> that says what it shows. Decorative images get an empty <code>alt=""</code>, so they're skipped. A <code>&lt;figure&gt;</code> with <code>&lt;figcaption&gt;</code> adds a visible caption.</p>
+    <h3>More on links</h3>
+    <ul>
+      <li>Links should look like links (underlined, or clearly different) and have visible hover and focus styles.</li>
+      <li>Link text should make sense on its own: "Royal Arch trail guide", not "click here". Screen reader users often list every link on a page.</li>
+      <li>If a link opens a new tab or a file like a PDF, say so in the link text.</li>
+      <li>A <strong>skip link</strong> at the top ("Skip to main content") lets keyboard users jump past the navigation.</li>
+      <li>Leave space between links and buttons that sit close together, so they're easy to hit.</li>
+    </ul>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Play</span><h2>Find the seven problems</h2><p>Click into the sample page and press Tab to move through it. Then switch to the fixed version and compare.</p></div>
+  <section class="playground even">
+    <div class="stage-col">
+      <div class="seg" role="group" aria-label="Version">
+        <button class="btn" id="v-broken" aria-pressed="true">Broken version</button>
+        <button class="btn" id="v-fixed" aria-pressed="false">Fixed version</button>
+      </div>
+      <div id="site-holder"></div>
+    </div>
+    <div class="stage-col">
+      <div class="panel" style="display:grid;gap:8px">
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:8px"><span class="eyebrow">Keyboard log: what Tab reaches</span><button class="btn" id="clear" style="font-size:0.78rem;padding:4px 8px">Clear</button></div>
+        <ul class="log" id="log" aria-live="polite"><li>Click the sample page, then press Tab.</li></ul>
+      </div>
+      <ul class="issues" id="issues"></ul>
+    </div>
+  </section>
+
+  <div class="section-title"><span class="eyebrow">Practice</span><h2>Fix the barriers</h2><p>This sign-up box has four problems that lock people out. Fix each one.</p></div>
+  <div id="ex-a11y"></div>
+
+  <div class="section-title"><span class="eyebrow">Read</span><h2>CSS and JavaScript accessibility best practices</h2></div>
+  <div class="prose">
+<h3>Correct semantics and user expectation</h3>
+    <p>CSS can make anything look like anything, which makes it easy to break what people expect. Keep the conventions: links underlined or otherwise obvious, with distinct <code>:hover</code>, <code>:focus</code> and <code>:visited</code> styles; abbreviations with their dotted underline; buttons that look like buttons; comfortable body text with <code>line-height</code> around 1.5. And never remove the <span class="term">focus</span> outline without putting a clear replacement in its place.</p>
+    <h3>Color and color contrast</h3>
+    <p>Text needs enough <span class="term" data-term="Contrast ratio">contrast</span> with its background: at least <strong>4.5 to 1</strong> for normal text and 3 to 1 for large text (WCAG AA). And never use color alone to carry meaning, like a red dot for "closed": add a word or an icon.</p>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Play</span><h2>Check the contrast</h2><p>Pick a text color and a background. The ratio runs from 1 (no contrast) to 21 (black on white).</p></div>
+  <section class="playground">
+    <div class="panel controls">
+      <div class="control"><label for="cc-fg">text color</label><input id="cc-fg" type="color" value="#9aa0ad"></div>
+      <div class="control"><label for="cc-bg">background</label><input id="cc-bg" type="color" value="#ffffff"></div>
+      <span class="cc-res" id="cc-res" aria-live="polite"></span>
+      <table class="cc-tbl" id="cc-tbl"></table>
+    </div>
+    <div class="cc-sample" id="cc-sample"><span class="big">Large heading text</span><p>Normal body text, like the description of a trail or a form's help text.</p><p style="font-size:0.8rem">Small print: closed after dark, dogs on leash.</p></div>
+  </section>
+
+  <div class="prose">
+<h3>Hiding things</h3>
+    <p>There are several ways to hide something, and they don't all hide it from screen readers:</p>
+    <ul>
+      <li><code>display: none</code> and <code>visibility: hidden</code> hide it from <em>everyone</em>, screen readers included. Use them for things nobody should get, like a closed menu.</li>
+      <li>A <strong>visually hidden</strong> class shrinks the element to 1px and clips it. It's invisible on screen but still read aloud. Use it for things only screen reader users need, like a label for an icon-only search button.</li>
+      <li><code>opacity: 0</code> makes it invisible but still clickable and read aloud, which is usually confusing.</li>
+    </ul>
+    <pre class="snippet" data-lang="css">.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}</pre>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Play</span><h2>Ways to hide</h2><p>Hide the highlighted label in different ways, and see who still gets it.</p></div>
+  <section class="playground">
+    <div class="panel controls">
+      <div class="control"><label for="hd-m">hide the label with</label><select id="hd-m"><option value="">(not hidden)</option><option value="dn">display: none</option><option value="vis">visibility: hidden</option><option value="op">opacity: 0</option><option value="vh">.visually-hidden</option></select></div>
+      <table class="cc-tbl" id="hd-tbl"></table>
+    </div>
+    <div class="stage-col">
+      <div class="hd-demo"><label for="hd-in" class="tgt" id="hd-lbl">Search trails</label><input id="hd-in" type="search" placeholder="e.g. Mesa"><button class="btn" type="button">🔍</button></div>
+      <p class="verdict" id="hd-out" aria-live="polite"></p>
+    </div>
+  </section>
+
+  <div class="prose">
+<h3>Accept that users can override styles</h3>
+    <p>People may zoom to 200% or more, set a larger default font, force high-contrast colors, or use their own stylesheet. Build layouts that cope: sizes in <code>rem</code>, no fixed heights on text, nothing that relies on exact pixel positions.</p>
+    <h3>JavaScript</h3>
+    <p>JavaScript can make a page more accessible, or much less. Keep it <strong>unobtrusive</strong>: build the page with real HTML first (a real form with labels and a submit button), then add scripts to improve it, such as checking the form before it's sent. Don't build whole interfaces out of <code>&lt;div&gt;</code>s that only work with a script and a mouse.</p>
+    <p>Watch out for <strong>mouse-specific events</strong>. Anything that happens on <code>mouseover</code> should also happen on <code>focus</code>; anything on <code>mouseout</code> should also happen on <code>blur</code>. In CSS, the same goes for <code>:hover</code>: pair it with <code>:focus-visible</code> or <code>:focus-within</code>.</p>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Practice</span><h2>Accessible CSS</h2><p>Hide a label the right way, bring back focus styles, and make a hover-only detail work with the keyboard.</p></div>
+  <div id="ex-css"></div>
+
+  <div class="section-title"><span class="eyebrow">Your turn</span><h2>Five checks for your own project</h2></div>
+  <ul class="checklist">
+    <li><b>Unplug your mouse</b><span>Use Tab, Shift+Tab, Enter and Space. Can you reach and use everything? Can you always see where you are?</span></li>
+    <li><b>Zoom to 200%</b><span>Press Ctrl or Cmd and + a few times. Nothing should overlap or get cut off.</span></li>
+    <li><b>Check contrast</b><span>Body text needs at least 4.5 : 1 against its background. Use the contrast checker above.</span></li>
+    <li><b>Read the headings alone</b><span>Do h1, h2 and h3 make a sensible outline of the page, in order?</span></li>
+    <li><b>Turn images off</b><span>Does the alt text tell you what you'd miss? See <a href="core-images.html">Images</a>.</span></li>
+  </ul>
+
+  <section class="notes">
+    <div class="panel">
+      <h2>Key ideas</h2>
+      <ul>
+        <li>Accessibility helps people with visual, hearing, mobility and cognitive disabilities, and everyone else too.</li>
+        <li>WCAG's four principles: perceivable, operable, understandable, robust.</li>
+        <li>The browser builds an accessibility tree from your HTML: role, name and state. The right element gets them right.</li>
+        <li>Text needs 4.5 : 1 contrast; never use color alone to show meaning.</li>
+        <li><code>display: none</code> hides from everyone; a visually-hidden class hides from the screen only.</li>
+      </ul>
+    </div>
+    <div class="panel mistake">
+      <h2>Common mistakes</h2>
+      <ul>
+        <li>Clickable <code>div</code>s and <code>span</code>s. They can't be reached with Tab.</li>
+        <li><code>outline: none</code> with no replacement focus style.</li>
+        <li>Placeholder text used as the only label.</li>
+        <li>Things that only appear on <code>:hover</code> or <code>mouseover</code>, so keyboard users never see them.</li>
+      </ul>
+    </div>
+  </section>
+
+  <div class="section-title"><span class="eyebrow">Check yourself</span><h2>Quick check</h2></div>
+  <div class="panel quiz" id="quiz"></div>
+
+  <footer class="page-foot" data-book-nav><a href="book-2.html">← Contents</a></footer>
+</main>
+
+<script>
+  const $ = (id) => document.getElementById(id);
+  const PHOTO = "data:image/svg+xml," + encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="600" height="200" viewBox="0 0 600 200"><rect width="600" height="200" fill="#9cc7ea"/><path d="M0 200 L120 90 L220 150 L330 40 L450 140 L600 70 L600 200 Z" fill="#4d5b73"/><path d="M300 74 L330 40 L362 78 L330 66 Z" fill="#fff"/><path d="M0 200 L150 160 L300 185 L450 150 L600 175 L600 200 Z" fill="#2f5d3a"/></svg>`);
+  const BROKEN = `
+    <div class="bar"><span class="logo">Trailhead</span><div class="menu" data-issue="1">Menu</div></div>
+    <div class="fakehead" data-issue="2">Snow on Longs Peak</div>
+    <span data-issue="3" style="display:block"><img src="${PHOTO}" width="600" height="200"></span>
+    <p class="faint" data-issue="4">Rangers recommend microspikes above 11,000 feet through October.</p>
+    <p>To plan your trip, <a href="#site-holder" data-issue="5">click here</a>.</p>
+    <div class="signup"><span data-issue="6"><input type="email" placeholder="Email"></span><button class="go" type="button" data-issue="7">Sign up</button></div>`;
+  const FIXED = `
+    <div class="bar"><span class="logo">Trailhead</span><button class="menu" type="button">Menu</button></div>
+    <h2>Snow on Longs Peak</h2>
+    <img src="${PHOTO}" width="600" height="200" alt="Longs Peak with fresh snow near the summit">
+    <p>Rangers recommend microspikes above 11,000 feet through October.</p>
+    <p>Read the <a href="#site-holder">Longs Peak trip-planning guide</a>.</p>
+    <div class="signup"><div class="f"><label for="em">Email</label><input type="email" id="em" placeholder="you@example.com"></div><button class="go" type="button">Sign up</button></div>`;
+  const ISSUES = [
+    ["The Menu \"button\" is a div", "It can't be reached with Tab and a screen reader doesn't know it's a button.", "Now a real <button>. Tab reaches it, and Enter and Space activate it."],
+    ["The heading is just bold text", "Screen reader users jump between headings to skim, and this one is invisible to them.", "Now an <h2>, so it shows up in the page outline."],
+    ["The image has no alt text", "A screen reader may read out the file data or skip it with no clue what it was.", "alt describes what the photo shows."],
+    ["Pale gray text", "#b8bcc8 on white is about 1.9 : 1 contrast, far below the 4.5 : 1 minimum.", "Now dark text, about 15 : 1."],
+    ["\"Click here\" link", "Screen reader users often list all the links on a page. A list of \"click here\" says nothing.", "The link text says where it goes."],
+    ["The input has no label", "The placeholder vanishes once you type, and screen readers may announce just \"edit text.\"", "A visible <label> is connected with for and id."],
+    ["Focus outline removed", "Tab to the input or Sign up button: there's no sign of where you are.", "A clear focus ring appears on every focused control."],
+  ];
+  let mode = "broken";
+  function nameOf(el) {
+    if (el.alt !== undefined && el.tagName === "IMG") return el.alt || null;
+    if (el.labels && el.labels.length) return el.labels[0].textContent.trim();
+    if (el.getAttribute("aria-label")) return el.getAttribute("aria-label");
+    if (el.tagName === "INPUT") return null;
+    return el.textContent.trim() || null;
+  }
+  function render() {
+    $("site-holder").innerHTML = `<div class="site ${mode}" id="site">${mode === "broken" ? BROKEN : FIXED}</div>`;
+    $("v-broken").setAttribute("aria-pressed", String(mode === "broken")); $("v-fixed").setAttribute("aria-pressed", String(mode === "fixed"));
+    $("issues").innerHTML = ISSUES.map(([t, bad, good], i) => `<li class="${mode === "fixed" ? "ok" : ""}"><span class="n">${mode === "fixed" ? "✓" : i + 1}</span><div><b>${t.replace(/</g, "&lt;")}</b>${(mode === "fixed" ? good : bad).replace(/</g, "&lt;")}</div></li>`).join("");
+    $("site").addEventListener("focusin", (e) => {
+      const el = e.target, role = el.tagName === "A" ? "link" : el.tagName === "BUTTON" ? "button" : el.tagName === "INPUT" ? "email field" : el.tagName.toLowerCase();
+      const n = nameOf(el), li = document.createElement("li");
+      const noRing = mode === "broken" && el.matches("input, .go");
+      li.textContent = `Tab → ${role}: ${n ? `"${n}"` : "(no name!)"}` + (noRing ? " · no visible focus ring" : "") + (n === "click here" ? " · vague link text" : "");
+      if (!n || noRing || n === "click here") li.className = "bad";
+      if ($("log").firstElementChild && !$("log").firstElementChild.dataset.real) $("log").innerHTML = "";
+      li.dataset.real = "1"; $("log").appendChild(li); $("log").scrollTop = $("log").scrollHeight;
+      if (mode === "broken" && el.tagName === "A" && ![...$("log").children].some((x) => x.dataset.skip)) {
+        const s = document.createElement("li"); s.className = "bad"; s.dataset.real = "1"; s.dataset.skip = "1";
+        s.textContent = "Notice: Tab never stopped on Menu. Keyboard users can't open it."; $("log").appendChild(s);
+      }
+    });
+  }
+  $("v-broken").addEventListener("click", () => { mode = "broken"; clearLog(); render(); });
+  $("v-fixed").addEventListener("click", () => { mode = "fixed"; clearLog(); render(); });
+  function clearLog() { $("log").innerHTML = "<li>Click the sample page, then press Tab.</li>"; }
+  $("clear").addEventListener("click", clearLog);
+  render();
+
+  // --- See the same card differently ---
+  function simUpdate() {
+    const blur = $("sim-blur").checked, gray = $("sim-gray").checked, zoom = $("sim-zoom").checked, noimg = $("sim-img").checked;
+    const card = $("sim-card");
+    card.style.filter = [blur ? "blur(1.6px)" : "", gray ? "grayscale(1)" : ""].join(" ").trim() || "none";
+    card.style.fontSize = zoom ? "200%" : ""; card.style.width = zoom ? "100%" : "";
+    $("sim-ph").className = "ph" + (noimg ? " off" : "");
+    $("sim-ph").textContent = noimg ? "(no alt text, so: nothing)" : "";
+    const notes = [];
+    if (blur) notes.push("The pale small print becomes unreadable: low contrast fails first.");
+    if (gray) notes.push("The red dot was the only sign the trail is closed. Without color, \"Trail status\" tells you nothing.");
+    if (zoom) notes.push("At 200%, the layout must reflow without overlapping or cutting off text.");
+    if (noimg) notes.push("With no alt text, people who can't see the image get nothing.");
+    $("sim-out").textContent = notes.join(" ") || "Turn on a condition.";
+  }
+  ["sim-blur", "sim-gray", "sim-zoom", "sim-img"].forEach((id) => $(id).addEventListener("input", simUpdate));
+  simUpdate();
+
+  // --- Contrast ---
+  const lum = (hex) => { const v = [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16) / 255).map((c) => (c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4)); return 0.2126 * v[0] + 0.7152 * v[1] + 0.0722 * v[2]; };
+  function ccUpdate() {
+    const fg = $("cc-fg").value, bg = $("cc-bg").value, a = lum(fg), c = lum(bg);
+    const r = (Math.max(a, c) + 0.05) / (Math.min(a, c) + 0.05);
+    $("cc-sample").style.color = fg; $("cc-sample").style.background = bg;
+    $("cc-res").textContent = r.toFixed(2) + " : 1";
+    const row = (t, min) => `<tr><td>${t}</td><td>${min} : 1</td><td class="${r >= min ? "y" : "n"}">${r >= min ? "pass" : "fail"}</td></tr>`;
+    $("cc-tbl").innerHTML = row("Normal (AA)", 4.5) + row("Large (AA)", 3) + row("Normal (AAA)", 7);
+  }
+  ["cc-fg", "cc-bg"].forEach((id) => $(id).addEventListener("input", ccUpdate));
+  ccUpdate();
+
+  // --- Ways to hide ---
+  const HD = {
+    "": ["yes", "yes", "yes", "Visible to everyone."],
+    dn: ["no", "no", "no", "Gone for everyone, screen readers included. The search field now has no name."],
+    vis: ["no", "yes", "no", "Invisible and silent, but it still takes up space, leaving a gap."],
+    op: ["no", "yes", "yes", "Invisible, but it still takes space and is still read aloud. Confusing for sighted screen reader users."],
+    vh: ["no", "no", "yes", "Invisible on screen, but screen readers still announce \"Search trails\" for the field. The right choice here."],
+  };
+  function hdUpdate() {
+    const m = $("hd-m").value, l = $("hd-lbl"), [vis, space, sr, msg] = HD[m];
+    l.className = "tgt" + (m === "vh" ? " vh" : "");
+    l.style.display = m === "dn" ? "none" : ""; l.style.visibility = m === "vis" ? "hidden" : ""; l.style.opacity = m === "op" ? "0" : "";
+    const cell = (v) => `<td class="${v === "yes" ? "y" : "n"}">${v}</td>`;
+    $("hd-tbl").innerHTML = `<tr><td>can be seen</td>${cell(vis)}</tr><tr><td>takes up space</td>${cell(space)}</tr><tr><td>read by screen readers</td>${cell(sr)}</tr>`;
+    $("hd-out").className = "verdict" + (m === "vh" || m === "" ? "" : " bad");
+    $("hd-out").textContent = msg;
+  }
+  $("hd-m").addEventListener("input", hdUpdate);
+  hdUpdate();
+</script>
+<script>
+  makeQuiz(document.getElementById("quiz"), [
+    { id: "q1", q: "Why use <button> instead of a clickable <div>?", opts: ["Buttons load faster", "Divs can't be styled", "A button works with the keyboard and is announced properly"], a: 2, why: "Real buttons get keyboard support and a screen-reader role for free." },
+    { id: "q2", q: "What's the quickest way to test keyboard access?", opts: ["Unplug the mouse and press Tab through the page", "Run a spell-check", "Zoom out"], a: 0, why: "Everything you can click should be reachable and visible with Tab." },
+    { id: "q3", q: "Errors are shown only by turning the field red. What's the problem?", opts: ["Red is too bright", "People who can't distinguish red miss them", "Nothing"], a: 1, why: "Add text or an icon so color isn't the only signal." },
+    { id: "q4", q: "Can placeholder text replace a label?", opts: ["Yes", "No; it disappears when typing starts and is often too faint", "Only on phones"], a: 1, why: "Use a real <label> connected to the input." },
+    { id: "q5", q: "What does the P in WCAG's POUR stand for?", opts: ["Perceivable", "Programmable", "Portable"], a: 0, why: "Perceivable, operable, understandable, robust." },
+    { id: "q6", q: "You want a label only screen reader users get. Which is right?", opts: ["display: none", "visibility: hidden", "A visually-hidden class"], a: 2, why: "display: none and visibility: hidden hide it from screen readers too." },
+    { id: "q7", q: "What's the minimum contrast for normal body text (WCAG AA)?", opts: ["2 : 1", "4.5 : 1", "10 : 1"], a: 1, why: "Large text needs 3 : 1; normal text 4.5 : 1." },
+    { id: "q8", q: "A tooltip shows on mouseover. What else should show it?", opts: ["Nothing", "focus, so keyboard users get it too", "A double-click"], a: 1, why: "Pair mouse events with focus and blur, and :hover with :focus-visible." },
+  ]);
+
+  makeExercise(document.getElementById("ex-a11y"), {
+    title: "An accessible sign-up box",
+    task: `<ol>
+      <li>The “Subscribe” control is a div. Make it a real button.</li>
+      <li>The email field has only placeholder text. Give it a label.</li>
+      <li>The trail photo has no alt text. Describe it.</li>
+      <li>The small print is pale gray. Darken it to a contrast of at least 4.5 to 1 on white.</li>
+    </ol>`,
+    html: `<div class="signup">
+  <img src="trail.jpg" width="300" height="120">
+  <h2>Trail news</h2>
+  <input type="email" placeholder="Your email">
+  <div class="btn">Subscribe</div>
+  <p class="small">One email a month. Unsubscribe anytime.</p>
+</div>`,
+    css: `body { font-family: system-ui, sans-serif; background: white; }
+.btn { display: inline-block; background: #2340d9; color: white; padding: 8px 16px; cursor: pointer; }
+.small { color: #b5b5b5; font-size: 0.85rem; }`,
+    solution: {
+      html: `<div class="signup">
+  <img src="trail.jpg" alt="The Mesa Trail winding through a spring meadow" width="300" height="120">
+  <h2>Trail news</h2>
+  <label for="email">Email</label>
+  <input id="email" type="email" placeholder="you@example.com">
+  <button class="btn" type="button">Subscribe</button>
+  <p class="small">One email a month. Unsubscribe anytime.</p>
+</div>`,
+      css: `body { font-family: system-ui, sans-serif; background: white; }
+.btn { display: inline-block; background: #2340d9; color: white; padding: 8px 16px; cursor: pointer; border: 0; font: inherit; }
+.small { color: #595959; font-size: 0.85rem; }`,
+    },
+    hints: [
+      "A <button> can be reached with Tab and pressed with Enter or Space. A div can't.",
+      "<label for=\"email\">Email</label> plus id=\"email\" on the input.",
+      "#595959 on white is about 7 to 1. #767676 is just over 4.5 to 1.",
+    ],
+    checks: [
+      { label: "Subscribe is a real button", test: ({ $, $$ }) => !!$$("button").find((b) => b.textContent.includes("Subscribe")) && !$$("div").some((d) => d.textContent.trim() === "Subscribe") },
+      { label: "The email field has a label", test: ({ $ }) => $('input[type="email"]').labels.length > 0 && $('input[type="email"]').labels[0].textContent.trim() !== "" },
+      { label: "The photo has alt text", test: ({ $ }) => ($("img").getAttribute("alt") || "").trim().length >= 10 },
+      { label: "The small print has 4.5:1 contrast", test: ({ style }) => {
+        const lum = (c) => { const [r, g, b] = c.match(/\d+(\.\d+)?/g).slice(0, 3).map((v) => { v /= 255; return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4; }); return 0.2126 * r + 0.7152 * g + 0.0722 * b; };
+        return 1.05 / (lum(style(".small", "color")) + 0.05) >= 4.5;
+      } },
+    ],
+  });
+
+  makeExercise(document.getElementById("ex-css"), {
+    title: "Hidden labels, focus and hover",
+    task: `<ol>
+      <li>The search box's label should be invisible on screen but still read by screen readers. Make <code>.label</code> visually hidden: <code>position: absolute</code>, 1px by 1px, <code>overflow: hidden</code> and <code>clip-path: inset(50%)</code>. Don't use <code>display: none</code>.</li>
+      <li>Someone removed the focus outline from links. Replace that rule with a visible <code>:focus-visible</code> outline.</li>
+      <li>The trail details only appear on <code>:hover</code>. Make them appear when the link has keyboard focus too.</li>
+    </ol>`,
+    html: `<form class="search">
+  <label for="q" class="label">Search trails</label>
+  <input id="q" type="search" placeholder="e.g. Mesa">
+  <button>Search</button>
+</form>
+<p><a class="card" href="#">Royal Arch <span class="more">· 1.7 mi · Hard</span></a></p>`,
+    css: `body { font-family: system-ui, sans-serif; }
+a:focus { outline: none; }
+.more { display: none; }
+.card:hover .more { display: inline; }`,
+    solution: { css: `body { font-family: system-ui, sans-serif; }
+.label {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+a:focus-visible { outline: 3px solid #2340d9; outline-offset: 2px; }
+.more { display: none; }
+.card:hover .more,
+.card:focus-visible .more { display: inline; }` },
+    hints: [
+      "display: none would hide the label from screen readers too. Shrink and clip it instead.",
+      "Delete a:focus { outline: none; } and add a:focus-visible { outline: 3px solid #2340d9; }.",
+      "Add .card:focus-visible .more (or .card:focus .more) to the hover rule's selector list.",
+    ],
+    checks: (() => {
+      const rules = (doc) => [...doc.styleSheets[0].cssRules].filter((r) => r.selectorText);
+      return [
+        { label: "The label is visually hidden, not display: none", test: ({ $, style }) => { const r = $(".label").getBoundingClientRect(); return style(".label", "display") !== "none" && style(".label", "visibility") !== "hidden" && style(".label", "position") === "absolute" && r.width <= 1 && r.height <= 1; } },
+        { label: "The input still has its label", test: ({ $ }) => $("#q").labels.length === 1 },
+        { label: "No rule removes the focus outline", test: ({ doc }) => !rules(doc).some((r) => /:focus/.test(r.selectorText) && r.style.outlineStyle === "none") },
+        { label: "Links get a visible :focus-visible outline", test: ({ doc }) => rules(doc).some((r) => /a:focus-visible|\.card:focus-visible/.test(r.selectorText) && r.style.outlineStyle && r.style.outlineStyle !== "none") },
+        { label: "Keyboard focus shows the details too", test: ({ doc }) => rules(doc).some((r) => r.selectorText.split(",").some((s) => /\.card:focus(-visible|-within)?\s+\.more/.test(s.trim())) && r.style.display && r.style.display !== "none") },
+      ];
+    })(),
+  });
+</script>
+</body>
+</html>

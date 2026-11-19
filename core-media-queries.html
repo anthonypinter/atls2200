@@ -1,0 +1,447 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Media Queries · Core Web Development</title>
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="core.css">
+<style>
+  .lab { display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; }
+  .width-bar { display: flex; flex-wrap: wrap; gap: 12px 20px; align-items: center; }
+  .width-bar input { flex: 1 1 240px; accent-color: var(--cobalt); }
+  .width-num { font: 800 1.6rem var(--font-display); font-variant-numeric: tabular-nums; min-width: 6ch; }
+  .presets { display: flex; gap: 8px; flex-wrap: wrap; }
+  .presets button { font: 600 0.85rem var(--font-code); font-variation-settings: "MONO" 1; background: var(--panel); color: var(--ink); border: 1px solid var(--line); border-radius: 6px; padding: 6px 10px; cursor: pointer; }
+  .presets button[aria-pressed="true"] { background: var(--cobalt); color: var(--panel); border-color: var(--cobalt); }
+
+  /* Ruler showing breakpoints */
+  .ruler { position: relative; height: 28px; border-top: 2px solid var(--line); font: 0.75rem var(--font-code); font-variation-settings: "MONO" 1; color: var(--muted); }
+  .ruler .mark { position: absolute; top: -8px; height: 14px; border-left: 2px solid var(--prop); }
+  .ruler .mark span { position: absolute; top: 14px; left: -2ch; white-space: nowrap; color: var(--prop); }
+  .ruler .now { position: absolute; top: -7px; width: 12px; height: 12px; margin-left: -6px; border-radius: 50%; background: var(--cobalt); transition: left 0.15s; }
+
+  .viewport-outer { background: var(--stage); border: 2px dashed var(--line); border-radius: var(--radius); padding: 12px; overflow: hidden; }
+  .viewport { background: #fff; color: #1d2133; border-radius: 6px; box-shadow: 0 2px 10px rgba(0,0,0,0.12); transform-origin: top left; font-family: var(--font-body); }
+
+  /* The demo site inside the fake viewport. Classes .bp-600 / .bp-900 stand in for real @media rules. */
+  .demo { padding: 16px; display: grid; gap: 14px; }
+  .demo header { display: grid; gap: 10px; }
+  .demo .logo { font: 800 1.2rem var(--font-display); color: #2340d9; }
+  .demo nav { display: grid; gap: 6px; }
+  .demo nav a { background: #eef1f8; color: #1d2133; padding: 8px 10px; border-radius: 4px; text-decoration: none; font-size: 0.95rem; }
+  .demo .layout { display: grid; gap: 14px; }
+  .demo .cards { display: grid; grid-template-columns: 1fr; gap: 12px; }
+  .demo .card { background: #eef1f8; border-radius: 6px; padding: 12px; display: grid; gap: 6px; }
+  .demo .card i { display: block; height: 56px; border-radius: 4px; background: #2340d9; opacity: 0.85; }
+  .demo .card:nth-child(2) i { background: #b4410c; } .demo .card:nth-child(3) i { background: #0b6b5e; }
+  .demo .card b { font-size: 0.95rem; } .demo .card small { color: #5a6280; }
+  .demo .aside { background: #fff4ec; border: 1px solid #f2d3bf; border-radius: 6px; padding: 12px; font-size: 0.9rem; }
+  .demo h2 { font-size: 1.3rem; }
+
+  .viewport.bp-600 .demo .cards { grid-template-columns: 1fr 1fr; }
+  .viewport.bp-600 .demo header { grid-template-columns: auto 1fr; align-items: center; }
+  .viewport.bp-600 .demo nav { display: flex; justify-content: flex-end; }
+  .viewport.bp-900 .demo .layout { grid-template-columns: 1fr 240px; }
+  .viewport.bp-900 .demo .cards { grid-template-columns: repeat(3, 1fr); }
+  .viewport.bp-900 .demo h2 { font-size: 1.8rem; }
+
+  /* Code with active / inactive blocks */
+  .bp-list { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
+  .bp-list li { display: grid; gap: 4px; padding: 12px 14px; border-radius: 8px; border: 1px solid var(--line); background: var(--panel); transition: opacity 0.2s, border-color 0.2s; }
+  .bp-list li.on { border-color: var(--cobalt); box-shadow: inset 3px 0 0 var(--cobalt); }
+  .bp-list li.off { opacity: 0.45; }
+  .bp-list .when { font: 600 0.85rem var(--font-code); font-variation-settings: "MONO" 1; color: var(--prop); }
+  .bp-list .state { font: 600 0.7rem/1 var(--font-code); font-variation-settings: "MONO" 1; text-transform: uppercase; letter-spacing: 0.06em; color: var(--cobalt); }
+  .bp-list li.off .state { color: var(--muted); }
+  .bp-list p { font-size: 0.92rem; color: var(--muted); }
+  .real-width { font-size: 0.9rem; color: var(--muted); }
+
+  .mq-row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+  .mq-row input.src { flex: 1 1 260px; }
+  .mq-res { font: 800 1.3rem var(--font-display); }
+  .mq-res.yes { color: var(--good); } .mq-res.no { color: var(--bad); }
+  .mq-dev { width: 100%; border-collapse: collapse; font: 0.85rem var(--font-code); font-variation-settings: "MONO" 1; }
+  .mq-dev td { padding: 4px 8px; border-bottom: 1px solid var(--line); }
+  .mq-dev td:last-child { text-align: right; font-weight: 700; }
+  .mq-dev .y { color: var(--good); } .mq-dev .n { color: var(--muted); }
+</style>
+<script src="book-2.js"></script>
+<script src="js/progress.js"></script>
+<script src="js/chrome.js"></script>
+<script src="js/quiz.js"></script>
+</head>
+<body>
+<main class="wrap">
+  <nav class="crumbs" aria-label="Site"><a class="crumb" href="book-2.html">← Contents</a><a class="crumb" href="glossary.html">Glossary</a></nav>
+  <header class="page-head">
+    <h1>Media Queries</h1>
+    <p class="lede">A media query applies CSS only when a condition is true: the screen is at least this wide, the page is being printed, the device has a mouse. It's how one stylesheet adapts to every device.</p>
+    <div class="objectives">
+      <p class="callout-title">You'll be able to</p>
+      <ul>
+        <li>Write media queries with media types, feature rules and the newer range syntax.</li>
+        <li>Combine conditions with <em>and</em>, <em>or</em> (commas) and <em>not</em>.</li>
+        <li>Choose breakpoints based on your content, and build a layout mobile first.</li>
+        <li>Recognise when a flexible layout doesn't need a media query at all.</li>
+      </ul>
+    </div>
+  </header>
+
+  <div class="section-title"><span class="eyebrow">Read</span><h2>Media query basics</h2></div>
+  <div class="prose">
+<p>A <span class="term">media query</span> wraps some CSS in a condition. The rules inside only apply while the condition is true:</p>
+    <pre class="snippet" data-lang="css">@media media-type and (media-feature-rule) {
+  /* CSS rules go here */
+}</pre>
+    <h3>Media types</h3>
+    <p>The media type says what kind of output the CSS is for: <code>screen</code>, <code>print</code> or <code>all</code>. Leave it out and the query applies to everything. A print stylesheet is a common use:</p>
+    <pre class="snippet" data-lang="css">@media print {
+  body { font-size: 12pt; }
+  nav, .ads { display: none; }
+}</pre>
+    <h3>Media feature rules</h3>
+    <p>Features test something about the device or the window. The one you'll use most is <strong>width</strong>, with a <code>min-</code> or <code>max-</code> prefix:</p>
+    <pre class="snippet" data-lang="css">@media (min-width: 600px) { … }   /* 600px or wider */
+@media (max-width: 599px) { … }   /* up to 599px */</pre>
+    <p>A few others are worth knowing:</p>
+    <ul>
+      <li><code>(orientation: landscape)</code> or <code>portrait</code>: is the window wider than it is tall?</li>
+      <li><code>(hover: hover)</code>: can the main input hover, like a mouse? Touchscreens can't, so hover-only menus fail there.</li>
+      <li><code>(pointer: fine)</code> or <code>coarse</code>: is it precise, like a mouse, or a finger? Make targets bigger for <code>coarse</code>.</li>
+    </ul>
+    <h3>Using ranged syntax</h3>
+    <p>Newer browsers let you write width tests as comparisons, which is easier to read than <code>min-</code> and <code>max-</code>:</p>
+    <pre class="snippet" data-lang="css">@media (width >= 600px) { … }            /* same as min-width: 600px */
+@media (30em <= width <= 50em) { … }     /* between 30em and 50em */</pre>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Read</span><h2>More complex media queries</h2></div>
+  <div class="prose">
+<h3>"and" logic in media queries</h3>
+    <p>Join conditions with <code>and</code>; all of them must be true:</p>
+    <pre class="snippet" data-lang="css">@media screen and (width >= 600px) and (orientation: landscape) { … }</pre>
+    <h3>"or" logic in media queries</h3>
+    <p>Separate whole queries with commas; any one being true is enough:</p>
+    <pre class="snippet" data-lang="css">@media (width >= 600px), (orientation: landscape) { … }</pre>
+    <h3>"not" logic in media queries</h3>
+    <p><code>not</code> at the start reverses the whole query. <code>not all and (orientation: landscape)</code> matches portrait.</p>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Play</span><h2>Ask your browser</h2><p>Type a media query (without @media) or pick one. Your browser tests it right now, against this window and this device.</p></div>
+  <section class="playground">
+    <div class="panel" style="display:grid;gap:10px;align-content:start">
+      <div class="mq-row"><input class="src" id="mq-q" value="(width >= 600px)" spellcheck="false" aria-label="Media query to test"><span class="mq-res" id="mq-res" aria-live="polite"></span></div>
+      <div class="seg" id="mq-pre">
+        <button class="btn">(width &gt;= 600px)</button><button class="btn">(max-width: 400px)</button><button class="btn">(600px &lt;= width &lt;= 1000px)</button>
+        <button class="btn">print</button><button class="btn">screen and (orientation: landscape)</button><button class="btn">(hover: hover)</button>
+        <button class="btn">(pointer: coarse)</button><button class="btn">(max-width: 500px), (orientation: portrait)</button><button class="btn">not all and (hover: hover)</button>
+      </div>
+      <p class="hint" id="mq-note"></p>
+    </div>
+    <div class="panel" style="display:grid;gap:8px;align-content:start">
+      <span class="eyebrow">This device, right now</span>
+      <table class="mq-dev" id="mq-dev"></table>
+      <p class="hint">Resize the window, or open this page on your phone, and watch the answers change.</p>
+    </div>
+  </section>
+
+  <div class="section-title"><span class="eyebrow">Read</span><h2>How to choose breakpoints</h2></div>
+  <div class="prose">
+<p>The width where a query kicks in is called a <span class="term">breakpoint</span>. Don't choose breakpoints from a list of phone and tablet sizes: there are thousands of devices, and new ones every year. Instead, start narrow and widen your browser window slowly (or use the responsive design mode in your browser's DevTools). Add a breakpoint wherever your layout starts to look wrong: lines too long, cards too stretched, too much empty space.</p>
+    <p>When two queries both match and set the same property, the later one wins, just like any other rule. So list <code>min-width</code> queries from smallest to largest.</p>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Play</span><h2>Change the screen width</h2><p>Drag the slider to change the pretend screen width and watch which rules switch on.</p></div>
+  <section class="lab">
+    <div class="panel" style="display:grid;gap:14px">
+      <div class="width-bar">
+        <label for="w" class="eyebrow">Screen width</label>
+        <span class="width-num" id="w-out">375px</span>
+        <input id="w" type="range" min="320" max="1280" step="5" value="375">
+      </div>
+      <div class="ruler" id="ruler" aria-hidden="true"></div>
+      <div class="presets" role="group" aria-label="Device presets">
+        <button data-w="375">Phone · 375</button>
+        <button data-w="768">Tablet · 768</button>
+        <button data-w="1280">Laptop · 1280</button>
+      </div>
+      <p class="real-width" id="real"></p>
+    </div>
+
+    <ul class="bp-list" id="bps" aria-live="polite"></ul>
+    <div>
+      <div class="viewport-outer" id="outer">
+        <div class="viewport" id="vp">
+          <div class="demo">
+            <header><span class="logo">Trailhead</span>
+              <nav><a href="#vp">Trails</a><a href="#vp">Maps</a><a href="#vp">Gear</a></nav></header>
+            <h2>Weekend hikes near you</h2>
+            <div class="layout">
+              <div class="cards">
+                <div class="card"><i></i><b>Royal Arch</b><small>3.4 mi · Hard</small></div>
+                <div class="card"><i></i><b>Mesa Trail</b><small>6.7 mi · Moderate</small></div>
+                <div class="card"><i></i><b>Chautauqua Loop</b><small>1.2 mi · Easy</small></div>
+              </div>
+              <div class="aside"><b>Trail conditions</b><br>Muddy below 7,000 ft. Bring layers.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="section-title"><span class="eyebrow">Read</span><h2>Mobile-first responsive design</h2></div>
+  <div class="prose">
+<p>There are two ways to write those queries. You can write the wide-screen layout first and use <code>max-width</code> queries to undo it on small screens. Or you can write the simple, single-column layout first, with no query at all, and use <code>min-width</code> queries to <em>add</em> columns as the screen grows.</p>
+    <p>The second approach is called <span class="term">mobile first</span>. It usually means less CSS, because you never write a rule just to cancel another. And because single-column, in source order, is close to what HTML does with no CSS, your base layout is mostly done before you start. The next lesson, <a href="core-mobile-first.html">Responsive Design and Mobile First</a>, builds a whole page this way.</p>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Read</span><h2>Creating your own mobile-first design</h2></div>
+  <div class="prose">
+<p>A mobile-first stylesheet has the same shape every time: base styles, then one query per breakpoint.</p>
+    <pre class="snippet" data-lang="css">/* Base: one column for every screen */
+body { width: 90%; margin: 0 auto; }
+
+/* Medium: two columns */
+@media screen and (width >= 40em) {
+  article { display: grid; grid-template-columns: 3fr 1fr; column-gap: 20px; }
+  nav ul { display: flex; }
+}
+
+/* Wide: a third column */
+@media screen and (width >= 70em) {
+  main { display: grid; grid-template-columns: 3fr 1fr; }
+}</pre>
+    <p>Notice the breakpoints are in <code>em</code>. If someone sets a larger default text size, an <code>em</code> breakpoint moves with it, so the layout switches to fewer columns when the text needs more room.</p>
+    <h3>viewport meta</h3>
+    <p>None of this works on phones without one line in your <code>&lt;head&gt;</code>:</p>
+    <pre class="snippet" data-lang="html">&lt;meta name="viewport" content="width=device-width, initial-scale=1"&gt;</pre>
+    <p>Without it, mobile browsers pretend to be about 980px wide and shrink the whole page down, so your phone layout never switches on.</p>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Practice</span><h2>Rewrite the queries mobile first</h2><p>These queries start from the desktop and undo it. Flip them to start small and add.</p></div>
+  <div id="ex-mq"></div>
+
+  <div class="section-title"><span class="eyebrow">Read</span><h2>Do you really need a media query?</h2></div>
+  <div class="prose">
+<p>Flexbox and Grid are flexible by design, so many layouts adapt with no breakpoint at all. This grid fits as many 200px-plus columns as there's room for, from one on a phone to five on a monitor:</p>
+    <pre class="snippet" data-lang="css">.cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 16px;
+}</pre>
+    <p>Reach for a media query when something has to <em>change</em> at a size: the nav moves, a sidebar appears, the order of things shifts. For "more columns when there's room", let the layout do it.</p>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Practice</span><h2>Print, hover, orientation and ranges</h2><p>Four queries that aren't about a simple minimum width.</p></div>
+  <div id="ex-feat"></div>
+
+  <section class="notes">
+    <div class="panel">
+      <h2>Key ideas</h2>
+      <ul>
+        <li><code>@media print</code>, <code>screen</code> or <code>all</code> picks the output; features like <code>(min-width: 600px)</code> test the device.</li>
+        <li>Range syntax reads naturally: <code>(width &gt;= 600px)</code>, <code>(30em &lt;= width &lt;= 50em)</code>.</li>
+        <li><code>and</code> needs every condition; a comma means <em>or</em>; <code>not</code> reverses a whole query.</li>
+        <li>Mobile first: base styles for phones, then <code>min-width</code> queries, smallest to largest.</li>
+        <li>Pick breakpoints where <em>your</em> layout starts to look wrong, and don't forget the viewport meta tag.</li>
+      </ul>
+    </div>
+    <div class="panel mistake">
+      <h2>Common mistakes</h2>
+      <ul>
+        <li>Forgetting the viewport meta tag, so phones ignore your queries.</li>
+        <li><code>@media min-width: 600px</code> without parentheses. Features always go in brackets.</li>
+        <li>Putting a query <em>above</em> the base rules, so the base rules override it.</li>
+        <li>Hiding important features behind <code>:hover</code> without checking <code>(hover: hover)</code>.</li>
+      </ul>
+    </div>
+  </section>
+
+  <div class="section-title"><span class="eyebrow">Check yourself</span><h2>Quick check</h2></div>
+  <div class="panel quiz" id="quiz"></div>
+
+  <footer class="page-foot" data-book-nav><a href="book-2.html">← Contents</a></footer>
+</main>
+
+<script>
+  const $ = (id) => document.getElementById(id);
+  const MIN = 320, MAX = 1280, BPS = [600, 900];
+  const vp = $("vp"), outer = $("outer");
+
+  const BLOCKS = [
+    { min: 0, when: "Base styles", what: "One column of cards. Nav links stacked." },
+    { min: 600, when: "min-width: 600px", what: "Cards in two columns. Nav moves into a row beside the logo." },
+    { min: 900, when: "min-width: 900px", what: "Three card columns plus a sidebar. Bigger heading." },
+  ];
+
+  // Ruler marks
+  const pct = (w) => ((w - MIN) / (MAX - MIN)) * 100 + "%";
+  $("ruler").innerHTML = BPS.map((b) => `<div class="mark" style="left:${pct(b)}"><span>${b}px</span></div>`).join("") + '<div class="now" id="now"></div>';
+
+  function update() {
+    const w = +$("w").value;
+    $("w-out").textContent = w + "px";
+    $("now").style.left = pct(w);
+    vp.classList.toggle("bp-600", w >= 600);
+    vp.classList.toggle("bp-900", w >= 900);
+
+    // Draw the fake viewport at its true width, scaled down to fit the column.
+    vp.style.width = w + "px";
+    const avail = outer.clientWidth - 24;
+    const scale = Math.min(1, avail / w);
+    vp.style.transform = `scale(${scale})`;
+    outer.style.height = vp.offsetHeight * scale + 28 + "px";
+
+    $("bps").innerHTML = BLOCKS.map((b) => {
+      const on = w >= b.min;
+      const state = b.min === 0 ? "Always on" : on ? "Active" : `Off below ${b.min}px`;
+      return `<li class="${on ? "on" : "off"}"><span class="state">${state}</span><span class="when">${b.when}</span><p>${b.what}</p></li>`;
+    }).join("");
+
+    document.querySelectorAll(".presets button").forEach((btn) => btn.setAttribute("aria-pressed", String(+btn.dataset.w === w)));
+  }
+
+  function showReal() {
+    const r = window.innerWidth;
+    $("real").textContent = `Your actual browser window is ${r}px wide, so a real ${r >= 900 ? "900px" : r >= 600 ? "600px" : "base"} layout would apply on this device.`;
+  }
+
+  $("w").addEventListener("input", update);
+  document.querySelectorAll(".presets button").forEach((btn) => btn.addEventListener("click", () => { $("w").value = btn.dataset.w; update(); }));
+  window.addEventListener("resize", () => { update(); showReal(); });
+  update(); showReal();
+
+  // --- Ask your browser ---
+  const MQ_DEV = [["(width >= 600px)", "at least 600px wide"], ["(orientation: landscape)", "landscape"], ["(hover: hover)", "main input can hover"], ["(pointer: coarse)", "main input is a finger"], ["(prefers-color-scheme: dark)", "dark mode on"], ["(prefers-reduced-motion: reduce)", "reduced motion on"], ["print", "printing"]];
+  function mqTest() {
+    const q = $("mq-q").value.trim(), m = window.matchMedia(q), bad = m.media === "not all" && !/^not all/.test(q);
+    $("mq-res").className = "mq-res " + (bad ? "no" : m.matches ? "yes" : "no");
+    $("mq-res").textContent = bad ? "invalid" : m.matches ? "true" : "false";
+    $("mq-note").textContent = bad ? "The browser couldn't read that query, so it treats it as never matching. Check the brackets and colons." : `The browser reads it as: ${m.media}. Your window is ${innerWidth}px wide.`;
+    $("mq-dev").innerHTML = MQ_DEV.map(([q2, t]) => { const y = matchMedia(q2).matches; return `<tr><td>${q2}</td><td class="${y ? "y" : "n"}">${y ? "yes" : "no"}</td></tr>`; }).join("");
+  }
+  $("mq-q").addEventListener("input", mqTest);
+  $("mq-pre").addEventListener("click", (e) => { const x = e.target.closest("button"); if (x) { $("mq-q").value = x.textContent; mqTest(); } });
+  window.addEventListener("resize", mqTest);
+  mqTest();
+</script>
+<script>
+  makeQuiz(document.getElementById("quiz"), [
+    { id: "q1", q: "What does @media (min-width: 600px) mean?", opts: ["600px or wider", "600px or narrower", "Exactly 600px"], a: 0, why: "min-width sets a minimum: the rules apply at 600px and up." },
+    { id: "q2", q: "Two min-width queries both apply and conflict. Which wins?", opts: ["The first one", "The later one", "The smaller breakpoint"], a: 1, why: "Normal source order: the later rule wins. List queries from smallest to largest." },
+    { id: "q3", q: "How should you pick breakpoints?", opts: ["Use the widths of popular phones", "Every 100px", "Where your layout starts to look wrong"], a: 2, why: "Content-based breakpoints work on every device, including ones not made yet." },
+    { id: "q4", q: "Your media queries work in a narrow desktop window but not on a real phone. What's missing?", opts: ["The viewport meta tag", "A max-width query", "!important"], a: 0, why: "Without it, phones lay out the page at desktop width." },
+    { id: "q5", q: "Which query matches only when BOTH are true: at least 600px wide and landscape?", opts: ["(width >= 600px), (orientation: landscape)", "(width >= 600px) and (orientation: landscape)", "not (width >= 600px)"], a: 1, why: "and needs every condition; a comma means or." },
+    { id: "q6", q: "What does (hover: hover) test?", opts: ["Whether the mouse is over the element right now", "Whether the main input device can hover", "Whether the page is printed"], a: 1, why: "It's about the device: a mouse can hover, a finger can't." },
+    { id: "q7", q: "Which is the same as (min-width: 600px)?", opts: ["(width <= 600px)", "(width >= 600px)", "(width = 600px)"], a: 1, why: "Range syntax: width is greater than or equal to 600px." },
+  ]);
+
+  makeExercise(document.getElementById("ex-mq"), {
+    title: "One, two, three columns",
+    task: `<p>The cards should be one column on phones, two from 600px, and three from 900px. Rewrite the CSS so:</p>
+    <ol>
+      <li>The base <code>.cards</code> rule (outside any query) is the one-column phone layout.</li>
+      <li>A <code>min-width: 600px</code> query adds two columns.</li>
+      <li>A <code>min-width: 900px</code> query, after it, adds three.</li>
+      <li>No <code>max-width</code> queries are left.</li>
+    </ol>`,
+    html: `<div class="cards">
+  <div class="card">Mesa</div><div class="card">Royal Arch</div><div class="card">Flagstaff</div>
+</div>`,
+    css: `body { font-family: system-ui, sans-serif; }
+.card { padding: 20px; background: #b9c4ef; }
+
+.cards { display: grid; gap: 12px; grid-template-columns: 1fr 1fr 1fr; }
+
+@media (max-width: 900px) {
+  .cards { grid-template-columns: 1fr 1fr; }
+}
+@media (max-width: 600px) {
+  .cards { grid-template-columns: 1fr; }
+}`,
+    solution: { css: `body { font-family: system-ui, sans-serif; }
+.card { padding: 20px; background: #b9c4ef; }
+
+.cards { display: grid; gap: 12px; }
+
+@media (min-width: 600px) {
+  .cards { grid-template-columns: 1fr 1fr; }
+}
+@media (min-width: 900px) {
+  .cards { grid-template-columns: 1fr 1fr 1fr; }
+}` },
+    hints: [
+      "A grid with no grid-template-columns has one column. That's your phone layout.",
+      "min-width: 600px (or width >= 600px) means “600px or wider”.",
+      "List the queries smallest first, so the later, wider one wins when both apply.",
+    ],
+    checks: (() => {
+      const norm = (t) => t.replace(/\s/g, "").replace(/^\(width>=(\d+)px\)$/, "(min-width:$1px)");
+      const tracks = (v) => { const m = /^repeat\((\d+)/.exec(v); return m ? Number(m[1]) : v.trim().split(/\s+/).length; };
+      const rules = (doc) => [...doc.styleSheets[0].cssRules];
+      const cols = (doc, width) => { const m = rules(doc).find((r) => r.media && norm(r.conditionText) === `(min-width:${width}px)`); const r = m && [...m.cssRules].find((x) => x.selectorText === ".cards"); return r ? tracks(r.style.gridTemplateColumns) : 0; };
+      return [
+        { label: "Outside any query, the cards are one column", test: ({ doc }) => rules(doc).filter((r) => r.selectorText === ".cards").every((r) => !r.style.gridTemplateColumns || tracks(r.style.gridTemplateColumns) === 1) && rules(doc).some((r) => r.selectorText === ".cards" && r.style.display === "grid") },
+        { label: "min-width: 600px gives two columns", test: ({ doc }) => cols(doc, 600) === 2 },
+        { label: "min-width: 900px gives three, after the 600px query", test: ({ doc }) => { const i = (w) => rules(doc).findIndex((r) => r.media && norm(r.conditionText) === `(min-width:${w}px)`); return cols(doc, 900) === 3 && i(600) < i(900); } },
+        { label: "No max-width queries are left", test: ({ doc }) => !rules(doc).some((r) => r.media && /max-width/.test(r.conditionText)) },
+      ];
+    })(),
+  });
+
+  makeExercise(document.getElementById("ex-feat"), {
+    title: "Queries for different situations",
+    task: `<ol>
+      <li>When the page is printed, hide the <code>nav</code>.</li>
+      <li>The <code>.tip</code> says "hover over a photo for details". Only show it (<code>display: block</code>) on devices that can hover.</li>
+      <li>In landscape orientation, make <code>.gallery</code> two equal columns.</li>
+      <li>Using range syntax, make the <code>h1</code> <code>2.5rem</code> when the width is between <code>30em</code> and <code>50em</code>.</li>
+    </ol>`,
+    html: `<nav><a href="#">Trails</a> · <a href="#">Maps</a></nav>
+<h1>Trail photos</h1>
+<p class="tip">Hover over a photo for details.</p>
+<div class="gallery"><div>Mesa</div><div>Royal Arch</div></div>`,
+    css: `body { font-family: system-ui, sans-serif; }
+.tip { display: none; color: #555; }
+.gallery { display: grid; gap: 8px; }
+.gallery div { padding: 20px; background: #b9c4ef; }
+`,
+    solution: { css: `body { font-family: system-ui, sans-serif; }
+.tip { display: none; color: #555; }
+.gallery { display: grid; gap: 8px; }
+.gallery div { padding: 20px; background: #b9c4ef; }
+
+@media print {
+  nav { display: none; }
+}
+@media (hover: hover) {
+  .tip { display: block; }
+}
+@media (orientation: landscape) {
+  .gallery { grid-template-columns: 1fr 1fr; }
+}
+@media (30em <= width <= 50em) {
+  h1 { font-size: 2.5rem; }
+}
+` },
+    hints: [
+      "@media print { nav { display: none; } }",
+      "(hover: hover) and (orientation: landscape) are features, so they go in brackets.",
+      "Range syntax puts width between two values: (30em <= width <= 50em).",
+    ],
+    checks: (() => {
+      const q = (doc, re) => [...doc.styleSheets[0].cssRules].filter((r) => r.media && re.test(r.conditionText.replace(/\s+/g, " ")));
+      const inside = (doc, re, sel, test) => q(doc, re).some((m) => [...m.cssRules].some((r) => r.selectorText === sel && test(r.style)));
+      return [
+        { label: "@media print hides the nav", test: ({ doc }) => inside(doc, /^print$/, "nav", (s) => s.display === "none") },
+        { label: "(hover: hover) shows the tip", test: ({ doc }) => inside(doc, /^\(hover: ?hover\)$/, ".tip", (s) => s.display === "block") },
+        { label: "(orientation: landscape) makes two equal columns", test: ({ doc }) => inside(doc, /^\(orientation: ?landscape\)$/, ".gallery", (s) => /^(1fr 1fr|repeat\(2, ?1fr\))$/.test(s.gridTemplateColumns)) },
+        { label: "(30em <= width <= 50em) sets the h1 to 2.5rem", test: ({ doc }) => inside(doc, /^\(30em ?<= ?width ?<= ?50em\)$/, "h1", (s) => s.fontSize === "2.5rem") },
+      ];
+    })(),
+  });
+</script>
+</body>
+</html>

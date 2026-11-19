@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Core Web Development</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="style.css">
+<style>
+  .hero { display: grid; grid-template-columns: 1.3fr 1fr; gap: 32px; align-items: end; padding-block: 24px 40px; border-bottom: 1px solid var(--line); }
+  @media (max-width: 800px) { .hero { grid-template-columns: 1fr; } }
+  .hero-text { display: grid; gap: 16px; min-width: 0; }
+  .hero .lede { font-size: 1.2rem; color: var(--muted); }
+  .hero pre { margin: 0; background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 18px 20px; font-size: 0.95rem; line-height: 1.6; overflow-x: auto; min-width: 0; }
+  .hero-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 16px; }
+
+  .unit { display: grid; grid-template-columns: 200px 1fr; gap: 20px; padding-block: 28px; border-bottom: 1px solid var(--line); }
+  @media (max-width: 800px) { .unit { grid-template-columns: 1fr; gap: 14px; } }
+  .unit-head { display: grid; gap: 6px; align-content: start; }
+  .unit-head p { font-size: 0.95rem; color: var(--muted); }
+  .cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 14px; align-items: start; }
+  .card { display: grid; grid-template-rows: auto 1fr auto; gap: 10px; padding: 16px; border-radius: var(--radius); border: 1px solid var(--line); background: var(--panel); color: var(--ink); text-decoration: none; min-width: 0; }
+  a.card { transition: border-color 0.15s, transform 0.15s; }
+  a.card:hover { border-color: var(--cobalt); transform: translateY(-2px); }
+  a.card:hover h3 { color: var(--cobalt); }
+  .card.planned { background: transparent; border-style: dashed; color: var(--muted); grid-template-rows: auto; }
+  .card.planned h3 { font-weight: 600; }
+  .card.planned p { font-size: 0.85rem; }
+  .card.planned .src { display: flex; flex-wrap: wrap; gap: 4px 10px; font-size: 0.82rem; }
+  .deliverable { margin-top: 6px; padding: 8px 10px; border-radius: 6px; background: var(--stage); font-size: 0.88rem; color: var(--ink); }
+  .deliverable b { display: block; font: 600 0.7rem var(--font-code); font-variation-settings: "MONO" 1; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
+  .card-top { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+  .card p { font-size: 0.95rem; color: var(--muted); }
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; }
+  .chips code { font-size: 0.78rem; color: var(--prop); background: transparent; border: 1px solid var(--line); padding: 2px 6px; }
+  .status { font: 600 0.7rem/1 var(--font-code); font-variation-settings: "MONO" 1; letter-spacing: 0.06em; text-transform: uppercase; padding: 4px 7px; border-radius: 4px; white-space: nowrap; }
+  .status.ready { background: var(--cobalt-soft); color: var(--cobalt); }
+  .status.soon { border: 1px dashed var(--line); color: var(--muted); }
+  .status.done { background: var(--good-soft); color: var(--good); }
+  .later { display: grid; gap: 10px; padding-block: 28px; }
+  .later ol { margin: 0; padding: 0; list-style: none; display: flex; flex-wrap: wrap; gap: 8px; }
+  .later li { border: 1px dashed var(--line); border-radius: 6px; padding: 6px 10px; color: var(--muted); font-size: 0.95rem; }
+  .credit { font-size: 0.85rem; }
+  @media (prefers-reduced-motion: reduce) { a.card { transition: none; } a.card:hover { transform: none; } }
+</style>
+<script src="book-2.js"></script>
+<script src="js/progress.js"></script>
+<script src="js/chrome.js"></script>
+<script src="js/quiz.js"></script>
+</head>
+<body>
+<main class="wrap">
+  <nav class="crumbs" aria-label="Site"><a class="crumb" href="index.html">← Course home</a></nav>
+  <header class="hero">
+    <div class="hero-text">
+      <span class="eyebrow">Book 2</span>
+      <h1>Core Web <span class="sel">Development</span></h1>
+      <p class="lede">ATLS 2200's nine weeks, from your first HTML page to an interactive site. Every lesson is built from MDN's tutorials and has short reading, playgrounds to try ideas in, exercises that check your work, and a quiz.</p>
+      <p class="hero-actions"><a class="btn run" id="start" href="core-basic-html-syntax.html">Start reading →</a></p>
+    </div>
+    <pre aria-label="Example HTML"><span class="cmt">&lt;!-- every lesson works the same way --&gt;</span>
+<span class="tag-name">&lt;lesson</span> <span class="attr">read</span> <span class="attr">play</span> <span class="attr">practice</span><span class="tag-name">&gt;</span>
+  <span class="tag-name">&lt;check</span> <span class="attr">yourself</span><span class="tag-name">&gt;</span>
+<span class="tag-name">&lt;/lesson&gt;</span></pre>
+  </header>
+
+  <div id="units"></div>
+
+  <footer class="page-foot">
+    <span class="credit">Source material: <a href="https://developer.mozilla.org/en-US/docs/Learn_web_development">MDN Web Docs</a>, by Mozilla Contributors, CC-BY-SA 2.5. Each lesson follows the outline of the MDN pages listed for it; the lessons, examples, exercises and quizzes are written for this course.</span>
+    <span>© 2026 Anthony T. Pinter</span>
+  </footer>
+</main>
+
+<script>
+  // Weeks and lessons come from book-2.js (numbered by js/chrome.js, which keeps every week's full list in part.all).
+  // Written lessons are cards you can open; planned ones are dashed, with the MDN pages they'll be built from.
+  const esc = (s) => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;");
+  const isDone = (slug) => !!(window.Progress && Progress.isComplete(slug));
+  const mdnName = (u) => decodeURIComponent(u.split("/").filter(Boolean).pop()).replace(/_/g, " ");
+
+  function cardHTML(t) {
+    const done = isDone(t.slug);
+    const chips = `<div class="chips">${t.props.map((p) => `<code>${esc(p)}</code>`).join("")}</div>`;
+    return `<a class="card" href="${t.href}"><div class="card-top"><h3>${esc(t.title)}${done ? '<span class="sr-only"> (completed)</span>' : ""}</h3><span class="status ${done ? "done" : "ready"}">${done ? "✓ " : ""}${t.num}</span></div>
+      <p>${esc(t.desc)}</p>${chips}</a>`;
+  }
+  const plannedHTML = (t) => `<div class="card planned"><div class="card-top"><h3>${esc(t.title)}</h3><span class="status soon">${t.num} · Soon</span></div>
+    <p>From MDN:</p><div class="src">${t.mdn.map((u) => `<a href="${esc(u)}" target="_blank" rel="noopener">${esc(mdnName(u))}</a>`).join("")}</div></div>`;
+
+  document.getElementById("units").innerHTML = BOOK.parts.map((u) => {
+    const n = u.lessons.filter((t) => isDone(t.slug)).length;
+    return `<section class="unit" id="part-${u.num}"><div class="unit-head"><span class="eyebrow">Week ${u.num} · ${u.all.length} lessons</span><h2>${esc(u.title)}</h2><p>${esc(u.blurb)}</p>
+      ${u.deliverable ? `<p class="deliverable"><b>Deliverable</b>${esc(u.deliverable)}</p>` : ""}
+      ${n ? `<p class="card-meta">${n} of ${u.lessons.length} complete</p>` : ""}</div>
+      <div class="cards">${u.all.map((t) => (t.planned ? plannedHTML(t) : cardHTML(t))).join("")}</div></section>`;
+  }).join("");
+
+  // Start with the first written lesson, or continue from the last one visited.
+  const L = BOOK.lessons, start = document.getElementById("start");
+  const last = window.Progress && Progress.last();
+  const at = last ? L.findIndex((t) => t.slug === last.slug) : -1;
+  const next = at >= 0 ? [...L.slice(at), ...L.slice(0, at)].find((t) => !isDone(t.slug)) : L[0];
+  if (next) { start.href = next.href; start.textContent = at >= 0 ? `${next === L[at] ? "Continue" : "Up next"}: ${next.num} ${next.title} →` : "Start reading →"; }
+</script>
+</body>
+</html>

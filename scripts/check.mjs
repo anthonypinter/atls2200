@@ -3,14 +3,14 @@
 //               every deploy, so running it locally is optional: it only refreshes search when testing on your machine.
 // - book.js: every lesson has the required fields, a unique slug, a matching .html file and a known diagram key,
 //   and its related lessons exist
-// - every .html page is in book.js (except index and glossary)
+// - every .html page is in book.js (except the landing page index, book and glossary)
 // - every page has a doctype, lang, charset, viewport and title, loads the shared scripts in order, and wraps its
 //   content in one <main class="wrap">
 // - every quiz question (a line starting "{ q:" or "{ id:") has a stable id, and ids are unique within the page
 // - every local href/src points at a file that exists; links to #ids on other pages are checked when the id is static
 // - glossary-terms.js: unique terms, known categories, lesson links that exist
 // - every <span class="term"> in a lesson matches a glossary term (the same matching js/glossary.js uses)
-// - lessons in the textbook format (templates/lesson.html) have objectives, a Read section and minutes in book.js;
+// - lessons in the textbook format (templates/lesson.html) have objectives, a Read section and (Field Guide only) minutes in book.js;
 //   the summary counts how many lessons are in that format so far
 // - search-index.js is up to date with the lessons and glossary (a warning only: the live site gets a fresh one)
 import { readFileSync, readdirSync, existsSync, writeFileSync } from "node:fs";
@@ -25,13 +25,13 @@ const warnings = [];
 const err = (file, msg) => errors.push(`${file}: ${msg}`);
 const HEAD_SCRIPTS = ["book.js", "js/progress.js", "js/chrome.js", "js/quiz.js"].map((src) => `<script src="${src}"></script>`).join("\n");
 // Playground markup that links to a pretend file on purpose (the [href$=".pdf"] selector demo).
-const DEMO_LINKS = new Set(["selectors.html trail-map.pdf"]);
+const DEMO_LINKS = new Set(["selectors.html trail-map.pdf", "core-selectors.html trail-map.pdf"]);
 
 // Load the manifest the same way the browser does.
 const win = {};
 new Function("window", read("book.js"))(win);
 const book = win.BOOK;
-const index = read("index.html");
+const index = read("book.html");
 const slugs = new Set();
 book.parts.forEach((part, p) => {
   if (!part.title || !Array.isArray(part.lessons) || !part.lessons.length) err("book.js", `part ${p + 1} needs a title and lessons`);
@@ -41,7 +41,7 @@ book.parts.forEach((part, p) => {
     if (slugs.has(l.slug)) err("book.js", `duplicate slug "${l.slug}"`);
     slugs.add(l.slug);
     if (!existsSync(join(root, l.slug + ".html"))) err("book.js", `${l.slug}.html does not exist`);
-    if (!new RegExp(`\\b${l.mini}:`).test(index)) err("book.js", `${l.slug}: no diagram "${l.mini}" in index.html minis`);
+    if (!new RegExp(`\\b${l.mini}:`).test(index)) err("book.js", `${l.slug}: no diagram "${l.mini}" in book.html minis`);
     if (l.minutes !== undefined && !(Number.isInteger(l.minutes) && l.minutes > 0)) err("book.js", `${l.slug}: minutes must be a whole number`);
   }
 });
@@ -51,6 +51,24 @@ for (const l of book.parts.flatMap((p) => p.lessons)) {
   for (const r of l.related || []) if (!slugs.has(r) || r === l.slug) err("book.js", `${l.slug}: related lesson "${r}" isn't another lesson in book.js`);
 }
 
+// Book 2 (book-2.js, contents in book-2.html): its pages load book-2.js in place of book.js.
+const win2 = {};
+new Function("window", read("book-2.js"))(win2);
+const book2 = win2.BOOK;
+const slugs2 = new Set();
+for (const part of book2.parts) {
+  if (!part.title || !Array.isArray(part.lessons)) err("book-2.js", `part "${part.title || "?"}" needs a title and a lessons array`);
+  for (const l of (part.lessons || []).filter((x) => !x.planned)) {
+    for (const k of ["slug", "title", "desc"]) if (!l[k]) err("book-2.js", `${l.slug || "lesson"} is missing "${k}"`);
+    if (!Array.isArray(l.props)) err("book-2.js", `${l.slug} needs a props array`);
+    if (slugs.has(l.slug) || slugs2.has(l.slug)) err("book-2.js", `duplicate slug "${l.slug}"`);
+    slugs2.add(l.slug);
+    if (!existsSync(join(root, l.slug + ".html"))) err("book-2.js", `${l.slug}.html does not exist`);
+    if (l.minutes !== undefined && !(Number.isInteger(l.minutes) && l.minutes > 0)) err("book-2.js", `${l.slug}: minutes must be a whole number`);
+  }
+}
+const HEAD_SCRIPTS_2 = HEAD_SCRIPTS.replace('src="book.js"', 'src="book-2.js"');
+
 const formatted = [];
 const pages = readdirSync(root).filter((f) => f.endsWith(".html")).sort();
 const ids = new Map(pages.map((f) => [f, new Set([...read(f).matchAll(/\sid="([^"]+)"/g)].map((m) => m[1]))]));
@@ -58,12 +76,13 @@ const ids = new Map(pages.map((f) => [f, new Set([...read(f).matchAll(/\sid="([^
 for (const f of pages) {
   const html = read(f);
   const slug = f.replace(/\.html$/, "");
-  if (!["index", "glossary", "print", "instructor"].includes(slug) && !slugs.has(slug)) err(f, "not listed in book.js");
+  const inBook2 = slug === "book-2" || slugs2.has(slug);
+  if (!["index", "book", "book-2", "mdn-links", "glossary", "print", "instructor"].includes(slug) && !slugs.has(slug) && !slugs2.has(slug)) err(f, "not listed in book.js or book-2.js");
   // A lesson counts as converted once it has objectives; then it needs the rest of the format too.
-  if (slugs.has(slug) && html.includes('class="objectives"')) {
+  if ((slugs.has(slug) || slugs2.has(slug)) && html.includes('class="objectives"')) {
     formatted.push(slug);
     if (!/<span class="eyebrow">Read<\/span>/.test(html)) err(f, "has objectives but no Read section (see templates/lesson.html)");
-    if (!book.parts.some((p) => p.lessons.some((l) => l.slug === slug && l.minutes))) err(f, "has objectives but no minutes in book.js");
+    if (!inBook2 && !book.parts.some((p) => p.lessons.some((l) => l.slug === slug && l.minutes))) err(f, "has objectives but no minutes in book.js");
   }
   if (!/^<!doctype html>/i.test(html)) err(f, "must start with <!doctype html>");
   if (!/<html lang="[^"]+">/.test(html)) err(f, "missing <html lang>");
@@ -71,7 +90,8 @@ for (const f of pages) {
   if (!/<meta name="viewport"/.test(html)) err(f, "missing viewport meta");
   const head = html.slice(0, html.indexOf("</head>"));
   if (!/<title>[^<]+<\/title>/.test(head)) err(f, "missing <title> in <head>");
-  if (!head.includes(HEAD_SCRIPTS)) err(f, "must load these scripts at the end of <head>, in this order:\n" + HEAD_SCRIPTS);
+  const want = inBook2 ? HEAD_SCRIPTS_2 : HEAD_SCRIPTS;
+  if (slug !== "index" && !head.includes(want)) err(f, "must load these scripts at the end of <head>, in this order:\n" + want);
   if ((html.match(/<main class="wrap">/g) || []).length !== 1) err(f, 'needs exactly one <main class="wrap"> around the page content (see templates/lesson.html)');
 
   const qids = [...html.matchAll(/^\s*\{ (id: "([^"]+)", )?q:/gm)];
@@ -132,6 +152,17 @@ if (process.argv.includes("--write")) {
   console.log("wrote search-index.js (" + Math.round(searchIndex.length / 1024) + " KB)");
 } else if (!existsSync(indexPath) || readFileSync(indexPath, "utf8") !== searchIndex) {
   warnings.push("search-index.js: older than the lessons, so local search may miss recent changes. GitHub rebuilds it when publishing; run node scripts/check.mjs --write to refresh your copy");
+}
+// Book 2's index (search-index-2.js): the instructor dashboard reads it to know each lesson's sections, quizzes and
+// exercises. Lessons not written yet (planned) are left out.
+const written2 = { parts: book2.parts.map((part) => ({ ...part, lessons: part.lessons.filter((l) => !l.planned) })) };
+const searchIndex2 = buildSearchIndex(root, written2, win.GLOSSARY, win.glossaryId);
+const indexPath2 = join(root, win2.BOOK.index || "search-index-2.js");
+if (process.argv.includes("--write")) {
+  writeFileSync(indexPath2, searchIndex2);
+  console.log("wrote " + win2.BOOK.index + " (" + Math.round(searchIndex2.length / 1024) + " KB)");
+} else if (!existsSync(indexPath2) || readFileSync(indexPath2, "utf8") !== searchIndex2) {
+  warnings.push(`${win2.BOOK.index}: older than Book 2's lessons, so the instructor dashboard may count the wrong items. GitHub rebuilds it when publishing; run node scripts/check.mjs --write to refresh your copy`);
 }
 
 for (const w of warnings) console.log("warn  " + w);

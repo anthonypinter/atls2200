@@ -1,0 +1,401 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Arrays · Core Web Development</title>
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="core.css">
+<style>
+  .arr { display: flex; flex-wrap: wrap; gap: 8px; align-items: flex-start; min-height: 96px; align-content: flex-start; }
+  .slot { display: grid; grid-template-rows: auto auto; min-width: 84px; max-width: 100%; border-radius: 8px; overflow: hidden; border: 2px solid var(--line); background: var(--panel); transition: transform 0.2s, border-color 0.2s; }
+  .slot b { font: 600 0.95rem var(--font-code); font-variation-settings: "MONO" 1; color: var(--val); padding: 10px 12px; text-align: center; overflow-wrap: anywhere; }
+  .slot i { font: normal 0.72rem var(--font-code); font-variation-settings: "MONO" 1; color: var(--muted); background: var(--stage); text-align: center; padding: 2px; }
+  .slot.new { border-color: var(--good); animation: pop 0.3s; } .slot.hit { border-color: var(--cobalt); background: var(--cobalt-soft); }
+  @keyframes pop { from { transform: scale(0.6); } }
+  .arr .empty { color: var(--muted); font: 0.95rem var(--font-code); font-variation-settings: "MONO" 1; align-self: center; }
+  .opgroup { display: grid; gap: 6px; }
+  .opgroup .seg .btn { font-size: 0.8rem; padding: 5px 9px; }
+  .out { display: grid; grid-template-columns: minmax(0, 1fr); gap: 8px; }
+  .out .row { display: flex; flex-wrap: wrap; gap: 6px 12px; align-items: baseline; }
+  .tag { font: 600 0.7rem var(--font-code); font-variation-settings: "MONO" 1; text-transform: uppercase; letter-spacing: 0.05em; padding: 3px 7px; border-radius: 4px; }
+  .tag.mut { background: var(--bad-soft); color: var(--bad); } .tag.pure { background: var(--good-soft); color: var(--good); }
+  .ret { font: 600 1rem var(--font-code); font-variation-settings: "MONO" 1; overflow-wrap: anywhere; }
+  .item-in { font: 0.95rem var(--font-code); font-variation-settings: "MONO" 1; padding: 6px 10px; border: 1px solid var(--line); border-radius: 6px; background: var(--paper); color: var(--ink); width: 100%; }
+  .len { font: 600 0.85rem var(--font-code); font-variation-settings: "MONO" 1; color: var(--muted); }
+
+</style>
+<script src="book-2.js"></script>
+<script src="js/progress.js"></script>
+<script src="js/chrome.js"></script>
+<script src="js/quiz.js"></script>
+</head>
+<body>
+<main class="wrap">
+  <nav class="crumbs" aria-label="Site"><a class="crumb" href="book-2.html">← Contents</a><a class="crumb" href="glossary.html">Glossary</a></nav>
+  <header class="page-head">
+    <h1>Arrays</h1>
+    <p class="lede">When you have a list of related values, like every trail in a guide, an array keeps them in order under one name. You can read any item, add and remove items, loop through them all, and convert between arrays and strings.</p>
+    <div class="objectives">
+      <p class="callout-title">You'll be able to</p>
+      <ul>
+        <li>Create arrays, read their length, and read or change items by index.</li>
+        <li>Add and remove items with <code>push</code>, <code>pop</code>, <code>unshift</code>, <code>shift</code> and <code>splice</code>.</li>
+        <li>Do something with every item using <code>for...of</code>, <code>map()</code> and <code>filter()</code>.</li>
+        <li>Convert between strings and arrays with <code>split()</code> and <code>join()</code>.</li>
+      </ul>
+    </div>
+  </header>
+
+  <div class="section-title"><span class="eyebrow">Read</span><h2>What is an array?</h2></div>
+  <div class="prose">
+<p>An <span class="term">array</span> is a single variable that stores a list of values, in order. Instead of <code>trail1</code>, <code>trail2</code>, <code>trail3</code>, you have one <code>trails</code> list that can hold three items or three thousand, and code that works the same either way.</p>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Read</span><h2>Creating arrays</h2></div>
+  <div class="prose">
+<p>Put the items in square brackets, separated by commas. An array can hold any type, a mix of types, or even other arrays:</p>
+  </div>
+
+  <div class="runner"><textarea aria-label="Code editor">const trails = ["Mesa", "Royal Arch", "Chautauqua"];
+const miles = [6.7, 3.4, 1.2];
+const mixed = ["Mesa", 6.7, true];
+const nested = [["Mesa", 6.7], ["Royal Arch", 3.4]];
+
+console.log(trails);
+console.log(trails.length);       // how many items
+console.log(nested[1][0]);        // item 0 of item 1</textarea></div>
+
+  <div class="section-title"><span class="eyebrow">Read</span><h2>Finding the length of an array</h2></div>
+  <div class="prose">
+<p><code>trails.length</code> is the number of items. It's a property, so no parentheses.</p>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Read</span><h2>Accessing and modifying array items</h2></div>
+  <div class="prose">
+<p>Each item has an <span class="term">index</span>, its position, counted from 0. So the first item is <code>trails[0]</code> and the last is <code>trails[trails.length - 1]</code>. Asking for an index that doesn't exist gives <code>undefined</code>, not an error. To change an item, assign to its index: <code>trails[1] = "Flagstaff"</code>. For an array inside an array, use two indexes: <code>nested[1][0]</code>.</p>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Read</span><h2>Finding the index of items in an array</h2></div>
+  <div class="prose">
+<p><code>indexOf("Royal Arch")</code> returns an item's position, or <code>-1</code> if it isn't in the array. <code>includes("Mesa")</code> just answers <code>true</code> or <code>false</code>.</p>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Read</span><h2>Adding items</h2></div>
+  <div class="prose">
+<p><code>push()</code> adds one or more items to the end; <code>unshift()</code> adds them to the start. Both change the array, and return its new length.</p>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Read</span><h2>Removing items</h2></div>
+  <div class="prose">
+<p><code>pop()</code> removes the last item and <code>shift()</code> removes the first; both return the item they removed. To remove from the middle, find the index and use <code>splice(index, howMany)</code>:</p>
+    <pre class="snippet" data-lang="js">const index = trails.indexOf("Royal Arch");
+if (index !== -1) {
+  trails.splice(index, 1);   // remove 1 item at that index
+}</pre>
+    <p>Some methods change the array itself (<code>push</code>, <code>pop</code>, <code>splice</code>); others leave it alone and hand you an answer (<code>includes</code>, <code>indexOf</code>, <code>slice</code>, <code>join</code>). Knowing which kind you're using saves a lot of confusion.</p>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Play</span><h2>Change the array</h2><p>Try each method and watch which ones change the array and which just return a value.</p></div>
+  <section class="playground">
+    <div class="panel controls">
+      <div class="control"><label for="item">New item</label><input class="item-in" id="item" value="Chautauqua" autocomplete="off"></div>
+      <div class="opgroup"><span class="eyebrow">Add and remove</span><div class="seg" id="g-change"></div></div>
+      <div class="opgroup"><span class="eyebrow">Read and search</span><div class="seg" id="g-read"></div></div>
+      <div class="opgroup"><span class="eyebrow">Convert</span><div class="seg" id="g-conv"></div></div>
+      <button class="btn" id="reset" style="justify-self:start">Reset array</button>
+    </div>
+    <div class="stage-col">
+      <pre class="snippet" id="decl"></pre>
+      <div class="stage arr" id="arr" aria-live="polite"></div>
+      <span class="len" id="len"></span>
+      <div class="panel out" id="out"></div>
+    </div>
+  </section>
+
+  <div class="section-title"><span class="eyebrow">Read</span><h2>Accessing every item</h2></div>
+  <div class="prose">
+<p>Often you want to do something with every item. A <code>for...of</code> loop runs its code once per item:</p>
+  </div>
+
+  <div class="runner"><textarea aria-label="Code editor">const trails = ["Mesa", "Royal Arch", "Chautauqua"];
+
+for (const trail of trails) {
+  console.log(`Hike the ${trail} trail`);
+}</textarea></div>
+
+  <div class="prose">
+<p>Two methods build a new array from an old one. <code>map()</code> runs a function on every item and collects the results. <code>filter()</code> keeps only the items for which a function returns <code>true</code>. You'll learn more about the functions inside them in <a href="core-loops.html">Loops</a> and <a href="core-functions.html">Functions</a>.</p>
+  </div>
+
+  <div class="runner"><textarea aria-label="Code editor">const miles = [6.7, 3.4, 1.2, 8.1];
+
+const km = miles.map((m) =&gt; (m * 1.609).toFixed(1));
+console.log(km);
+
+const long = miles.filter((m) =&gt; m &gt; 5);
+console.log(long);
+console.log(miles);   // unchanged</textarea></div>
+
+  <div class="section-title"><span class="eyebrow">Read</span><h2>Converting between strings and arrays</h2></div>
+  <div class="prose">
+<p><code>split()</code> breaks a string into an array at a separator. <code>join()</code> does the opposite, joining items with a separator you choose. (<code>toString()</code> also joins, but always with commas.)</p>
+  </div>
+
+  <div class="runner"><textarea aria-label="Code editor">const data = "Mesa,Royal Arch,Chautauqua,Bear Peak";
+const trails = data.split(",");
+console.log(trails);
+console.log(trails.length);
+
+console.log(trails.join(" · "));
+console.log(trails.toString());</textarea></div>
+
+  <div class="section-title"><span class="eyebrow">Try it</span><h2>Pick something at random</h2><p><code>Math.random()</code> gives a number from 0 up to 1. Multiply it by the length and round down to get a valid index.</p></div>
+  <div class="runner"><textarea aria-label="Code editor">const names = ["Willy the Goblin", "Big Daddy", "Father Christmas"];
+const places = ["the soup kitchen", "Disneyland", "the White House"];
+const events = ["spontaneously combusted", "melted into a puddle", "turned into a slug"];
+
+const index = Math.floor(Math.random() * names.length);
+console.log("Index picked:", index);
+
+const who = names[index];
+const where = places[Math.floor(Math.random() * places.length)];
+const what = events[Math.floor(Math.random() * events.length)];
+
+console.log(`${who} went to ${where} and ${what}.`);
+console.log(`There are ${names.length} names; the last one is ${names[names.length - 1]}.`);</textarea></div>
+
+  <div class="section-title"><span class="eyebrow">Practice</span><h2>Change the list</h2><p>Add and remove trails with array methods, then read from the end of the list.</p></div>
+  <div id="ex-arrays"></div>
+
+  <div class="section-title"><span class="eyebrow">Practice</span><h2>Printing those products</h2><p>From MDN's arrays lesson: turn "name:price" strings into receipt lines and a total.</p></div>
+  <div id="ex-products"></div>
+
+  <div class="section-title"><span class="eyebrow">Practice</span><h2>Storing the previous 5 searches</h2><p>Keep a search history with the newest first, and never more than five items.</p></div>
+  <div id="ex-history"></div>
+
+  <section class="notes">
+    <div class="panel">
+      <h2>Key ideas</h2>
+      <ul>
+        <li>An array is an ordered list under one name: <code>["Mesa", "Royal Arch"]</code>. <code>length</code> is how many items.</li>
+        <li>Indexes start at 0; the last item is at <code>length - 1</code>. <code>indexOf()</code> returns <code>-1</code> when not found.</li>
+        <li><code>push</code>/<code>pop</code> work at the end, <code>unshift</code>/<code>shift</code> at the start, <code>splice</code> in the middle.</li>
+        <li><code>for...of</code> visits every item; <code>map()</code> transforms them; <code>filter()</code> keeps some.</li>
+        <li><code>split()</code> turns a string into an array; <code>join()</code> turns an array into a string.</li>
+      </ul>
+    </div>
+    <div class="panel mistake">
+      <h2>Common mistakes</h2>
+      <ul>
+        <li>Reading <code>trails[trails.length]</code> for the last item. It's <code>length - 1</code>.</li>
+        <li>Expecting <code>slice()</code> or <code>map()</code> to change the original array.</li>
+        <li>Calling <code>splice(index, 1)</code> when <code>indexOf</code> returned <code>-1</code>, which removes the last item.</li>
+        <li>Forgetting that a <code>const</code> array can still be changed with <code>push</code> and <code>pop</code>.</li>
+      </ul>
+    </div>
+  </section>
+
+  <div class="section-title"><span class="eyebrow">Check yourself</span><h2>Quick check</h2></div>
+  <div class="panel quiz" id="quiz"></div>
+
+  <footer class="page-foot" data-book-nav><a href="book-2.html">← Contents</a></footer>
+</main>
+
+<script src="js/runner.js"></script>
+<script>
+  const $ = (id) => document.getElementById(id);
+  const START = ["Mesa", "Royal Arch", "Flagstaff"];
+  let arr = [...START], marks = { new: [], hit: [] };
+  const item = () => $("item").value.trim() || "Chautauqua";
+  const q = (s) => JSON.stringify(s);
+
+  // mut: true if the method changes the array. fn returns { ret, marks?, why }.
+  const OPS = {
+    change: [
+      { l: "push()", code: () => `trails.push(${q(item())})`, mut: true, fn: () => { const r = arr.push(item()); return { ret: r, marks: { new: [arr.length - 1] }, why: "Adds to the end and returns the new length." }; } },
+      { l: "pop()", code: () => "trails.pop()", mut: true, fn: () => ({ ret: arr.pop(), why: "Removes the last item and returns it. On an empty array it returns undefined." }) },
+      { l: "unshift()", code: () => `trails.unshift(${q(item())})`, mut: true, fn: () => { const r = arr.unshift(item()); return { ret: r, marks: { new: [0] }, why: "Adds to the start and returns the new length. Every other item's index goes up by one." }; } },
+      { l: "shift()", code: () => "trails.shift()", mut: true, fn: () => ({ ret: arr.shift(), why: "Removes the first item and returns it. Every other item's index goes down by one." }) },
+      { l: "splice(1, 1)", code: () => "trails.splice(1, 1)", mut: true, fn: () => ({ ret: arr.splice(1, 1), why: "Starting at index 1, removes 1 item. Returns an array of what it removed." }) },
+      { l: "[1] = …", code: () => `trails[1] = ${q(item())}`, mut: true, fn: () => { if (arr.length < 1) return { ret: undefined, why: "Assigning past the end leaves a gap. Add items with push() instead." }; arr[1] = item(); return { ret: arr[1], marks: { new: [1] }, why: "Square brackets with = replace the item at that index." }; } },
+    ],
+    read: [
+      { l: "[0]", code: () => "trails[0]", fn: () => ({ ret: arr[0], marks: { hit: [0] }, why: "The first item is at index 0." }) },
+      { l: "[length - 1]", code: () => "trails[trails.length - 1]", fn: () => ({ ret: arr[arr.length - 1], marks: { hit: [arr.length - 1] }, why: "length is one more than the last index, so subtract 1 to get the last item." }) },
+      { l: "[length]", code: () => "trails[trails.length]", fn: () => ({ ret: arr[arr.length], why: "There is nothing at index length (it's one past the end), so the result is undefined. This is a classic off-by-one mistake." }) },
+      { l: "includes()", code: () => `trails.includes(${q(item())})`, fn: () => { const i = arr.indexOf(item()); return { ret: arr.includes(item()), marks: { hit: i >= 0 ? [i] : [] }, why: "true or false: is this exact value in the array? It's case-sensitive." }; } },
+      { l: "indexOf()", code: () => `trails.indexOf(${q(item())})`, fn: () => { const i = arr.indexOf(item()); return { ret: i, marks: { hit: i >= 0 ? [i] : [] }, why: "Where is it? Returns the index, or -1 if it isn't there." }; } },
+    ],
+    conv: [
+      { l: 'join(", ")', code: () => 'trails.join(", ")', fn: () => ({ ret: arr.join(", "), why: "Joins every item into one string, with the separator between them." }) },
+      { l: "slice(0, 2)", code: () => "trails.slice(0, 2)", fn: () => ({ ret: arr.slice(0, 2), marks: { hit: [0, 1].filter((i) => i < arr.length) }, why: "Copies part of the array into a new one, from index 0 up to (not including) 2. The original is untouched." }) },
+      { l: "toSorted()", code: () => "trails.toSorted()", fn: () => ({ ret: arr.toSorted ? arr.toSorted() : [...arr].sort(), why: "Returns a sorted copy (alphabetical for strings). sort() does the same but changes the original array." }) },
+    ],
+  };
+  function group(id, list) {
+    $(id).innerHTML = list.map((o, i) => `<button class="btn" data-g="${id}" data-i="${i}">${o.l}</button>`).join("");
+    $(id).addEventListener("click", (e) => {
+      const b = e.target.closest("button"); if (!b) return;
+      const o = list[b.dataset.i];
+      const code = o.code(); const r = o.fn();
+      marks = Object.assign({ new: [], hit: [] }, r.marks);
+      render({ code, o, r });
+    });
+  }
+  group("g-change", OPS.change); group("g-read", OPS.read); group("g-conv", OPS.conv);
+
+  function render(last) {
+    $("decl").innerHTML = hlJS(`const trails = ${fmtJS(arr, 1)};`);
+    $("arr").innerHTML = arr.length ? arr.map((v, i) => `<div class="slot ${marks.new.includes(i) ? "new" : ""} ${marks.hit.includes(i) ? "hit" : ""}"><b></b><i>[${i}]</i></div>`).join("") : `<span class="empty">[] (empty)</span>`;
+    $("arr").querySelectorAll(".slot b").forEach((b, i) => { b.textContent = q(arr[i]); });
+    $("len").textContent = `trails.length → ${arr.length}`;
+    if (!last) { $("out").innerHTML = `<p class="hint">Pick a method. The new-item box sets the value used by push(), unshift(), includes() and indexOf().</p>`; return; }
+    $("out").innerHTML = `<pre class="snippet">${hlJS(last.code)}</pre><div class="row"><span class="tag ${last.o.mut ? "mut" : "pure"}">${last.o.mut ? "Changes the array" : "Array unchanged"}</span><span class="ret"></span></div><p class="hint"></p>`;
+    $("out").querySelector(".ret").textContent = "returns → " + (last.r.ret === undefined ? "undefined" : fmtJS(last.r.ret, 1));
+    $("out").querySelector(".hint").textContent = last.r.why;
+  }
+  $("reset").addEventListener("click", () => { arr = [...START]; marks = { new: [], hit: [] }; render(); });
+
+
+  render();
+</script>
+<script>
+  makeQuiz(document.getElementById("quiz"), [
+    { id: "q1", q: "What does this log?", pre: 'const pets = ["cat", "dog", "fish"];\nconsole.log(pets[1]);', opts: ["cat", "dog", "fish"], a: 1, why: "Indexes start at 0, so [1] is the second item." },
+    { id: "q2", q: "What does this log?", pre: 'const pets = ["cat", "dog"];\nconsole.log(pets.push("bird"));', opts: ["[\"cat\", \"dog\", \"bird\"]", "bird", "3"], a: 2, why: "push() returns the new length, not the array." },
+    { id: "q3", q: "What does this log?", pre: 'const pets = ["cat", "dog"];\nconsole.log(pets.indexOf("Cat"));', opts: ["0", "-1", "false"], a: 1, why: "\"Cat\" with a capital C isn't in the array, and indexOf returns -1 when nothing is found." },
+    { id: "q4", q: "What does this log?", pre: 'const parts = "red,green,blue".split(",");\nconsole.log(parts.length);', opts: ["1", "3", "14"], a: 1, why: "split(\",\") makes an array of three strings." },
+    { id: "q90", q: "const t = [\"Mesa\", \"Arch\"]; t.unshift(\"Sanitas\"); What is t[0]?", opts: ["\"Mesa\"", "\"Sanitas\"", "\"Arch\""], a: 1, why: "unshift adds to the start." },
+    { id: "q91", q: "[6.7, 3.4, 8.1].filter((m) => m > 5) returns…", opts: ["[6.7, 8.1]", "[true, false, true]", "2"], a: 0, why: "filter keeps the items where the function returns true." },
+    { id: "q92", q: "\"a-b-c\".split(\"-\").join(\"+\") gives…", opts: ["\"a+b+c\"", "[\"a\", \"b\", \"c\"]", "\"a-b-c\""], a: 0, why: "split makes an array, join glues it back with +." },
+  ]);
+
+  makeExercise(document.getElementById("ex-arrays"), {
+    title: "Edit the trail list",
+    task: `<ol>
+      <li>Add <code>"Chautauqua"</code> to the end of the array.</li>
+      <li>Remove <code>"Mesa"</code> from the start.</li>
+      <li>Log how many trails there are, using <code>length</code>.</li>
+      <li>Log the last trail, using <code>length</code> to find its index.</li>
+    </ol>`,
+    js: `const trails = ["Mesa", "Royal Arch", "Flagstaff"];
+
+// Your code here
+`,
+    solution: `const trails = ["Mesa", "Royal Arch", "Flagstaff"];
+
+trails.push("Chautauqua");
+trails.shift();
+console.log(trails.length);
+console.log(trails[trails.length - 1]);`,
+    expose: ["trails"],
+    hints: [
+      "push() adds to the end; shift() removes from the start.",
+      "trails.length is the number of items.",
+      "Indexes start at 0, so the last item is trails[trails.length - 1].",
+    ],
+    checks: [
+      { label: "The array is Royal Arch, Flagstaff, Chautauqua", test: ({ fns }) => JSON.stringify(fns.trails) === JSON.stringify(["Royal Arch", "Flagstaff", "Chautauqua"]) },
+      { label: "Uses push and shift", test: ({ code }) => /\.push\(/.test(code.js) && /\.shift\(\)/.test(code.js) },
+      { label: "Logs the count, 3", test: ({ logs, code }) => logs.includes("3") && /trails\.length/.test(code.js) },
+      { label: "Logs the last trail using length", test: ({ logs, code }) => logs.includes("Chautauqua") && /trails\[\s*trails\.length\s*-\s*1\s*\]/.test(code.js) },
+    ],
+  });
+
+  makeExercise(document.getElementById("ex-products"), {
+    title: "A receipt",
+    task: `<ol>
+      <li><code>formatProduct(entry)</code> takes text like <code>"Underpants:6.99"</code>. Split it at the <code>:</code> and return <code>"Underpants: $6.99"</code>.</li>
+      <li><code>totalPrice(products)</code> takes an array of those strings. Loop through it with <code>for...of</code>, add up the prices (convert them with <code>Number()</code>), and return <code>"Total: $"</code> followed by the total with two decimal places.</li>
+    </ol>`,
+    js: `const products = ["Underpants:6.99", "Socks:5.99", "T-shirt:14.99", "Trousers:31.99", "Shoes:23.99"];
+
+function formatProduct(entry) {
+  // split(":") gives [name, price]
+}
+
+function totalPrice(products) {
+  let total = 0;
+  // for...of, split, Number, +=
+  return "Total: $" + total;
+}
+
+for (const p of products) console.log(formatProduct(p));
+console.log(totalPrice(products));`,
+    solution: `const products = ["Underpants:6.99", "Socks:5.99", "T-shirt:14.99", "Trousers:31.99", "Shoes:23.99"];
+
+function formatProduct(entry) {
+  const parts = entry.split(":");
+  return \`\${parts[0]}: $\${parts[1]}\`;
+}
+
+function totalPrice(products) {
+  let total = 0;
+  for (const p of products) {
+    const parts = p.split(":");
+    total += Number(parts[1]);
+  }
+  return "Total: $" + total.toFixed(2);
+}
+
+for (const p of products) console.log(formatProduct(p));
+console.log(totalPrice(products));`,
+    expose: ["formatProduct", "totalPrice"],
+    hints: [
+      "entry.split(\":\") returns an array: item 0 is the name, item 1 the price.",
+      "Inside the loop: total += Number(parts[1]);",
+      "total.toFixed(2) gives two decimal places.",
+    ],
+    checks: [
+      { label: "formatProduct makes “Underpants: $6.99”", test: ({ fns }) => fns.formatProduct("Underpants:6.99") === "Underpants: $6.99" && fns.formatProduct("Hat:12.5") === "Hat: $12.5" },
+      { label: "totalPrice adds up the prices", test: ({ fns }) => fns.totalPrice(["Underpants:6.99", "Socks:5.99", "T-shirt:14.99", "Trousers:31.99", "Shoes:23.99"]) === "Total: $83.95" },
+      { label: "The total always has two decimals", test: ({ fns }) => fns.totalPrice(["A:1.5", "B:2.5"]) === "Total: $4.00" && fns.totalPrice([]) === "Total: $0.00" },
+    ],
+  });
+
+  makeExercise(document.getElementById("ex-history"), {
+    title: "Search history",
+    task: `<p><code>addSearch(history, term)</code> receives the history array and a new search term.</p>
+    <ol>
+      <li>Add <code>term</code> to the <strong>start</strong> of the array, so the newest search is first.</li>
+      <li>If the array now has more than 5 items, remove the last (oldest) one.</li>
+      <li>Return the array.</li>
+    </ol>`,
+    js: `function addSearch(history, term) {
+  // unshift, then maybe pop
+  return history;
+}
+
+const history = [];
+for (const t of ["Mesa", "Royal Arch", "Bear Peak", "Sanitas", "Flagstaff", "Green Mountain"]) {
+  addSearch(history, t);
+}
+console.log(history);`,
+    solution: `function addSearch(history, term) {
+  history.unshift(term);
+  if (history.length > 5) {
+    history.pop();
+  }
+  return history;
+}
+
+const history = [];
+for (const t of ["Mesa", "Royal Arch", "Bear Peak", "Sanitas", "Flagstaff", "Green Mountain"]) {
+  addSearch(history, t);
+}
+console.log(history);`,
+    expose: ["addSearch"],
+    hints: [
+      "unshift() adds to the start; pop() removes from the end.",
+      "if (history.length > 5) { history.pop(); }",
+    ],
+    checks: [
+      { label: "The newest search goes first", test: ({ fns }) => fns.addSearch(["Mesa"], "Royal Arch").join() === "Royal Arch,Mesa" },
+      { label: "Never more than 5 items", test: ({ fns }) => { const h = []; for (const t of "abcdefgh") fns.addSearch(h, t); return h.length === 5; } },
+      { label: "The oldest item is the one dropped", test: ({ fns }) => { const h = []; for (const t of "abcdef") fns.addSearch(h, t); return h.join("") === "fedcb"; } },
+    ],
+  });
+</script>
+</body>
+</html>

@@ -1,0 +1,465 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Styling Lists, Tables and Forms · Core Web Development</title>
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="core.css">
+<style>
+  .steps { display: grid; gap: 6px; }
+  .step { display: grid; grid-template-columns: 26px 1fr; gap: 8px; align-items: start; text-align: left; padding: 8px 10px; border-radius: 8px; border: 1px solid var(--line); background: var(--panel); color: var(--ink); font: inherit; font-size: 0.93rem; cursor: pointer; }
+  .step .n { font: 700 0.8rem/1.6 var(--font-code); font-variation-settings: "MONO" 1; color: var(--muted); }
+  .step.done { border-color: var(--good); } .step.done .n { color: var(--good); }
+  .step[aria-current="true"] { border-color: var(--cobalt); box-shadow: inset 4px 0 0 var(--cobalt); }
+  .form-stage { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 20px; min-width: 0; }
+  .step-text { display: grid; gap: 6px; }
+
+  /* The demo form. Each sN class adds one layer of styling. */
+  .fs .err { display: none; }
+  .fs.s1 { display: grid; gap: 16px; max-width: 420px; }
+  .fs.s1 .field { display: grid; gap: 6px; }
+  .fs.s1 label { font-weight: 700; }
+  .fs.s1 .hint-text { font-size: 0.85rem; color: var(--muted); }
+  .fs.s2 input, .fs.s2 select, .fs.s2 textarea, .fs.s2 button { font: inherit; color: inherit; }
+  .fs.s3 input:not([type="checkbox"]), .fs.s3 select, .fs.s3 textarea { width: 100%; box-sizing: border-box; }
+  .fs.s4 input:not([type="checkbox"]), .fs.s4 select, .fs.s4 textarea { padding: 10px 12px; border: 1.5px solid var(--line); border-radius: 8px; background: var(--paper); }
+  .fs.s4 textarea { resize: vertical; min-height: 90px; }
+  .fs.s5 input:focus-visible, .fs.s5 select:focus-visible, .fs.s5 textarea:focus-visible { outline: none; border-color: var(--cobalt); box-shadow: 0 0 0 4px var(--cobalt-soft); }
+  .fs.s6 .check { display: flex; gap: 10px; align-items: center; font-weight: 400; cursor: pointer; }
+  .fs.s6 input[type="checkbox"] { width: 20px; height: 20px; accent-color: var(--cobalt); }
+  .fs.s7 button { justify-self: start; background: var(--cobalt); color: var(--panel); border: 0; border-radius: 8px; padding: 12px 22px; font-weight: 700; cursor: pointer; transition: background 0.15s, transform 0.1s; }
+  .fs.s7 button:hover { background: color-mix(in srgb, var(--cobalt) 82%, var(--ink)); }
+  .fs.s7 button:active { transform: translateY(1px); }
+  .fs.s7 button:focus-visible { outline: 3px solid var(--prop); outline-offset: 3px; }
+  .fs.s8 input:user-invalid { border-color: var(--bad); background: var(--bad-soft); }
+  .fs.s8 input:user-invalid + .err { display: block; color: var(--bad); font-size: 0.85rem; }
+  .sent { padding: 10px 12px; border-radius: 8px; background: var(--good-soft); color: var(--good); }
+
+  .ls-stage { background: #fff; color: #1d2133; border: 1px solid var(--line); border-radius: 8px; padding: 14px 18px; font: 1rem/1.5 Georgia, serif; }
+  .ls-stage ul, .ls-stage ol { margin: 0 0 10px; border-left: 2px dashed #9aa2bf; }
+  .ls-stage li { background: #eef1fb; margin: 2px 0; }
+  .tb-wrap { overflow-x: auto; background: #fff; border: 1px solid var(--line); border-radius: 8px; padding: 12px; }
+  #tb-t { color: #1d2133; }
+  #tb-t.font { font-family: system-ui, sans-serif; }
+  #tb-t.space { table-layout: fixed; width: 100%; border-collapse: collapse; }
+  #tb-t.space th, #tb-t.space td { padding: 0.6em; }
+  #tb-t.align th, #tb-t.align td { text-align: left; vertical-align: top; }
+  #tb-t.align td:nth-child(2), #tb-t.align th:nth-child(2) { text-align: right; }
+  #tb-t.borders thead th { border-bottom: 2px solid #1d2133; }
+  #tb-t.borders tfoot td, #tb-t.borders tfoot th { border-top: 1px solid #999; }
+  #tb-t.zebra tbody tr:nth-child(odd) { background-color: #eef1fb; }
+  #tb-t.cap caption { caption-side: bottom; padding: 8px; font-style: italic; color: #5a6280; text-align: right; }
+  .of-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 10px; }
+  .of-box { height: 150px; border: 2px dashed #9aa2bf; border-radius: 6px; background: #fff; overflow: hidden; }
+  .of-box img { width: 100%; height: 100%; display: block; }
+  .of-row figcaption { font: 0.82rem var(--font-code); font-variation-settings: "MONO" 1; color: var(--muted); margin-top: 4px; }
+</style>
+<script src="book-2.js"></script>
+<script src="js/progress.js"></script>
+<script src="js/chrome.js"></script>
+<script src="js/quiz.js"></script>
+</head>
+<body>
+<main class="wrap">
+  <nav class="crumbs" aria-label="Site"><a class="crumb" href="book-2.html">← Contents</a><a class="crumb" href="glossary.html">Glossary</a></nav>
+  <header class="page-head">
+    <h1>Styling Lists, Tables and Forms</h1>
+    <p class="lede">Lists, tables, images and form controls each come with their own default styling quirks. This lesson tames them: custom bullets, readable tables, images that fit their boxes, and forms that match the rest of the page.</p>
+    <div class="objectives">
+      <p class="callout-title">You'll be able to</p>
+      <ul>
+        <li>Style list markers, spacing and counting.</li>
+        <li>Make a data table readable with spacing, alignment, borders and zebra stripes.</li>
+        <li>Fit images into boxes with <code>max-width</code> and <code>object-fit</code>.</li>
+        <li>Normalise form controls so they inherit fonts and size predictably, then style them.</li>
+      </ul>
+    </div>
+  </header>
+
+  <div class="section-title"><span class="eyebrow">Read</span><h2>Styling lists</h2></div>
+  <div class="prose">
+<h3>Handling list spacing</h3>
+    <p>Browsers give lists a top and bottom margin and about 40px of left padding, which is where the bullets sit. Set the spacing yourself so lists line up with your paragraphs: matching <code>line-height</code> and margins on <code>p</code> and <code>li</code> keeps the rhythm even.</p>
+    <h3>List-specific styles</h3>
+    <ul>
+      <li><code>list-style-type</code>: the bullet or numbering style: <code>disc</code>, <code>circle</code>, <code>square</code>, <code>decimal</code>, <code>lower-alpha</code>, <code>upper-roman</code>, <code>none</code>, or any string like <code>"→ "</code>.</li>
+      <li><code>list-style-position</code>: <code>outside</code> (the default; the marker hangs in the padding) or <code>inside</code> (the marker sits in the text, which wraps under it).</li>
+      <li><code>list-style-image</code>: an image as the bullet. You can't size it, so many people use <code>::marker</code> or a background image instead.</li>
+      <li><code>list-style</code>: the shorthand, as in <code>list-style: square inside;</code>.</li>
+    </ul>
+    <h3>Controlling list counting</h3>
+    <p>In the HTML, <code>&lt;ol start="4"&gt;</code> starts counting at 4, <code>reversed</code> counts down, and <code>&lt;li value="2"&gt;</code> sets one item's number.</p>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Play</span><h2>List styles</h2><p>Change the marker type and position. Watch where the marker sits relative to the dashed edge of the list.</p></div>
+  <section class="playground even">
+    <div class="panel" style="display:grid;gap:10px;align-content:start">
+      <div class="control"><label for="ls-type">ul list-style-type</label><select id="ls-type"><option>disc</option><option>circle</option><option>square</option><option value='"→ "'>"→ "</option><option>none</option></select></div>
+      <div class="control"><label for="ls-otype">ol list-style-type</label><select id="ls-otype"><option>decimal</option><option>lower-alpha</option><option>upper-roman</option><option>decimal-leading-zero</option></select></div>
+      <div class="control"><label for="ls-pos">list-style-position</label><select id="ls-pos"><option>outside</option><option>inside</option></select></div>
+      <div class="control"><label for="ls-pad">padding-left</label><input id="ls-pad" type="range" min="0" max="60" step="4" value="40"><span class="readout" id="ls-pad-out"></span></div>
+      <pre class="snippet" id="ls-code"></pre>
+    </div>
+    <div class="ls-stage" id="ls-stage"><ul><li>Water, at least two litres, plus a filter if you're heading somewhere remote</li><li>Layers</li></ul><ol start="1"><li>Park at Chautauqua</li><li>Follow the Bluebell Road</li><li>Turn left at the sign</li></ol></div>
+  </section>
+
+  <div class="section-title"><span class="eyebrow">Practice</span><h2>Styling a nested list</h2><p>Different markers for each kind of list.</p></div>
+  <div id="ex-list"></div>
+
+  <div class="section-title"><span class="eyebrow">Read</span><h2>Styling tables</h2></div>
+  <div class="prose">
+<p>A well-structured table (Week 2) is the starting point. Then a handful of rules makes it readable:</p>
+    <ul>
+      <li><strong>Font:</strong> a clean sans-serif is easiest to scan.</li>
+      <li><strong>Spacing:</strong> <code>border-collapse: collapse</code> merges double borders; <code>padding</code> on cells gives the data room; <code>table-layout: fixed</code> with a <code>width</code> makes column widths predictable.</li>
+      <li><strong>Alignment:</strong> left-align text, right-align numbers so their digits line up, and <code>vertical-align: top</code> for cells of different heights. <code>:nth-child()</code> picks the column.</li>
+      <li><strong>Borders:</strong> a few lines, like one under the header and one above the totals, beat a grid of boxes.</li>
+      <li><strong>Zebra striping:</strong> <code>tbody tr:nth-child(odd)</code> shades alternate rows, so eyes don't slip to the wrong row.</li>
+      <li><strong>Caption:</strong> <code>caption-side: bottom</code> moves it under the table.</li>
+    </ul>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Play</span><h2>Style the table one step at a time</h2><p>Turn on each step.</p></div>
+  <section class="playground">
+    <div class="panel controls" id="tb-steps" style="display:grid;gap:8px;align-content:start">
+      <label class="toggle"><input type="checkbox" data-c="font"> Font</label>
+      <label class="toggle"><input type="checkbox" data-c="space"> Spacing: fixed layout, collapse, padding</label>
+      <label class="toggle"><input type="checkbox" data-c="align"> Alignment: numbers right</label>
+      <label class="toggle"><input type="checkbox" data-c="borders"> Borders: header and footer only</label>
+      <label class="toggle"><input type="checkbox" data-c="zebra"> Zebra stripes</label>
+      <label class="toggle"><input type="checkbox" data-c="cap"> Caption at the bottom</label>
+      <button class="btn" type="button" id="tb-all" style="justify-self:start">Turn everything on</button>
+    </div>
+    <div class="tb-wrap"><table id="tb-t"><caption>Boulder trails, by visits</caption>
+      <thead><tr><th scope="col">Trail</th><th scope="col">Visits (2025)</th><th scope="col">Notes</th></tr></thead>
+      <tbody><tr><th scope="row">Mesa Trail</th><td>48,200</td><td>Busy on weekends</td></tr><tr><th scope="row">Royal Arch</th><td>30,950</td><td>Steep; closed after storms</td></tr><tr><th scope="row">Bear Peak</th><td>12,400</td><td>Long day</td></tr><tr><th scope="row">Sanitas</th><td>27,800</td><td>Dog friendly</td></tr></tbody>
+      <tfoot><tr><th scope="row">Total</th><td>119,350</td><td></td></tr></tfoot>
+    </table></div>
+  </section>
+
+  <div class="section-title"><span class="eyebrow">Practice</span><h2>A readable data table</h2><p>Apply the table-styling basics.</p></div>
+  <div id="ex-table"></div>
+
+  <div class="section-title"><span class="eyebrow">Read</span><h2>Images and media</h2></div>
+  <div class="prose">
+<h3>Replaced elements</h3>
+    <p>Images and videos are <em>replaced elements</em>: their content comes from an outside file, and CSS can't change what's inside them, only the box they sit in.</p>
+    <h3>Sizing images</h3>
+    <p>An image is shown at its natural size, so a large photo overflows its container. One rule stops that everywhere:</p>
+    <pre class="snippet" data-lang="css">img {
+  max-width: 100%;
+  height: auto;
+}</pre>
+    <h3>Handling image display issues with object-fit</h3>
+    <p>When you force an image into a box of a different shape, it stretches. <span class="term">object-fit</span> controls how it fills the box instead: <code>cover</code> fills it and crops; <code>contain</code> fits the whole image and leaves gaps; <code>fill</code> (the default) stretches.</p>
+    <h3>Replaced elements in layout</h3>
+    <p>In layouts like Grid, items normally stretch to fill their area, but images keep their own proportions. Give the image <code>width: 100%; height: 100%; object-fit: cover;</code> if you want it to fill its cell.</p>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Look</span><h2>object-fit</h2><p>The same wide image in three square boxes.</p></div>
+  <div class="of-row" id="of-row"></div>
+
+  <div class="section-title"><span class="eyebrow">Practice</span><h2>Thumbnails that fit</h2><p>Make three images of different shapes into tidy square thumbnails.</p></div>
+  <div id="ex-thumbs"></div>
+
+  <div class="section-title"><span class="eyebrow">Read</span><h2>Styling form elements</h2></div>
+  <div class="prose">
+<h3>Challenges in styling form widgets</h3>
+    <p>Form controls started out drawn by the operating system, not the browser, and some still are. They fall into three groups:</p>
+    <ul>
+      <li><strong>Easy to style:</strong> text inputs, <code>&lt;textarea&gt;</code>, <code>&lt;button&gt;</code>, <code>&lt;fieldset&gt;</code> and <code>&lt;legend&gt;</code> behave like ordinary boxes.</li>
+      <li><strong>Harder:</strong> checkboxes and radio buttons. <code>accent-color</code> recolours them in one line.</li>
+      <li><strong>Mostly unstylable inside:</strong> colour and date pickers, range sliders, file inputs, <code>&lt;select&gt;</code> dropdowns, <code>&lt;progress&gt;</code> and <code>&lt;meter&gt;</code>. You can size the box, but not much of what's inside.</li>
+    </ul>
+    <h3>Normalising form behaviour: a reset</h3>
+    <p>Form controls don't inherit the page's font, and their sizing differs between browsers. A short reset fixes both:</p>
+    <pre class="snippet" data-lang="css">button, input, select, textarea {
+  font-family: inherit;
+  font-size: 100%;
+  box-sizing: border-box;
+}
+textarea {
+  overflow: auto;
+}</pre>
+    <h3>Styling text inputs</h3>
+    <p>Then style them like any box: <code>border</code>, <code>padding</code>, <code>border-radius</code>. Put each label above its input, make the input full width, and give <code>:focus-visible</code> a clear outline. Keep controls recognisable: an input that doesn't look like an input won't get filled in.</p>
+    <div class="callout warn"><p class="callout-title">Watch out</p><p>Don't show errors with colour alone. Some visitors can't tell red from green. Add a text message next to the field explaining what's wrong.</p></div>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Play</span><h2>Improve the form one layer at a time</h2><p>Step through the layers and watch the same form get easier to use. Try the fields at each step.</p></div>
+  <section class="playground even">
+    <div class="stage-col">
+      <div class="steps" id="steps" role="group" aria-label="Styling layers"></div>
+      <div class="panel step-text" id="step-text" aria-live="polite"></div>
+    </div>
+    <div class="form-stage">
+      <form class="fs" id="fs" novalidate>
+        <div class="field"><label for="fn">Name</label><input id="fn" required autocomplete="off"><span class="err">Please enter your name.</span></div>
+        <div class="field"><label for="fe">Email</label><input id="fe" type="email" required placeholder="you@example.com" autocomplete="off"><span class="err">That doesn't look like an email address.</span></div>
+        <div class="field"><label for="ft">Favorite trail</label><select id="ft"><option>Royal Arch</option><option>Mesa Trail</option><option>Chautauqua Loop</option></select></div>
+        <div class="field"><label for="fm">Message</label><textarea id="fm" rows="3"></textarea><span class="hint-text">Optional. Tell us about your last hike.</span></div>
+        <label class="check"><input type="checkbox" id="fc"> Email me when new trails are added</label>
+        <button type="submit">Join the club</button>
+        <div id="sent" aria-live="polite"></div>
+      </form>
+    </div>
+  </section>
+
+  <div class="section-title"><span class="eyebrow">Practice</span><h2>Style the form</h2><p>Fix the fonts, the overflow and the missing focus style.</p></div>
+  <div id="ex-formstyle"></div>
+
+  <section class="notes">
+    <div class="panel">
+      <h2>Key ideas</h2>
+      <ul>
+        <li><code>list-style-type</code>, <code>-position</code> and <code>-image</code> (or <code>::marker</code>) style list markers.</li>
+        <li>Tables: collapse borders, pad cells, right-align numbers, stripe rows with <code>:nth-child(odd)</code>.</li>
+        <li><code>img { max-width: 100%; height: auto; }</code> stops images overflowing.</li>
+        <li><code>object-fit: cover</code> fills a box without stretching the image.</li>
+        <li>Form controls need <code>font: inherit</code> and <code>box-sizing: border-box</code> to match the page.</li>
+      </ul>
+    </div>
+    <div class="panel mistake">
+      <h2>Common mistakes</h2>
+      <ul>
+        <li>Removing list padding with markers <code>outside</code>, so the bullets disappear off the edge.</li>
+        <li>Centring numbers in a table, so digits don't line up.</li>
+        <li>Setting a width and height on an image without <code>object-fit</code>, so it stretches.</li>
+        <li>Restyling form controls until they no longer look like form controls.</li>
+        <li>Removing the focus outline from inputs.</li>
+      </ul>
+    </div>
+  </section>
+
+  <div class="section-title"><span class="eyebrow">Check yourself</span><h2>Quick check</h2></div>
+  <div class="panel quiz" id="quiz"></div>
+
+  <footer class="page-foot" data-book-nav><a href="book-2.html">← Contents</a></footer>
+</main>
+
+<script>
+  const $ = (id) => document.getElementById(id);
+  const STEPS = [
+    ["Browser defaults", "Nothing styled yet. Fields sit in a jumble, the font doesn't match the page, and every browser shows it differently."],
+    ["Stack the fields", "Turn the form into a grid with a gap, and put each label above its input. Instantly easier to scan."],
+    ["font: inherit", "Form controls use the browser's own small font. font: inherit and color: inherit make them match the rest of the page."],
+    ["Full width", "width: 100% lines the fields up, and box-sizing: border-box keeps padding from making them overflow."],
+    ["Padding, border, radius", "Roomier fields with a softer border are easier to read and to tap on a phone."],
+    ["Focus style", "Click or Tab into a field. A clear color ring shows where you're typing. Never remove the outline without replacing it."],
+    ["Checkbox", "accent-color recolors the checkbox, and a bigger size makes it easier to hit. The label is clickable too."],
+    ["Button", "A solid button with hover, pressed and focus styles. It should look clickable at a glance."],
+    ["Error states", "Type something wrong in Email and click away, or submit with Name empty. :user-invalid adds a red border and a message only after interaction."],
+  ];
+  let step = 0;
+  $("steps").innerHTML = STEPS.map(([t], i) => `<button class="step" data-i="${i}"><span class="n">${i}</span><span>${t}</span></button>`).join("");
+  $("steps").addEventListener("click", (e) => { const b = e.target.closest("button"); if (b) { step = +b.dataset.i; render(); } });
+  function render() {
+    $("fs").className = "fs " + Array.from({ length: step }, (_, i) => "s" + (i + 1)).join(" ");
+    document.querySelectorAll(".step").forEach((b, i) => { b.setAttribute("aria-current", String(i === step)); b.classList.toggle("done", i < step); });
+    $("step-text").innerHTML = `<span class="eyebrow">Layer ${step} of ${STEPS.length - 1}</span><h2>${STEPS[step][0]}</h2><p>${STEPS[step][1]}</p>` +
+      `<div class="seg" style="margin-top:6px"><button class="btn" id="prev" ${step === 0 ? "disabled" : ""}>← Remove layer</button><button class="btn" id="next" ${step === STEPS.length - 1 ? "disabled" : ""}>Add next layer →</button></div>`;
+    $("prev").addEventListener("click", () => { step = Math.max(0, step - 1); render(); });
+    $("next").addEventListener("click", () => { step = Math.min(STEPS.length - 1, step + 1); render(); });
+  }
+  $("fs").addEventListener("submit", (e) => {
+    e.preventDefault();
+    const ok = $("fs").checkValidity();
+    if (!ok) { $("fs").reportValidity(); $("sent").innerHTML = ""; return; }
+    $("sent").innerHTML = '<div class="sent">Thanks! A real form would send this now.</div>';
+  });
+  render();
+
+  // --- Lists ---
+  function ls() {
+    const t = $("ls-type").value, o = $("ls-otype").value, p = $("ls-pos").value, pad = $("ls-pad").value;
+    const ul = $("ls-stage").querySelector("ul"), ol = $("ls-stage").querySelector("ol");
+    ul.style.listStyleType = t; ol.style.listStyleType = o;
+    [ul, ol].forEach((l) => { l.style.listStylePosition = p; l.style.paddingLeft = pad + "px"; });
+    $("ls-pad-out").textContent = pad + "px";
+    $("ls-code").textContent = `ul { list-style-type: ${t}; }\nol { list-style-type: ${o}; }\nul, ol {\n  list-style-position: ${p};\n  padding-left: ${pad}px;\n}`;
+  }
+  ["ls-type", "ls-otype", "ls-pos", "ls-pad"].forEach((id) => $(id).addEventListener("input", ls));
+  ls();
+
+  // --- Tables ---
+  function tb() { $("tb-t").className = [...document.querySelectorAll("#tb-steps input:checked")].map((i) => i.dataset.c).join(" "); }
+  $("tb-steps").addEventListener("change", tb);
+  $("tb-all").addEventListener("click", () => { document.querySelectorAll("#tb-steps input").forEach((i) => (i.checked = true)); tb(); });
+
+  // --- object-fit ---
+  const WIDE = "data:image/svg+xml," + encodeURIComponent(`<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 200'><rect width='400' height='200' fill='#9ec2e6'/><path d='M0 200 L90 90 L150 140 L230 40 L320 130 L400 80 L400 200Z' fill='#2f5680'/><circle cx='330' cy='45' r='22' fill='#fff6c9'/><text x='12' y='190' font-family='Arial' font-size='16' fill='#fff'>left edge</text><text x='305' y='190' font-family='Arial' font-size='16' fill='#fff'>right edge</text></svg>`);
+  $("of-row").innerHTML = ["fill", "contain", "cover"].map((v) => `<figure style="margin:0"><div class="of-box"><img src="${WIDE}" alt="A wide mountain scene" style="object-fit:${v}"></div><figcaption>object-fit: ${v}${v === "fill" ? " (default: stretched)" : v === "contain" ? " (whole image, gaps)" : " (fills, crops the sides)"}</figcaption></figure>`).join("");
+</script>
+<script>
+  makeExercise(document.getElementById("ex-list"), {
+    title: "Packing list",
+    task: `<ol>
+      <li>Make the unordered list's bullets <code>square</code>.</li>
+      <li>Make the nested ordered list count with <code>lower-alpha</code>.</li>
+      <li>Give list items <code>line-height: 1.5</code>.</li>
+    </ol>`,
+    html: `<ul>
+  <li>Water</li>
+  <li>Layers
+    <ol>
+      <li>Base layer</li>
+      <li>Fleece</li>
+      <li>Rain shell</li>
+    </ol>
+  </li>
+  <li>Map</li>
+</ul>`,
+    css: `body { font-family: Georgia, serif; }
+`,
+    solution: { css: `body { font-family: Georgia, serif; }
+
+ul {
+  list-style-type: square;
+}
+
+ol {
+  list-style-type: lower-alpha;
+}
+
+li {
+  line-height: 1.5;
+}
+` },
+    hints: ["ul and ol each get their own list-style-type."],
+    checks: [
+      { label: "ul bullets are square", test: ({ style }) => style("ul", "list-style-type") === "square" },
+      { label: "The nested ol uses lower-alpha", test: ({ style }) => style("ol", "list-style-type") === "lower-alpha" },
+      { label: "Items have line-height 1.5", test: ({ style }) => Math.abs(parseFloat(style("li", "line-height")) / parseFloat(style("li", "font-size")) - 1.5) < 0.01 },
+    ],
+  });
+
+  makeExercise(document.getElementById("ex-table"), {
+    title: "Elevation table",
+    task: `<ol>
+      <li>On the table: <code>border-collapse: collapse</code> and <code>font-family: system-ui, sans-serif</code>.</li>
+      <li>Give every <code>th</code> and <code>td</code> <code>padding: 0.5em 0.8em</code>.</li>
+      <li>Right-align the numbers in the second column with <code>td:nth-child(2)</code>.</li>
+      <li>Stripe the body rows: <code>tbody tr:nth-child(odd)</code> gets <code>background-color: #eef1fb</code>.</li>
+    </ol>`,
+    html: `<table>
+  <caption>Summit elevations</caption>
+  <thead><tr><th scope="col">Peak</th><th scope="col">Feet</th></tr></thead>
+  <tbody>
+    <tr><th scope="row">Green Mountain</th><td>8,144</td></tr>
+    <tr><th scope="row">Bear Peak</th><td>8,461</td></tr>
+    <tr><th scope="row">South Boulder Peak</th><td>8,549</td></tr>
+  </tbody>
+</table>`,
+    css: `th { text-align: left; }
+`,
+    solution: { css: `th { text-align: left; }
+
+table {
+  border-collapse: collapse;
+  font-family: system-ui, sans-serif;
+}
+
+th, td {
+  padding: 0.5em 0.8em;
+}
+
+td:nth-child(2) {
+  text-align: right;
+}
+
+tbody tr:nth-child(odd) {
+  background-color: #eef1fb;
+}
+` },
+    hints: ["The numbers are the second child of each row: td:nth-child(2)."],
+    checks: [
+      { label: "Borders collapse, in a sans-serif font", test: ({ style }) => style("table", "border-collapse") === "collapse" && /system-ui|sans-serif/.test(style("table", "font-family")) },
+      { label: "Cells are padded 0.5em 0.8em", test: ({ style }) => style("td", "padding-top") === "8px" && Math.abs(parseFloat(style("td", "padding-left")) - 12.8) < 0.1 },
+      { label: "Numbers are right-aligned", test: ({ style }) => style("td", "text-align") === "right" },
+      { label: "Rows 1 and 3 are striped, row 2 isn't", test: ({ $$, style }) => { const r = $$("tbody tr"); return style(r[0], "background-color") === "rgb(238, 241, 251)" && style(r[2], "background-color") === "rgb(238, 241, 251)" && style(r[1], "background-color") !== "rgb(238, 241, 251)"; } },
+    ],
+  });
+
+  makeExercise(document.getElementById("ex-thumbs"), {
+    title: "Square thumbnails",
+    task: `<p>The images are in a three-column grid. Make each one a 150px-tall thumbnail that fills its column <em>without stretching</em>:</p>
+    <ol>
+      <li><code>width: 100%</code> and <code>height: 150px</code>.</li>
+      <li><code>object-fit: cover</code>.</li>
+      <li>Round the corners: <code>border-radius: 8px</code>.</li>
+    </ol>`,
+    html: `<div class="grid">
+  <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 150'%3E%3Crect width='400' height='150' fill='%239ec2e6'/%3E%3Ccircle cx='200' cy='75' r='60' fill='%232f5680'/%3E%3C/svg%3E" alt="Wide view of a lake">
+  <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 150 300'%3E%3Crect width='150' height='300' fill='%23b9d99a'/%3E%3Ccircle cx='75' cy='150' r='60' fill='%234b6b2f'/%3E%3C/svg%3E" alt="Tall pine tree">
+  <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'%3E%3Crect width='200' height='200' fill='%23f0b37a'/%3E%3Ccircle cx='100' cy='100' r='60' fill='%238a5228'/%3E%3C/svg%3E" alt="Sandstone arch">
+</div>`,
+    css: `.grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+`,
+    solution: { css: `.grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+
+img {
+  width: 100%;
+  height: 150px;
+  object-fit: cover;
+  border-radius: 8px;
+}
+` },
+    hints: ["The circles in each image should stay round. If they look like ovals, the image is stretched."],
+    checks: [
+      { label: "Every image is 150px tall and fills its column", test: ({ $, $$ }) => { const col = ($(".grid").clientWidth - 16) / 3; return $$("img").every((i) => Math.abs(i.getBoundingClientRect().height - 150) < 1 && Math.abs(i.getBoundingClientRect().width - col) < 1); } },
+      { label: "object-fit: cover, so nothing stretches", test: ({ $$, style }) => $$("img").every((i) => style(i, "object-fit") === "cover") },
+      { label: "Corners are rounded 8px", test: ({ style }) => style("img", "border-top-left-radius") === "8px" },
+    ],
+  });
+
+  makeExercise(document.getElementById("ex-formstyle"), {
+    title: "A tidy sign-up form",
+    task: `<ol>
+      <li>Make the inputs and button use the page's font.</li>
+      <li>The inputs are 100% wide with padding, so they poke out of the form. Keep them inside.</li>
+      <li>The focus outline was removed. Bring back a visible focus style with <code>:focus-visible</code> instead.</li>
+      <li>Color the checkbox <code>#2340d9</code> with <code>accent-color</code>.</li>
+    </ol>`,
+    html: `<form>
+  <label for="name">Name</label>
+  <input id="name" type="text">
+  <label for="email">Email</label>
+  <input id="email" type="email">
+  <label><input type="checkbox"> Email me about new hikes</label>
+  <button>Sign up</button>
+</form>`,
+    css: `body { font-family: Georgia, serif; font-size: 18px; }
+form { display: grid; gap: 6px; max-width: 320px; border: 2px solid #c8cbd6; padding: 12px; }
+input[type="text"], input[type="email"] { width: 100%; padding: 10px; }
+input:focus { outline: none; }`,
+    solution: { css: `body { font-family: Georgia, serif; font-size: 18px; }
+form { display: grid; gap: 6px; max-width: 320px; border: 2px solid #c8cbd6; padding: 12px; }
+input, button { font: inherit; }
+input[type="text"], input[type="email"] { width: 100%; padding: 10px; box-sizing: border-box; }
+input:focus-visible { outline: 3px solid #2340d9; outline-offset: 2px; }
+input[type="checkbox"] { accent-color: #2340d9; }` },
+    hints: [
+      "Form controls don't inherit fonts: input, button { font: inherit; }",
+      "box-sizing: border-box puts the padding inside the 100%.",
+      "Replace input:focus { outline: none } with input:focus-visible { outline: 3px solid #2340d9; }.",
+    ],
+    checks: [
+      { label: "Inputs and button use the page's font", test: ({ $$, style }) => $$("input[type=text], input[type=email], button").every((el) => style(el, "font-family") === style("body", "font-family") && style(el, "font-size") === "18px") },
+      { label: "The inputs stay inside the form", test: ({ $, $$, style }) => { const f = $("form"); const inner = f.getBoundingClientRect().right - parseFloat(style(f, "padding-right")) - 2; return $$("input[type=text], input[type=email]").every((i) => i.getBoundingClientRect().right <= inner + 0.5); } },
+      { label: "There's a visible :focus-visible style", test: ({ doc }) => [...doc.styleSheets[0].cssRules].some((r) => /:focus-visible/.test(r.selectorText) && ((r.style.outlineStyle && r.style.outlineStyle !== "none") || (r.style.outline && !/none/.test(r.style.outline)) || r.style.boxShadow)) && ![...doc.styleSheets[0].cssRules].some((r) => /:focus(?!-)/.test(r.selectorText) && /none|0px/.test(r.style.outline || r.style.outlineStyle || "")) },
+      { label: "The checkbox is #2340d9", test: ({ style }) => style('input[type="checkbox"]', "accent-color") === "rgb(35, 64, 217)" },
+    ],
+  });
+
+  makeQuiz(document.getElementById("quiz"), [
+    { id: "q1", q: "Why do inputs often look smaller than the page text?", opts: ["Browsers shrink inputs on purpose", "Form controls don't inherit the page's font", "Inputs ignore CSS"], a: 1, why: "Add font: inherit to inputs, selects, text areas and buttons." },
+    { id: "q2", q: "An input with width: 100% and padding sticks out of its box. What fixes it?", opts: ["width: 99%", "overflow: hidden on the input", "box-sizing: border-box"], a: 2, why: "border-box includes the padding inside the 100%." },
+    { id: "q3", q: "Why use :user-invalid instead of :invalid?", opts: ["It waits until the visitor has interacted with the field", "It works in more browsers", "It's shorter"], a: 0, why: ":invalid matches empty required fields as soon as the page loads." },
+    { id: "q4", q: "What does accent-color change?", opts: ["Every input's text color", "Checkboxes, radios and range sliders", "The page's link color"], a: 1, why: "It recolors the browser's built-in controls in one line." },
+    { id: "q5", q: "Which selector stripes alternate table rows?", opts: ["tbody tr:nth-child(odd)", "tr:odd", "tbody + tr"], a: 0, why: ":nth-child(odd) picks rows 1, 3, 5…" },
+    { id: "q6", q: "A wide photo is forced into a square box and looks squashed. What fixes it?", opts: ["object-fit: cover", "max-width: 100%", "background-size: cover"], a: 0, why: "object-fit: cover fills the box and crops instead of stretching." },
+  ]);
+</script>
+</body>
+</html>

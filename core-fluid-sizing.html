@@ -1,0 +1,351 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Fluid Sizing · Core Web Development</title>
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="core.css">
+<style>
+  .rows { display: grid; gap: 10px; }
+  .row-demo { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; display: grid; gap: 4px; overflow: hidden; }
+  .row-demo code { justify-self: start; }
+  .row-demo .sample { font-family: var(--font-display); font-weight: 800; line-height: 1.1; white-space: nowrap; color: var(--c); }
+  .row-demo .px { font: 0.8rem var(--font-code); font-variation-settings: "MONO" 1; color: var(--muted); }
+  .row-demo .px.bad { color: var(--bad); }
+  .chart { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 8px; }
+  .chart svg { display: block; width: 100%; height: auto; }
+  .chart text { font: 11px var(--font-code); fill: var(--muted); }
+  .legend { display: flex; flex-wrap: wrap; gap: 6px 16px; font: 0.8rem var(--font-code); font-variation-settings: "MONO" 1; padding: 4px 6px 0; }
+  .legend span { display: inline-flex; gap: 6px; align-items: center; } .legend i { width: 14px; height: 3px; background: var(--c); }
+
+  .stage.scroll { overflow-x: auto; min-height: 0; }
+  .page { border: 2px dashed var(--prop); border-radius: 8px; background: var(--panel); transition: width 0.2s; position: relative; }
+  .page .lbl { font: 600 0.75rem var(--font-code); font-variation-settings: "MONO" 1; color: var(--prop); display: block; padding: 6px 8px 0; }
+  .col { background: var(--cobalt-soft); border: 2px solid var(--cobalt); border-radius: 6px; margin: 8px auto 12px; padding: 10px; display: grid; gap: 6px; box-sizing: border-box; }
+  .col i { display: block; height: 6px; border-radius: 3px; background: var(--muted); opacity: 0.45; }
+  .col i:nth-child(3n) { width: 70%; }
+  .col .w { font: 600 0.8rem var(--font-code); font-variation-settings: "MONO" 1; color: var(--cobalt); }
+  .status { font-size: 0.93rem; padding: 8px 10px; border-radius: 6px; }
+  .status.good { background: var(--good-soft); color: var(--good); } .status.bad { background: var(--bad-soft); color: var(--bad); }
+
+  .recipes { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(300px, 100%), 1fr)); gap: 14px; }
+  .recipes .panel { display: grid; grid-template-columns: minmax(0, 1fr); gap: 8px; align-content: start; }
+  .recipes .code-box pre { padding-right: 70px; }
+
+  .zm-rows { display: grid; gap: 8px; }
+  .zm-row { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 8px 12px; display: grid; gap: 2px; overflow: hidden; }
+  .zm-row .s { font-family: var(--font-display); font-weight: 800; line-height: 1.1; white-space: nowrap; }
+  .zm-row .px { font: 0.8rem var(--font-code); font-variation-settings: "MONO" 1; color: var(--muted); }
+  .zm-row .px.bad { color: var(--bad); } .zm-row .px.ok { color: var(--good); }
+</style>
+<script src="book-2.js"></script>
+<script src="js/progress.js"></script>
+<script src="js/chrome.js"></script>
+<script src="js/quiz.js"></script>
+</head>
+<body>
+<main class="wrap">
+  <nav class="crumbs" aria-label="Site"><a class="crumb" href="book-2.html">← Contents</a><a class="crumb" href="glossary.html">Glossary</a></nav>
+  <header class="page-head">
+    <h1>Fluid Sizing</h1>
+    <p class="lede">Media queries change sizes in jumps. Viewport units and the math functions <code>calc()</code>, <code>min()</code>, <code>max()</code> and <code>clamp()</code> let text and spacing change smoothly with the screen, inside limits you set, often with no media query at all.</p>
+    <div class="objectives">
+      <p class="callout-title">You'll be able to</p>
+      <ul>
+        <li>Make text responsive with media queries and with viewport units, and explain why <code>vw</code> alone is a problem.</li>
+        <li>Make text and spacing grow smoothly with <code>clamp()</code>.</li>
+        <li>Set upper and lower limits with <code>min()</code> and <code>max()</code>, and mix units with <code>calc()</code>.</li>
+      </ul>
+    </div>
+  </header>
+
+  <div class="section-title"><span class="eyebrow">Read</span><h2>Using media queries for responsive typography</h2></div>
+  <div class="prose">
+<p>A heading that suits a laptop can be far too big for a phone, where a long word might not even fit across the screen. The simplest fix is a media query that steps the size up on wide screens:</p>
+    <pre class="snippet" data-lang="css">h1 { font-size: 2rem; }
+
+@media (width >= 1200px) {
+  h1 { font-size: 4rem; }
+}</pre>
+    <p>That works, but it jumps: at 1199px the heading is 32px, at 1200px it doubles. More breakpoints give smaller jumps, at the cost of more CSS.</p>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Read</span><h2>Using viewport units for responsive typography</h2></div>
+  <div class="prose">
+<p>Viewport units grow smoothly: <code>font-size: 6vw</code> is 6% of the window's width, so the heading scales continuously as the window changes. But <strong>never size text with <code>vw</code> alone</strong>. A size that depends only on the window ignores the reader's settings. A bigger default text size has no effect on it at all, and zooming in makes the window narrower in CSS pixels, so the <code>vw</code> size shrinks by exactly as much as the zoom enlarges it. People who need larger text can't get it.</p>
+    <p>The fix is to mix in a unit that does respond to zoom, with <code>calc()</code>:</p>
+    <pre class="snippet" data-lang="css">h1 {
+  font-size: calc(1.5rem + 4vw);
+}</pre>
+    <p>Now the heading still grows with the window, and the <code>1.5rem</code> part grows when someone zooms.</p>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Play</span><h2>Text size when someone zooms</h2><p>Pretend the window is 400px wide, then raise the browser's text size, as someone with low vision might.</p></div>
+  <section class="playground">
+    <div class="panel controls">
+      <div class="control"><label for="zm-z">browser text size</label><input id="zm-z" type="range" min="100" max="200" step="10" value="100"><span class="readout" id="zm-z-out"></span></div>
+      <p class="hint">At 100%, 1rem is 16px. At 200%, it's 32px. The window stays 400px wide.</p>
+    </div>
+    <div class="zm-rows" id="zm-rows"></div>
+  </section>
+
+  <div class="section-title"><span class="eyebrow">Read</span><h2>clamp(): grow, within limits</h2></div>
+  <div class="prose">
+<p><code>calc(1.5rem + 4vw)</code> still has no limits: on a huge monitor it gets enormous. <span class="term">clamp()</span> adds them. It takes three values, always in this order: a minimum, a preferred value and a maximum.</p>
+    <pre class="snippet" data-lang="css">h1 {
+  font-size: clamp(1.75rem, 1rem + 3vw, 3.5rem);
+}</pre>
+    <p>The preferred value, <code>1rem + 3vw</code>, grows as the window widens. <code>clamp()</code> keeps it between 28px and 56px, so the heading is never tiny on a phone or enormous on a big monitor. One line replaces several media queries, and the <code>rem</code> keeps it zoomable.</p>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Play</span><h2>Four ways to size a heading</h2><p>Drag the window width and compare a fixed size, a media query, vw alone and clamp().</p></div>
+  <section class="playground">
+    <div class="panel controls">
+      <div class="control"><label for="vw">window width</label><input id="vw" type="range" min="320" max="1600" step="10" value="390"><span class="readout" id="vw-out"></span></div>
+      <span class="eyebrow" style="margin-top:6px">clamp( min, preferred, max )</span>
+      <div class="control"><label for="cmin">min</label><input id="cmin" type="range" min="1" max="3" step="0.25" value="1.75"><span class="readout" id="cmin-out"></span></div>
+      <div class="control"><label for="cvw">preferred: 1rem + ?vw</label><input id="cvw" type="range" min="1" max="8" step="0.5" value="3"><span class="readout" id="cvw-out"></span></div>
+      <div class="control"><label for="cmax">max</label><input id="cmax" type="range" min="2" max="5" step="0.25" value="3.5"><span class="readout" id="cmax-out"></span></div>
+      <p class="hint">1rem is 16px here. Keeping a rem in the preferred value means the heading still grows when someone zooms in.</p>
+    </div>
+    <div class="stage-col">
+      <div class="rows" id="rows"></div>
+      <div class="chart"><svg id="chart" viewBox="0 0 520 220" role="img" aria-label="Font size in pixels plotted against window width for the three methods"></svg>
+        <div class="legend"><span style="--c:var(--item-2)"><i></i>fixed rem</span><span style="--c:var(--item-3)"><i></i>media query</span><span style="--c:var(--item-4)"><i></i>vw only</span><span style="--c:var(--item-1)"><i></i>clamp()</span></div></div>
+    </div>
+  </section>
+
+  <div class="section-title"><span class="eyebrow">Read</span><h2>min(), max() and calc()</h2></div>
+  <div class="prose">
+<p><span class="term" data-term="min() / max()">min()</span> and <span class="term" data-term="min() / max()">max()</span> pick one of their values. <code>width: min(100%, 600px)</code> uses whichever is smaller, so the box fills the screen on phones but never grows past 600px. It works like <code>max-width</code>. <code>max()</code> sets a floor instead: <code>padding: max(10px, 4vw)</code> is never less than 10px. The names feel backwards at first: <code>min()</code> sets an upper limit.</p>
+    <p><span class="term">calc()</span> mixes units: <code>calc(100% - 2rem)</code> means "the full width, minus 32px." Inside <code>clamp()</code>, <code>min()</code> and <code>max()</code> you can do math without writing <code>calc()</code>.</p>
+    <div class="callout warn"><p class="callout-title">Watch out</p><p><code>calc(100%-2rem)</code> is silently ignored. The <code>+</code> and <code>-</code> in <code>calc()</code> need a space on each side: <code>calc(100% - 2rem)</code>.</p></div>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Play</span><h2>Columns that fit with min() and max()</h2><p><code>min()</code> picks the smallest of its values, <code>max()</code> the largest. They're perfect for "this wide, but never wider than the screen" and "at least this much padding."</p></div>
+  <section class="playground">
+    <div class="panel controls">
+      <div class="control"><label for="pw">page width</label><input id="pw" type="range" min="300" max="1000" step="10" value="360"><span class="readout" id="pw-out"></span></div>
+      <div class="control"><label for="cw">.column { … }</label>
+        <select id="cw">
+          <option value="fixed">width: 640px</option>
+          <option value="max">max-width: 640px</option>
+          <option value="min" selected>width: min(640px, 100% - 32px)</option>
+        </select></div>
+      <div class="control"><label for="pad">padding</label>
+        <select id="pad"><option value="fixed">10px</option><option value="max" selected>max(10px, 4vw)</option></select></div>
+    </div>
+    <div class="stage-col">
+      <div class="stage scroll"><div class="page" id="page"><span class="lbl" id="page-lbl"></span><div class="col" id="col"><span class="w" id="col-w"></span><i></i><i></i><i></i><i></i><i></i><i></i></div></div></div>
+      <div class="status" id="status2" aria-live="polite"></div>
+    </div>
+  </section>
+
+  <div class="section-title"><span class="eyebrow">Look</span><h2>Recipes worth keeping</h2><p>Copy these into your own stylesheet. Each one replaces a media query or two.</p></div>
+  <section class="recipes" id="recipes"></section>
+
+  <div class="section-title"><span class="eyebrow">Practice</span><h2>Size with clamp(), min() and calc()</h2><p>Replace fixed sizes with ones that grow smoothly, within limits.</p></div>
+  <div id="ex-fluid"></div>
+
+  <div class="section-title"><span class="eyebrow">Practice</span><h2>Responsive typography</h2><p>From MDN's mobile-first challenge: headings that scale without wrapping, and body text that steps up on wide screens.</p></div>
+  <div id="ex-type"></div>
+
+  <section class="notes">
+    <div class="panel">
+      <h2>Key ideas</h2>
+      <ul>
+        <li>Media queries change text size in steps; viewport units change it smoothly.</li>
+        <li>Never size text in <code>vw</code> alone: it ignores zoom. Mix in <code>rem</code>: <code>calc(1.5rem + 4vw)</code>.</li>
+        <li><code>clamp(1.75rem, 1rem + 3vw, 3.5rem)</code>: grow with the window, but stay between 28px and 56px.</li>
+        <li><code>min()</code> sets an upper limit (like <code>max-width</code>), <code>max()</code> a lower limit.</li>
+        <li>These work anywhere a length works: font sizes, widths, padding, gap and grid tracks.</li>
+      </ul>
+    </div>
+    <div class="panel mistake">
+      <h2>Common mistakes</h2>
+      <ul>
+        <li>Leaving out the spaces: <code>calc(100%-2rem)</code> is ignored.</li>
+        <li>Sizing text in <code>vw</code> alone, so it doesn't grow when people zoom.</li>
+        <li>Putting <code>clamp()</code>'s values in the wrong order. It's always min, preferred, max.</li>
+        <li>Using <code>100vw</code> for widths on a page with a scrollbar, which causes sideways scrolling. Use <code>100%</code>.</li>
+      </ul>
+    </div>
+  </section>
+
+  <div class="section-title"><span class="eyebrow">Check yourself</span><h2>Quick check</h2></div>
+  <div class="panel quiz" id="quiz"></div>
+
+  <footer class="page-foot" data-book-nav><a href="book-2.html">← Contents</a></footer>
+</main>
+
+<script>
+  const $ = (id) => document.getElementById(id);
+  const REM = 16;
+
+  // Part 1
+  function sizes(w) {
+    const mn = +$("cmin").value * REM, mx = +$("cmax").value * REM, pref = REM + (+$("cvw").value / 100) * w;
+    return { mq: (w >= 1200 ? 4 : 2) * REM, fixed: 2.5 * REM, vw: 0.06 * w, clamp: Math.min(mx, Math.max(mn, pref)), pref };
+  }
+  function part1() {
+    const w = +$("vw").value, cmin = $("cmin").value, cvw = $("cvw").value, cmax = $("cmax").value;
+    $("vw-out").textContent = w + "px"; $("cmin-out").textContent = cmin + "rem"; $("cvw-out").textContent = cvw + "vw"; $("cmax-out").textContent = cmax + "rem";
+    const s = sizes(w);
+    const row = (c, code, px, note) => `<div class="row-demo" style="--c:var(${c})"><code>${code}</code><span class="sample" style="font-size:${px}px">Weekend Hikes</span><span class="px ${note ? "bad" : ""}">${Math.round(px)}px${note ? " · " + note : ""}</span></div>`;
+    $("rows").innerHTML =
+      row("--item-2", "font-size: 2.5rem", s.fixed, w < 480 ? "big for a phone: long words won't fit" : "") +
+      row("--item-3", "2rem, then 4rem at width >= 1200px", s.mq, w >= 1100 && w < 1200 ? "about to jump to double" : "") +
+      row("--item-4", "font-size: 6vw", s.vw, s.vw < 24 ? "too small for a heading" : s.vw > 72 ? "far too big" : "") +
+      row("--item-1", `font-size: clamp(${cmin}rem, 1rem + ${cvw}vw, ${cmax}rem)`, s.clamp, "");
+
+    // Chart: window 320..1600 on x, 0..100px on y
+    const X = (v) => 40 + ((v - 320) / 1280) * 465, Y = (v) => 195 - (Math.min(v, 100) / 100) * 180;
+    const path = (key) => { let d = ""; for (let v = 320; v <= 1600; v += 20) d += (d ? " L" : "M") + X(v).toFixed(1) + " " + Y(sizes(v)[key]).toFixed(1); return d; };
+    let g = "";
+    [0, 25, 50, 75, 100].forEach((v) => (g += `<line x1="40" x2="505" y1="${Y(v)}" y2="${Y(v)}" stroke="var(--line)"/><text x="34" y="${Y(v) + 4}" text-anchor="end">${v}</text>`));
+    [320, 640, 960, 1280, 1600].forEach((v) => (g += `<text x="${X(v)}" y="212" text-anchor="middle">${v}</text>`));
+    g += `<path d="${path("fixed")}" fill="none" stroke="var(--item-2)" stroke-width="2.5"/><path d="${path("mq")}" fill="none" stroke="var(--item-3)" stroke-width="2.5"/><path d="${path("vw")}" fill="none" stroke="var(--item-4)" stroke-width="2.5"/><path d="${path("clamp")}" fill="none" stroke="var(--item-1)" stroke-width="3.5"/>`;
+    g += `<line x1="${X(w)}" x2="${X(w)}" y1="10" y2="195" stroke="var(--ink)" stroke-dasharray="3 3"/><circle cx="${X(w)}" cy="${Y(s.clamp)}" r="5" fill="var(--item-1)"/>`;
+    $("chart").innerHTML = g;
+  }
+  ["vw", "cmin", "cvw", "cmax"].forEach((id) => $(id).addEventListener("input", part1));
+  part1();
+
+  // Part 2
+  function part2() {
+    const pw = +$("pw").value, mode = $("cw").value, pad = $("pad").value;
+    $("pw-out").textContent = pw + "px";
+    $("page").style.width = pw + "px";
+    $("page-lbl").textContent = `page · ${pw}px`;
+    const avail = pw - 4;
+    const p = pad === "max" ? Math.max(10, pw * 0.04) : 10;
+    let w;
+    if (mode === "fixed") w = 640; else if (mode === "max") w = Math.min(640, avail); else w = Math.min(640, avail - 32);
+    Object.assign($("col").style, { width: w + "px", padding: p + "px" });
+    $("col-w").textContent = `${Math.round(w)}px wide · ${Math.round(p)}px padding`;
+    const s = $("status2");
+    if (w > avail) { s.className = "status bad"; s.textContent = `The column is ${w}px but the page is ${avail}px, so it sticks out and the page scrolls sideways.`; }
+    else if (mode === "max" && avail < 640) { s.className = "status bad"; s.textContent = "It fits, but it touches the edges of the screen. Text right against the glass is hard to read on a phone."; }
+    else { s.className = "status good"; s.textContent = avail < 672 ? "min() picked 100% - 32px, leaving a 16px gutter on each side." : "min() picked 640px because the page has room. One line, no media query."; }
+  }
+  ["pw", "cw", "pad"].forEach((id) => $(id).addEventListener("input", part2));
+  part2();
+
+  // Part 3
+  const P = (p, v) => `  <span class="prop">${p}</span>: <span class="val">${v}</span>;`;
+  const RECIPES = [
+    ["Fluid heading", "Grows smoothly between a phone size and a desktop size.", `<span class="sel">h1</span> {\n${P("font-size", "clamp(1.75rem, 1rem + 3vw, 3.5rem)")}\n}`],
+    ["Readable column", "Never wider than about 65 characters, always with a gutter.", `<span class="sel">main</span> {\n${P("width", "min(65ch, 100% - 2rem)")}\n${P("margin-inline", "auto")}\n}`],
+    ["Spacing that breathes", "More padding on big screens, never cramped on small ones.", `<span class="sel">section</span> {\n${P("padding-block", "clamp(2rem, 6vw, 5rem)")}\n}`],
+    ["A grid that never overflows", "Cards at least 250px wide, unless the screen is narrower than that.", `<span class="sel">.cards</span> {\n${P("display", "grid")}\n${P("grid-template-columns", "\n    repeat(auto-fit, minmax(min(250px, 100%), 1fr))")}\n}`],
+    ["Fill the screen under a header", "A hero that fills the rest of the screen below a 64px header.", `<span class="sel">.hero</span> {\n${P("min-height", "calc(100dvh - 64px)")}\n}`],
+    ["Minimum tap target", "Buttons stay at least 44px tall even with small text.", `<span class="sel">button</span> {\n${P("min-height", "max(44px, 2.5em)")}\n}`],
+  ];
+  $("recipes").innerHTML = RECIPES.map(([h, p, code], i) => `<div class="panel"><h3>${h}</h3><p class="hint">${p}</p><div class="code-box"><pre id="r${i}">${code}</pre><button class="copy" data-i="${i}">Copy</button></div></div>`).join("");
+  $("recipes").addEventListener("click", (e) => {
+    const b = e.target.closest(".copy"); if (!b) return;
+    navigator.clipboard.writeText($("r" + b.dataset.i).textContent).then(() => { b.textContent = "Copied"; setTimeout(() => (b.textContent = "Copy"), 1200); }).catch(() => {});
+  });
+
+  // --- zoom ---
+  function zmUpdate() {
+    const z = +$("zm-z").value / 100, rem = 16 * z, W = 400;
+    $("zm-z-out").textContent = Math.round(z * 100) + "%";
+    const rows = [
+      ["font-size: 6vw", 0.06 * W],
+      ["font-size: calc(1.5rem + 4vw)", 1.5 * rem + 0.04 * W],
+      ["font-size: clamp(1.75rem, 1rem + 3vw, 3.5rem)", Math.min(3.5 * rem, Math.max(1.75 * rem, rem + 0.03 * W))],
+      ["font-size: 2rem", 2 * rem],
+    ];
+    const base = [24, 40, 28, 32];
+    $("zm-rows").innerHTML = rows.map(([code, px], i) => {
+      const grew = px > base[i] + 0.5;
+      return `<div class="zm-row"><code>${code}</code><span class="s" style="font-size:${px}px">Weekend Hikes</span><span class="px ${z === 1 ? "" : grew ? "ok" : "bad"}">${Math.round(px)}px${z === 1 ? "" : grew ? ` · grew from ${base[i]}px` : " · didn't change at all"}</span></div>`;
+    }).join("");
+  }
+  $("zm-z").addEventListener("input", zmUpdate);
+  zmUpdate();
+</script>
+<script>
+  makeQuiz(document.getElementById("quiz"), [
+    { id: "q1", q: "What order do clamp()'s values go in?", opts: ["max, preferred, min", "min, preferred, max", "preferred, min, max"], a: 1, why: "Always minimum, preferred value, maximum." },
+    { id: "q2", q: "width: min(100%, 600px) on a 1200px screen. How wide is the box?", opts: ["100px", "1200px", "600px"], a: 2, why: "min() uses the smaller value: 600px is less than 100% of 1200px." },
+    { id: "q3", q: "Why is calc(100%-2rem) ignored?", opts: ["The minus needs spaces around it", "calc can't mix units", "rem isn't allowed"], a: 0, why: "+ and - in calc() must have a space on each side." },
+    { id: "q4", q: "Why not size headings in vw alone?", opts: ["vw isn't supported", "They'd be tiny on phones, huge on monitors, and ignore zoom", "vw only works on widths"], a: 1, why: "clamp() with rem plus vw keeps text in range and zoomable." },
+    { id: "q5", q: "Someone sets their browser text size to 200%. A heading with font-size: 6vw…", opts: ["Doubles in size", "Stays exactly the same", "Disappears"], a: 1, why: "vw depends only on the window's width, so zoom doesn't affect it. Mix in rem." },
+    { id: "q6", q: "What does a media query do to a font size that clamp() doesn't?", opts: ["It changes the size in jumps at breakpoints", "It keeps the text zoomable", "It sets a maximum"], a: 0, why: "Media queries step the size; clamp() changes it smoothly within limits." },
+  ]);
+
+  makeExercise(document.getElementById("ex-fluid"), {
+    title: "Fluid heading, capped box, mixed units",
+    task: `<ol>
+      <li>Make the heading's size <code>clamp(1.75rem, 1rem + 3vw, 3.5rem)</code>.</li>
+      <li>Make the box's width “100%, but never more than 500px” with <code>min()</code>.</li>
+      <li>The inner panel's <code>calc()</code> is being ignored. Fix it, so the panel is the full width minus 2rem.</li>
+    </ol>`,
+    html: `<div class="box">
+  <h1>Trail Club</h1>
+  <div class="panel">Spring hikes start in April.</div>
+</div>`,
+    css: `body { font-family: system-ui, sans-serif; }
+h1 { font-size: 48px; }
+.box { width: 500px; background: #eef1fb; padding: 12px 0; }
+.panel { width: calc(100%-2rem); margin: 0 auto; background: #b9c4ef; padding: 8px 0; }`,
+    solution: { css: `body { font-family: system-ui, sans-serif; }
+h1 { font-size: clamp(1.75rem, 1rem + 3vw, 3.5rem); }
+.box { width: min(100%, 500px); background: #eef1fb; padding: 12px 0; }
+.panel { width: calc(100% - 2rem); margin: 0 auto; background: #b9c4ef; padding: 8px 0; }` },
+    hints: [
+      "clamp() takes a minimum, a preferred value and a maximum, in that order.",
+      "width: min(100%, 500px) uses whichever is smaller.",
+      "+ and - in calc() need a space on each side.",
+    ],
+    checks: [
+      { label: "The heading uses clamp() between 28 and 56px", test: ({ doc, style }) => { const r = [...doc.styleSheets[0].cssRules].find((r) => r.selectorText === "h1"); const px = parseFloat(style("h1", "font-size")); return /^clamp\(/.test(r.style.fontSize) && px >= 28 && px <= 56; } },
+      { label: "The box uses min() and is at most 500px", test: ({ $, doc }) => { const r = [...doc.styleSheets[0].cssRules].find((r) => r.selectorText === ".box"); return /^min\(/.test(r.style.width) && $(".box").getBoundingClientRect().width <= 500.5; } },
+      { label: "The panel is the box's width minus 2rem", test: ({ $ }) => Math.abs($(".panel").getBoundingClientRect().width - ($(".box").clientWidth - 32)) < 1 },
+    ],
+  });
+
+  makeExercise(document.getElementById("ex-type"), {
+    title: "Headings that scale",
+    task: `<ol>
+      <li>Make the <code>h1</code> grow with the window but stay zoomable: <code>calc(1.3rem + 3vw)</code>.</li>
+      <li>Make the <code>h2</code> grow too, but keep it between <code>1.25rem</code> and <code>2rem</code> with <code>clamp()</code>, using <code>1rem + 2vw</code> as the preferred value.</li>
+      <li>Body text should be <code>1rem</code>, stepping up to <code>1.125rem</code> on screens <code>60em</code> and wider.</li>
+    </ol>`,
+    html: `<h1>Boulder Trails</h1>
+<h2>Royal Arch</h2>
+<p>A steep 1.7-mile climb through ponderosa pine to a sandstone arch.</p>`,
+    css: `body { font-family: system-ui, sans-serif; }
+h1 { font-size: 3rem; margin: 0; }
+h2 { font-size: 6vw; margin: 0; }
+`,
+    solution: { css: `body { font-family: system-ui, sans-serif; font-size: 1rem; }
+h1 { font-size: calc(1.3rem + 3vw); margin: 0; }
+h2 { font-size: clamp(1.25rem, 1rem + 2vw, 2rem); margin: 0; }
+
+@media (width >= 60em) {
+  body { font-size: 1.125rem; }
+}
+` },
+    hints: [
+      "calc() mixes rem and vw: calc(1.3rem + 3vw). Spaces around the +.",
+      "clamp(min, preferred, max): clamp(1.25rem, 1rem + 2vw, 2rem).",
+      "body { font-size: 1rem; } then @media (width >= 60em) { body { font-size: 1.125rem; } }",
+    ],
+    checks: (() => {
+      const rules = (doc) => [...doc.styleSheets[0].cssRules];
+      const top = (doc, sel) => rules(doc).find((r) => r.selectorText === sel);
+      return [
+        { label: "The h1 uses calc(1.3rem + 3vw)", test: ({ doc }) => /^calc\(1\.3rem \+ 3vw\)$/.test(top(doc, "h1").style.fontSize) },
+        { label: "The h2 uses clamp(1.25rem, 1rem + 2vw, 2rem)", test: ({ doc, style }) => { const px = parseFloat(style("h2", "font-size")); return /^clamp\(1\.25rem, ?(calc\()?1rem \+ 2vw\)?, ?2rem\)$/.test(top(doc, "h2").style.fontSize) && px >= 20 && px <= 32; } },
+        { label: "Body text is 1rem", test: ({ doc }) => top(doc, "body") && top(doc, "body").style.fontSize === "1rem" },
+        { label: "At 60em and wider, body text is 1.125rem", test: ({ doc }) => rules(doc).some((m) => m.media && /^\((width>=60em|min-width:60em)\)$/.test(m.conditionText.replace(/\s/g, "")) && [...m.cssRules].some((r) => r.selectorText === "body" && r.style.fontSize === "1.125rem")) },
+      ];
+    })(),
+  });
+</script>
+</body>
+</html>

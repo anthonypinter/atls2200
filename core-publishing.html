@@ -1,0 +1,273 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Publishing Your Website · Core Web Development</title>
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="core.css">
+<style>
+  .gh-steps { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; counter-reset: s; }
+  .gh-steps li { counter-increment: s; display: grid; grid-template-columns: 2em 1fr; gap: 10px; align-items: start; padding: 10px 12px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--panel); }
+  .gh-steps li::before { content: counter(s); font: 800 1.2rem var(--font-display); color: var(--cobalt); }
+  .gh-steps b { display: block; } .gh-steps span { font-size: 0.92rem; color: var(--muted); }
+  .url-out { font: 600 1rem var(--font-code); font-variation-settings: "MONO" 1; color: var(--val); overflow-wrap: anywhere; padding: 10px 12px; background: var(--stage); border-radius: 8px; }
+  .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  @media (max-width: 500px) { .row2 { grid-template-columns: 1fr; } }
+  .flags { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; font-size: 0.93rem; }
+  .flags li { padding: 6px 10px; border-radius: 6px; }
+  .flags li.bad { background: var(--bad-soft); color: var(--bad); } .flags li.ok { background: var(--good-soft); color: var(--good); }
+  .flags code { overflow-wrap: anywhere; }
+  .trouble details { border-bottom: 1px solid var(--line); padding: 8px 0; }
+  .trouble summary { cursor: pointer; font-weight: 700; }
+</style>
+<script src="book-2.js"></script>
+<script src="js/progress.js"></script>
+<script src="js/chrome.js"></script>
+<script src="js/quiz.js"></script>
+</head>
+<body>
+<main class="wrap">
+  <nav class="crumbs" aria-label="Site"><a class="crumb" href="book-2.html">← Contents</a><a class="crumb" href="glossary.html">Glossary</a></nav>
+  <header class="page-head">
+    <h1>Publishing Your Website</h1>
+    <p class="lede">A site on your laptop is only yours. Compare the ways to put it online, check your files are ready, and publish for free with GitHub Pages, so every assignment from now on is a link you can share.</p>
+    <div class="objectives">
+      <p class="callout-title">You'll be able to</p>
+      <ul>
+        <li>Compare the main ways to publish a site: your own hosting, an online code editor, or a publishing service.</li>
+        <li>Explain what a repository, a commit and a push are.</li>
+        <li>Check a project for paths that only work on your own computer.</li>
+        <li>Publish a site with GitHub Pages and predict its address.</li>
+      </ul>
+    </div>
+  </header>
+
+  <!-- ===== What are the options? ===== -->
+  <div class="section-title"><span class="eyebrow">Read</span><h2>What are the options?</h2></div>
+  <div class="prose">
+    <p>Publishing means copying your site's folder onto a web server, so anyone can request its files. There are three main ways to do it, from most control to least effort.</p>
+    <h3>Getting hosting and a domain name</h3>
+    <p>For full control, you rent two things. <strong>Hosting</strong> is space on a web server, paid monthly or yearly. A <span class="term">domain name</span>, like <code>bouldertrailclub.org</code>, is rented yearly from a company called a registrar. You point the domain at the server, and visitors can find you.</p>
+    <h3>Publishing to your server</h3>
+    <p>To get files onto rented hosting, you usually use an SFTP program, which shows your computer's folder on one side and the server's on the other. You drag files across. It works, but it's easy to forget a file or overwrite the wrong one.</p>
+    <h3>Using a web-based IDE such as CodePen</h3>
+    <p>Sites like CodePen and Glitch let you write HTML, CSS and JavaScript in the browser and see the result straight away, with a link to share. They're great for experiments, but they're not built for a full multi-page site that you own.</p>
+    <h3>Using an online publishing tool</h3>
+    <p>Services like GitHub Pages, Netlify and Cloudflare Pages host plain HTML, CSS and JavaScript sites for free, at an address like <code>you.github.io</code>. You can add your own domain later.</p>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Play</span><h2>Which option fits?</h2><p>Pick a situation to see which kind of publishing suits it, and why.</p></div>
+  <div class="two">
+    <div class="panel"><div class="presets" id="fit-pick" role="group" aria-label="Situations"></div></div>
+    <div class="panel explain" aria-live="polite"><span class="eyebrow">Best fit</span><h3 id="fit-name"></h3><p id="fit-why"></p></div>
+  </div>
+
+  <!-- ===== Version control ===== -->
+  <div class="section-title"><span class="eyebrow">Read</span><h2>Git and GitHub, in brief</h2></div>
+  <div class="prose">
+    <p>GitHub Pages publishes straight from a GitHub <span class="term">repository</span>, so it helps to know four words:</p>
+    <ul>
+      <li><strong>Git</strong> is version control: it records snapshots of a project, so you can see what changed and go back if something breaks.</li>
+      <li>A <strong>repository</strong> ("repo") is a project folder that Git tracks. On GitHub, it lives online.</li>
+      <li>A <strong>commit</strong> is one saved snapshot, with a short message saying what changed: "Add trail map page".</li>
+      <li>A <strong>push</strong> sends your commits from your computer up to GitHub. GitHub Pages republishes the site after each one.</li>
+    </ul>
+    <p>You don't need to learn Git's commands yet. GitHub's website and the GitHub Desktop app can do all of this with buttons.</p>
+  </div>
+
+  <!-- ===== Before you publish ===== -->
+  <div class="section-title"><span class="eyebrow">Read</span><h2>Get the files ready</h2></div>
+  <div class="prose">
+    <p>Most first-publish problems come from paths that only ever worked on your own computer. Before you publish, check that:</p>
+    <ul>
+      <li>The home page is called exactly <code>index.html</code>, at the top of the folder.</li>
+      <li>Every file and folder name is lowercase with hyphens, and every path matches it letter for letter.</li>
+      <li>No path starts with <code>file:///</code> or <code>C:\</code>: those point into <em>your</em> hard drive.</li>
+      <li>Paths use forward slashes, and don't start with <code>/</code> (that breaks on GitHub Pages project sites).</li>
+    </ul>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Play</span><h2>Pre-flight check</h2><p>List the files in the project and paste a page's HTML. Every path is checked against the files, the way a server would.</p></div>
+  <div class="two">
+    <div class="panel">
+      <label class="eyebrow" for="pf-files">Files in the project</label>
+      <textarea class="src" id="pf-files" spellcheck="false" style="min-height:110px">index.html
+trail-map.html
+css/style.css
+images/flatirons.jpg</textarea>
+      <label class="eyebrow" for="pf-html">index.html</label>
+      <textarea class="src" id="pf-html" spellcheck="false" style="min-height:150px"><link rel="stylesheet" href="file:///Users/sam/Desktop/my-site/css/style.css">
+<a href="Trail-Map.html">Trail map</a>
+<a href="/index.html">Home</a>
+<img src="images\flatirons.jpg" alt="The Flatirons">
+<a href="https://www.nps.gov">National Park Service</a></textarea>
+    </div>
+    <div class="panel"><span class="eyebrow">Results</span><ul class="flags" id="pf-out" aria-live="polite"></ul></div>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Practice</span><h2>Fix the paths before publishing</h2><p>Use what the pre-flight check taught you.</p></div>
+  <div id="ex-publish"></div>
+
+  <!-- ===== What approach would we recommend? ===== -->
+  <div class="section-title"><span class="eyebrow">Play</span><h2>What approach would we recommend? GitHub Pages</h2><p>For this course, publish with <span class="term">GitHub Pages</span>: it's free, it handles HTTPS for you, and it republishes every time you push.</p></div>
+  <section class="playground even">
+    <ol class="gh-steps">
+      <li><div><b>Make a GitHub account</b><span>Pick your username carefully: it becomes part of your site's address.</span></div></li>
+      <li><div><b>Create a new repository</b><span>Click New, give it a short lowercase name like trail-site, set it to Public, and create it.</span></div></li>
+      <li><div><b>Add your files</b><span>Click “Add file”, then “Upload files”. Drag in the <em>contents</em> of your project folder, so index.html sits at the top level. Write a commit message and click Commit changes.</span></div></li>
+      <li><div><b>Turn on Pages</b><span>Open Settings, then Pages. Under “Build and deployment”, choose “Deploy from a branch”, pick main and / (root), and click Save.</span></div></li>
+      <li><div><b>Wait, then visit</b><span>It takes a minute or two. Refresh the Pages settings to see your link. Each time you commit a change, give it another minute.</span></div></li>
+    </ol>
+    <div class="stage-col">
+      <div class="panel" style="display:grid;gap:10px">
+        <span class="eyebrow">Where will my site be?</span>
+        <div class="row2">
+          <div class="control"><label for="user">GitHub username</label><input class="text-in" id="user" value="cu-student" spellcheck="false" autocomplete="off"></div>
+          <div class="control"><label for="repo">Repository name</label><input class="text-in" id="repo" value="trail-site" spellcheck="false" autocomplete="off"></div>
+        </div>
+        <span class="url-out" id="url"></span>
+        <p class="hint" id="url-note"></p>
+      </div>
+      <div class="panel trouble">
+        <span class="eyebrow">If it doesn't work</span>
+        <details><summary>I get a 404 page</summary><p>Check there's a file named exactly <code>index.html</code>, all lowercase, at the top of the repository, not inside another folder. Then wait a couple of minutes and refresh.</p></details>
+        <details><summary>The page shows, but with no styles or images</summary><p>A path is wrong. Open DevTools, look at the Console and Network tabs for 404s, and compare each path with the file names in the repository, capital letters included.</p></details>
+        <details><summary>My changes don't show up</summary><p>Wait a minute after committing, then do a hard refresh (<kbd>Ctrl</kbd>/<kbd>Cmd</kbd> + <kbd>Shift</kbd> + <kbd>R</kbd>) to skip the browser's cache.</p></details>
+      </div>
+    </div>
+  </section>
+
+  <section class="notes">
+    <div class="panel">
+      <h2>Key ideas</h2>
+      <ul>
+        <li>Publishing copies your folder onto a web server that anyone can reach.</li>
+        <li>Options: rented hosting plus a domain, an online code editor, or a free publishing service.</li>
+        <li>GitHub Pages publishes a repository at <code>username.github.io/repository/</code>.</li>
+        <li>A commit is a saved snapshot; pushing sends commits to GitHub, which republishes the site.</li>
+        <li>Check paths before publishing: lowercase, relative, forward slashes, nothing from your own disk.</li>
+      </ul>
+    </div>
+    <div class="panel mistake">
+      <h2>Common mistakes</h2>
+      <ul>
+        <li>Uploading the project <em>folder</em> instead of its contents, so <code>index.html</code> ends up a level too deep.</li>
+        <li>Paths starting with <code>file:///</code>, <code>C:\</code> or <code>/</code>.</li>
+        <li>Capital letters that worked on a Mac or Windows laptop but not on the server.</li>
+        <li>Expecting changes to appear instantly. Give it a minute, then hard-refresh.</li>
+      </ul>
+    </div>
+  </section>
+
+  <div class="section-title"><span class="eyebrow">Check yourself</span><h2>Quick check</h2></div>
+  <div class="panel quiz" id="quiz"></div>
+
+  <footer class="page-foot" data-book-nav><a href="book-2.html">← Contents</a></footer>
+</main>
+
+<script>
+  const $ = (id) => document.getElementById(id);
+  const esc = (s) => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+
+  // --- Which option fits? ---
+  const FIT = [
+    ["A class project you'll keep updating all semester", "An online publishing tool (GitHub Pages)", "Free, it republishes after every commit, and every assignment is a stable link. Exactly what this course uses."],
+    ["Trying out a CSS effect to show a friend", "A web-based IDE (CodePen)", "No setup: write the code in the browser and share the link straight away. Not meant for a whole site."],
+    ["A business that needs its own name and email", "Hosting and a domain name", "You control the server and get bouldertrailclub.org, plus email at that address. It costs money every year."],
+    ["A portfolio with your own domain, but you don't want to manage a server", "A publishing service with a custom domain", "GitHub Pages, Netlify and similar services let you point a domain you've rented at the site you publish with them."],
+  ];
+  $("fit-pick").innerHTML = FIT.map(([s], i) => `<button class="btn" type="button" data-i="${i}" aria-pressed="false">${esc(s)}</button>`).join("");
+  function fit(i) {
+    document.querySelectorAll("#fit-pick .btn").forEach((b) => b.setAttribute("aria-pressed", String(+b.dataset.i === i)));
+    $("fit-name").textContent = FIT[i][1];
+    $("fit-why").textContent = FIT[i][2];
+  }
+  $("fit-pick").addEventListener("click", (e) => { const b = e.target.closest("[data-i]"); if (b) fit(+b.dataset.i); });
+  fit(0);
+
+  // --- Pre-flight check ---
+  function preflight() {
+    const files = $("pf-files").value.split("\n").map((s) => s.trim()).filter(Boolean);
+    const doc = new DOMParser().parseFromString(`<!doctype html><body>${$("pf-html").value}`, "text/html");
+    const refs = [...doc.querySelectorAll("[href], [src]")].map((el) => el.getAttribute("href") ?? el.getAttribute("src"));
+    const out = [];
+    if (!files.includes("index.html")) out.push(["bad", "There's no <code>index.html</code> at the top of the project, so the site's address shows a 404."]);
+    for (const r of refs) {
+      const c = `<code>${esc(r)}</code>`;
+      if (/^file:/i.test(r) || /^[a-z]:\\/i.test(r)) out.push(["bad", `${c} points into your own hard drive. Nobody else can reach it.`]);
+      else if (r.includes("\\")) out.push(["bad", `${c} uses a backslash. Web paths use forward slashes.`]);
+      else if (/^(https?:|mailto:|#)/i.test(r)) out.push(["ok", `${c} is a full URL or fragment: fine.`]);
+      else if (r.startsWith("/")) out.push(["bad", `${c} starts at the server's root. On a GitHub Pages project site that's the wrong folder. Drop the leading slash.`]);
+      else if (files.includes(r)) out.push(["ok", `${c} matches a file.`]);
+      else {
+        const near = files.find((f) => f.toLowerCase() === r.toLowerCase());
+        out.push(["bad", near ? `${c} doesn't match <code>${esc(near)}</code>: capital letters count on a server.` : `${c} doesn't match any file. It'll be a 404.`]);
+      }
+    }
+    if (!refs.length) out.push(["ok", "No paths to check yet."]);
+    $("pf-out").innerHTML = out.map(([c, t]) => `<li class="${c}">${c === "ok" ? "✓" : "✗"} ${t}</li>`).join("");
+  }
+  $("pf-files").addEventListener("input", preflight);
+  $("pf-html").addEventListener("input", preflight);
+  preflight();
+
+  // --- Where will my site be? ---
+  function where() {
+    const user = $("user").value.trim().toLowerCase(), repo = $("repo").value.trim();
+    if (!user || !repo) { $("url").textContent = "…"; $("url-note").textContent = "Fill in both boxes."; return; }
+    const userSite = repo.toLowerCase() === `${user}.github.io`;
+    $("url").textContent = userSite ? `https://${user}.github.io/` : `https://${user}.github.io/${repo}/`;
+    const notes = [];
+    if (userSite) notes.push("A repository named username.github.io becomes your main user site, at the root.");
+    else notes.push("Every other repository is a project site, published in a folder named after the repository.");
+    if (/[A-Z]/.test(repo)) notes.push("The repository name has capitals, and that part of the address is case-sensitive. Lowercase names are easier to share.");
+    if (/\s/.test(repo)) notes.push("GitHub turns spaces into hyphens in repository names.");
+    $("url-note").textContent = notes.join(" ");
+  }
+  $("user").addEventListener("input", where);
+  $("repo").addEventListener("input", where);
+  where();
+</script>
+<script>
+  makeExercise(document.getElementById("ex-publish"), {
+    title: "Ready for GitHub Pages",
+    task: `<p>The project was tidied up and the files renamed. Here's the new structure:</p>
+    <pre class="snippet">my-site/
+  index.html             ← was home.html
+  trail-map.html         ← was Trail Map.HTML
+  css/style.css
+  images/flatirons.jpg   ← was Images/Flatirons.JPG</pre>
+    <p>This code is in <code>index.html</code>. Make every path a relative path that matches the files exactly.</p>`,
+    html: `<link rel="stylesheet" href="file:///Users/sam/Desktop/my-site/css/style.css">
+<nav>
+  <a href="home.html">Home</a>
+  <a href="Trail Map.HTML">Trail map</a>
+</nav>
+<img src="Images\\Flatirons.JPG" alt="The Flatirons above Chautauqua" width="300" height="180">`,
+    solution: { html: `<link rel="stylesheet" href="css/style.css">
+<nav>
+  <a href="index.html">Home</a>
+  <a href="trail-map.html">Trail map</a>
+</nav>
+<img src="images/flatirons.jpg" alt="The Flatirons above Chautauqua" width="300" height="180">` },
+    hints: ["Paths to your own computer (file:///Users/…) only work on your computer. Use a path relative to index.html.", "Use the new lowercase names, with hyphens: trail-map.html.", "Web paths use forward slashes: images/flatirons.jpg."],
+    checks: [
+      { label: "The stylesheet is css/style.css", test: ({ $ }) => $('link[rel="stylesheet"]').getAttribute("href") === "css/style.css" },
+      { label: "Home links to index.html", test: ({ $$ }) => ["index.html", "./", "./index.html"].includes($$("nav a")[0].getAttribute("href")) },
+      { label: "Trail map links to trail-map.html", test: ({ $$ }) => $$("nav a")[1].getAttribute("href") === "trail-map.html" },
+      { label: "The image is images/flatirons.jpg", test: ({ $ }) => $("img").getAttribute("src") === "images/flatirons.jpg" },
+    ],
+  });
+
+  makeQuiz(document.getElementById("quiz"), [
+    { id: "q1", q: "What does publishing a website actually do?", opts: ["Copies your files onto a web server anyone can reach", "Turns your HTML into an app", "Registers your site with Google"], a: 0, why: "A published site is the same files, on a server that answers requests from anywhere." },
+    { id: "q2", q: "Your GitHub username is cu-student and your repository is trail-site. Where is the site?", opts: ["https://cu-student.github.io/trail-site/", "https://github.com/cu-student/trail-site", "https://trail-site.github.io/"], a: 0, why: "Project sites live at username.github.io/repository/. The github.com address shows the code, not the site." },
+    { id: "q3", q: "Your published site shows a 404. What's the most likely cause?", opts: ["There's no index.html at the top of the repository", "Your CSS has an error", "GitHub Pages is down"], a: 0, why: "The site's address asks for index.html. If it's missing, misnamed or inside a subfolder, you get a 404." },
+    { id: "q4", q: "What's a commit?", opts: ["A saved snapshot of the project, with a message", "Uploading the site to the server", "A copy of someone else's repository"], a: 0, why: "Commits record what changed. Pushing sends them to GitHub." },
+    { id: "q5", q: "Which path will break once the site is online?", opts: ["file:///Users/sam/site/style.css", "css/style.css", "images/logo.png"], a: 0, why: "file:/// points into your own computer. Visitors can't reach it." },
+    { id: "q6", q: "When is CodePen the better choice?", opts: ["For a quick experiment to share", "For your multi-page class site", "When you need your own domain"], a: 0, why: "Online editors are great for small experiments, not for a full site you own." },
+  ]);
+</script>
+</body>
+</html>

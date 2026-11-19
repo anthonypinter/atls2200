@@ -1,0 +1,334 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Table Basics · Core Web Development</title>
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="core.css">
+<style>
+  .table-wrap { overflow-x: auto; background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 14px; }
+  #t { color: var(--ink); font-size: 0.98rem; }
+  #t td, #t th { border: 1px solid var(--muted); cursor: pointer; }
+  #t.collapse { border-collapse: collapse; }
+  #t.padded td, #t.padded th { padding: 8px 14px; }
+  #t.zebra tbody tr:nth-child(even) { background: var(--stage); }
+  #t.nums td.num, #t.nums th.num { text-align: right; font-variant-numeric: tabular-nums; }
+  #t caption { font-weight: 700; text-align: left; padding-bottom: 8px; }
+  #t td.active, #t th.active { outline: 3px solid var(--cobalt); outline-offset: -3px; }
+  #t th[scope] { background: var(--cobalt-soft); }
+  #sched { border-collapse: collapse; color: var(--ink); font-size: 0.95rem; }
+  #sched th, #sched td { border: 1px solid var(--muted); padding: 8px 12px; text-align: left; vertical-align: top; }
+  #sched thead th { background: var(--cobalt-soft); }
+  #sched td.dup { color: var(--bad); font-style: italic; }
+  #sched td.span { background: var(--good-soft); color: var(--good); font-weight: 700; }
+  #sched tfoot td { font-size: 0.88rem; color: var(--muted); background: var(--stage); }
+  #sched col.hl { background: color-mix(in srgb, var(--prop) 12%, transparent); }
+  .span-notes { margin: 0; padding-left: 1.2em; display: grid; gap: 6px; font-size: 0.93rem; }
+  .sr-box { font: 0.95rem/1.5 var(--font-code); font-variation-settings: "MONO" 1; padding: 12px 14px; border-radius: 8px; background: var(--stage); }
+  .sr-box.weak { background: var(--bad-soft); color: var(--bad); }
+  .check { display: flex; gap: 10px; align-items: center; cursor: pointer; font-size: 0.95rem; }
+  .check input { accent-color: var(--cobalt); }
+  .check .tagn { font: 600 0.82rem var(--font-code); font-variation-settings: "MONO" 1; color: var(--prop); }
+  .grid-map { display: grid; gap: 4px; font: 0.82rem var(--font-code); font-variation-settings: "MONO" 1; }
+  .grid-map .row { display: flex; gap: 4px; align-items: center; }
+  .grid-map .row b { width: 4.5em; color: var(--muted); font-weight: 600; }
+  .grid-map .c { width: 22px; height: 18px; border-radius: 3px; background: var(--cobalt-soft); border: 1px solid var(--cobalt); }
+  .grid-map .c.span { background: var(--good-soft); border-color: var(--good); }
+  .grid-map .c.miss { background: var(--bad-soft); border: 1px dashed var(--bad); }
+</style>
+<script src="book-2.js"></script>
+<script src="js/progress.js"></script>
+<script src="js/chrome.js"></script>
+<script src="js/quiz.js"></script>
+</head>
+<body>
+<main class="wrap">
+  <nav class="crumbs" aria-label="Site"><a class="crumb" href="book-2.html">← Contents</a><a class="crumb" href="glossary.html">Glossary</a></nav>
+  <header class="page-head">
+    <h1>Table Basics</h1>
+    <p class="lede">A table is for data with rows and columns that both mean something: a schedule, a price comparison, a set of results. HTML builds one row at a time, cell by cell.</p>
+    <div class="objectives">
+      <p class="callout-title">You'll be able to</p>
+      <ul>
+        <li>Decide when a table is the right element, and when it isn't.</li>
+        <li>Build a table from <code>&lt;table&gt;</code>, <code>&lt;tr&gt;</code>, <code>&lt;td&gt;</code> and <code>&lt;th&gt;</code>.</li>
+        <li>Merge cells with <code>colspan</code> and <code>rowspan</code> and keep every row the same width.</li>
+        <li>Style whole columns with <code>&lt;colgroup&gt;</code> and <code>&lt;col&gt;</code>.</li>
+      </ul>
+    </div>
+  </header>
+
+  <!-- ===== What is a table? ===== -->
+  <div class="section-title"><span class="eyebrow">Read</span><h2>What is a table?</h2></div>
+  <div class="prose">
+    <p>A table is a grid of rows and columns. You read it by looking along a row and down a column and finding where they cross: the 10:00 slot on Saturday, the price of the middle plan. Everyone already knows how to read one, which is what makes tables so useful.</p>
+    <p>Without CSS, an HTML table is hard to read: no borders, no spacing, no stripes. You'll style tables properly in Week 4; this lesson uses a little CSS so you can see the structure.</p>
+    <h3>When should you NOT use tables?</h3>
+    <p>Before CSS layout existed, whole pages were built from tables. Don't do this. Layout tables are hard to change, they bloat the HTML, they don't adapt to small screens, and screen readers announce them as data, which confuses everyone. Use tables for data, and CSS (Flexbox and Grid, Weeks 5 and 6) for layout.</p>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Practice</span><h2>Table or not?</h2><p>Decide for each one.</p></div>
+  <div class="panel quiz" id="table-or-not"></div>
+
+  <!-- ===== Creating your first table ===== -->
+  <div class="section-title"><span class="eyebrow">Read</span><h2>Creating your first table</h2></div>
+  <div class="prose">
+    <p>Three elements make a basic table:</p>
+    <ul>
+      <li><code>&lt;table&gt;</code> wraps the whole thing.</li>
+      <li><code>&lt;tr&gt;</code> ("table row") holds one row.</li>
+      <li><code>&lt;td&gt;</code> ("table data") holds one cell. Cells go across, in order, inside their row.</li>
+    </ul>
+    <pre class="snippet" data-lang="html">&lt;table&gt;
+  &lt;tr&gt;&lt;td&gt;Mesa&lt;/td&gt;&lt;td&gt;6.7&lt;/td&gt;&lt;/tr&gt;
+  &lt;tr&gt;&lt;td&gt;Royal Arch&lt;/td&gt;&lt;td&gt;3.4&lt;/td&gt;&lt;/tr&gt;
+&lt;/table&gt;</pre>
+    <p>There's no element for a column. Columns form because every row has the same number of cells, so the first cell of every row lines up, then the second, and so on. Give one row too few cells and the table has a hole.</p>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Play</span><h2>Build it row by row</h2><p>Edit the table. The map shows how many columns each row fills.</p></div>
+  <section class="playground even">
+    <div class="stage-col">
+      <div class="presets" id="tb-presets" role="group" aria-label="Examples">
+        <button class="btn" type="button" data-p="ok">Two columns</button>
+        <button class="btn" type="button" data-p="short">A short row</button>
+        <button class="btn" type="button" data-p="span">With spans</button>
+      </div>
+      <label class="eyebrow" for="tb-src">Your HTML</label>
+      <textarea class="src" id="tb-src" spellcheck="false" style="min-height:220px"></textarea>
+    </div>
+    <div class="stage-col">
+      <div class="rendered" id="tb-out"></div>
+      <div class="panel"><span class="eyebrow">Column map</span><div class="grid-map" id="tb-map"></div><p class="verdict" id="tb-note" aria-live="polite"></p></div>
+    </div>
+  </section>
+
+  <!-- ===== Adding headers with <th> ===== -->
+  <div class="section-title"><span class="eyebrow">Read</span><h2>Adding headers with &lt;th&gt;</h2></div>
+  <div class="prose">
+    <p>The cells that label a row or a column are headers. Make them <code>&lt;th&gt;</code> ("table header") instead of <code>&lt;td&gt;</code>:</p>
+    <pre class="snippet" data-lang="html">&lt;tr&gt;&lt;th&gt;Trail&lt;/th&gt;&lt;th&gt;Miles&lt;/th&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;Mesa&lt;/td&gt;&lt;td&gt;6.7&lt;/td&gt;&lt;/tr&gt;</pre>
+    <p>Browsers show <code>&lt;th&gt;</code> bold and centred, but that's not the point. Headers tell the browser, and screen readers, which cells are labels and which are data. That's how a screen reader can say "Mesa, Miles: 6.7" instead of just "6.7". The next lesson goes deeper.</p>
+    <p>A <code>&lt;caption&gt;</code> right after <code>&lt;table&gt;</code> gives the table a title.</p>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Play</span><h2>Build a table one feature at a time</h2><p>Turn on each feature, and click any cell to hear what a screen reader says about it.</p></div>
+  <section class="playground">
+    <div class="panel controls">
+      <span class="eyebrow">HTML</span>
+      <label class="check"><input type="checkbox" id="o-th"><span>Header cells use <span class="tagn">&lt;th scope&gt;</span></span></label>
+      <label class="check"><input type="checkbox" id="o-cap"><span>Add a <span class="tagn">&lt;caption&gt;</span></span></label>
+      <span class="eyebrow" style="margin-top:6px">CSS</span>
+      <label class="check"><input type="checkbox" id="o-col"><span><span class="tagn">border-collapse</span> (merge double borders)</span></label>
+      <label class="check"><input type="checkbox" id="o-pad"><span><span class="tagn">padding</span> in cells</span></label>
+      <label class="check"><input type="checkbox" id="o-zeb"><span>Zebra stripes with <span class="tagn">:nth-child(even)</span></span></label>
+      <label class="check"><input type="checkbox" id="o-num"><span>Right-align numbers</span></label>
+      <button class="btn" type="button" id="all" style="justify-self:start;margin-top:6px">Turn everything on</button>
+    </div>
+    <div class="stage-col">
+      <div class="table-wrap"><table id="t"></table></div>
+      <div class="sr-box" id="sr" aria-live="polite">Click a cell in the table.</div>
+    </div>
+  </section>
+
+  <!-- ===== Spanning ===== -->
+  <div class="section-title"><span class="eyebrow">Read</span><h2>Allowing cells to span multiple rows and columns</h2></div>
+  <div class="prose">
+    <p>Sometimes a cell needs to stretch. <code>colspan="2"</code> makes a cell two columns wide; <code>rowspan="2"</code> makes it two rows tall.</p>
+    <pre class="snippet" data-lang="html">&lt;tr&gt;&lt;th&gt;12:00&lt;/th&gt;&lt;td colspan="2"&gt;Closed for trail work&lt;/td&gt;&lt;/tr&gt;</pre>
+    <p>Spanning cells take up space in other rows, so those rows need fewer cells. With <code>rowspan="2"</code>, the row below must leave out one cell, or everything after it shifts one column to the right. Check that every row still adds up.</p>
+  </div>
+
+  <!-- ===== Column styling ===== -->
+  <div class="section-title"><span class="eyebrow">Read</span><h2>Providing common styling to columns</h2></div>
+  <div class="prose">
+    <p>Since there's no column element, how do you style a whole column? You could add a class to every cell in it. The cleaner way is <code>&lt;colgroup&gt;</code>, right after the caption, with one <code>&lt;col&gt;</code> for each column:</p>
+    <pre class="snippet" data-lang="html">&lt;colgroup&gt;
+  &lt;col&gt;
+  &lt;col&gt;
+  &lt;col class="today"&gt;
+&lt;/colgroup&gt;</pre>
+    <p>A <code>&lt;col span="2"&gt;</code> covers two columns at once. Only a few CSS properties work on columns: <code>background</code>, <code>border</code>, <code>width</code> and <code>visibility</code>.</p>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Play</span><h2>Cells that span, and column groups</h2><p>Turn each feature on to see the problem it solves.</p></div>
+  <section class="playground">
+    <div class="panel controls">
+      <label class="check"><input type="checkbox" id="s-row"><span><span class="tagn">rowspan="2"</span> on the long hike</span></label>
+      <label class="check"><input type="checkbox" id="s-col"><span><span class="tagn">colspan="2"</span> on the closure</span></label>
+      <label class="check"><input type="checkbox" id="s-foot"><span>Add a <span class="tagn">&lt;tfoot&gt;</span></span></label>
+      <label class="check"><input type="checkbox" id="s-cg"><span><span class="tagn">&lt;colgroup&gt;</span> to highlight Sunday</span></label>
+    </div>
+    <div class="stage-col">
+      <div class="table-wrap"><table id="sched"></table></div>
+      <ul class="span-notes" id="span-notes"></ul>
+    </div>
+  </section>
+
+  <div class="section-title"><span class="eyebrow">Practice</span><h2>Build the weekend schedule</h2><p>The data is all here, but nothing is merged, so cells repeat.</p></div>
+  <div id="ex-sched"></div>
+
+  <section class="notes">
+    <div class="panel">
+      <h2>Key ideas</h2>
+      <ul>
+        <li>Tables are for data with meaningful rows <em>and</em> columns. Never for page layout.</li>
+        <li><code>&lt;table&gt;</code> holds <code>&lt;tr&gt;</code> rows; rows hold <code>&lt;td&gt;</code> data cells and <code>&lt;th&gt;</code> header cells.</li>
+        <li>Columns exist only because every row has the same number of cells.</li>
+        <li><code>colspan</code> and <code>rowspan</code> merge cells; the rows they cover need fewer cells.</li>
+        <li><code>&lt;colgroup&gt;</code> and <code>&lt;col&gt;</code> style whole columns.</li>
+      </ul>
+    </div>
+    <div class="panel mistake">
+      <h2>Common mistakes</h2>
+      <ul>
+        <li>Using a table to lay out a page or a grid of cards.</li>
+        <li>Bold <code>&lt;td&gt;</code>s instead of real <code>&lt;th&gt;</code>s.</li>
+        <li>Rows with different numbers of cells, so columns shift out of line.</li>
+        <li>Adding <code>rowspan</code> but forgetting to remove a cell from the row below.</li>
+      </ul>
+    </div>
+  </section>
+
+  <div class="section-title"><span class="eyebrow">Check yourself</span><h2>Quick check</h2></div>
+  <div class="panel quiz" id="quiz"></div>
+
+  <footer class="page-foot" data-book-nav><a href="book-2.html">← Contents</a></footer>
+</main>
+
+<script>
+  const $ = (id) => document.getElementById(id);
+  const HEAD = ["Trail", "Distance (mi)", "Elevation gain (ft)", "Difficulty"];
+  const ROWS = [["Royal Arch", "3.4", "1,400", "Hard"], ["Mesa Trail", "6.7", "1,100", "Moderate"], ["Chautauqua Loop", "1.2", "250", "Easy"], ["Bear Peak", "5.3", "2,800", "Hard"], ["Sanitas Valley", "1.6", "450", "Easy"]];
+  const NUM = [false, true, true, false];
+  let active = null;
+
+  function render() {
+    const th = $("o-th").checked, t = $("t");
+    t.className = [$("o-col").checked && "collapse", $("o-pad").checked && "padded", $("o-zeb").checked && "zebra", $("o-num").checked && "nums"].filter(Boolean).join(" ");
+    const cell = (tag, txt, r, c, extra = "") => `<${tag} data-r="${r}" data-c="${c}" class="${NUM[c] ? "num" : ""}${active && active[0] === r && active[1] === c ? " active" : ""}"${extra}>${txt}</${tag}>`;
+    const head = th ? HEAD.map((h, c) => cell("th", h, -1, c, ' scope="col"')).join("") : HEAD.map((h, c) => cell("td", `<b>${h}</b>`, -1, c)).join("");
+    const body = ROWS.map((row, r) => `<tr>${row.map((v, c) => c === 0 && th ? cell("th", v, r, c, ' scope="row"') : cell("td", v, r, c)).join("")}</tr>`).join("");
+    t.innerHTML = ($("o-cap").checked ? "<caption>Boulder-area trails</caption>" : "") + `<thead><tr>${head}</tr></thead><tbody>${body}</tbody>`;
+    speak();
+  }
+  function speak() {
+    const sr = $("sr");
+    if (!active) { sr.className = "sr-box"; sr.textContent = "Click a cell in the table."; return; }
+    const [r, c] = active, th = $("o-th").checked, cap = $("o-cap").checked;
+    const val = r === -1 ? HEAD[c] : ROWS[r][c];
+    const intro = cap ? `"Table: Boulder-area trails, 5 rows, 4 columns." ` : `"Table, 6 rows, 4 columns." `;
+    if (r === -1) { sr.className = th ? "sr-box" : "sr-box weak"; sr.textContent = intro + (th ? `"Column header: ${val}."` : `"${val}." It's read like ordinary data, not as a label for the column.`); return; }
+    if (th) { sr.className = "sr-box"; sr.textContent = intro + (c === 0 ? `"Row header: ${val}."` : `"${ROWS[r][0]}, ${HEAD[c]}: ${val}." The listener knows which trail and column it is.`); }
+    else { sr.className = "sr-box weak"; sr.textContent = intro + `"${val}." Just the value. Which trail? Which column? Turn on <th scope> to fix this.`; }
+  }
+  $("t").addEventListener("click", (e) => { const c = e.target.closest("td, th"); if (c) { active = [+c.dataset.r, +c.dataset.c]; render(); } });
+  const part1Inputs = ["o-th", "o-cap", "o-col", "o-pad", "o-zeb", "o-num"].map((id) => $(id));
+  part1Inputs.forEach((el) => el.addEventListener("input", render));
+  $("all").addEventListener("click", () => { part1Inputs.forEach((el) => (el.checked = true)); render(); });
+  render();
+
+  function sched() {
+    const row = $("s-row").checked, col = $("s-col").checked, foot = $("s-foot").checked, cg = $("s-cg").checked;
+    let h = cg ? '<colgroup><col><col><col class="hl"></colgroup>' : "";
+    h += '<thead><tr><th scope="col">Time</th><th scope="col">Saturday</th><th scope="col">Sunday</th></tr></thead><tbody>';
+    h += `<tr><th scope="row">8:00</th>${row ? '<td rowspan="2" class="span">Bear Peak climb (4 hours)</td>' : "<td>Bear Peak climb (4 hours)</td>"}<td>Wildflower walk</td></tr>`;
+    h += `<tr><th scope="row">10:00</th>${row ? "" : '<td class="dup">Bear Peak climb (still going)</td>'}<td>Birding basics</td></tr>`;
+    h += `<tr><th scope="row">12:00</th>${col ? '<td colspan="2" class="span">Closed for trail work</td>' : '<td class="dup">Closed for trail work</td><td class="dup">Closed for trail work</td>'}</tr>`;
+    h += '<tr><th scope="row">2:00</th><td>Geology talk</td><td>Kids\' nature hike</td></tr></tbody>';
+    if (foot) h += '<tfoot><tr><td colspan="3">All hikes meet at the Chautauqua Ranger Cottage.</td></tr></tfoot>';
+    $("sched").innerHTML = h;
+    const n = [];
+    n.push(row ? "rowspan=\"2\" stretches the hike down two rows, and the 10:00 row leaves out that cell." : "Without rowspan, the long hike has to be repeated in the 10:00 row (in red).");
+    n.push(col ? "colspan=\"2\" makes one cell cover both days, so the closure is said once." : "Without colspan, \"Closed\" is written twice, and a screen reader reads it twice.");
+    n.push(foot ? "tfoot holds notes or totals for the whole table, and it stays with the table." : "Notes about the whole table belong in a tfoot row.");
+    if (cg) n.push("colgroup and col let you style a whole column at once, without adding a class to every cell.");
+    $("span-notes").innerHTML = n.map((x) => `<li>${x}</li>`).join("");
+  }
+  ["s-row", "s-col", "s-foot", "s-cg"].forEach((id) => $(id).addEventListener("input", sched));
+  sched();
+  // --- Build it row by row ---
+  const TB = {
+    ok: "<table>\n  <tr><td>Mesa</td><td>6.7</td></tr>\n  <tr><td>Royal Arch</td><td>3.4</td></tr>\n  <tr><td>Bear Peak</td><td>5.3</td></tr>\n</table>",
+    short: "<table>\n  <tr><th>Trail</th><th>Miles</th><th>Level</th></tr>\n  <tr><td>Mesa</td><td>6.7</td><td>Moderate</td></tr>\n  <tr><td>Royal Arch</td><td>Hard</td></tr>\n</table>",
+    span: "<table>\n  <tr><th>Time</th><th>Sat</th><th>Sun</th></tr>\n  <tr><th>8:00</th><td rowspan=\"2\">Long hike</td><td>Walk</td></tr>\n  <tr><th>10:00</th><td>Birding</td></tr>\n  <tr><th>12:00</th><td colspan=\"2\">Closed</td></tr>\n</table>",
+  };
+  function tableMap() {
+    const html = $("tb-src").value;
+    $("tb-out").innerHTML = html;
+    const t = $("tb-out").querySelector("table");
+    if (!t) { $("tb-map").innerHTML = ""; $("tb-note").className = "verdict bad"; $("tb-note").textContent = "✗ No <table> found."; return; }
+    const rows = [...t.rows], taken = rows.map(() => []), widths = [];
+    rows.forEach((tr, r) => {
+      let c = 0;
+      for (const cell of tr.cells) {
+        while (taken[r][c]) c++;
+        const cs = Math.max(1, cell.colSpan), rs = Math.max(1, cell.rowSpan);
+        for (let dr = 0; dr < rs && r + dr < rows.length; dr++) for (let dc = 0; dc < cs; dc++) taken[r + dr][c + dc] = (cs > 1 || rs > 1) ? "span" : "c";
+        c += cs;
+      }
+    });
+    rows.forEach((tr, r) => { widths[r] = taken[r].length; });
+    const max = Math.max(0, ...widths);
+    $("tb-map").innerHTML = rows.map((tr, r) => `<div class="row"><b>row ${r + 1}</b>${Array.from({ length: max }, (_, c) => `<span class="c ${taken[r][c] === "span" ? "span" : taken[r][c] ? "" : "miss"}"></span>`).join("")}</div>`).join("");
+    const bad = widths.map((w, r) => (w < max ? r + 1 : 0)).filter(Boolean);
+    $("tb-note").className = "verdict " + (bad.length ? "bad" : "ok");
+    $("tb-note").textContent = !rows.length ? "Add a <tr>." : bad.length ? `✗ Row ${bad.join(", ")} fills fewer than ${max} columns, so the table has a hole.` : `✓ Every row fills ${max} column${max === 1 ? "" : "s"}.${taken.flat().includes("span") ? " Green cells come from a span." : ""}`;
+  }
+  $("tb-src").addEventListener("input", tableMap);
+  $("tb-presets").addEventListener("click", (e) => { const b = e.target.closest("[data-p]"); if (b) { $("tb-src").value = TB[b.dataset.p]; tableMap(); } });
+  $("tb-src").value = TB.short;
+  tableMap();
+</script>
+<script>
+  makeQuiz(document.getElementById("table-or-not"), [
+    { id: "t1", q: "A class schedule with days across the top and times down the side.", a: 0, why: "Rows and columns that both mean something: that's tabular data." },
+    { id: "t2", q: "A grid of six product cards on a shop's home page.", a: 1, why: "That's a layout. Use CSS Grid or Flexbox." },
+    { id: "t3", q: "Comparing three phone plans by price, data and minutes.", a: 0, why: "Each plan is a row and each feature is a column." },
+    { id: "t4", q: "A page with a sidebar on the left and content on the right.", a: 1, why: "Page layout belongs in CSS, not tables." },
+  ].map((x) => ({ ...x, opts: ["Use a table", "Not a table"] })));
+
+  makeExercise(document.getElementById("ex-sched"), {
+    title: "Weekend schedule",
+    task: `<ol>
+      <li>Make the first row's cells, and the time in each row, <code>&lt;th&gt;</code> header cells.</li>
+      <li>The Bear Peak hike runs from 8:00 to 10:00 on Saturday. Give its cell <code>rowspan="2"</code> and delete the "(still going)" cell below it.</li>
+      <li>The 12:00 closure covers both days. Give the first "Closed" cell <code>colspan="2"</code> and delete the second.</li>
+    </ol>`,
+    html: `<table>
+  <tr><td>Time</td><td>Saturday</td><td>Sunday</td></tr>
+  <tr><td>8:00</td><td>Bear Peak hike</td><td>Wildflower walk</td></tr>
+  <tr><td>10:00</td><td>Bear Peak hike (still going)</td><td>Birding basics</td></tr>
+  <tr><td>12:00</td><td>Closed</td><td>Closed</td></tr>
+</table>`,
+    css: `table { border-collapse: collapse; font-family: system-ui, sans-serif; }
+th, td { border: 1px solid #c8cbd6; padding: 6px 12px; text-align: left; vertical-align: top; }
+th { background: #eef1fb; }`,
+    solution: { html: `<table>
+  <tr><th>Time</th><th>Saturday</th><th>Sunday</th></tr>
+  <tr><th>8:00</th><td rowspan="2">Bear Peak hike</td><td>Wildflower walk</td></tr>
+  <tr><th>10:00</th><td>Birding basics</td></tr>
+  <tr><th>12:00</th><td colspan="2">Closed</td></tr>
+</table>` },
+    hints: ["A rowspan cell fills a slot in the next row too, so that row needs one fewer <td>.", "After the changes, the 10:00 row holds a th and one td."],
+    checks: [
+      { label: "The first row and the times are <th>s", test: ({ $$ }) => $$("tr")[0].querySelectorAll("th").length === 3 && $$("tr").slice(1).every((tr) => tr.cells[0].tagName === "TH") },
+      { label: "Bear Peak spans two rows, and isn't repeated", test: ({ $$ }) => { const c = $$("td").filter((td) => /bear peak/i.test(td.textContent)); return c.length === 1 && c[0].rowSpan === 2; } },
+      { label: "Closed spans both days, once", test: ({ $$ }) => { const c = $$("td").filter((td) => /closed/i.test(td.textContent)); return c.length === 1 && c[0].colSpan === 2; } },
+      { label: "Birding is still under Sunday", test: ({ $$ }) => { const tr = $$("tr")[2]; return tr.cells.length === 2 && /birding/i.test(tr.cells[1].textContent); } },
+    ],
+  });
+
+  makeQuiz(document.getElementById("quiz"), [
+    { id: "q1", q: "Which element holds a single row of a table?", opts: ["<tr>", "<td>", "<row>"], a: 0, why: "tr is a table row; td and th are the cells inside it." },
+    { id: "q2", q: "How do you make a column in HTML?", opts: ["Give every row the same number of cells", "Wrap cells in <column>", "Use <col> around the cells"], a: 0, why: "Columns emerge from rows lining up. col only styles them." },
+    { id: "q3", q: "A cell has rowspan=\"2\". What must change in the row below?", opts: ["It needs one fewer cell", "It needs one more cell", "Nothing"], a: 0, why: "The spanning cell already fills that slot." },
+    { id: "q4", q: "Why use <th> instead of a bold <td>?", opts: ["It tells browsers and screen readers the cell is a label", "It's the only way to make text bold", "It makes the table load faster"], a: 0, why: "th carries meaning, not just style." },
+    { id: "q5", q: "What's the cleanest way to give one column a background?", opts: ["A <col> inside a <colgroup>", "A class on the <table>", "A rowspan"], a: 0, why: "col styles a whole column without touching each cell." },
+    { id: "q6", q: "Why not lay out a page with a table?", opts: ["It's rigid, bloated, and screen readers announce it as data", "Tables can't hold images", "Browsers no longer support it"], a: 0, why: "Layout belongs in CSS; tables are for data." },
+  ]);
+</script>
+</body>
+</html>

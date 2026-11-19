@@ -1,0 +1,546 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Loops · Core Web Development</title>
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="core.css">
+<style>
+  .lines { display: grid; grid-template-columns: minmax(0, 1fr); background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 8px 0; overflow-x: auto; }
+  .line { padding: 2px 14px; font: 0.92rem/1.7 var(--font-code); font-variation-settings: "MONO" 1; white-space: pre; border-left: 3px solid transparent; min-width: max-content; }
+  .line.now { background: var(--cobalt-soft); border-left-color: var(--cobalt); }
+  .line mark { background: none; color: inherit; border-radius: 3px; padding: 1px 0; }
+  .line mark.on { background: var(--cobalt); color: var(--panel); padding: 1px 3px; }
+  .line mark.on * { color: var(--panel) !important; }
+  .line.bugline { color: var(--bad); }
+  .stepper { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+  .stepper .count { font: 600 0.85rem var(--font-code); font-variation-settings: "MONO" 1; color: var(--muted); }
+  .watch { display: flex; flex-wrap: wrap; gap: 8px; min-height: 40px; }
+  .watch > span { font: 600 0.95rem var(--font-code); font-variation-settings: "MONO" 1; background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 6px 10px; }
+  .watch .k { color: var(--muted); }
+  .say { font-size: 0.95rem; min-height: 3em; }
+  .say.err { color: var(--bad); }
+
+  .flow { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; }
+  .row-arr { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+  .row-arr .lbl { font: 600 0.8rem var(--font-code); font-variation-settings: "MONO" 1; color: var(--muted); width: 100%; }
+  .cell { font: 600 0.95rem var(--font-code); font-variation-settings: "MONO" 1; padding: 8px 10px; border-radius: 6px; background: var(--panel); border: 2px solid var(--line); min-width: 52px; text-align: center; }
+  .cell.out { border-color: var(--good); color: var(--good); }
+  .cell.dropped { opacity: 0.35; text-decoration: line-through; }
+  .cell.found { border-color: var(--cobalt); background: var(--cobalt-soft); color: var(--cobalt); }
+  .arrow { color: var(--muted); font: 600 0.85rem var(--font-code); font-variation-settings: "MONO" 1; }
+
+  .cv-wrap { display: grid; gap: 8px; }
+  .cv-wrap canvas { width: 100%; max-width: 520px; height: auto; aspect-ratio: 520 / 260; background: #fff; border: 1px solid var(--line); border-radius: 8px; }
+</style>
+<script src="book-2.js"></script>
+<script src="js/progress.js"></script>
+<script src="js/chrome.js"></script>
+<script src="js/quiz.js"></script>
+</head>
+<body>
+<main class="wrap">
+  <nav class="crumbs" aria-label="Site"><a class="crumb" href="book-2.html">← Contents</a><a class="crumb" href="glossary.html">Glossary</a></nav>
+  <header class="page-head">
+    <h1>Loops</h1>
+    <p class="lede">Computers are good at doing the same thing over and over. A loop runs a block of code again and again: once for every item in a list, a set number of times, or until something changes.</p>
+    <div class="objectives">
+      <p class="callout-title">You'll be able to</p>
+      <ul>
+        <li>Loop through an array with <code>for...of</code>, and transform or filter it with <code>map()</code> and <code>filter()</code>.</li>
+        <li>Count with a standard <code>for</code> loop, and use the index.</li>
+        <li>Leave a loop early with <code>break</code>, and skip an item with <code>continue</code>.</li>
+        <li>Use <code>while</code> and <code>do...while</code>, and pick the right loop for the job.</li>
+      </ul>
+    </div>
+  </header>
+
+  <div class="section-title"><span class="eyebrow">Read</span><h2>Why are loops useful?</h2></div>
+  <div class="prose">
+<p>Say you have a list of 50 trails and want to show each name. You could write <code>console.log()</code> 50 times, or write it once and let a <span class="term">loop</span> repeat it. Loops are how programs work through lists: every product in a shop, every photo in a gallery, every guess in a game.</p>
+    <h3>Looping code example</h3>
+    <p>MDN's example draws 100 random circles on a canvas. The drawing code is written once, inside a loop that runs it 100 times:</p>
+    <pre class="snippet" data-lang="js">for (let i = 0; i &lt; 100; i++) {
+  ctx.beginPath();
+  ctx.fillStyle = "rgb(255 0 0 / 50%)";
+  ctx.arc(random(WIDTH), random(HEIGHT), random(50), 0, 2 * Math.PI);
+  ctx.fill();
+}</pre>
+    <h3>With and without a loop</h3>
+    <p>Without the loop you'd need the four drawing lines 100 times over: 400 lines instead of 6. And changing "100" to "1000" would mean 3,600 more lines instead of editing one number.</p>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Play</span><h2>Draw with a loop</h2><p>Change how many times the loop runs, and redraw.</p></div>
+  <section class="playground">
+    <div class="panel controls">
+      <div class="control"><label for="cv-n">loop runs</label><input id="cv-n" type="range" min="1" max="500" value="100"><span class="readout" id="cv-n-out"></span></div>
+      <button class="btn run" type="button" id="cv-go">Redraw</button>
+      <p class="hint">Each pass through the loop draws one circle at a random position and size.</p>
+    </div>
+    <div class="cv-wrap"><canvas id="cv" width="520" height="260" role="img" aria-label="Randomly placed translucent red circles"></canvas></div>
+  </section>
+
+  <div class="section-title"><span class="eyebrow">Read</span><h2>Looping through a collection</h2></div>
+  <div class="prose">
+<p>Most of the time you'll loop over a collection, usually an <span class="term">array</span>.</p>
+    <h3>The for...of loop</h3>
+    <p><code>for...of</code> runs its block once per item. Each time round, the variable (here <code>trail</code>) holds the current item. Each pass is one <em>iteration</em>.</p>
+    <pre class="snippet" data-lang="js">const trails = ["Mesa", "Royal Arch", "Flagstaff"];
+for (const trail of trails) {
+  console.log(trail);
+}</pre>
+    <h3>map() and filter()</h3>
+    <p>Arrays also have methods that do the looping for you. <code>map()</code> calls a function on every item and collects the results in a new array. <code>filter()</code> calls a function on every item and keeps only the items where it returns <code>true</code>.</p>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Play</span><h2>map() and filter()</h2><p>Pick a method and watch each item go through the function.</p></div>
+  <section class="playground">
+    <div class="panel controls"><div class="seg" id="arrm" role="group" aria-label="Array method"></div><p class="hint" id="arrm-why"></p></div>
+    <div class="stage-col"><pre class="snippet" id="arrm-code"></pre><div class="stage flow" id="flow"></div></div>
+  </section>
+
+  <div class="section-title"><span class="eyebrow">Read</span><h2>The standard for loop</h2></div>
+  <div class="prose">
+<p>A standard <code>for</code> loop counts. It has three parts, separated by semicolons:</p>
+    <pre class="snippet" data-lang="js">for (let i = 0; i &lt; 10; i++) {
+  // runs with i = 0, 1, 2 … 9
+}</pre>
+    <ol>
+      <li>An <strong>initializer</strong>, <code>let i = 0</code>: a counter, run once at the start.</li>
+      <li>A <strong>condition</strong>, <code>i &lt; 10</code>: checked before each pass; the loop stops when it's false.</li>
+      <li>A <strong>final expression</strong>, <code>i++</code>: run after each pass.</li>
+    </ol>
+    <h3>Calculating squares</h3>
+  </div>
+
+  <div class="runner"><textarea aria-label="Code editor">let results = "";
+for (let i = 1; i &lt; 10; i++) {
+  results += `${i} x ${i} = ${i * i}, `;
+}
+console.log(results);</textarea></div>
+
+  <div class="prose">
+<h3>Looping through collections with a for loop</h3>
+    <p>A <code>for</code> loop can walk an array too, using the counter as the <span class="term">index</span>. Use it when you need the position, for example to treat the last item differently:</p>
+  </div>
+
+  <div class="runner"><textarea aria-label="Code editor">const cats = ["Pete", "Biggles", "Jasmine"];
+let myFavoriteCats = "My cats are called ";
+
+for (let i = 0; i &lt; cats.length; i++) {
+  if (i === cats.length - 1) {
+    myFavoriteCats += `and ${cats[i]}.`;
+  } else {
+    myFavoriteCats += `${cats[i]}, `;
+  }
+}
+console.log(myFavoriteCats);</textarea></div>
+
+  <div class="section-title"><span class="eyebrow">Play</span><h2>Step through a loop</h2><p>Pick a loop and press Step to run it one piece at a time. The two "bug" versions show the most common loop mistakes.</p></div>
+  <section class="playground">
+    <div class="panel controls">
+      <div class="control"><label for="mode">Loop</label>
+        <select id="mode">
+          <option value="for">for (classic)</option>
+          <option value="of">for...of</option>
+          <option value="while">while</option>
+          <option value="forbug">for with &lt;= (bug)</option>
+          <option value="whilebug">while without i++ (bug)</option>
+        </select>
+      </div>
+      <p class="hint" id="mode-why"></p>
+    </div>
+    <div class="stage-col">
+      <div class="stepper">
+        <button class="btn run" id="step">Step ▸</button>
+        <button class="btn" id="play" aria-pressed="false">Auto-play</button>
+        <button class="btn" id="restart">Restart</button>
+        <span class="count" id="count"></span>
+      </div>
+      <div class="lines" id="lines" aria-label="Code"></div>
+      <div class="watch" id="watch" aria-label="Variables"></div>
+      <p class="say" id="say" aria-live="polite"></p>
+      <ol class="console" id="out" aria-label="Console output"></ol>
+    </div>
+  </section>
+
+  <div class="section-title"><span class="eyebrow">Read</span><h2>Exiting loops with break</h2></div>
+  <div class="prose">
+<p><code>break</code> stops the loop immediately, even if there are items left. Use it when you've found what you were looking for.</p>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Read</span><h2>Skipping iterations with continue</h2></div>
+  <div class="prose">
+<p><code>continue</code> skips the rest of the current pass and moves on to the next one.</p>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Try it</span><h2>break and continue</h2><p>Change the names and run it again.</p></div>
+  <div class="runner"><textarea aria-label="Code editor">const trails = ["Mesa", "Royal Arch", "Flagstaff", "Chautauqua", "Bear Peak"];
+
+// continue: skip short names
+for (const trail of trails) {
+  if (trail.length < 6) {
+    continue;
+  }
+  console.log("Long name:", trail);
+}
+
+// break: stop as soon as we find it
+for (let i = 0; i < trails.length; i++) {
+  console.log("Checking", trails[i]);
+  if (trails[i] === "Flagstaff") {
+    console.log(`Found it at index ${i}`);
+    break;
+  }
+}</textarea></div>
+
+  <div class="section-title"><span class="eyebrow">Read</span><h2>while and do...while</h2></div>
+  <div class="prose">
+<p>A <code>while</code> loop repeats as long as its condition is true. It's like a <code>for</code> loop with the initializer before it and the final expression inside it, and it's handy when you don't know in advance how many times to go round.</p>
+    <p><code>do...while</code> checks the condition at the <em>end</em>, so its block always runs at least once.</p>
+  </div>
+
+  <div class="runner"><textarea aria-label="Code editor">let i = 0;
+while (i &lt; 3) {
+  console.log("while, pass", i);
+  i++;
+}
+
+let j = 10;
+do {
+  console.log("do...while runs once even though", j, "isn't &lt; 3");
+  j++;
+} while (j &lt; 3);</textarea></div>
+
+  <div class="prose">
+<div class="callout warn"><p class="callout-title">Watch out</p><p>Every loop needs a way to stop. Forget the <code>i++</code> in a <code>while</code> loop and its condition never becomes false: it runs forever and freezes the page. If that happens, close the tab, then check what changes the condition.</p></div>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Practice</span><h2>Add up the miles</h2><p>Start a total at 0, then add each item to it.</p></div>
+  <div id="ex-total"></div>
+
+  <div class="section-title"><span class="eyebrow">Practice</span><h2>Implementing a launch countdown</h2><p>From MDN: count down from 10 with a while loop.</p></div>
+  <div id="ex-count"></div>
+
+  <div class="section-title"><span class="eyebrow">Practice</span><h2>Filling in a guest list</h2><p>From MDN: sort guests into admitted and refused.</p></div>
+  <div id="ex-guests"></div>
+
+  <div class="section-title"><span class="eyebrow">Read</span><h2>Which loop type should you use?</h2></div>
+  <div class="prose">
+<p>For going through every item in an array, use <code>for...of</code>: it's the simplest and hardest to get wrong. If you need the index, or to count a set number of times, use a standard <code>for</code> loop. To build a new array from an old one, reach for <code>map()</code> or <code>filter()</code>. Use <code>while</code> when you don't know how many passes you'll need, and keep <code>do...while</code> for the rare "at least once" case.</p>
+  </div>
+
+  <section class="notes">
+    <div class="panel">
+      <h2>Key ideas</h2>
+      <ul>
+        <li>A loop runs a block repeatedly; each pass is an iteration.</li>
+        <li><code>for...of</code> visits every item; <code>map()</code> transforms them; <code>filter()</code> keeps some.</li>
+        <li><code>for (let i = 0; i &lt; n; i++)</code>: initializer, condition, final expression.</li>
+        <li><code>break</code> stops the loop; <code>continue</code> skips to the next pass.</li>
+        <li><code>while</code> repeats while a condition is true; <code>do...while</code> always runs once.</li>
+      </ul>
+    </div>
+    <div class="panel mistake">
+      <h2>Common mistakes</h2>
+      <ul>
+        <li><code>i &lt;= arr.length</code>, which runs one pass too many and reads <code>undefined</code>.</li>
+        <li>A <code>while</code> loop with nothing that makes its condition false: an infinite loop.</li>
+        <li>Declaring the total inside the loop, so it resets every pass.</li>
+        <li>Expecting <code>map()</code> to change the original array.</li>
+      </ul>
+    </div>
+  </section>
+
+  <div class="section-title"><span class="eyebrow">Check yourself</span><h2>Quick check</h2></div>
+  <div class="panel quiz" id="quiz"></div>
+
+  <footer class="page-foot" data-book-nav><a href="book-2.html">← Contents</a></footer>
+</main>
+
+<script src="js/runner.js"></script>
+<script>
+  const $ = (id) => document.getElementById(id);
+  const T = ["Mesa", "Royal Arch", "Flagstaff"];
+  const DECL = [[['const trails = ["Mesa", "Royal Arch", "Flagstaff"];']]];
+  const q = (s) => JSON.stringify(s);
+  const WHY = {
+    for: "The initializer runs once. Then: check the condition, run the body, run the final expression, and repeat until the condition is false.",
+    of: "for...of hands you each item in turn. No counter, no condition, nothing to get wrong. MDN recommends it for going through a collection.",
+    while: "Same steps as a for loop, but spread out: the counter is set before the loop and updated inside it.",
+    forbug: "<= lets i reach 3, but the last index is 2. The extra pass reads trails[3], which doesn't exist.",
+    whilebug: "Nothing inside the loop changes i, so the condition is true forever.",
+  };
+
+  // Builds { lines, events } for a loop type. Each line is a list of [text, part?] segments.
+  // Each event: { l: line index, p: part to highlight, say, vars, out, err }.
+  function build(mode) {
+    const ev = [];
+    let lines;
+    ev.push({ l: 0, say: "Create the array of trail names.", vars: {} });
+    if (mode === "for" || mode === "forbug") {
+      const cond = mode === "for" ? "i < trails.length" : "i <= trails.length";
+      const test = (i) => (mode === "for" ? i < T.length : i <= T.length);
+      lines = [DECL[0], [["for ("], ["let i = 0", "init"], ["; "], [cond, "cond"], ["; "], ["i++", "upd"], [") {"]], [["  console.log(trails[i]);"]], [["}"]], [['console.log("Done");']]];
+      let i = 0;
+      ev.push({ l: 1, p: "init", say: "Initializer: runs once, before the loop starts. i is 0.", vars: { i } });
+      for (let guard = 0; guard < 10; guard++) {
+        const ok = test(i);
+        ev.push({ l: 1, p: "cond", say: `Condition: is ${i} ${mode === "for" ? "<" : "<="} 3? ${ok ? "Yes (true), so the body runs." : "No (false), so the loop ends."}`, vars: { i } });
+        if (!ok) break;
+        const v = T[i];
+        ev.push({ l: 2, say: v === undefined ? `trails[${i}] doesn't exist: the last index is 2. It logs undefined.` : `Body: trails[${i}] is ${q(v)}.`, vars: { i }, out: v === undefined ? "undefined" : v, err: v === undefined });
+        i++;
+        ev.push({ l: 1, p: "upd", say: `Final expression: i++ adds 1, so i is now ${i}.`, vars: { i } });
+      }
+      ev.push({ l: 4, say: "The loop is finished, so the code after it runs.", vars: { i: "(gone)" }, out: "Done" });
+    } else if (mode === "of") {
+      lines = [DECL[0], [["for ("], ["const trail of trails", "of"], [") {"]], [["  console.log(trail);"]], [["}"]], [['console.log("Done");']]];
+      for (const t of T) {
+        ev.push({ l: 1, p: "of", say: `Next item: trail is ${q(t)}.`, vars: { trail: q(t) } });
+        ev.push({ l: 2, say: "Body runs with this item.", vars: { trail: q(t) }, out: t });
+      }
+      ev.push({ l: 1, p: "of", say: "No items left, so the loop ends.", vars: {} });
+      ev.push({ l: 4, say: "The code after the loop runs.", vars: {}, out: "Done" });
+    } else {
+      const bug = mode === "whilebug";
+      lines = [DECL[0], [["let i = 0;", "init"]], [["while ("], ["i < trails.length", "cond"], [") {"]], [["  console.log(trails[i]);"]], bug ? [["  // i++ was forgotten", "bug"]] : [["  "], ["i++;", "upd"]], [["}"]], [['console.log("Done");']]];
+      let i = 0;
+      ev.push({ l: 1, p: "init", say: "Set the counter before the loop.", vars: { i } });
+      for (let guard = 0; guard < (bug ? 6 : 10); guard++) {
+        const ok = i < T.length;
+        ev.push({ l: 2, p: "cond", say: `Condition: is ${i} < 3? ${ok ? "Yes, so the body runs." : "No, so the loop ends."}`, vars: { i } });
+        if (!ok) break;
+        ev.push({ l: 3, say: `trails[${i}] is ${q(T[i])}.`, vars: { i }, out: T[i] });
+        if (!bug) { i++; ev.push({ l: 4, p: "upd", say: `i++ makes i ${i}.`, vars: { i } }); }
+        else ev.push({ l: 4, say: "Nothing changes i. It's still 0.", vars: { i } });
+      }
+      if (bug) ev.push({ l: 2, p: "cond", say: "Infinite loop: i stays at 0, so 0 < 3 is always true. A real page would freeze here. The loop was stopped for you.", vars: { i }, err: true, stop: true });
+      else ev.push({ l: 6, say: "The loop is finished, so the code after it runs.", vars: { i }, out: "Done" });
+    }
+    return { lines, ev };
+  }
+
+  let prog, at, timer = null;
+  function reset() { stop(); prog = build($("mode").value); at = 0; $("mode-why").textContent = WHY[$("mode").value]; render(); }
+  function render() {
+    const e = at > 0 ? prog.ev[at - 1] : null;
+    $("lines").innerHTML = prog.lines.map((segs, li) => `<div class="line ${e && e.l === li ? "now" : ""} ${segs.some((s) => s[1] === "bug") ? "bugline" : ""}">${segs.map(([t, p]) => p && p !== "bug" ? `<mark class="${e && e.l === li && e.p === p ? "on" : ""}">${hlJS(t)}</mark>` : hlJS(t)).join("")}</div>`).join("");
+    const vars = e ? e.vars : {};
+    $("watch").innerHTML = Object.keys(vars).length ? Object.entries(vars).map(([k, v]) => `<span><span class="k">${k} =</span> ${v}</span>`).join("") : `<span class="k" style="border:0;background:none">No loop variables yet</span>`;
+    $("say").textContent = e ? e.say : "Press Step to run the code one piece at a time.";
+    $("say").className = "say" + (e && e.err ? " err" : "");
+    const outs = prog.ev.slice(0, at).filter((x) => x.out !== undefined);
+    $("out").innerHTML = outs.length ? outs.map((x) => `<li class="${x.err ? "warn" : "log"}"></li>`).join("") : `<li class="muted">Nothing logged yet.</li>`;
+    $("out").querySelectorAll("li").forEach((li, i) => { if (outs[i]) li.textContent = outs[i].out; });
+    $("count").textContent = `${at} / ${prog.ev.length}`;
+    $("step").disabled = at >= prog.ev.length;
+  }
+  function step() { if (at < prog.ev.length) { at++; render(); } if (at >= prog.ev.length) stop(); }
+  function stop() { clearInterval(timer); timer = null; $("play").setAttribute("aria-pressed", "false"); $("play").textContent = "Auto-play"; }
+  $("step").addEventListener("click", step);
+  $("play").addEventListener("click", () => {
+    if (timer) { stop(); return; }
+    if (at >= prog.ev.length) { at = 0; }
+    $("play").setAttribute("aria-pressed", "true"); $("play").textContent = "Pause";
+    step(); if (at < prog.ev.length) timer = setInterval(step, 800);
+  });
+  $("restart").addEventListener("click", reset);
+  $("mode").addEventListener("change", reset);
+
+  // Part 2
+  const MILES = [3.4, 6.7, 1.2, 8.1, 2.5];
+  const ARRM = [
+    { k: "map()", code: "const km = miles.map((m) => m * 1.6);", why: "map() always returns an array with the same number of items. Each new item is whatever the function returns.", out: () => MILES.map((m) => +(m * 1.6).toFixed(2)), kind: "map" },
+    { k: "filter()", code: "const short = miles.filter((m) => m < 5);", why: "filter() keeps the items where the function returns true. The new array can be shorter.", keep: (m) => m < 5, kind: "filter" },
+    { k: "find()", code: "const firstLong = miles.find((m) => m > 5);", why: "find() returns the first matching item itself (not an array), or undefined if none match.", kind: "find" },
+    { k: "forEach()", code: "miles.forEach((m) => console.log(m));", why: "forEach() just runs the function for each item. It returns undefined, so use it for side effects like logging or updating the page.", kind: "each" },
+  ];
+  let am = 0;
+  $("arrm").innerHTML = ARRM.map((x, i) => `<button class="btn" data-i="${i}">${x.k}</button>`).join("");
+  $("arrm").addEventListener("click", (e) => { const b = e.target.closest("button"); if (b) { am = +b.dataset.i; renderArr(); } });
+  function renderArr() {
+    const x = ARRM[am];
+    document.querySelectorAll("#arrm button").forEach((b) => b.setAttribute("aria-pressed", String(+b.dataset.i === am)));
+    $("arrm-code").innerHTML = hlJS("const miles = [3.4, 6.7, 1.2, 8.1, 2.5];\n" + x.code);
+    $("arrm-why").textContent = x.why;
+    const src = (cls) => `<div class="row-arr"><span class="lbl">miles</span>${MILES.map((m, i) => `<span class="cell ${cls(m, i)}">${m}</span>`).join("")}</div>`;
+    let html;
+    if (x.kind === "map") html = src(() => "") + `<span class="arrow">↓ each item × 1.6</span><div class="row-arr"><span class="lbl">km (new array)</span>${x.out().map((v) => `<span class="cell out">${v}</span>`).join("")}</div>`;
+    else if (x.kind === "filter") html = src((m) => (x.keep(m) ? "" : "dropped")) + `<span class="arrow">↓ keep where m &lt; 5 is true</span><div class="row-arr"><span class="lbl">short (new array)</span>${MILES.filter(x.keep).map((v) => `<span class="cell out">${v}</span>`).join("")}</div>`;
+    else if (x.kind === "find") { const idx = MILES.findIndex((m) => m > 5); html = src((m, i) => (i === idx ? "found" : i > idx ? "dropped" : "")) + `<span class="arrow">↓ stops at the first m &gt; 5; later items aren't checked</span><div class="row-arr"><span class="lbl">firstLong</span><span class="cell out">${MILES[idx]}</span></div>`; }
+    else html = src(() => "") + `<span class="arrow">↓ logs each one; the return value is undefined</span><ol class="console">${MILES.map((m) => `<li class="log">${m}</li>`).join("")}</ol>`;
+    $("flow").innerHTML = html;
+  }
+
+
+  reset(); renderArr();
+
+  // --- canvas circles ---
+  function cvDraw() {
+    const c = $("cv"), ctx = c.getContext("2d"), n = +$("cv-n").value, W = c.width, H = c.height;
+    const random = (x) => Math.floor(Math.random() * x);
+    $("cv-n-out").textContent = n + (n === 1 ? " time" : " times");
+    ctx.clearRect(0, 0, W, H);
+    for (let i = 0; i < n; i++) {
+      ctx.beginPath();
+      ctx.fillStyle = "rgb(255 0 0 / 50%)";
+      ctx.arc(random(W), random(H), random(50), 0, 2 * Math.PI);
+      ctx.fill();
+    }
+  }
+  $("cv-n").addEventListener("input", cvDraw);
+  $("cv-go").addEventListener("click", cvDraw);
+  cvDraw();
+</script>
+<script>
+  makeQuiz(document.getElementById("quiz"), [
+    { id: "q1", q: "How many lines does this log?", pre: "for (let i = 0; i < 4; i++) {\n  console.log(i);\n}", opts: ["3", "4", "5"], a: 1, why: "It logs 0, 1, 2 and 3. When i reaches 4, the condition is false." },
+    { id: "q2", q: "What is the last value logged?", pre: "const colors = [\"red\", \"blue\"];\nfor (let i = 0; i <= colors.length; i++) {\n  console.log(colors[i]);\n}", opts: ["\"blue\"", "undefined", "An error"], a: 1, why: "<= runs one extra time, and colors[2] is undefined." },
+    { id: "q3", q: "What does this log?", pre: "const nums = [1, 2, 3, 4];\nconsole.log(nums.filter((n) => n % 2 === 0));", opts: ["[2, 4]", "[1, 3]", "[false, true, false, true]"], a: 0, why: "filter keeps the items where the test is true: the even numbers." },
+    { id: "q4", q: "What does this log?", pre: "const nums = [1, 2, 3];\nconsole.log(nums.map((n) => n * 10));", opts: ["[1, 2, 3]", "60", "[10, 20, 30]"], a: 2, why: "map builds a new array from whatever the function returns for each item." },
+    { id: "q90", q: "How many times does for (let i = 0; i < 5; i++) run?", opts: ["4", "5", "6"], a: 1, why: "i is 0, 1, 2, 3 and 4." },
+    { id: "q91", q: "Which loop always runs its block at least once?", opts: ["while", "do...while", "for...of"], a: 1, why: "do...while checks its condition at the end." },
+  ]);
+
+  makeExercise(document.getElementById("ex-total"), {
+    title: "Total trail distance",
+    task: "<p>Finish <code>totalMiles(list)</code> so it loops over the trails and returns the sum of their <code>miles</code>. It should work for any list, including an empty one.</p>",
+    js: `const trails = [
+  { name: "Mesa", miles: 6.7 },
+  { name: "Royal Arch", miles: 3.4 },
+  { name: "Flagstaff", miles: 2.8 },
+];
+
+function totalMiles(list) {
+  let total = 0;
+  // Loop over list here and add each trail's miles to total.
+
+  return total;
+}
+
+console.log(totalMiles(trails));`,
+    solution: `const trails = [
+  { name: "Mesa", miles: 6.7 },
+  { name: "Royal Arch", miles: 3.4 },
+  { name: "Flagstaff", miles: 2.8 },
+];
+
+function totalMiles(list) {
+  let total = 0;
+  for (const trail of list) {
+    total += trail.miles;
+  }
+  return total;
+}
+
+console.log(totalMiles(trails));`,
+    expose: ["totalMiles"],
+    hints: [
+      "for...of gives you each trail in turn: for (const trail of list) { … }",
+      "Inside the loop, add this trail's miles to the running total: total += trail.miles;",
+      "Keep return total; after the loop, not inside it, or the function stops after the first trail.",
+    ],
+    checks: [
+      { label: "totalMiles(trails) returns 12.9", test: ({ fns }) => Math.abs(fns.totalMiles([{ miles: 6.7 }, { miles: 3.4 }, { miles: 2.8 }]) - 12.9) < 0.001 },
+      { label: "It works for a different list", test: ({ fns }) => fns.totalMiles([{ miles: 1 }, { miles: 2 }, { miles: 3 }, { miles: 4 }]) === 10 },
+      { label: "An empty list returns 0", test: ({ fns }) => fns.totalMiles([]) === 0 },
+      { label: "The total is logged to the console", test: ({ logs }) => logs.some((l) => Math.abs(parseFloat(l) - 12.9) < 0.001) },
+    ],
+  });
+
+  makeExercise(document.getElementById("ex-count"), {
+    title: "Countdown",
+    task: `<p><code>countdown(start)</code> returns an array of messages. Use a <code>while</code> loop that counts down from <code>start</code> to 0:</p>
+    <ul>
+      <li>For every number above 0, add <code>"Countdown 10"</code>, <code>"Countdown 9"</code> and so on.</li>
+      <li>For 0, add <code>"Blast off!"</code> instead.</li>
+    </ul>`,
+    js: `function countdown(start) {
+  const messages = [];
+  let i = start;
+  // while loop here
+
+  return messages;
+}
+
+console.log(countdown(10));`,
+    solution: `function countdown(start) {
+  const messages = [];
+  let i = start;
+  while (i >= 0) {
+    if (i === 0) {
+      messages.push("Blast off!");
+    } else {
+      messages.push(\`Countdown \${i}\`);
+    }
+    i--;
+  }
+  return messages;
+}
+
+console.log(countdown(10));`,
+    expose: ["countdown"],
+    hints: [
+      "while (i >= 0) { … } keeps going down to and including 0.",
+      "Inside, an if checks for 0; messages.push() adds a message.",
+      "Don't forget i-- at the end of the loop, or it never stops.",
+    ],
+    checks: [
+      { label: "Uses a while loop", test: ({ code }) => /while\s*\(/.test(code.js) },
+      { label: "countdown(3) gives four messages ending in “Blast off!”", test: ({ fns }) => fns.countdown(3).join("|") === "Countdown 3|Countdown 2|Countdown 1|Blast off!" },
+      { label: "countdown(10) starts at “Countdown 10”", test: ({ fns }) => { const m = fns.countdown(10); return m.length === 11 && m[0] === "Countdown 10" && m[10] === "Blast off!"; } },
+    ],
+  });
+
+  makeExercise(document.getElementById("ex-guests"), {
+    title: "Admit or refuse",
+    task: `<p><code>guestList(people)</code> returns an object with two strings. Phil and Lola aren't allowed in; everyone else is.</p>
+    <ul>
+      <li><code>admitted</code>: <code>"Admit: Chris, Anne, Colin, Terri, Sam, Kay, Bruce"</code></li>
+      <li><code>refused</code>: <code>"Refuse: Phil, Lola"</code></li>
+    </ul>
+    <p>Loop through the people, add each name and <code>", "</code> to the right string, then trim the final <code>", "</code> off each with <code>slice(0, -2)</code>.</p>`,
+    js: `function guestList(people) {
+  let admitted = "Admit: ";
+  let refused = "Refuse: ";
+  // loop, if, +=
+
+  return { admitted, refused };
+}
+
+const people = ["Chris", "Anne", "Colin", "Terri", "Phil", "Lola", "Sam", "Kay", "Bruce"];
+console.log(guestList(people));`,
+    solution: `function guestList(people) {
+  let admitted = "Admit: ";
+  let refused = "Refuse: ";
+  for (const person of people) {
+    if (person === "Phil" || person === "Lola") {
+      refused += \`\${person}, \`;
+    } else {
+      admitted += \`\${person}, \`;
+    }
+  }
+  admitted = admitted.slice(0, -2);
+  refused = refused.slice(0, -2);
+  return { admitted, refused };
+}
+
+const people = ["Chris", "Anne", "Colin", "Terri", "Phil", "Lola", "Sam", "Kay", "Bruce"];
+console.log(guestList(people));`,
+    expose: ["guestList"],
+    hints: [
+      "for (const person of people) { … }",
+      "if (person === \"Phil\" || person === \"Lola\") decides which string to add to.",
+      "slice(0, -2) returns everything except the last two characters.",
+    ],
+    checks: [
+      { label: "Admits everyone but Phil and Lola", test: ({ fns }) => fns.guestList(["Chris", "Anne", "Colin", "Terri", "Phil", "Lola", "Sam", "Kay", "Bruce"]).admitted === "Admit: Chris, Anne, Colin, Terri, Sam, Kay, Bruce" },
+      { label: "Refuses Phil and Lola", test: ({ fns }) => fns.guestList(["Chris", "Anne", "Colin", "Terri", "Phil", "Lola", "Sam", "Kay", "Bruce"]).refused === "Refuse: Phil, Lola" },
+      { label: "Works for a different list", test: ({ fns }) => { const r = fns.guestList(["Lola", "Ada"]); return r.admitted === "Admit: Ada" && r.refused === "Refuse: Lola"; } },
+    ],
+  });
+</script>
+</body>
+</html>

@@ -1,0 +1,327 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Structuring Documents · Core Web Development</title>
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="core.css">
+<style>
+  .wire { display: grid; grid-template-columns: 1fr 1fr 1fr; grid-template-areas: "h h h" "n n n" "m m a" "f f f"; gap: 8px; }
+  .wire button { font: 600 0.85rem var(--font-code); font-variation-settings: "MONO" 1; border: 2px dashed var(--line); background: var(--panel); color: var(--ink); border-radius: 8px; padding: 14px 8px; cursor: pointer; display: grid; gap: 6px; align-content: start; text-align: left; }
+  .wire button[aria-pressed="true"] { border-style: solid; border-color: var(--cobalt); background: var(--cobalt-soft); }
+  .wire .r-header { grid-area: h; } .wire .r-nav { grid-area: n; } .wire .r-main { grid-area: m; min-height: 140px; } .wire .r-aside { grid-area: a; } .wire .r-footer { grid-area: f; }
+  .wire .inner { display: grid; gap: 6px; }
+  .wire .inner span { border: 1px dashed var(--line); border-radius: 6px; padding: 6px; font-size: 0.8rem; }
+  .wire.soup button { color: var(--muted); }
+  .landmarks { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+  .landmarks li { display: grid; grid-template-columns: 9em 1fr; gap: 8px; padding: 6px 10px; border-radius: 6px; background: var(--stage); font-size: 0.93rem; }
+  .landmarks b { font-family: var(--font-code); font-variation-settings: "MONO" 1; color: var(--cobalt); }
+  .sitemap { display: grid; gap: 10px; justify-items: center; }
+  .sitemap .row { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
+  .sitemap span { padding: 8px 12px; border: 1px solid var(--line); border-radius: 8px; background: var(--panel); font-size: 0.92rem; }
+  .sitemap .home { border-color: var(--cobalt); color: var(--cobalt); font-weight: 700; }
+</style>
+<script src="book-2.js"></script>
+<script src="js/progress.js"></script>
+<script src="js/chrome.js"></script>
+<script src="js/quiz.js"></script>
+</head>
+<body>
+<main class="wrap">
+  <nav class="crumbs" aria-label="Site"><a class="crumb" href="book-2.html">← Contents</a><a class="crumb" href="glossary.html">Glossary</a></nav>
+  <header class="page-head">
+    <h1>Structuring Documents</h1>
+    <p class="lede">Most pages share the same parts: a header, navigation, main content, a sidebar and a footer. HTML has an element for each. Use them, and screen reader users can jump straight to the part they want.</p>
+    <div class="objectives">
+      <p class="callout-title">You'll be able to</p>
+      <ul>
+        <li>Name the common parts of a web page.</li>
+        <li>Mark them up with <code>&lt;header&gt;</code>, <code>&lt;nav&gt;</code>, <code>&lt;main&gt;</code>, <code>&lt;article&gt;</code>, <code>&lt;section&gt;</code>, <code>&lt;aside&gt;</code> and <code>&lt;footer&gt;</code>.</li>
+        <li>Know when a <code>&lt;div&gt;</code> or <code>&lt;span&gt;</code> is the right choice, and when it isn't.</li>
+        <li>Plan a small site with a sitemap.</li>
+      </ul>
+    </div>
+  </header>
+
+  <!-- ===== Basic sections of a document ===== -->
+  <div class="section-title"><span class="eyebrow">Read</span><h2>Basic sections of a document</h2></div>
+  <div class="prose">
+    <p>Look at almost any website and you'll find the same parts:</p>
+    <ul>
+      <li><strong>Header:</strong> a strip across the top with the site's name or logo. It stays the same on every page.</li>
+      <li><strong>Navigation bar:</strong> links to the site's main sections, usually in or below the header.</li>
+      <li><strong>Main content:</strong> the big area in the middle that's different on every page.</li>
+      <li><strong>Sidebar:</strong> extra information beside the main content: related links, ads, an author bio.</li>
+      <li><strong>Footer:</strong> a strip across the bottom with small print, contact details and copyright.</li>
+    </ul>
+  </div>
+
+  <!-- ===== HTML for structuring content ===== -->
+  <div class="section-title"><span class="eyebrow">Read</span><h2>HTML for structuring content</h2></div>
+  <div class="prose">
+    <p>Each part has an element that says what it is:</p>
+    <pre class="snippet" data-lang="html">&lt;header&gt;
+  &lt;h1&gt;Boulder Trail Club&lt;/h1&gt;
+&lt;/header&gt;
+&lt;nav&gt;…links…&lt;/nav&gt;
+&lt;main&gt;
+  &lt;article&gt;
+    &lt;h2&gt;Royal Arch Trail&lt;/h2&gt;
+    &lt;section&gt;&lt;h3&gt;Getting there&lt;/h3&gt;…&lt;/section&gt;
+    &lt;section&gt;&lt;h3&gt;What to bring&lt;/h3&gt;…&lt;/section&gt;
+  &lt;/article&gt;
+  &lt;aside&gt;&lt;h2&gt;Nearby trails&lt;/h2&gt;…&lt;/aside&gt;
+&lt;/main&gt;
+&lt;footer&gt;© 2026 Boulder Trail Club&lt;/footer&gt;</pre>
+    <p>These elements don't change how the page looks: without CSS, they stack like plain blocks. What they change is what the page <em>means</em>. Screen readers turn them into <span class="term" data-term="Landmark">landmarks</span> that users can jump between, and they make your HTML easier to read and to style.</p>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Play</span><h2>Semantic HTML or div soup?</h2><p>Switch between the two versions of the same page, then click a region to see what it means and what a screen reader announces.</p></div>
+  <section class="playground even">
+    <div class="stage-col">
+      <div class="seg" id="mode" role="group" aria-label="Version">
+        <button class="btn" type="button" data-m="sem" aria-pressed="true">Semantic HTML</button>
+        <button class="btn" type="button" data-m="soup" aria-pressed="false">“Div soup”</button>
+      </div>
+      <div class="wire" id="wire" aria-label="Page layout map"></div>
+    </div>
+    <div class="panel explain" id="info" aria-live="polite" style="display:grid;gap:8px;align-content:start"></div>
+  </section>
+
+  <!-- ===== Layout elements in more detail ===== -->
+  <div class="section-title"><span class="eyebrow">Read</span><h2>HTML layout elements in more detail</h2></div>
+  <div class="prose">
+    <ul>
+      <li><code>&lt;main&gt;</code>: the content unique to this page. Use it <strong>once</strong>, directly inside <code>&lt;body&gt;</code>, not inside other parts.</li>
+      <li><code>&lt;article&gt;</code>: a complete piece that would make sense on its own, like a blog post, a trail write-up or a product card.</li>
+      <li><code>&lt;section&gt;</code>: a part of a page or article that groups related content, usually with its own heading.</li>
+      <li><code>&lt;aside&gt;</code>: content related to the main content but not part of it: a sidebar, a glossary box, related links.</li>
+      <li><code>&lt;header&gt;</code>: introductory content. Directly in <code>&lt;body&gt;</code> it's the site header; inside an <code>&lt;article&gt;</code> it's that article's header.</li>
+      <li><code>&lt;nav&gt;</code>: a group of main navigation links. Not every group of links needs one.</li>
+      <li><code>&lt;footer&gt;</code>: closing content for the page, or for the article it's in.</li>
+    </ul>
+    <h3>Non-semantic wrappers</h3>
+    <p>Sometimes you need a box to style or to group things, and no element fits. That's what <code>&lt;div&gt;</code> (a block) and <code>&lt;span&gt;</code> (inline, inside text) are for. They mean nothing, so they're safe. Just reach for a semantic element first, and only use a <code>&lt;div&gt;</code> when none fits: a page built only of divs is "div soup".</p>
+    <h3>Line breaks and horizontal rules</h3>
+    <p><code>&lt;br&gt;</code> breaks a line where the line break is part of the content, like an address or a poem. Don't use it to add space. <code>&lt;hr&gt;</code> marks a <em>thematic break</em>, a change of topic between paragraphs. Browsers draw it as a line, but its job is meaning, not decoration.</p>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Play</span><h2>Which landmarks would a screen reader find?</h2><p>Screen readers list a page's landmarks so users can jump between them. Edit the HTML and watch the list.</p></div>
+  <div class="two">
+    <div class="panel">
+      <div class="presets" id="lm-presets" role="group" aria-label="Examples">
+        <button class="btn" type="button" data-l="sem" aria-pressed="false">Semantic</button>
+        <button class="btn" type="button" data-l="soup" aria-pressed="false">Div soup</button>
+      </div>
+      <label class="eyebrow" for="lm-src">Your HTML</label>
+      <textarea class="src" id="lm-src" spellcheck="false" style="min-height:200px"></textarea>
+    </div>
+    <div class="panel"><span class="eyebrow">Landmarks</span><ul class="landmarks" id="lm-out" aria-live="polite"></ul><p class="verdict" id="lm-note"></p></div>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Practice</span><h2>Replace the divs</h2><p>This trail page is all divs. Give each part the element that says what it is.</p></div>
+  <div id="ex-soup"></div>
+
+  <!-- ===== Structuring a basic website ===== -->
+  <div class="section-title"><span class="eyebrow">Read</span><h2>Structuring a basic website</h2></div>
+  <div class="prose">
+    <p>Before you write a site with several pages, plan it on paper:</p>
+    <ol>
+      <li><strong>List what every page shares:</strong> the header, the navigation menu and the footer.</li>
+      <li><strong>Sketch the layout</strong> of a typical page: where the main content, sidebar and footer go.</li>
+      <li><strong>List everything the site needs to say</strong>, then group it into pages.</li>
+      <li><strong>Draw a sitemap</strong>: a diagram of the pages and how they link.</li>
+    </ol>
+    <div class="sitemap" aria-label="Example sitemap">
+      <div class="row"><span class="home">Home</span></div>
+      <div class="row"><span>Trails</span><span>Events</span><span>About</span><span>Contact</span></div>
+      <div class="row"><span>Mesa Trail</span><span>Royal Arch</span><span>Bear Peak</span></div>
+    </div>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Practice</span><h2>Breaks that belong</h2><p>Use <code>&lt;br&gt;</code> and <code>&lt;hr&gt;</code> for meaning, and remove the ones used for spacing.</p></div>
+  <div id="ex-breaks"></div>
+
+  <section class="notes">
+    <div class="panel">
+      <h2>Key ideas</h2>
+      <ul>
+        <li>Pages share parts: header, nav, main content, sidebar, footer.</li>
+        <li>Each has an element, and screen readers turn them into landmarks.</li>
+        <li>One <code>&lt;main&gt;</code> per page, directly in the body.</li>
+        <li><code>&lt;article&gt;</code> stands on its own; <code>&lt;section&gt;</code> groups part of something.</li>
+        <li><code>&lt;div&gt;</code> and <code>&lt;span&gt;</code> are for when nothing else fits.</li>
+        <li><code>&lt;br&gt;</code> for line breaks that are content; <code>&lt;hr&gt;</code> for a change of topic.</li>
+      </ul>
+    </div>
+    <div class="panel mistake">
+      <h2>Common mistakes</h2>
+      <ul>
+        <li>Building everything from divs with class names like <code>header</code> and <code>nav</code>.</li>
+        <li>More than one <code>&lt;main&gt;</code>, or a <code>&lt;main&gt;</code> inside the header or an article.</li>
+        <li>Using <code>&lt;section&gt;</code> as a styling box with no heading. A div fits better.</li>
+        <li>Stacks of <code>&lt;br&gt;</code>s or an <code>&lt;hr&gt;</code> just to add space or a line.</li>
+      </ul>
+    </div>
+  </section>
+
+  <div class="section-title"><span class="eyebrow">Check yourself</span><h2>Quick check</h2></div>
+  <div class="panel quiz" id="quiz"></div>
+
+  <footer class="page-foot" data-book-nav><a href="book-2.html">← Contents</a></footer>
+</main>
+
+<script>
+  const $ = (id) => document.getElementById(id);
+  const esc = (s) => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+
+  // --- Semantic HTML or div soup? ---
+  const REGIONS = {
+    header: ["<header>", "Banner landmark: “banner”", "The site's header: logo and name, the same on every page.", "div class=\"top\"", ["h1: Boulder Trail Club"]],
+    nav: ["<nav>", "Navigation landmark: “navigation”", "The main menu. Screen reader users can jump to it, or past it, in one keystroke.", "div class=\"menu\"", ["Home · Trails · Events · About"]],
+    main: ["<main>", "Main landmark: “main”", "The content unique to this page. “Skip to main content” links jump here.", "div class=\"content\"", ["article: Royal Arch Trail", "section: Getting there", "section: What to bring"]],
+    aside: ["<aside>", "Complementary landmark: “complementary”", "Related but separate content, like nearby trails.", "div class=\"side\"", ["h2: Nearby trails"]],
+    footer: ["<footer>", "Content info landmark: “content information”", "Closing small print: contact details and copyright.", "div class=\"bottom\"", ["© 2026 Boulder Trail Club"]],
+  };
+  let mode = "sem", region = "main";
+  function wire() {
+    $("wire").className = "wire" + (mode === "soup" ? " soup" : "");
+    $("wire").innerHTML = Object.entries(REGIONS).map(([k, [tag, , , div, inner]]) =>
+      `<button type="button" class="r-${k}" data-r="${k}" aria-pressed="${k === region}"><span>${esc(mode === "sem" ? tag : `<${div}>`)}</span><span class="inner">${inner.map((t) => `<span>${esc(t)}</span>`).join("")}</span></button>`).join("");
+    const [tag, landmark, what, div] = REGIONS[region];
+    $("info").innerHTML = mode === "sem"
+      ? `<span class="eyebrow">Selected</span><h3>${esc(tag)}</h3><p>${esc(what)}</p><p><strong>Screen reader:</strong> ${esc(landmark)}. It appears in the landmarks list, so users can jump straight here.</p>`
+      : `<span class="eyebrow">Selected</span><h3>${esc(`<${div}>`)}</h3><p>Looks the same with CSS, but means nothing. The class name is only for the stylesheet.</p><p><strong>Screen reader:</strong> nothing. This region isn't in the landmarks list, so users have to read through everything to find it.</p>`;
+  }
+  $("wire").addEventListener("click", (e) => { const b = e.target.closest("[data-r]"); if (b) { region = b.dataset.r; wire(); } });
+  $("mode").addEventListener("click", (e) => {
+    const b = e.target.closest("[data-m]");
+    if (!b) return;
+    mode = b.dataset.m;
+    document.querySelectorAll("#mode .btn").forEach((x) => x.setAttribute("aria-pressed", String(x === b)));
+    wire();
+  });
+  wire();
+
+  // --- Landmark finder ---
+  const LM = {
+    sem: "<header>\n  <h1>Boulder Trail Club</h1>\n  <nav><a href=\"trails.html\">Trails</a></nav>\n</header>\n<main>\n  <article>\n    <h2>Royal Arch Trail</h2>\n  </article>\n  <aside><h2>Nearby trails</h2></aside>\n</main>\n<footer>© 2026</footer>",
+    soup: "<div class=\"header\">\n  <div class=\"title\">Boulder Trail Club</div>\n  <div class=\"nav\"><a href=\"trails.html\">Trails</a></div>\n</div>\n<div class=\"main\">\n  <div class=\"article\">Royal Arch Trail</div>\n  <div class=\"aside\">Nearby trails</div>\n</div>\n<div class=\"footer\">© 2026</div>",
+  };
+  const ROLE = { nav: "navigation", main: "main", aside: "complementary", form: "form", search: "search" };
+  function landmarks() {
+    const body = new DOMParser().parseFromString(`<!doctype html><body>${$("lm-src").value}`, "text/html").body;
+    const found = [];
+    const inSectioning = (el) => !!el.parentElement.closest("article, aside, main, nav, section");
+    for (const el of body.querySelectorAll("*")) {
+      const t = el.tagName.toLowerCase(), label = el.getAttribute("aria-label");
+      let role = el.getAttribute("role") || null;
+      if (!role) {
+        if (t === "header" && !inSectioning(el)) role = "banner";
+        else if (t === "footer" && !inSectioning(el)) role = "contentinfo";
+        else if (ROLE[t]) role = ROLE[t];
+        else if (t === "section" && (label || el.getAttribute("aria-labelledby"))) role = "region";
+      }
+      if (role) found.push([role, label || (el.querySelector("h1, h2, h3")?.textContent.trim() ?? el.textContent.trim().slice(0, 40))]);
+    }
+    $("lm-out").innerHTML = found.length ? found.map(([r, t]) => `<li><b>${r}</b><span>${esc(t)}</span></li>`).join("") : '<li><b>none</b><span>No landmarks at all</span></li>';
+    const mains = body.querySelectorAll("main").length;
+    $("lm-note").className = "verdict " + (mains === 1 ? "ok" : "bad");
+    $("lm-note").textContent = mains === 1 ? "✓ Exactly one main." : mains === 0 ? "✗ No main landmark: “skip to content” has nowhere to go." : `✗ ${mains} main elements. Use one.`;
+  }
+  $("lm-src").addEventListener("input", landmarks);
+  $("lm-presets").addEventListener("click", (e) => {
+    const b = e.target.closest("[data-l]");
+    if (!b) return;
+    $("lm-src").value = LM[b.dataset.l];
+    document.querySelectorAll("#lm-presets .btn").forEach((x) => x.setAttribute("aria-pressed", String(x === b)));
+    landmarks();
+  });
+  $("lm-src").value = LM.soup;
+  landmarks();
+</script>
+<script>
+  makeExercise(document.getElementById("ex-soup"), {
+    title: "From divs to landmarks",
+    task: `<p>Replace each <code>&lt;div&gt;</code> with the element its class name describes, and delete the class names:</p>
+    <ol>
+      <li><code>top</code> → <code>&lt;header&gt;</code>, and <code>menu</code> → <code>&lt;nav&gt;</code> (it stays inside the header).</li>
+      <li><code>content</code> → <code>&lt;main&gt;</code>.</li>
+      <li><code>post</code> → <code>&lt;article&gt;</code>, and <code>related</code> → <code>&lt;aside&gt;</code>.</li>
+      <li><code>bottom</code> → <code>&lt;footer&gt;</code>.</li>
+    </ol>`,
+    html: `<div class="top">
+  <h1>Boulder Trail Club</h1>
+  <div class="menu"><a href="index.html">Home</a> <a href="trails.html">Trails</a></div>
+</div>
+<div class="content">
+  <div class="post">
+    <h2>Royal Arch Trail</h2>
+    <p>A steep 3.4-mile round trip to a sandstone arch.</p>
+  </div>
+  <div class="related">
+    <h2>Nearby trails</h2>
+    <p>Mesa Trail, Bluebell Road</p>
+  </div>
+</div>
+<div class="bottom">© 2026 Boulder Trail Club</div>`,
+    solution: { html: `<header>
+  <h1>Boulder Trail Club</h1>
+  <nav><a href="index.html">Home</a> <a href="trails.html">Trails</a></nav>
+</header>
+<main>
+  <article>
+    <h2>Royal Arch Trail</h2>
+    <p>A steep 3.4-mile round trip to a sandstone arch.</p>
+  </article>
+  <aside>
+    <h2>Nearby trails</h2>
+    <p>Mesa Trail, Bluebell Road</p>
+  </aside>
+</main>
+<footer>© 2026 Boulder Trail Club</footer>` },
+    hints: ["Change both the opening and the closing tag of each div.", "The nav stays inside the header; the article and aside stay inside main."],
+    checks: [
+      { label: "A header contains the h1 and a nav with the links", test: ({ $, $$ }) => !!$("header > h1") && $$("header nav a").length === 2 },
+      { label: "There's one main", test: ({ $$ }) => $$("main").length === 1 },
+      { label: "main contains an article and an aside", test: ({ $ }) => $("main article h2").textContent.includes("Royal Arch") && $("main aside h2").textContent.includes("Nearby") },
+      { label: "A footer holds the copyright, and no divs are left", test: ({ $, $$ }) => $("footer").textContent.includes("©") && $$("div").length === 0 },
+    ],
+  });
+
+  makeExercise(document.getElementById("ex-breaks"), {
+    title: "Address and trail notes",
+    task: `<ol>
+      <li>In the address, the three lines run together. Add <code>&lt;br&gt;</code>s so each part is on its own line.</li>
+      <li>The empty paragraphs and <code>&lt;br&gt;</code>s between the notes are only there for spacing. Remove them.</li>
+      <li>The notes change topic from summer to winter. Mark that change with an <code>&lt;hr&gt;</code> between the two paragraphs.</li>
+    </ol>`,
+    html: `<address>Boulder Trail Club 900 Baseline Rd Boulder, CO 80302</address>
+<p>Summer: start early to beat the heat and the afternoon storms.</p>
+<p></p>
+<br><br>
+<p>Winter: carry traction devices; the north slopes stay icy.</p>`,
+    solution: { html: `<address>Boulder Trail Club<br>900 Baseline Rd<br>Boulder, CO 80302</address>
+<p>Summer: start early to beat the heat and the afternoon storms.</p>
+<hr>
+<p>Winter: carry traction devices; the north slopes stay icy.</p>` },
+    hints: ["A <br> goes where each line should end: after “Club” and after “Rd”.", "Delete the <p></p> and the two <br>s, then put one <hr> between the paragraphs."],
+    checks: [
+      { label: "The address has two line breaks", test: ({ $ }) => $("address").querySelectorAll("br").length === 2 },
+      { label: "No empty paragraphs or spare <br>s outside the address", test: ({ $$ }) => !$$("p").some((p) => !p.textContent.trim()) && $$("br").every((b) => b.closest("address")) },
+      { label: "An <hr> sits between the summer and winter notes", test: ({ $ }) => { const hr = $("hr"); return hr.previousElementSibling.textContent.startsWith("Summer") && hr.nextElementSibling.textContent.startsWith("Winter"); } },
+    ],
+  });
+
+  makeQuiz(document.getElementById("quiz"), [
+    { id: "q1", q: "Which element holds the content unique to a page?", opts: ["<main>", "<section>", "<body>"], a: 0, why: "main marks the page's own content, and should appear once." },
+    { id: "q2", q: "A trail write-up that would make sense shared on its own. Which element?", opts: ["<article>", "<section>", "<aside>"], a: 0, why: "article is for complete, self-contained pieces." },
+    { id: "q3", q: "What do semantic elements change about how a page looks, without CSS?", opts: ["Nothing much: they still stack as blocks", "They add a layout automatically", "They make text larger"], a: 0, why: "They change what the page means, not how it looks." },
+    { id: "q4", q: "When is a <div> the right choice?", opts: ["When you need a box and no semantic element fits", "For the site's header", "Always: it's the safest element"], a: 0, why: "div means nothing, so use it only when nothing more specific fits." },
+    { id: "q5", q: "Where's <br> appropriate?", opts: ["Between the lines of an address", "To add space between paragraphs", "To make a list"], a: 0, why: "br is for line breaks that are part of the content, not for spacing." },
+    { id: "q6", q: "What do screen readers do with <nav>, <main> and <footer>?", opts: ["List them as landmarks users can jump to", "Read them louder", "Skip them"], a: 0, why: "Landmarks let users move straight to the part of the page they want." },
+  ]);
+</script>
+</body>
+</html>

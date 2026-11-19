@@ -1,0 +1,470 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Fetching Data · Core Web Development</title>
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="core.css">
+<style>
+  .scen { display: grid; gap: 6px; }
+  .scen .btn { text-align: left; }
+  .code { display: grid; grid-template-columns: minmax(0, 1fr); background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 8px 0; overflow-x: auto; }
+  .code .l { padding: 0 14px; font: 0.84rem/1.65 var(--font-code); font-variation-settings: "MONO" 1; white-space: pre; border-left: 3px solid transparent; min-width: max-content; transition: background 0.2s; }
+  .code .l.now { background: var(--cobalt-soft); border-left-color: var(--cobalt); }
+  .code .l.ran { background: color-mix(in srgb, var(--good-soft) 70%, transparent); border-left-color: var(--good); }
+  .code .l.fail { background: var(--bad-soft); border-left-color: var(--bad); }
+  .net { width: 100%; border-collapse: collapse; font: 0.82rem var(--font-code); font-variation-settings: "MONO" 1; }
+  .net th, .net td { padding: 6px 10px; border-bottom: 1px solid var(--line); text-align: left; white-space: nowrap; }
+  .net th { color: var(--muted); font-weight: 600; font-size: 0.72rem; }
+  .net .bad { color: var(--bad); } .net .ok { color: var(--good); } .net .pending { color: var(--muted); }
+  .net .bar { display: inline-block; height: 8px; border-radius: 4px; background: var(--item-3); vertical-align: middle; transition: width 0.8s linear; }
+  .table-wrap { overflow-x: auto; }
+  .preview { background: #fbfaf7; color: #1d2133; border-radius: 8px; padding: 14px; font-family: var(--font-body); display: grid; gap: 8px; min-height: 120px; align-content: start; }
+  .preview h3 { font: 700 1rem var(--font-display); margin: 0; color: #0b6b5e; }
+  .preview ul { margin: 0; padding: 0; list-style: none; display: grid; gap: 6px; }
+  .preview li { display: flex; justify-content: space-between; gap: 8px; background: #fff; border: 1px solid #e4e0d6; border-radius: 6px; padding: 6px 10px; font-size: 0.92rem; }
+  .preview .msg { font-size: 0.92rem; color: #5a6280; }
+  .preview .msg.err { color: #b42318; }
+  .spinner { display: inline-block; width: 14px; height: 14px; border: 2px solid #d9d4c7; border-top-color: #0b6b5e; border-radius: 50%; animation: spin 0.8s linear infinite; vertical-align: -2px; margin-right: 6px; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .say { font-size: 0.95rem; min-height: 1.5em; }
+  .flowrow { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+  .json-view { max-height: 220px; overflow: auto; }
+  .results { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; align-items: start; }
+  @media (max-width: 600px) { .results { grid-template-columns: 1fr; } }
+
+  #nc-code { white-space: pre-wrap; }
+  .nc-out { min-height: 90px; padding: 12px 14px; border: 1px solid var(--line); border-radius: 8px; background: var(--paper, transparent); }
+  .nc-out.err { border-color: #b4410c; color: #b4410c; }
+</style>
+<script src="book-2.js"></script>
+<script src="js/progress.js"></script>
+<script src="js/chrome.js"></script>
+<script src="js/quiz.js"></script>
+</head>
+<body>
+<main class="wrap">
+  <nav class="crumbs" aria-label="Site"><a class="crumb" href="book-2.html">← Contents</a><a class="crumb" href="glossary.html">Glossary</a></nav>
+  <header class="page-head">
+    <h1>Fetching Data</h1>
+    <p class="lede">Many pages update part of themselves without reloading: new search results, the latest weather, more posts as you scroll. They ask a server for data with <code>fetch()</code>, then use the DOM to show it.</p>
+    <div class="objectives">
+      <p class="callout-title">You'll be able to</p>
+      <ul>
+        <li>Explain why pages fetch data instead of reloading, and what a promise is.</li>
+        <li>Fetch text and JSON with <code>fetch()</code>, <code>.then()</code> and <code>async</code>/<code>await</code>.</li>
+        <li>Check <code>response.ok</code> and handle errors with <code>.catch()</code> or <code>try...catch</code>.</li>
+        <li>Recognise older <code>XMLHttpRequest</code> code.</li>
+      </ul>
+    </div>
+  </header>
+
+  <div class="section-title"><span class="eyebrow">Read</span><h2>What is the problem here?</h2></div>
+  <div class="prose">
+<p>Traditionally, every click on a link loaded a whole new page from the server, even if only one small part changed. That's slow and wasteful. Instead, JavaScript can request just the data it needs and update part of the page with the DOM. This is sometimes called <em>Ajax</em>, and today it's done with the <span class="term" data-term="fetch()">Fetch API</span>.</p>
+    <p>Fetching also saves bandwidth: the browser can cache files, and only the new data travels over the network.</p>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Read</span><h2>The Fetch API</h2></div>
+  <div class="prose">
+<p>The answer to a request takes time to arrive, from a few milliseconds to several seconds. JavaScript doesn't stop and wait; the code after <code>fetch()</code> keeps running right away. Instead, <code>fetch()</code> returns a <span class="term">promise</span>: a placeholder for a value that will arrive later.</p>
+    <h3>Fetching text content</h3>
+    <p>MDN's first example loads a text file and shows it. You pass a function to the promise's <code>.then()</code> method, and it runs when the response arrives:</p>
+    <pre class="snippet" data-lang="js">fetch(url)
+  .then((response) =&gt; {
+    if (!response.ok) {
+      throw new Error(`HTTP error: ${response.status}`);
+    }
+    return response.text();
+  })
+  .then((text) =&gt; {
+    poemDisplay.textContent = text;
+  })
+  .catch((error) =&gt; {
+    poemDisplay.textContent = `Could not fetch verse: ${error}`;
+  });</pre>
+    <p>The first <code>.then()</code> gets a <code>Response</code> object. Reading its body with <code>response.text()</code> takes time too, so it returns another promise, which the second <code>.then()</code> waits for. <code>.catch()</code> runs if anything along the chain fails.</p>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Play</span><h2>Trail notes</h2><p>These are real requests for small text files in this site's <code>data/notes</code> folder. Try the missing one too.</p></div>
+  <section class="playground">
+    <div class="panel controls">
+      <div class="control"><label for="nc-pick">Choose a trail</label><select id="nc-pick"><option value="mesa">Mesa Trail</option><option value="royal-arch">Royal Arch</option><option value="bear-peak">Bear Peak</option><option value="flagstaff">Flagstaff (no file)</option></select></div>
+      <p class="hint">Open DevTools' Network tab to see each request.</p>
+    </div>
+    <div class="stage-col">
+      <pre class="snippet" id="nc-code" data-lang="js"></pre>
+      <div class="nc-out" id="nc-out" aria-live="polite"></div>
+    </div>
+  </section>
+
+  <div class="prose">
+<div class="callout warn"><p class="callout-title">Watch out</p><p>A 404 "not found" is a <em>completed</em> request as far as <code>fetch()</code> is concerned, so it won't land in <code>.catch()</code> by itself. Check <code>response.ok</code> and throw an error when it's false. And pages opened by double-clicking the file (<code>file://</code>) can't fetch: use a local server such as VS Code's Live Server, or test on GitHub Pages.</p></div>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Play</span><h2>Watch a request happen</h2><p>Send a request and follow it to the server and back. Try a slow network and a missing file.</p></div>
+  <section class="playground">
+    <div class="panel controls">
+      <span class="eyebrow">What happens on the server</span>
+      <div class="scen" id="scen" role="group" aria-label="Scenario"></div>
+      <div class="control"><span class="eyebrow">Code style</span><div class="seg" id="style" role="group" aria-label="Code style"><button class="btn" data-s="then">.then()</button><button class="btn" data-s="await">async / await</button></div></div>
+      <button class="btn run" id="send">Send request ▸</button>
+      <p class="hint" id="scen-why"></p>
+    </div>
+    <div class="stage-col">
+      <div class="code" id="code" aria-label="Code"></div>
+      <p class="say" id="say" aria-live="polite"></p>
+      <div class="results" id="results">
+        <div class="preview" id="preview"><h3>Boulder trails</h3><p class="msg">Press Send request.</p></div>
+        <ol class="console" id="out" aria-label="Console output"></ol>
+      </div>
+      <div class="panel table-wrap"><span class="eyebrow">Network panel</span><table class="net" id="net"></table></div>
+    </div>
+  </section>
+
+  <div class="section-title"><span class="eyebrow">Read</span><h2>Fetching JSON</h2></div>
+  <div class="prose">
+<p>MDN's second example, the "can store", fetches a JSON list of products and builds the page from it. The only difference is the method that reads the body: <code>response.json()</code> reads it <em>and</em> parses it, so you get an array of objects instead of text.</p>
+  </div>
+
+  <div class="runner"><textarea aria-label="Code editor">fetch("data/trails.json")
+  .then((response) =&gt; {
+    if (!response.ok) {
+      throw new Error(`HTTP error: ${response.status}`);
+    }
+    return response.json();
+  })
+  .then((trails) =&gt; {
+    for (const trail of trails) {
+      console.log(`${trail.name}: ${trail.miles} miles`);
+    }
+  })
+  .catch((error) =&gt; console.error(`Could not fetch trails: ${error}`));
+
+console.log("This line runs first: fetch doesn't wait.");</textarea></div>
+
+  <div class="section-title"><span class="eyebrow">Look</span><h2>The file being fetched</h2><p>The server sends back plain text in JSON format. <code>response.json()</code> parses it into an array of objects, which the code loops over to build the list.</p></div>
+  <section class="playground even">
+    <div class="stage-col"><span class="eyebrow">trails.json</span><pre class="snippet json-view" id="json-file"></pre></div>
+    <div class="stage-col"><span class="eyebrow">showTrails()</span><pre class="snippet" id="show-fn"></pre></div>
+  </section>
+
+  <div class="section-title"><span class="eyebrow">Read</span><h2>async and await</h2></div>
+  <div class="prose">
+<p>Chains of <code>.then()</code> work, but there's a tidier way to write the same thing. Inside a function marked <code>async</code>, <code>await</code> pauses <em>that function</em> until a promise settles, and gives you its value. Errors are caught with an ordinary <code>try...catch</code>:</p>
+  </div>
+
+  <div class="runner"><textarea aria-label="Code editor">async function loadTrails() {
+  try {
+    const response = await fetch("data/trails.json");
+    if (!response.ok) throw new Error(`HTTP error: ${response.status}`);
+    const trails = await response.json();
+    const easy = trails.filter((t) =&gt; t.difficulty === "easy");
+    console.log("Easy trails:", easy.map((t) =&gt; t.name));
+  } catch (error) {
+    console.error(`Could not fetch trails: ${error}`);
+  }
+}
+
+loadTrails();</textarea></div>
+
+  <div class="prose">
+<p>Both styles do the same thing. You'll see both in code online, and MDN's <a href="https://developer.mozilla.org/en-US/docs/Learn_web_development/Extensions/Async_JS">Asynchronous JavaScript</a> module goes further.</p>
+    <h3>Fetching other kinds of data</h3>
+    <p><code>response.blob()</code> reads the body as raw data, like an image file. <code>URL.createObjectURL(blob)</code> then gives you a URL you can put in an <code>&lt;img&gt;</code>'s <code>src</code>.</p>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Read</span><h2>The XMLHttpRequest API</h2></div>
+  <div class="prose">
+<p>Before <code>fetch()</code>, requests were made with <code>XMLHttpRequest</code> (often "XHR"). You'll still find it in older code and tutorials. It does the same job with more ceremony: create the object, attach listeners, then <code>open()</code> and <code>send()</code>. Use <code>fetch()</code> for new code.</p>
+  </div>
+
+  <div class="runner"><textarea aria-label="Code editor">const request = new XMLHttpRequest();
+
+request.addEventListener("load", () =&gt; {
+  console.log(request.status, JSON.parse(request.responseText).length, "trails");
+});
+request.addEventListener("error", () =&gt; console.error("Request failed"));
+
+request.open("GET", "data/trails.json");
+request.send();</textarea></div>
+
+  <div class="section-title"><span class="eyebrow">Practice</span><h2>Handle the response</h2><p>Write the pieces a fetch needs: a check for failed responses, and a function that pulls out the data you want.</p></div>
+  <div id="ex-fetch"></div>
+
+  <div class="section-title"><span class="eyebrow">Practice</span><h2>Fetch a trail note</h2><p>A real request: fetch a text file, and fall back to a message if it's missing.</p></div>
+  <div id="ex-note"></div>
+
+  <section class="notes">
+    <div class="panel">
+      <h2>Key ideas</h2>
+      <ul>
+        <li><code>fetch(url)</code> returns a promise for a <code>Response</code>; the code after it keeps running.</li>
+        <li>Read the body with <code>response.text()</code>, <code>response.json()</code> or <code>response.blob()</code>, each a promise too.</li>
+        <li>A 404 doesn't reject: check <code>response.ok</code> and throw.</li>
+        <li>Handle failures with <code>.catch()</code>, or <code>try...catch</code> inside an <code>async</code> function with <code>await</code>.</li>
+        <li><code>XMLHttpRequest</code> is the older way; prefer <code>fetch()</code>.</li>
+      </ul>
+    </div>
+    <div class="panel mistake">
+      <h2>Common mistakes</h2>
+      <ul>
+        <li>Using the data on the line after <code>fetch()</code>, before it has arrived.</li>
+        <li>Forgetting that <code>response.json()</code> needs its own <code>.then()</code> or <code>await</code>.</li>
+        <li>Not checking <code>response.ok</code>, so a 404 page gets parsed as data.</li>
+        <li>Opening the page as <code>file://</code>, where fetch is blocked.</li>
+      </ul>
+    </div>
+  </section>
+
+  <div class="section-title"><span class="eyebrow">Check yourself</span><h2>Quick check</h2></div>
+  <div class="panel quiz" id="quiz"></div>
+
+  <footer class="page-foot" data-book-nav><a href="book-2.html">← Contents</a></footer>
+</main>
+
+<script src="js/runner.js"></script>
+<script>
+  const $ = (id) => document.getElementById(id);
+  const TRAILS = [{ name: "Mesa Trail", miles: 6.7 }, { name: "Royal Arch", miles: 3.4 }, { name: "Chautauqua Loop", miles: 1.2 }];
+  const GOOD = JSON.stringify(TRAILS, null, 2);
+  const BAD = GOOD.replace('"miles": 1.2\n  }', '"miles": 1.2,\n  }');
+  let badMsg = ""; try { JSON.parse(BAD); } catch (e) { badMsg = `${e.name}: ${e.message}`; }
+
+  const SCEN = {
+    ok: { l: "trails.json → 200 OK", why: "Everything works: the server finds the file and sends valid JSON.", status: "200", stages: ["call", "after", "wait", "okcheck", "json", "render"] },
+    notfound: { l: "trial.json (typo) → 404", url: "trial.json", why: "The server answers, but with 404 Not Found. fetch() still succeeds. Only the response.ok check catches this.", status: "404", stages: ["call", "after", "wait", "okcheck", "throw", "catch"], err: "Error: HTTP error: 404" },
+    badjson: { l: "trails.json has a trailing comma", why: "The request works, but the file isn't valid JSON, so response.json() fails.", status: "200", stages: ["call", "after", "wait", "okcheck", "json", "catch"], err: badMsg },
+    offline: { l: "No internet connection", why: "The request never reaches a server. fetch() itself rejects with a TypeError.", status: "(failed)", stages: ["call", "after", "wait", "catch"], err: "TypeError: Failed to fetch" },
+    file: { l: "Page opened from file://", why: "Browsers block fetch() from pages opened as files. The console shows a CORS error. Run a local server instead.", status: "CORS error", stages: ["call", "after", "catch"], err: "TypeError: Failed to fetch", cors: true },
+  };
+  let scen = "ok", style = "then", running = false;
+  $("scen").innerHTML = Object.entries(SCEN).map(([k, s]) => `<button class="btn" data-k="${k}">${s.l}</button>`).join("");
+
+  // Each code line is tagged with the stage that runs it.
+  const CODE = {
+    then: (url) => [
+      [`fetch("${url}")`, "call"],
+      ["  .then((response) => {", "okcheck"],
+      ["    if (!response.ok) {", "okcheck"],
+      ["      throw new Error(`HTTP error: ${response.status}`);", "throw"],
+      ["    }", "okcheck"],
+      ["    return response.json();", "json"],
+      ["  })", ""],
+      ["  .then((trails) => {", "render"],
+      ["    showTrails(trails);", "render"],
+      ["  })", ""],
+      ["  .catch((error) => {", "catch"],
+      ["    message.textContent = `Could not load trails: ${error}`;", "catch"],
+      ["  });", ""],
+      ["", ""],
+      ['console.log("Request sent");', "after"],
+    ],
+    await: (url) => [
+      ["async function loadTrails() {", ""],
+      ["  try {", ""],
+      [`    const response = await fetch("${url}");`, "call"],
+      ["    if (!response.ok) {", "okcheck"],
+      ["      throw new Error(`HTTP error: ${response.status}`);", "throw"],
+      ["    }", "okcheck"],
+      ["    const trails = await response.json();", "json"],
+      ["    showTrails(trails);", "render"],
+      ["  } catch (error) {", "catch"],
+      ["    message.textContent = `Could not load trails: ${error}`;", "catch"],
+      ["  }", ""],
+      ["}", ""],
+      ["", ""],
+      ["loadTrails();", "call"],
+      ['console.log("Request sent");', "after"],
+    ],
+  };
+  let done = [], current = null, failed = null;
+  function renderCode() {
+    const s = SCEN[scen];
+    document.querySelectorAll("#scen button").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.k === scen)));
+    document.querySelectorAll("#style button").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.s === style)));
+    $("code").innerHTML = CODE[style](s.url || "trails.json").map(([c, st]) => `<div class="l ${st && st === current ? "now" : st && st === failed ? "fail" : st && done.includes(st) ? "ran" : ""}">${hlJS(c) || " "}</div>`).join("");
+    $("scen-why").textContent = s.why;
+  }
+  function net(state, ms) {
+    const s = SCEN[scen], url = s.url || "trails.json";
+    const cls = state === "pending" ? "pending" : /^2/.test(s.status) ? "ok" : "bad";
+    $("net").innerHTML = `<thead><tr><th scope="col">Name</th><th scope="col">Status</th><th scope="col">Type</th><th scope="col">Time</th><th scope="col">Waterfall</th></tr></thead><tbody>` +
+      (state === "idle" ? `<tr><td colspan="5" class="pending">No requests yet.</td></tr>` :
+      `<tr><td>${url}</td><td class="${cls}">${state === "pending" ? "(pending)" : s.status}</td><td>fetch</td><td>${state === "pending" ? "…" : ms + " ms"}</td><td><span class="bar" style="width:${state === "pending" ? 10 : Math.min(120, ms / 6)}px;background:${cls === "bad" ? "var(--bad)" : ""}"></span></td></tr>`) + "</tbody>";
+  }
+  function log(cls, t) { const out = $("out"); if (out.querySelector(".muted")) out.innerHTML = ""; const li = document.createElement("li"); li.className = cls; li.textContent = t; out.append(li); }
+
+  const SAY = {
+    call: "fetch() sends the request and immediately hands back a promise. It doesn't wait.",
+    after: "The next line runs straight away, before any data has arrived. That's why \"Request sent\" is logged first.",
+    wait: "Waiting for the server…",
+    okcheck: "The response arrived. Check response.ok: true for status 200–299.",
+    throw: "response.ok is false, so throw an error. That skips straight to catch.",
+    json: "Read the body and parse it as JSON. This also returns a promise.",
+    render: "The data is ready: an array of objects. Build the list on the page.",
+    catch: "Something failed, so the catch block shows a friendly message instead of a broken page.",
+  };
+  async function send() {
+    if (running) return;
+    running = true; $("send").disabled = true;
+    const s = SCEN[scen];
+    done = []; failed = null; current = null;
+    $("out").innerHTML = ""; net("idle");
+    // On shorter screens the results sit below the fold; bring them into view only if they're hidden.
+    $("results").scrollIntoView({ block: "nearest", behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
+    const pause = (ms) => new Promise((r) => setTimeout(r, ms));
+    for (const st of s.stages) {
+      current = st; renderCode(); $("say").textContent = SAY[st];
+      if (st === "call") { net("pending"); $("preview").innerHTML = `<h3>Boulder trails</h3><p class="msg"><span class="spinner"></span>Loading…</p>`; if (s.cors) { log("err", `Access to fetch at 'file:///Users/you/site/trails.json' from origin 'null' has been blocked by CORS policy: Cross origin requests are only supported for protocol schemes: http, https, …`); net("done", 2); } }
+      if (st === "after") log("log", "Request sent");
+      if (st === "wait") { await pause(1100); net("done", 640); }
+      if (st === "okcheck") log("log", `response.status is ${s.status}, response.ok is ${s.status === "200"}`);
+      if (st === "catch") { failed = "catch"; current = null; log("err", s.err); $("preview").innerHTML = `<h3>Boulder trails</h3><p class="msg err"></p>`; $("preview").querySelector(".msg").textContent = `Could not load trails: ${s.err}`; }
+      if (st === "render") $("preview").innerHTML = `<h3>Boulder trails</h3><ul>${TRAILS.map((t) => `<li><span>${t.name}</span><span>${t.miles} mi</span></li>`).join("")}</ul>`;
+      if (st !== "catch") done.push(st);
+      renderCode();
+      await pause(st === "wait" ? 200 : 750);
+    }
+    current = null; renderCode();
+    $("say").textContent = s.stages.includes("render") ? "Done. The list was built from data that arrived after the page had loaded, with no page reload." : "Done. The error was caught, so the page shows a message instead of breaking.";
+    running = false; $("send").disabled = false;
+  }
+  $("scen").addEventListener("click", (e) => { const b = e.target.closest("button"); if (b && !running) { scen = b.dataset.k; done = []; failed = null; renderCode(); } });
+  $("style").addEventListener("click", (e) => { const b = e.target.closest("button"); if (b && !running) { style = b.dataset.s; renderCode(); } });
+  $("send").addEventListener("click", send);
+
+  $("json-file").innerHTML = hlJS(GOOD);
+  $("show-fn").innerHTML = hlJS(`const list = document.querySelector("#trails");\n\nfunction showTrails(trails) {\n  for (const trail of trails) {\n    const li = document.createElement("li");\n    li.textContent = \`\${trail.name}: \${trail.miles} mi\`;\n    list.append(li);\n  }\n}`);
+
+
+  $("out").innerHTML = `<li class="muted">Press Send request.</li>`;
+  net("idle"); renderCode();
+
+  // --- trail notes (real fetch) ---
+  function ncLoad() {
+    const name = $("nc-pick").value, url = `data/notes/${name}.txt`, out = $("nc-out");
+    $("nc-code").textContent = `fetch("${url}")\n  .then((response) => {\n    if (!response.ok) throw new Error(\`HTTP error: \${response.status}\`);\n    return response.text();\n  })\n  .then((text) => { notes.textContent = text; })\n  .catch((error) => { notes.textContent = \`Could not fetch note: \${error}\`; });`;
+    out.classList.remove("err");
+    out.textContent = "Loading…";
+    fetch(url)
+      .then((response) => {
+        if (!response.ok) throw new Error(`HTTP error: ${response.status}`);
+        return response.text();
+      })
+      .then((text) => { if ($("nc-pick").value === name) out.textContent = text; })
+      .catch((error) => { if ($("nc-pick").value === name) { out.classList.add("err"); out.textContent = `Could not fetch note: ${error.message}`; } });
+  }
+  $("nc-pick").addEventListener("change", ncLoad);
+  ncLoad();
+</script>
+<script>
+  makeQuiz(document.getElementById("quiz"), [
+    { id: "q1", q: "In what order are these logged?", pre: 'fetch("trails.json")\n  .then((r) => r.json())\n  .then(() => console.log("B"));\nconsole.log("A");', opts: ["A, then B", "B, then A"], a: 0, why: "fetch doesn't block. A logs right away, and B logs later when the data arrives." },
+    { id: "q2", q: "The server returns 404. Without a response.ok check, does .catch() run?", opts: ["Yes, fetch rejects on 404", "No, fetch only rejects on network failures"], a: 1, why: "A 404 is still a response. You have to check response.ok and throw yourself." },
+    { id: "q3", q: "Every fetch fails with \"Failed to fetch\", but the file is definitely there. What's the likely cause?", opts: ["The JSON is invalid", "The page was opened from file://", "You need async/await"], a: 1, why: "Browsers block fetch from file:// pages. Use a local server or GitHub Pages." },
+    { id: "q4", q: "What's missing from this code?", pre: 'fetch("trails.json")\n  .then((response) => {\n    response.json();\n  })\n  .then((trails) => console.log(trails));', opts: ["return before response.json()", "await before fetch", "A catch()"], a: 0, why: "Without return, the next .then() gets undefined. (A catch() is also good practice.)" },
+    { id: "q90", q: "Does fetch() reject its promise on a 404?", opts: ["Yes", "No, you check response.ok", "Only for JSON"], a: 1, why: "The request completed, so fetch resolves; response.ok is false." },
+    { id: "q91", q: "Which method reads a response body as parsed JSON?", opts: ["response.text()", "response.json()", "JSON.parse(response)"], a: 1, why: "response.json() reads and parses the body, and returns a promise." },
+  ]);
+
+  makeExercise(document.getElementById("ex-fetch"), {
+    title: "Load trails safely",
+    task: `<ol>
+      <li><code>checkResponse(response)</code> returns the response when <code>response.ok</code> is true, and throws an <code>Error</code> when it's false (fetch doesn't treat a 404 as an error by itself).</li>
+      <li><code>trailNames(trails)</code> takes the parsed JSON, an array of trail objects, and returns an array of just their names.</li>
+      <li>Finish <code>loadTrails(url)</code>: <code>await</code> the fetch, check it, parse the JSON, and catch any error.</li>
+    </ol>
+    <p class="hint">Pages in this book can't reach a real trails file, so the checks test your functions with pretend responses.</p>`,
+    js: `function checkResponse(response) {
+  // Your code here
+}
+
+function trailNames(trails) {
+  // Your code here
+}
+
+async function loadTrails(url) {
+  const response = await fetch(url);
+  const trails = await response.json();
+  return trailNames(trails);
+}`,
+    solution: `function checkResponse(response) {
+  if (!response.ok) {
+    throw new Error("HTTP " + response.status);
+  }
+  return response;
+}
+
+function trailNames(trails) {
+  return trails.map((trail) => trail.name);
+}
+
+async function loadTrails(url) {
+  try {
+    const response = checkResponse(await fetch(url));
+    const trails = await response.json();
+    return trailNames(trails);
+  } catch (err) {
+    console.error("Couldn't load trails:", err.message);
+    return [];
+  }
+}`,
+    expose: ["checkResponse", "trailNames", "loadTrails"],
+    hints: [
+      "if (!response.ok) { throw new Error(\"HTTP \" + response.status); } then return response;",
+      "trails.map((trail) => trail.name) makes a new array of names.",
+      "Wrap the body of loadTrails in try { … } catch (err) { … }, and pass the fetch result through checkResponse.",
+    ],
+    checks: [
+      { label: "checkResponse returns a good response", test: ({ fns }) => { const r = { ok: true, status: 200 }; return fns.checkResponse(r) === r; } },
+      { label: "checkResponse throws on a 404", test: ({ fns }) => { try { fns.checkResponse({ ok: false, status: 404 }); return false; } catch (e) { return e instanceof Error; } } },
+      { label: "trailNames returns just the names", test: ({ fns }) => JSON.stringify(fns.trailNames([{ name: "Mesa", miles: 6.7 }, { name: "Royal Arch", miles: 3.4 }])) === '["Mesa","Royal Arch"]' && fns.trailNames([]).length === 0 },
+      { label: "loadTrails checks the response and catches errors", test: ({ fns, code }) => { const src = String(fns.loadTrails); return /checkResponse\(/.test(src) && /try\s*\{/.test(src) && /catch\s*(\(|\{)/.test(src); } },
+    ],
+  });
+
+  makeExercise(document.getElementById("ex-note"), {
+    title: "loadNote()",
+    task: `<p><code>loadNote(url)</code> fetches a text file and returns a promise for its text. The starter works for files that exist, but for a missing file it returns the server's 404 page.</p>
+    <ol>
+      <li>In the first <code>.then()</code>, throw an <code>Error</code> when <code>response.ok</code> is false.</li>
+      <li>Add a <code>.catch()</code> that returns <code>"Couldn't load that note."</code></li>
+    </ol>
+    <p class="hint">The checks really fetch <code>data/notes/mesa.txt</code> and a file that doesn't exist.</p>`,
+    js: `function loadNote(url) {
+  return fetch(url)
+    .then((response) => {
+      return response.text();
+    });
+}
+
+loadNote("data/notes/mesa.txt").then((text) => console.log(text));`,
+    solution: `function loadNote(url) {
+  return fetch(url)
+    .then((response) => {
+      if (!response.ok) {
+        throw new Error(\`HTTP error: \${response.status}\`);
+      }
+      return response.text();
+    })
+    .catch(() => "Couldn't load that note.");
+}
+
+loadNote("data/notes/mesa.txt").then((text) => console.log(text));`,
+    expose: ["loadNote"],
+    hints: [
+      "if (!response.ok) { throw new Error(\"HTTP error\"); }",
+      "Chain .catch(() => \"Couldn't load that note.\") after the .then().",
+      "Return the whole chain, so callers get the promise.",
+    ],
+    checks: [
+      { label: "Loads mesa.txt", test: async ({ fns }) => { const t = await fns.loadNote("data/notes/mesa.txt"); return typeof t === "string" && t.startsWith("Mesa Trail runs"); } },
+      { label: "A missing file gives “Couldn't load that note.”", test: async ({ fns }) => { try { return (await fns.loadNote("data/notes/no-such-trail.txt")) === "Couldn't load that note."; } catch { return false; } } },
+      { label: "Checks response.ok", test: ({ code }) => /response\.ok/.test(code.js) },
+    ],
+  });
+</script>
+</body>
+</html>

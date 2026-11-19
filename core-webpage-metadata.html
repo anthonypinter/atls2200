@@ -1,0 +1,398 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>What's in the Head? · Core Web Development</title>
+<link rel="stylesheet" href="style.css">
+<style>
+  .text-in { font: 0.95rem var(--font-body); width: 100%; padding: 7px 9px; border: 1px solid var(--line); border-radius: 6px; background: var(--paper); color: var(--ink); resize: vertical; }
+  .count { font: 0.8rem var(--font-code); font-variation-settings: "MONO" 1; }
+  .count.good { color: var(--good); } .count.bad { color: var(--bad); }
+  .previews { display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; }
+  .pv-label { font: 600 0.75rem var(--font-code); font-variation-settings: "MONO" 1; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); margin-bottom: 6px; display: block; }
+  .tabs { background: #dfe3ea; border-radius: 8px 8px 0 0; padding: 8px 8px 0; display: flex; gap: 4px; }
+  .tab { background: #fff; color: #222; border-radius: 8px 8px 0 0; padding: 7px 10px; display: flex; gap: 8px; align-items: center; width: 220px; max-width: 60%; font: 0.82rem system-ui, sans-serif; }
+  .tab.other { background: transparent; color: #555; width: 140px; }
+  .tab span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .fav { width: 16px; height: 16px; flex: none; border-radius: 3px; }
+  .fav.generic { border: 1.5px solid #888; border-radius: 50%; }
+  .tab-body { background: #fff; color: #222; border-radius: 0 0 8px 8px; border: 1px solid #dfe3ea; border-top: 0; padding: 10px 14px; font: 700 1.1rem Georgia, serif; }
+  .serp { background: #fff; color: #202124; border-radius: 8px; padding: 14px 16px; border: 1px solid var(--line); font-family: arial, sans-serif; display: grid; gap: 3px; }
+  .serp .site { display: flex; gap: 10px; align-items: center; font-size: 0.85rem; }
+  .serp .site .fav-wrap { width: 26px; height: 26px; border-radius: 50%; background: #f1f3f4; display: grid; place-items: center; }
+  .serp .site small { display: block; color: #4d5156; font-size: 0.78rem; }
+  .serp h3 { font: 400 1.25rem arial, sans-serif; color: #1a0dab; margin-top: 4px; }
+  .serp p { font-size: 0.9rem; color: #4d5156; line-height: 1.5; }
+  .share { background: #fff; color: #111; border: 1px solid #cfd9de; border-radius: 14px; overflow: hidden; max-width: 460px; font-family: system-ui, sans-serif; }
+  .share .og-img { aspect-ratio: 1.91 / 1; background: linear-gradient(170deg, #f4a261 0 40%, #7d5a7a 40% 68%, #3e4a61 68%); display: grid; place-items: end start; padding: 12px; color: #fff; font: 800 1.4rem system-ui; }
+  .share .meta { padding: 10px 12px; display: grid; gap: 2px; font-size: 0.85rem; }
+  .share .meta small { color: #536471; }
+  .share.plain { border-radius: 8px; padding: 10px 12px; color: #1d9bf0; font-size: 0.95rem; overflow-wrap: anywhere; }
+  .code-box pre { margin: 0; background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 14px 16px; font-size: 0.85rem; line-height: 1.55; overflow-x: auto; }
+
+  .two { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  @media (max-width: 700px) { .two { grid-template-columns: 1fr; } }
+  .two .panel { display: grid; gap: 10px; align-content: start; min-width: 0; }
+  .rendered { padding: 12px 14px; border-radius: 8px; background: #fff; color: #1d2133; border: 1px solid var(--line); font-family: Georgia, serif; font-size: 1.1rem; overflow-wrap: anywhere; min-height: 52px; }
+  .rendered.broken { color: #8a1c12; }
+  .seg { display: flex; flex-wrap: wrap; gap: 6px; }
+  .fav-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px; }
+  .fav-grid .panel { display: grid; gap: 8px; align-content: start; }
+
+  .timeline { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; font-size: 0.95rem; }
+  .timeline li { display: grid; grid-template-columns: 1.6em 1fr; gap: 8px; align-items: baseline; padding: 6px 10px; border-radius: 6px; background: var(--stage); }
+  .timeline li.run { background: var(--cobalt-soft); }
+  .timeline li.bad { background: var(--bad-soft); color: var(--bad); }
+  .timeline li.good { background: var(--good-soft); color: var(--good); }
+  .timeline b { font-family: var(--font-code); font-variation-settings: "MONO" 1; }
+</style>
+<script src="book-2.js"></script>
+<script src="js/progress.js"></script>
+<script src="js/chrome.js"></script>
+<script src="js/quiz.js"></script>
+</head>
+<body>
+<main class="wrap">
+  <nav class="crumbs" aria-label="Site"><a class="crumb" href="book-2.html">← Contents</a><a class="crumb" href="glossary.html">Glossary</a></nav>
+  <header class="page-head">
+    <h1>What's in the Head? Web Page Metadata</h1>
+    <p class="lede">Nothing in the head shows on the page, but it decides what the browser tab says, how the text is decoded, what search results and shared links look like, and which CSS and JavaScript load.</p>
+    <div class="objectives">
+      <p class="callout-title">You'll be able to</p>
+      <ul>
+        <li>Explain what belongs in the head and what belongs in the body.</li>
+        <li>Write a title, a character set, and author and description metadata.</li>
+        <li>Add a favicon, and link a stylesheet and a script the right way.</li>
+        <li>Set the page's language, and mark up phrases in other languages.</li>
+      </ul>
+    </div>
+  </header>
+
+  <!-- ===== What is the HTML head? ===== -->
+  <div class="section-title"><span class="eyebrow">Read</span><h2>What is the HTML head?</h2></div>
+  <div class="prose">
+    <p>Every page has two parts. The <code>&lt;body&gt;</code> holds everything visitors see. The <span class="term">head</span> holds information <em>about</em> the page, called metadata, that the browser uses but doesn't display:</p>
+    <pre class="snippet" data-lang="html">&lt;!doctype html&gt;
+&lt;html lang="en-US"&gt;
+  &lt;head&gt;
+    &lt;meta charset="utf-8"&gt;
+    &lt;title&gt;Royal Arch Trail | Boulder Trail Club&lt;/title&gt;
+  &lt;/head&gt;
+  &lt;body&gt;
+    &lt;h1&gt;Royal Arch Trail&lt;/h1&gt;
+  &lt;/body&gt;
+&lt;/html&gt;</pre>
+    <p>Real pages often have a dozen or more lines in the head. This lesson covers the ones you'll use on every page.</p>
+  </div>
+
+  <!-- ===== Adding a title ===== -->
+  <div class="section-title"><span class="eyebrow">Read</span><h2>Adding a title</h2></div>
+  <div class="prose">
+    <p>Two elements sound alike but do different jobs. The <code>&lt;h1&gt;</code> is the big heading <em>on</em> the page. The <code>&lt;title&gt;</code> goes in the head and names the page everywhere else: the browser tab, bookmarks, history, and the blue link in search results.</p>
+    <p>Put the most specific words first, so they still show in a crowded tab bar: <code>Royal Arch Trail | Boulder Trail Club</code> beats <code>Boulder Trail Club | Hikes | Royal Arch</code>. And never leave it as "Untitled" or "Home".</p>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Play</span><h2>See your head everywhere</h2><p>Edit the title and description, and switch the icon and share tags on and off. Watch the tab, the search result and the shared link change. The page's own <code>&lt;h1&gt;</code> never changes.</p></div>
+  <section class="playground">
+    <div class="panel controls" aria-label="Head settings">
+      <span class="eyebrow">&lt;head&gt;</span>
+      <div class="control"><label for="title">&lt;title&gt;</label><input class="text-in" id="title" type="text" value="Royal Arch Trail | Boulder Trail Club"><span class="count" id="title-count"></span></div>
+      <label class="control row" for="use-desc" style="cursor:pointer"><span class="prop" style="font:600 0.85rem var(--font-code);font-variation-settings:'MONO' 1">meta description</span><input id="use-desc" type="checkbox" checked></label>
+      <div class="control"><textarea class="text-in" id="desc" rows="4" aria-label="Description text">A steep 3.4-mile round trip from Chautauqua to a natural sandstone arch, with views over Boulder. Trail conditions, parking and what to bring.</textarea><span class="count" id="desc-count"></span></div>
+      <label class="control row" for="use-fav" style="cursor:pointer"><span class="prop" style="font:600 0.85rem var(--font-code);font-variation-settings:'MONO' 1">link rel="icon"</span><input id="use-fav" type="checkbox" checked></label>
+      <label class="control row" for="use-og" style="cursor:pointer"><span class="prop" style="font:600 0.85rem var(--font-code);font-variation-settings:'MONO' 1">Open Graph tags</span><input id="use-og" type="checkbox" checked></label>
+    </div>
+    <div class="stage-col">
+      <div class="previews">
+        <div><span class="pv-label">Browser tab, with the page's h1 below</span>
+          <div class="tabs"><div class="tab" id="tab"></div><div class="tab other"><span class="fav generic"></span><span>New Tab</span></div></div><div class="tab-body">Royal Arch Trail</div></div>
+        <div><span class="pv-label">Search result</span><div class="serp" id="serp"></div></div>
+        <div><span class="pv-label">Shared in a chat or social post</span><div id="share"></div></div>
+      </div>
+      <div class="code-box"><pre id="code" aria-label="The head you've built"></pre></div>
+    </div>
+  </section>
+
+  <!-- ===== Metadata: the meta element ===== -->
+  <div class="section-title"><span class="eyebrow">Read</span><h2>Metadata: the &lt;meta&gt; element</h2></div>
+  <div class="prose">
+    <p>Most metadata goes in <code>&lt;meta&gt;</code> elements. They're void elements: no content, no closing tag. Most have a <code>name</code> saying what kind of information it is and a <code>content</code> holding the information.</p>
+    <h3>Specifying your document's character encoding</h3>
+    <p>A file is just bytes. <code>&lt;meta charset="utf-8"&gt;</code> tells the browser how to turn those bytes back into letters. UTF-8 covers nearly every writing system, so put it first in every head. With the wrong encoding, anything beyond plain English letters turns into gibberish. Try it below.</p>
+    <h3>Adding an author and description</h3>
+    <pre class="snippet" data-lang="html">&lt;meta name="author" content="Boulder Trail Club"&gt;
+&lt;meta name="description" content="A steep 3.4-mile round trip to a sandstone arch above Chautauqua, with views over Boulder."&gt;</pre>
+    <p>The <span class="term">meta description</span> often becomes the grey text under your link in search results, so write it for people: one or two sentences, about 70 to 160 characters. You may see a <code>keywords</code> meta tag in old code. Search engines ignore it.</p>
+    <h3>Other types of metadata</h3>
+    <p>Sites like Facebook, Slack and Discord read <span class="term">Open Graph</span> tags to build the preview card when someone shares your link. They use <code>property</code> instead of <code>name</code>:</p>
+    <pre class="snippet" data-lang="html">&lt;meta property="og:title" content="Royal Arch Trail"&gt;
+&lt;meta property="og:image" content="https://trailclub.github.io/images/royal-arch.jpg"&gt;</pre>
+    <div class="callout warn"><p class="callout-title">Watch out</p><p><code>og:image</code> needs a full <code>https://</code> address. Another company's server fetches the image, and it doesn't know where your page lives, so a relative path like <code>images/arch.jpg</code> won't work.</p></div>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Play</span><h2>When the character set is wrong</h2><p>Type some text with accents, curly quotes or another alphabet. The right panel shows what visitors see if the browser decodes your UTF-8 file with the wrong character set.</p></div>
+  <div class="two">
+    <div class="panel"><label class="eyebrow" for="enc-in">Your text, saved as UTF-8</label>
+      <textarea class="text-in" id="enc-in" rows="3">Café at the trailhead — “open daily” · 日本庭園</textarea>
+      <span class="eyebrow">The browser decodes it as</span>
+      <div class="seg" id="enc-pick" role="group" aria-label="Character set">
+        <button class="btn" type="button" data-enc="utf-8" aria-pressed="false">utf-8</button>
+        <button class="btn" type="button" data-enc="windows-1252" aria-pressed="false">windows-1252 (Western)</button>
+        <button class="btn" type="button" data-enc="iso-8859-5" aria-pressed="false">iso-8859-5 (Cyrillic)</button>
+      </div></div>
+    <div class="panel"><span class="eyebrow">What visitors see</span><div class="rendered" id="enc-out" aria-live="polite"></div><p class="hint" id="enc-note"></p></div>
+  </div>
+
+  <!-- ===== Adding custom icons ===== -->
+  <div class="section-title"><span class="eyebrow">Read</span><h2>Adding custom icons to your site</h2><p>A <span class="term">favicon</span> is the little picture in the browser tab and in bookmarks. One SVG covers most browsers; add a PNG for phones that save your site to their home screen.</p></div>
+  <section class="fav-grid">
+    <div class="panel"><h3>1. Make a square image</h3><p>Use a simple shape or one or two letters. Fine detail disappears at 16 × 16 pixels. Save it as <code>favicon.svg</code>, or as a 32 × 32 <code>favicon.png</code>.</p></div>
+    <div class="panel"><h3>2. Link it in the head</h3><pre class="snippet" data-lang="html">&lt;link rel="icon" href="favicon.svg" type="image/svg+xml"&gt;</pre><p class="hint"><code>rel</code> says how the linked file relates to the page.</p></div>
+    <div class="panel"><h3>3. Add a home-screen icon</h3><pre class="snippet" data-lang="html">&lt;link rel="apple-touch-icon" href="icon-180.png" sizes="180x180"&gt;</pre><p class="hint">A 180 × 180 PNG, used when someone adds your site to a phone's home screen.</p></div>
+  </section>
+
+  <!-- ===== Applying CSS and JavaScript ===== -->
+  <div class="section-title"><span class="eyebrow">Read</span><h2>Applying CSS and JavaScript to HTML</h2></div>
+  <div class="prose">
+    <p>Styles and scripts usually live in their own files, linked from the head:</p>
+    <pre class="snippet" data-lang="html">&lt;link rel="stylesheet" href="css/style.css"&gt;
+&lt;script src="js/trail.js" defer&gt;&lt;/script&gt;</pre>
+    <p><code>&lt;link&gt;</code> is a void element. <code>&lt;script&gt;</code> isn't: it always needs its closing tag, even when it's empty.</p>
+    <p>The browser reads a page from top to bottom. When it reaches a plain <code>&lt;script&gt;</code>, it stops and runs the script straight away, before the rest of the page exists. A script that tries to change a heading further down can't find it. The <code>defer</code> attribute fixes that: the script downloads in the background and runs once the whole page has been read.</p>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Play</span><h2>When does the script run?</h2><p>The script below looks for the page's <code>&lt;h1&gt;</code> and changes its text. Move it around and switch <code>defer</code> on and off, then step through what the browser does.</p></div>
+  <div class="two">
+    <div class="panel">
+      <span class="eyebrow">Where is the script?</span>
+      <div class="seg" id="js-where" role="group" aria-label="Script position">
+        <button class="btn" type="button" data-where="head" aria-pressed="true">In the head</button>
+        <button class="btn" type="button" data-where="end" aria-pressed="false">At the end of the body</button>
+      </div>
+      <label class="toggle" style="display:inline-flex;gap:8px;align-items:center"><input type="checkbox" id="js-defer"> Add <code>defer</code></label>
+      <pre class="snippet" id="js-code"></pre>
+    </div>
+    <div class="panel"><span class="eyebrow">What the browser does, in order</span><ol class="timeline" id="js-steps"></ol></div>
+  </div>
+
+  <!-- ===== Setting the primary language ===== -->
+  <div class="section-title"><span class="eyebrow">Read</span><h2>Setting the primary language of the document</h2></div>
+  <div class="prose">
+    <p>The <code>lang</code> attribute on <code>&lt;html&gt;</code> says what language the page is written in. Screen readers use it to pick the right voice and pronunciation, and search engines and translation tools use it too. Use a short language code like <code>en</code>, or add a region: <code>en-US</code>, <code>es-MX</code>.</p>
+    <p>When one phrase is in a different language, mark just that phrase. A screen reader then switches pronunciation for it and back again:</p>
+    <pre class="snippet" data-lang="html">&lt;p&gt;The garden's name is &lt;span lang="ja"&gt;日本庭園&lt;/span&gt;, "Japanese garden".&lt;/p&gt;</pre>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Practice</span><h2>Fill in the head</h2><p>This trail page has a nearly empty head. Give it everything from this lesson.</p></div>
+  <div id="ex-head"></div>
+
+  <div class="section-title"><span class="eyebrow">Practice</span><h2>Mark the languages</h2><p>Tell browsers and screen readers which language each part of the page is in.</p></div>
+  <div id="ex-lang"></div>
+
+  <section class="notes">
+    <div class="panel">
+      <h2>Key ideas</h2>
+      <ul>
+        <li>The head holds metadata: information about the page that isn't shown on it.</li>
+        <li><code>&lt;title&gt;</code> names the page in tabs and search results; <code>&lt;h1&gt;</code> is the heading on the page.</li>
+        <li>Put <code>&lt;meta charset="utf-8"&gt;</code> first in every head.</li>
+        <li><code>&lt;meta name="…" content="…"&gt;</code> adds an author, a description and more. Open Graph tags use <code>property</code>.</li>
+        <li>Link CSS with <code>&lt;link rel="stylesheet"&gt;</code> and JavaScript with <code>&lt;script src defer&gt;&lt;/script&gt;</code>.</li>
+        <li>Set <code>lang</code> on <code>&lt;html&gt;</code>, and on any phrase in another language.</li>
+      </ul>
+    </div>
+    <div class="panel mistake">
+      <h2>Common mistakes</h2>
+      <ul>
+        <li>Putting visible content, like a heading or an image, in the head.</li>
+        <li>Leaving the title as "Untitled" or "Home", which says nothing in a row of tabs.</li>
+        <li>Writing <code>&lt;script src="…"&gt;</code> without <code>&lt;/script&gt;</code>. Everything after it is swallowed.</li>
+        <li>A script in the head without <code>defer</code> that can't find elements on the page.</li>
+        <li>A relative path for <code>og:image</code>. It must be a full <code>https://</code> URL.</li>
+      </ul>
+    </div>
+  </section>
+
+  <div class="section-title"><span class="eyebrow">Check yourself</span><h2>Quick check</h2></div>
+  <div class="panel quiz" id="quiz"></div>
+
+  <footer class="page-foot" data-book-nav><a href="book-2.html">← Contents</a></footer>
+</main>
+
+<script>
+  const $ = (id) => document.getElementById(id);
+  const esc = (s) => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+  const tag = (name) => `<span class="tag-name">${name}</span>`;
+  const at = (n, v) => `<span class="attr">${n}</span>=<span class="str">"${esc(v)}"</span>`;
+
+  // --- See your head everywhere ---
+  const FAV = `<svg class="fav" viewBox="0 0 16 16" aria-hidden="true"><rect width="16" height="16" rx="3" fill="#2340d9"/><path d="M2 13 L6 6 L9 10 L11 7 L14 13 Z" fill="#fff"/></svg>`;
+  const GENERIC = `<span class="fav generic" aria-hidden="true"></span>`;
+  const cut = (s, n) => (s.length > n ? s.slice(0, n).replace(/\s+\S*$/, "") + " …" : s);
+  function head() {
+    const title = $("title").value.trim(), desc = $("desc").value.trim();
+    const useDesc = $("use-desc").checked, useFav = $("use-fav").checked, useOg = $("use-og").checked;
+    $("desc").disabled = !useDesc;
+    const tl = title.length;
+    $("title-count").textContent = tl === 0 ? "Missing: the tab shows the file name instead" : `${tl} characters` + (tl > 60 ? " · search results cut it off around 60" : "");
+    $("title-count").className = "count " + (tl === 0 || tl > 60 ? "bad" : "good");
+    const dl = desc.length;
+    $("desc-count").textContent = !useDesc ? "Off: search engines pick a sentence from the page" : `${dl} characters` + (dl > 160 ? " · too long, it'll be cut off" : dl < 70 ? " · a bit short to be useful" : " · a good length");
+    $("desc-count").className = "count " + (!useDesc || dl > 160 || dl < 70 ? "bad" : "good");
+    const shown = title || "royal-arch.html";
+    $("tab").innerHTML = (useFav ? FAV : GENERIC) + `<span>${esc(shown)}</span>`;
+    const snippet = useDesc && desc ? desc : "Skip to content. Trail Club. Home Hikes About. Royal Arch. Posted Oct 3. 3.4 miles round trip …";
+    $("serp").innerHTML = `<div class="site"><span class="fav-wrap">${useFav ? FAV : GENERIC}</span><span>Boulder Trail Club<small>https://trailclub.github.io › hikes › royal-arch</small></span></div><h3>${esc(cut(shown, 60))}</h3><p>${esc(cut(snippet, 160))}</p>`;
+    $("share").innerHTML = useOg
+      ? `<div class="share"><div class="og-img">Royal Arch</div><div class="meta"><small>trailclub.github.io</small><b>${esc(title || "Royal Arch Trail")}</b><span>${esc(cut(useDesc && desc ? desc : "", 100))}</span></div></div>`
+      : `<div class="share plain">https://trailclub.github.io/hikes/royal-arch.html</div>`;
+    const L = [`&lt;${tag("head")}&gt;`, `  &lt;${tag("meta")} ${at("charset", "utf-8")}&gt;`,
+      title ? `  &lt;${tag("title")}&gt;${esc(title)}&lt;/${tag("title")}&gt;` : `  <span class="cmt">&lt;!-- no title --&gt;</span>`];
+    if (useDesc) L.push(`  &lt;${tag("meta")} ${at("name", "description")} ${at("content", desc)}&gt;`);
+    if (useFav) L.push(`  &lt;${tag("link")} ${at("rel", "icon")} ${at("href", "favicon.svg")} ${at("type", "image/svg+xml")}&gt;`);
+    if (useOg) L.push(`  &lt;${tag("meta")} ${at("property", "og:title")} ${at("content", title || "Royal Arch Trail")}&gt;`, `  &lt;${tag("meta")} ${at("property", "og:image")} ${at("content", "https://trailclub.github.io/images/royal-arch.jpg")}&gt;`);
+    L.push(`&lt;/${tag("head")}&gt;`);
+    $("code").innerHTML = L.join("\n");
+  }
+  ["title", "desc", "use-desc", "use-fav", "use-og"].forEach((id) => { $(id).addEventListener("input", head); $(id).addEventListener("change", head); });
+  head();
+
+  // --- Character encoding: encode as UTF-8, then decode with the chosen character set ---
+  const ENC_NOTES = {
+    "utf-8": "Decoded with the same character set it was saved in, so every character comes back.",
+    "windows-1252": "Each accented or special character is two to four bytes in UTF-8. Read one byte at a time, they turn into strings like Ã©.",
+    "iso-8859-5": "A Cyrillic character set reads the same bytes as Russian letters, so the text is unreadable.",
+  };
+  let enc = "windows-1252";
+  function encode() {
+    const bytes = new TextEncoder().encode($("enc-in").value);
+    let out;
+    try { out = new TextDecoder(enc).decode(bytes); } catch { out = $("enc-in").value; }
+    $("enc-out").textContent = out;
+    $("enc-out").classList.toggle("broken", enc !== "utf-8");
+    $("enc-note").textContent = ENC_NOTES[enc];
+    document.querySelectorAll("#enc-pick .btn").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.enc === enc)));
+  }
+  $("enc-in").addEventListener("input", encode);
+  $("enc-pick").addEventListener("click", (e) => { const b = e.target.closest("[data-enc]"); if (b) { enc = b.dataset.enc; encode(); } });
+  encode();
+
+  // --- When does the script run? ---
+  let where = "head";
+  function timing() {
+    const defer = $("js-defer").checked;
+    const script = `  &lt;${tag("script")} ${at("src", "js/trail.js")}${defer ? ` <span class="attr">defer</span>` : ""}&gt;&lt;/${tag("script")}&gt;`;
+    const lines = [`&lt;${tag("head")}&gt;`, where === "head" ? script : null, `&lt;/${tag("head")}&gt;`, `&lt;${tag("body")}&gt;`,
+      `  &lt;${tag("h1")}&gt;Royal Arch Trail&lt;/${tag("h1")}&gt;`, `  &lt;${tag("p")}&gt;3.4 miles round trip&lt;/${tag("p")}&gt;`, where === "end" ? script : null, `&lt;/${tag("body")}&gt;`].filter(Boolean);
+    $("js-code").innerHTML = `<span class="cmt">// js/trail.js</span>\n<span class="cmt">// document.querySelector("h1").textContent += " (open)";</span>\n\n` + lines.join("\n");
+    const early = where === "head" && !defer;
+    const steps = [];
+    steps.push(["1", "Read <b>&lt;head&gt;</b>", ""]);
+    if (where === "head") steps.push(["2", defer ? "Find the script, start downloading it, and keep reading" : "Find the script, <b>stop</b>, download it and run it now", "run"]);
+    if (early) steps.push(["3", "The script looks for an h1. The body hasn't been read yet, so there isn't one: <b>error</b>", "bad"]);
+    steps.push([String(steps.length + 1), "Read <b>&lt;body&gt;</b>: build the h1 and the paragraph", ""]);
+    if (where === "end") steps.push([String(steps.length + 1), defer ? "Find the script; defer is ignored without the head, but the page above already exists" : "Find the script at the end, download it and run it", "run"]);
+    steps.push([String(steps.length + 1), "Finish reading the page", ""]);
+    if (where === "head" && defer) steps.push([String(steps.length + 1), "Now run the deferred script", "run"]);
+    steps.push([String(steps.length + 1), early ? "The heading never changes" : "The script finds the h1: <b>Royal Arch Trail (open)</b>", early ? "bad" : "good"]);
+    $("js-steps").innerHTML = steps.map(([n, t, c]) => `<li class="${c}"><span>${n}</span><span>${t}</span></li>`).join("");
+  }
+  $("js-where").addEventListener("click", (e) => {
+    const b = e.target.closest("[data-where]");
+    if (!b) return;
+    where = b.dataset.where;
+    document.querySelectorAll("#js-where .btn").forEach((x) => x.setAttribute("aria-pressed", String(x === b)));
+    timing();
+  });
+  $("js-defer").addEventListener("change", timing);
+  timing();
+</script>
+<script>
+  makeExercise(document.getElementById("ex-head"), {
+    title: "Metadata for a trail page",
+    task: `<p>Fix up this page's head:</p>
+    <ol>
+      <li>Change the title to <em>Royal Arch Trail | Boulder Trail Club</em>.</li>
+      <li>Add the character set meta tag for UTF-8.</li>
+      <li>Add an author meta tag with the content <em>Boulder Trail Club</em>, and a description of at least 50 characters.</li>
+      <li>Link the stylesheet <code>css/style.css</code>.</li>
+      <li>Load the script <code>js/trail.js</code> so it runs after the page has been read.</li>
+    </ol>`,
+    html: `<!doctype html>
+<html lang="en">
+<head>
+  <title>Untitled</title>
+<\/head>
+<body>
+  <h1>Royal Arch Trail</h1>
+  <p>A steep 3.4-mile round trip to a sandstone arch.</p>
+<\/body>
+<\/html>`,
+    solution: { html: `<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Royal Arch Trail | Boulder Trail Club</title>
+  <meta name="author" content="Boulder Trail Club">
+  <meta name="description" content="A steep 3.4-mile round trip from Chautauqua to a sandstone arch, with views over Boulder.">
+  <link rel="stylesheet" href="css/style.css">
+  <script src="js/trail.js" defer><\/script>
+<\/head>
+<body>
+  <h1>Royal Arch Trail</h1>
+  <p>A steep 3.4-mile round trip to a sandstone arch.</p>
+<\/body>
+<\/html>` },
+    hints: [
+      "Metadata goes in meta tags: <meta name=\"author\" content=\"…\">. The character set is <meta charset=\"utf-8\">.",
+      "A stylesheet is <link rel=\"stylesheet\" href=\"…\">.",
+      "A script that waits for the page needs defer, and a closing tag: <script src=\"js/trail.js\" defer><\/script>.",
+    ],
+    checks: [
+      { label: "The title is “Royal Arch Trail | Boulder Trail Club”", test: ({ $ }) => $("title").textContent.trim() === "Royal Arch Trail | Boulder Trail Club" },
+      { label: "The character set is UTF-8", test: ({ code }) => /<meta\s+charset=["']?utf-8["']?\s*\/?>/i.test(code.html) },
+      { label: "There's an author and a description of 50+ characters", test: ({ $ }) => $('meta[name="author"]').getAttribute("content").trim() === "Boulder Trail Club" && $('meta[name="description"]').getAttribute("content").trim().length >= 50 },
+      { label: "css/style.css is linked as a stylesheet", test: ({ $ }) => !!$('link[rel="stylesheet"][href="css/style.css"]') },
+      { label: "js/trail.js loads with defer", test: ({ $ }) => $('script[src="js/trail.js"]').hasAttribute("defer") },
+    ],
+  });
+
+  makeExercise(document.getElementById("ex-lang"), {
+    title: "English page, Japanese garden",
+    task: `<ol>
+      <li>Set the page's language to US English with a <code>lang</code> attribute on the <code>&lt;html&gt;</code> element.</li>
+      <li>Wrap the Japanese words <strong>日本庭園</strong> in a <code>&lt;span&gt;</code> with <code>lang="ja"</code>.</li>
+    </ol>`,
+    html: `<!doctype html>
+<html>
+<body>
+  <h1>Garden loop</h1>
+  <p>The loop ends at the 日本庭園, a small Japanese garden by the creek.</p>
+<\/body>
+<\/html>`,
+    solution: { html: `<!doctype html>
+<html lang="en-US">
+<body>
+  <h1>Garden loop</h1>
+  <p>The loop ends at the <span lang="ja">日本庭園</span>, a small Japanese garden by the creek.</p>
+<\/body>
+<\/html>` },
+    hints: ["Attributes go in the opening tag: <html lang=\"…\">.", "US English is en-US.", "<span lang=\"ja\">日本庭園</span>"],
+    checks: [
+      { label: "The html element has lang=\"en-US\"", test: ({ code }) => /<html[^>]*\slang=["']en-US["']/i.test(code.html) },
+      { label: "日本庭園 is in a span with lang=\"ja\"", test: ({ $ }) => $('span[lang="ja"]').textContent.trim() === "日本庭園" },
+    ],
+  });
+
+  makeQuiz(document.getElementById("quiz"), [
+    { id: "q1", q: "Where does a page's <title> show up?", opts: ["In the browser tab and search results", "As the big heading on the page", "Only in the HTML source"], a: 0, why: "The title names the page in tabs, bookmarks and search results. The h1 is the heading on the page." },
+    { id: "q2", q: "Your page shows Ã© where it should show é. What's missing?", opts: ["<meta charset=\"utf-8\">", "A font that has é", "lang=\"fr\""], a: 0, why: "The browser decoded the UTF-8 file with the wrong character set. Declaring UTF-8 fixes it." },
+    { id: "q3", q: "Which tag adds a description for search results?", opts: ["<meta name=\"description\" content=\"…\">", "<description>…</description>", "<meta keywords=\"…\">"], a: 0, why: "Metadata uses meta with name and content. Search engines ignore the keywords tag." },
+    { id: "q4", q: "Why must og:image be a full https:// URL?", opts: ["Relative paths are slower", "Another company's server fetches it and doesn't know where your page is", "Open Graph only supports PNG files"], a: 1, why: "The preview card is built elsewhere, so it needs the image's complete address." },
+    { id: "q5", q: "A script in the head can't find the page's h1. What fixes it?", opts: ["Add defer to the script", "Add async to the h1", "Move the h1 into the head"], a: 0, why: "defer waits until the whole page has been read before running the script." },
+    { id: "q6", q: "How do you mark one French phrase on an English page?", opts: ["<span lang=\"fr\">…</span>", "<french>…</french>", "<span language=\"French\">…</span>"], a: 0, why: "The lang attribute works on any element, so a span around the phrase is enough." },
+  ]);
+</script>
+</body>
+</html>

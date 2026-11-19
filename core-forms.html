@@ -1,0 +1,470 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Forms and Buttons · Core Web Development</title>
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="core.css">
+<style>
+  .types { display: flex; flex-wrap: wrap; gap: 6px; }
+  .demo-field { display: grid; gap: 6px; padding: 18px; background: var(--stage); border-radius: var(--radius); }
+  .demo-field label { font-weight: 700; }
+  .demo-field input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="color"]), .demo-field select, .demo-field textarea, .form input {
+    font: 1rem var(--font-body); padding: 9px 10px; border: 1px solid var(--line); border-radius: 6px; background: var(--panel); color: var(--ink); max-width: 100%;
+  }
+  .demo-field .inline { display: flex; align-items: center; gap: 8px; font-weight: 400; }
+  .el-name { font: 700 1.05rem var(--font-code); font-variation-settings: "MONO" 1; color: var(--cobalt); }
+  .free { margin: 0; padding-left: 1.2em; display: grid; gap: 6px; }
+  .kbd { font-size: 0.92rem; padding: 8px 10px; border-radius: 6px; background: var(--cobalt-soft); }
+
+  .pair { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  @media (max-width: 640px) { .pair { grid-template-columns: 1fr; } }
+  .pair .panel { display: grid; gap: 10px; align-content: start; }
+  .pair .demo-row { display: grid; gap: 6px; }
+  .pair .demo-row label { cursor: pointer; font-weight: 700; }
+  .pair input[type="text"] { font: 1rem var(--font-body); padding: 8px 10px; border: 1px solid var(--line); border-radius: 6px; background: var(--panel); color: var(--ink); }
+
+  .form { display: grid; gap: 14px; max-width: 420px; }
+  .form .row { display: grid; gap: 4px; }
+  .form label { font-weight: 700; }
+  .form .req { color: var(--bad); }
+  .form input:user-invalid { border-color: var(--bad); background: var(--bad-soft); }
+  .form input:user-valid { border-color: var(--good); }
+  .form button { justify-self: start; background: var(--cobalt); color: var(--panel); border-color: var(--cobalt); }
+  .fs-demo { border: 1.5px solid var(--line); border-radius: 8px; padding: 8px 12px 12px; display: grid; gap: 6px; margin: 0; }
+  .fs-demo legend { font-weight: 700; padding: 0 4px; }
+  .fs-plain { display: grid; gap: 6px; } .fake-legend { font-weight: 700; margin: 0; }
+  .radio { display: flex; gap: 8px; align-items: center; cursor: pointer; }
+  .radio input { accent-color: var(--cobalt); }
+  .sr-say { font: 0.88rem/1.5 var(--font-code); font-variation-settings: "MONO" 1; padding: 8px 10px; border-radius: 6px; background: var(--stage); }
+  .sr-say.bad.on { background: var(--bad-soft); color: var(--bad); }
+  .kinds3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 14px; }
+  .kinds3 .panel { display: grid; gap: 8px; align-content: start; }
+  .kinds3 progress, .kinds3 meter { width: 100%; height: 22px; }
+  .plain-in { font: 1rem var(--font-body); padding: 8px 10px; border: 1px solid var(--line); border-radius: 6px; background: var(--panel); color: var(--ink); width: 100%; }
+  .vfields { display: grid; gap: 14px; }
+  .vrow { display: grid; gap: 4px; max-width: 520px; }
+  .vrow code { font-size: 0.78rem; }
+  .vstatus { font-size: 0.88rem; }
+  .vstatus.ok { color: var(--good); } .vstatus.no { color: var(--bad); }
+  .send-form { display: grid; gap: 12px; align-content: start; }
+  .send-form code { font-size: 0.78rem; color: var(--muted); }
+  .ok-msg { padding: 10px 12px; border-radius: 6px; background: var(--good-soft); color: var(--good); }
+  .btn-demo { display: grid; gap: 10px; }
+  .btn-demo .row3 { display: flex; flex-wrap: wrap; gap: 8px; }
+  .btn-demo input { font: inherit; padding: 6px 8px; border: 1px solid var(--line); border-radius: 6px; background: var(--paper); color: var(--ink); }
+  .fake-btn { display: inline-block; padding: 8px 14px; border-radius: 6px; background: var(--cobalt); color: #fff; cursor: pointer; font-weight: 700; user-select: none; }
+</style>
+<script src="book-2.js"></script>
+<script src="js/progress.js"></script>
+<script src="js/chrome.js"></script>
+<script src="js/quiz.js"></script>
+</head>
+<body>
+<main class="wrap">
+  <nav class="crumbs" aria-label="Site"><a class="crumb" href="book-2.html">← Contents</a><a class="crumb" href="glossary.html">Glossary</a></nav>
+  <header class="page-head">
+    <h1>Forms and Buttons</h1>
+    <p class="lede">Links and media only go one way. Buttons and forms let visitors talk back: sign up, search, send a message. HTML does a surprising amount of the work, if you choose the right elements.</p>
+    <div class="objectives">
+      <p class="callout-title">You'll be able to</p>
+      <ul>
+        <li>Choose the right <code>type</code> for a <code>&lt;button&gt;</code>.</li>
+        <li>Build a form from <code>&lt;form&gt;</code>, labelled controls and a submit button.</li>
+        <li>Pick input types, radio buttons, checkboxes, <code>&lt;select&gt;</code> and <code>&lt;textarea&gt;</code> to fit the question.</li>
+        <li>Let the browser validate answers, and know why the server must check them too.</li>
+      </ul>
+    </div>
+  </header>
+
+  <div class="section-title"><span class="eyebrow">Read</span><h2>Interacting with users</h2></div>
+  <div class="prose">
+    <p>So far your pages talk and visitors listen. To let them answer, you need two kinds of element: <strong>buttons</strong>, which do something when pressed, and <strong>forms</strong>, which collect information and send it somewhere. Both come with keyboard support and screen reader support built in, as long as you use the real elements.</p>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Read</span><h2>Buttons</h2></div>
+  <div class="prose">
+    <p>A button is made with <code>&lt;button&gt;</code>, and its text goes between the tags:</p>
+    <pre class="snippet" data-lang="html">&lt;button type="button"&gt;Show the map&lt;/button&gt;</pre>
+    <p>On its own, a button with <code>type="button"</code> does nothing when clicked. JavaScript gives it a job, which you'll do in Week 7. Inside a form, though, buttons already have jobs, chosen by <code>type</code>:</p>
+    <ul>
+      <li><code>type="submit"</code> sends the form. It's the default inside a form, so say it anyway to be clear.</li>
+      <li><code>type="reset"</code> clears every field back to its starting value. Rarely a good idea: one mis-click wipes everything.</li>
+      <li><code>type="button"</code> does nothing until JavaScript says so.</li>
+    </ul>
+    <p>Links go somewhere; buttons do something. If clicking it changes the page or the URL, it's a link. If it sends, opens, plays or toggles, it's a button.</p>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Play</span><h2>What does each button do?</h2><p>Type something, then press each button.</p></div>
+  <section class="playground even">
+    <form class="panel btn-demo" id="bd" action="/subscribe">
+      <label for="bd-email"><b>Email</b></label>
+      <input id="bd-email" name="email" type="email" value="sam@example.com">
+      <div class="row3">
+        <button class="btn primary" type="submit">type="submit"</button>
+        <button class="btn" type="reset">type="reset"</button>
+        <button class="btn" type="button" id="bd-plain">type="button"</button>
+      </div>
+    </form>
+    <div class="panel" style="display:grid;gap:8px;align-content:start"><span class="eyebrow">What happened</span><p class="verdict" id="bd-out" aria-live="polite">Press a button.</p></div>
+  </section>
+
+  <div class="section-title"><span class="eyebrow">Read</span><h2>The anatomy of a form</h2></div>
+  <div class="prose">
+    <p>A basic form has three parts: the <code>&lt;form&gt;</code> wrapper, one or more label-and-control pairs, and a submit button.</p>
+    <pre class="snippet" data-lang="html">&lt;form action="/subscribe" method="post"&gt;
+  &lt;label for="email"&gt;Email&lt;/label&gt;
+  &lt;input type="email" id="email" name="email" required&gt;
+  &lt;button type="submit"&gt;Subscribe&lt;/button&gt;
+&lt;/form&gt;</pre>
+    <h3>The &lt;form&gt; element</h3>
+    <p>When the form is sent, each field travels as <code>name=value</code>. The form's <code>action</code> says where to send it, and <code>method</code> says how: <code>get</code> puts it in the URL, <code>post</code> sends it out of sight. A field without a <code>name</code> isn't sent at all.</p>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Play</span><h2>Where does the data go?</h2><p>Fill this in and watch the request it would make. Nothing is actually sent from this page.</p></div>
+  <section class="playground even">
+    <form class="panel send-form" id="send" action="/register">
+      <div class="seg" role="group" aria-label="method"><button class="btn" type="button" data-m="get" aria-pressed="true">method="get"</button><button class="btn" type="button" data-m="post" aria-pressed="false">method="post"</button></div>
+      <div class="demo-row"><label for="sd-trail"><b>Trail</b> <code>name="trail"</code></label><select id="sd-trail" name="trail" class="plain-in"><option value="mesa">Mesa Trail</option><option value="royal-arch">Royal Arch</option></select></div>
+      <div class="demo-row"><label for="sd-date"><b>Date</b> <code>name="date"</code></label><input id="sd-date" name="date" type="date" class="plain-in" value="2026-10-17"></div>
+      <div class="demo-row"><label for="sd-size"><b>Group size</b> <code>name="size"</code></label><input id="sd-size" name="size" type="number" min="1" value="2" class="plain-in"></div>
+      <div class="demo-row"><label for="sd-notes"><b>Notes</b> <code>(no name attribute)</code></label><input id="sd-notes" class="plain-in" value="Bringing a dog"></div>
+    </form>
+    <div class="panel" style="display:grid;gap:8px;align-content:start"><span class="eyebrow">The request</span><pre class="snippet" id="req"></pre><p class="hint" id="req-note"></p></div>
+  </section>
+
+
+  <div class="prose">
+    <h3>&lt;input&gt; elements</h3>
+    <p><code>&lt;input&gt;</code> is an empty element that becomes many different controls depending on its <code>type</code>. <code>type="email"</code> gives phones a keyboard with an @ key and checks the address before sending. <code>type="date"</code> brings up a date picker. Use <code>type="text"</code> for everything and you get none of that. Give each input an <code>id</code> (for its label), a <code>name</code> (for the data) and, if it can't be left empty, <code>required</code>.</p>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Play</span><h2>Try each input type</h2><p>Pick a type and see the keyboard, picker and validation you get for free.</p></div>
+  <section class="playground">
+    <div class="panel controls">
+      <span class="eyebrow">Pick an input type</span>
+      <div class="types" id="types"></div>
+    </div>
+    <div class="stage-col">
+      <div class="demo-field" id="field"></div>
+      <div class="panel" style="display:grid;gap:10px">
+        <span class="eyebrow">What you get for free</span>
+        <ul class="free" id="free"></ul>
+        <div class="kbd" id="kbd"></div>
+      </div>
+    </div>
+  </section>
+
+
+  <div class="prose">
+    <h3>&lt;label&gt; elements</h3>
+    <p>Every control needs a <span class="term">label</span>. Connect them explicitly, by matching the label's <code>for</code> to the input's <code>id</code>, or implicitly, by putting the input inside the label:</p>
+    <pre class="snippet" data-lang="html">&lt;label for="name"&gt;Name&lt;/label&gt; &lt;input id="name" name="name"&gt;
+&lt;label&gt;&lt;input type="checkbox" name="news"&gt; Email me updates&lt;/label&gt;</pre>
+    <p>Clicking the label focuses the control, which gives everyone a bigger target, and a <span class="term">screen reader</span> reads it aloud when someone reaches the field. A <span class="term">placeholder</span> is not a label: it disappears as soon as you type.</p>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Play</span><h2>Click each label</h2><p>Click the label text, not the control, in each version.</p></div>
+  <div class="pair">
+    <div class="panel">
+      <span class="eyebrow" style="color:var(--good)">Connected</span>
+      <div class="demo-row"><label for="good-name">Your name</label><input type="text" id="good-name"></div>
+      <label style="display:flex;gap:8px;align-items:center;cursor:pointer"><input type="checkbox" id="good-check"> Email me updates</label>
+      <div class="feedback" id="good-fb">Click the label text, not the box.</div>
+    </div>
+    <div class="panel">
+      <span class="eyebrow" style="color:var(--bad)">Not connected</span>
+      <div class="demo-row"><span style="font-weight:700;cursor:pointer" id="bad-label">Your name</span><input type="text" aria-label="Your name (unlabeled example)"></div>
+      <div style="display:flex;gap:8px;align-items:center"><input type="checkbox" aria-label="Email me updates (unlabeled example)"> <span style="cursor:pointer" id="bad-check-label">Email me updates</span></div>
+      <div class="feedback" id="bad-fb">Click the label text, not the box.</div>
+    </div>
+  </div>
+
+
+  <div class="section-title"><span class="eyebrow">Read</span><h2>An aside on accessibility</h2></div>
+  <div class="prose">
+    <p>You could make a <code>&lt;div&gt;</code> look exactly like a button with CSS. It would still fail: you can't reach it with the Tab key, Enter and Space don't press it, screen readers don't call it a button, and it can't submit a form. Try tabbing to both of these:</p>
+    <p><button class="btn" type="button" id="real-btn">A real button</button> &nbsp; <span class="fake-btn" id="fake-btn">A div “button”</span></p>
+    <p class="verdict" id="ab-out" aria-live="polite"></p>
+    <p>Native form elements come with all that behaviour for free. Use them.</p>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Read</span><h2>Other control types</h2></div>
+  <div class="prose">
+    <ul>
+      <li><strong>Radio buttons</strong> (<code>type="radio"</code>) are for picking exactly one option. All the radios in a group share the same <code>name</code>; each has its own <code>value</code>. Add <code>checked</code> to pre-select one, and <code>disabled</code> to make one unavailable.</li>
+      <li><strong>Checkboxes</strong> (<code>type="checkbox"</code>) are for zero or more options. Each one is independent and has its own <code>name</code>.</li>
+      <li><strong>Drop-down menus</strong> are a <code>&lt;select&gt;</code> holding <code>&lt;option&gt;</code>s. They save space when there are many choices.</li>
+      <li><strong>Multi-line text</strong> goes in a <code>&lt;textarea&gt;</code>, which has a closing tag. <code>rows</code> and <code>cols</code> set its starting size.</li>
+    </ul>
+    <p>A group of radios or checkboxes needs a question. Wrap the group in a <code>&lt;fieldset&gt;</code> and put the question in its <code>&lt;legend&gt;</code>.</p>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Play</span><h2>fieldset and legend</h2><p>Focus a radio button in each version to hear the difference.</p></div>
+  <div class="pair">
+    <div class="panel">
+      <span class="eyebrow" style="color:var(--good)">With fieldset and legend</span>
+      <fieldset class="fs-demo"><legend>Trail difficulty</legend>
+        <label class="radio"><input type="radio" name="diff1" value="Easy"> Easy</label><label class="radio"><input type="radio" name="diff1" value="Moderate"> Moderate</label><label class="radio"><input type="radio" name="diff1" value="Hard"> Hard</label>
+      </fieldset>
+      <div class="sr-say" id="sr-good">Focus a radio button.</div>
+    </div>
+    <div class="panel">
+      <span class="eyebrow" style="color:var(--bad)">Without</span>
+      <div class="fs-plain"><p class="fake-legend">Trail difficulty</p>
+        <label class="radio"><input type="radio" name="diff2" value="Easy"> Easy</label><label class="radio"><input type="radio" name="diff2" value="Moderate"> Moderate</label><label class="radio"><input type="radio" name="diff2" value="Hard"> Hard</label>
+      </div>
+      <div class="sr-say bad" id="sr-bad">Focus a radio button.</div>
+    </div>
+  </div>
+
+
+  <div class="section-title"><span class="eyebrow">Practice</span><h2>Make the form usable</h2><p>This sign-up form works with a mouse, barely. Label it, name it, and group it so it works for everyone.</p></div>
+  <div id="ex-form"></div>
+
+  <div class="section-title"><span class="eyebrow">Read</span><h2>Form validation</h2></div>
+  <div class="prose">
+    <p>Attributes like <code>required</code>, <code>minlength</code>, <code>pattern</code>, <code>min</code> and <code>max</code>, and types like <code>email</code>, make the browser check answers before sending and explain what's wrong. That's <strong>client-side validation</strong>, and it helps visitors fix mistakes quickly.</p>
+    <div class="callout note"><p class="callout-title">Note</p><p>Client-side validation doesn't protect a server: anyone can switch it off or send data without your form. Real sites always check again on the server (<strong>server-side validation</strong>). You need both.</p></div>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Play</span><h2>Let the browser check it</h2><p>Try submitting this with empty or wrong values.</p></div>
+  <div class="panel">
+    <form class="form" id="form">
+      <div class="row"><label for="f-name">Name <span class="req">*</span></label><input id="f-name" name="name" required></div>
+      <div class="row"><label for="f-email">Email <span class="req">*</span></label><input id="f-email" name="email" type="email" required></div>
+      <div class="row"><label for="f-age">Age (13 to 120)</label><input id="f-age" name="age" type="number" min="13" max="120"></div>
+      <button class="btn" type="submit">Sign up</button>
+      <div id="form-msg" aria-live="polite"></div>
+    </form>
+  </div>
+
+
+  <div class="section-title"><span class="eyebrow">Play</span><h2>Set the rules, let the browser explain them</h2><p>Type in each field. The messages come straight from your browser.</p></div>
+  <div class="panel vfields">
+    <div class="vrow"><label for="v-user"><b>Username</b> <code>required minlength="3" maxlength="15"</code></label><input id="v-user" class="plain-in" required minlength="3" maxlength="15"><span class="vstatus" id="vs-user"></span></div>
+    <div class="vrow"><label for="v-zip"><b>ZIP code</b> <code>pattern="[0-9]{5}"</code></label><input id="v-zip" class="plain-in" pattern="[0-9]{5}" inputmode="numeric" title="Five digits"><span class="vstatus" id="vs-zip"></span></div>
+    <div class="vrow"><label for="v-size"><b>Group size</b> <code>type="number" min="1" max="12"</code></label><input id="v-size" class="plain-in" type="number" min="1" max="12"><span class="vstatus" id="vs-size"></span></div>
+  </div>
+
+
+  <div class="section-title"><span class="eyebrow">Practice</span><h2>Trip feedback form</h2><p>Add the remaining controls with the right elements.</p></div>
+  <div id="ex-controls"></div>
+
+  <section class="notes">
+    <div class="panel">
+      <h2>Key ideas</h2>
+      <ul>
+        <li>Every input needs a label. The label's <code>for</code> must match the input's <code>id</code> exactly.</li>
+        <li>The <code>name</code> attribute is what the data is called when the form is sent.</li>
+        <li>Radio buttons in the same group share one <code>name</code>, so only one can be picked. Wrap the group in a <code>&lt;fieldset&gt;</code> with a <code>&lt;legend&gt;</code>.</li>
+        <li>Use <code>&lt;button type="submit"&gt;</code> to send a form and <code>type="button"</code> for anything else.</li>
+      </ul>
+    </div>
+    <div class="panel mistake">
+      <h2>Common mistakes</h2>
+      <ul>
+        <li>Using <code>placeholder</code> instead of a label. It disappears when you type and is often low-contrast.</li>
+        <li>Typing <code>type="text"</code> for everything and missing the free validation and keyboards.</li>
+        <li>Reusing the same <code>id</code> twice, so a label points at the wrong input.</li>
+        <li>Forgetting that browser validation doesn't protect a server. Real apps check on the server too.</li>
+      </ul>
+    </div>
+  </section>
+
+  <div class="section-title"><span class="eyebrow">Check yourself</span><h2>Quick check</h2></div>
+  <div class="panel quiz" id="quiz"></div>
+
+  <footer class="page-foot" data-book-nav><a href="book-2.html">← Contents</a></footer>
+</main>
+
+<script>
+  const $ = (id) => document.getElementById(id);
+  const TYPES = {
+    text: { html: '<input type="text" id="x">', label: "Username", free: ["A plain single-line box. Use it when nothing more specific fits."], kbd: "Phone keyboard: regular letters." },
+    email: { html: '<input type="email" id="x" placeholder="you@example.com">', label: "Email", free: ["Blocks submission if the value isn't shaped like an email.", "Autofill can suggest saved addresses."], kbd: "Phone keyboard: shows @ and . keys." },
+    password: { html: '<input type="password" id="x">', label: "Password", free: ["Hides characters as you type.", "Password managers know to fill it."], kbd: "Phone keyboard: turns off autocorrect." },
+    number: { html: '<input type="number" id="x" min="1" max="10" value="3">', label: "Tickets (1 to 10)", free: ["Up/down arrows to change the value.", "Blocks values outside min and max."], kbd: "Phone keyboard: numbers only." },
+    tel: { html: '<input type="tel" id="x">', label: "Phone number", free: ["No format checking, since phone formats vary by country."], kbd: "Phone keyboard: a dial pad." },
+    url: { html: '<input type="url" id="x" placeholder="https://">', label: "Website", free: ["Blocks submission unless it starts like a URL (https://...)."], kbd: "Phone keyboard: shows / and .com keys." },
+    date: { html: '<input type="date" id="x">', label: "Birthday", free: ["A built-in calendar picker.", "The value is always sent as YYYY-MM-DD."], kbd: "Phone: opens a date wheel or calendar." },
+    range: { html: '<input type="range" id="x" min="0" max="10" value="5">', label: "Volume", free: ["A slider for when the exact number matters less than the rough amount.", "Arrow keys move it."], kbd: "Phone: drag with your finger." },
+    color: { html: '<input type="color" id="x" value="#2340d9">', label: "Favorite color", free: ["A built-in color picker.", "The value is a hex code like #2340d9."], kbd: "Phone: opens the system color picker." },
+    checkbox: { html: '<label class="inline"><input type="checkbox" id="x"> I agree to the rules</label>', label: null, free: ["On or off. Each checkbox is independent.", "Clicking the label text toggles it."], kbd: "Tip: wrap the input in its label to connect them without for/id." },
+    radio: { html: '<label class="inline"><input type="radio" name="size" id="x" checked> Small</label><label class="inline"><input type="radio" name="size"> Medium</label><label class="inline"><input type="radio" name="size"> Large</label>', label: "Size", free: ["Only one in a group can be picked, because they share a name.", "Arrow keys move between options."], kbd: "Tip: put the group in a fieldset with a legend." },
+    select: { html: '<select id="x"><option>Colorado</option><option>Utah</option><option>Wyoming</option></select>', label: "State", free: ["A dropdown that saves space when there are many options.", "Typing a letter jumps to matching options."], kbd: "Phone: opens a scrolling picker." },
+    textarea: { html: '<textarea id="x" rows="3">Multiple lines of text…</textarea>', label: "Message", free: ["Multi-line text. Users can resize it by default.", "It's its own element, not an input type."], kbd: "Phone keyboard: Return adds a new line." },
+  };
+  let current = "email";
+  $("types").innerHTML = Object.keys(TYPES).map((k) => `<button class="btn" data-k="${k}">${k}</button>`).join("");
+  $("types").addEventListener("click", (e) => { const b = e.target.closest("button"); if (b) { current = b.dataset.k; render(); } });
+  function render() {
+    const t = TYPES[current];
+    const tagName = ["select", "textarea"].includes(current) ? `<${current}>` : `<input type="${current}">`;
+    $("field").innerHTML = `<span class="el-name">${tagName.replace(/</g, "&lt;")}</span>` + (t.label ? `<label for="x">${t.label}</label>` : "") + t.html;
+    $("free").innerHTML = t.free.map((f) => `<li>${f}</li>`).join("");
+    $("kbd").textContent = t.kbd;
+    document.querySelectorAll("#types button").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.k === current)));
+  }
+  render();
+
+  // Label demo feedback
+  const say = (id, ok, text) => { const fb = $(id); fb.className = "feedback " + (ok ? "right" : "wrong"); fb.textContent = text; };
+  document.querySelector('label[for="good-name"]').addEventListener("click", () => say("good-fb", true, "The cursor jumped into the input."));
+  $("good-check").addEventListener("change", (e) => say("good-fb", true, e.target.checked ? "Checked, from the label or the box." : "Unchecked."));
+  $("bad-label").addEventListener("click", () => say("bad-fb", false, "Nothing happened. The text isn't connected to the input."));
+  $("bad-check-label").addEventListener("click", () => say("bad-fb", false, "Nothing happened. Users must hit the tiny box exactly."));
+
+  // Validation demo: the submit event only fires once the browser's own checks pass.
+  $("form").addEventListener("submit", (e) => {
+    e.preventDefault();
+    $("form-msg").innerHTML = `<div class="ok-msg">All fields passed the browser's checks. A real form would send the data now.</div>`;
+  });
+  $("form").addEventListener("input", () => ($("form-msg").innerHTML = ""));
+
+  // fieldset demo
+  document.querySelectorAll('input[name="diff1"], input[name="diff2"]').forEach((r, _, all) => {
+    const say = () => {
+      const group = [...document.querySelectorAll(`input[name="${r.name}"]`)], i = group.indexOf(r) + 1;
+      const base = `"${r.value}, radio button, ${i} of ${group.length}${r.checked ? ", selected" : ""}."`;
+      if (r.name === "diff1") $("sr-good").textContent = `"Trail difficulty, group." ${base}`;
+      else { $("sr-bad").textContent = `${base} The question "Trail difficulty" is never read, so the listener doesn't know what they're choosing.`; $("sr-bad").classList.add("on"); }
+    };
+    r.addEventListener("focus", say); r.addEventListener("change", say);
+  });
+
+  // validation attributes, using the browser's own messages
+  [["v-user", "vs-user"], ["v-zip", "vs-zip"], ["v-size", "vs-size"]].forEach(([i, o]) => {
+    const el = $(i), out = $(o);
+    const check = () => {
+      if (!el.value && !el.required) { out.className = "vstatus"; out.textContent = "Optional. Leave it empty or type something."; return; }
+      const v = el.validity, flag = ["valueMissing", "tooShort", "tooLong", "patternMismatch", "rangeUnderflow", "rangeOverflow", "badInput", "stepMismatch"].find((k) => v[k]);
+      out.className = "vstatus " + (v.valid ? "ok" : "no");
+      out.textContent = v.valid ? "✓ Valid" : `✗ ${el.validationMessage || "Not valid yet."} (validity.${flag})`;
+    };
+    el.addEventListener("input", check); check();
+  });
+
+
+  // button types
+  $("bd").addEventListener("submit", (e) => { e.preventDefault(); $("bd-out").className = "verdict ok"; $("bd-out").textContent = `Submit: the form would now send email=${$("bd-email").value} to /subscribe.`; });
+  $("bd").addEventListener("reset", () => { $("bd-out").className = "verdict bad"; $("bd-out").textContent = "Reset: the field went back to its starting value. Anything typed is gone."; });
+  $("bd-plain").addEventListener("click", () => { $("bd-out").className = "verdict"; $("bd-out").textContent = "Nothing happened. A type=\"button\" button waits for JavaScript to give it a job."; });
+  // real vs fake button
+  $("real-btn").addEventListener("click", () => { $("ab-out").className = "verdict ok"; $("ab-out").textContent = "✓ The real button: reachable with Tab, pressed with Enter or Space, announced as “button”."; });
+  $("fake-btn").addEventListener("click", () => { $("ab-out").className = "verdict bad"; $("ab-out").textContent = "✗ The div only responds to a mouse. Tab skips straight past it, and screen readers call it plain text."; });
+
+  // where does the data go
+  let method = "get";
+  function req() {
+    const params = new URLSearchParams(new FormData($("send")));
+    if (method === "get") { $("req").textContent = `GET /register?${params.toString()}`; $("req-note").textContent = "GET puts the data in the URL. Fine for searches and filters, where people may want to bookmark or share the result. Never for passwords."; }
+    else { $("req").textContent = `POST /register\n\n${params.toString().split("&").join("\n")}`; $("req-note").textContent = "POST sends the data in the body of the request, not the URL. Use it for sign-ups, logins and anything that changes data."; }
+    $("req-note").textContent += " Notes is missing from both, because its input has no name.";
+    document.querySelectorAll("#send [data-m]").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.m === method)));
+  }
+  $("send").addEventListener("click", (e) => { const b = e.target.closest("[data-m]"); if (b) { method = b.dataset.m; req(); } });
+  $("send").addEventListener("input", req);
+  $("send").addEventListener("submit", (e) => e.preventDefault());
+  req();
+</script>
+<script>
+  makeQuiz(document.getElementById("quiz"), [
+    { id: "q1", q: "Which attribute connects a label to its input?", opts: ["The label's for matches the input's id", "The label's name matches the input's name", "The label goes right before the input"], a: 0, why: "for and id must match exactly. Then clicking the label focuses the input." },
+    { id: "q2", q: "Why isn't a placeholder enough on its own?", opts: ["It's not sent with the form", "It disappears once you type, and is often hard to read", "Browsers don't support it"], a: 1, why: "Once someone starts typing, the placeholder is gone, and so is the only hint about the field." },
+    { id: "q3", q: "Three radio buttons for Easy, Moderate and Hard. What must they share so only one can be picked?", opts: ["The same id", "The same value", "The same name"], a: 2, why: "Radio buttons with the same name form one group." },
+    { id: "q4", q: "A field has no name attribute. What happens when the form is sent?", opts: ["It isn't sent", "It's sent as \"unnamed\"", "The form won't submit"], a: 0, why: "Only fields with a name are included in the data." },
+    { id: "q5", q: "Which input type gives phones a keyboard with an @ key?", opts: ["text", "email", "url"], a: 1, why: "type=\"email\" also checks that the address looks valid." },
+    { id: "q6", q: "Inside a form, what does a <button> with no type attribute do?", opts: ["Submits the form", "Nothing", "Resets the form"], a: 0, why: "submit is the default inside a form, so always say which type you mean." },
+  ]);
+</script>
+<script>
+  makeExercise(document.getElementById("ex-controls"), {
+    title: "Trip feedback",
+    task: `<p>The labels are there; the controls aren't. Add each one with the id and name given in its comment.</p>
+    <ol>
+      <li>A <code>&lt;select&gt;</code> for the trail, with three <code>&lt;option&gt;</code>s: Mesa, Royal Arch, Bear Peak.</li>
+      <li>A <code>&lt;textarea&gt;</code> for comments, 4 rows tall.</li>
+      <li>A checkbox inside the last label.</li>
+      <li>A submit button that says <em>Send feedback</em>.</li>
+    </ol>`,
+    html: `<form>
+  <label for="trail">Which trail?</label>
+  <!-- select: id="trail" name="trail" -->
+
+  <label for="comments">Comments</label>
+  <!-- textarea: id="comments" name="comments" -->
+
+  <label><!-- checkbox: name="contact" --> You can contact me about this</label>
+</form>`,
+    css: `form { font-family: system-ui, sans-serif; display: grid; gap: 8px; max-width: 340px; }`,
+    solution: { html: `<form>
+  <label for="trail">Which trail?</label>
+  <select id="trail" name="trail">
+    <option>Mesa</option>
+    <option>Royal Arch</option>
+    <option>Bear Peak</option>
+  </select>
+
+  <label for="comments">Comments</label>
+  <textarea id="comments" name="comments" rows="4"></textarea>
+
+  <label><input type="checkbox" name="contact"> You can contact me about this</label>
+  <button type="submit">Send feedback</button>
+</form>` },
+    hints: ["<select> holds <option> elements, each with its own closing tag.", "<textarea> needs a closing tag; <input> doesn't.", "For an implicit label, put the input inside the <label>."],
+    checks: [
+      { label: "A labelled select named trail with three options", test: ({ $ }) => { const s = $("select#trail"); return s.name === "trail" && s.options.length === 3 && s.labels.length === 1; } },
+      { label: "A labelled 4-row textarea named comments", test: ({ $ }) => { const t = $("textarea#comments"); return t.name === "comments" && t.rows === 4 && t.labels.length === 1; } },
+      { label: "A checkbox named contact, inside its label", test: ({ $ }) => { const c = $('label > input[type="checkbox"]'); return c.name === "contact"; } },
+      { label: "A submit button says Send feedback", test: ({ $ }) => { const b = $("form button"); return b.type === "submit" && /send feedback/i.test(b.textContent); } },
+    ],
+  });
+
+  makeExercise(document.getElementById("ex-form"), {
+    title: "Volunteer sign-up",
+    task: `<ol>
+      <li>Give every input a <code>&lt;label&gt;</code> connected to it.</li>
+      <li>Make the email field <code>type="email"</code>.</li>
+      <li>Give every input a <code>name</code>. The two radio buttons share one.</li>
+      <li>Group the radio buttons in a <code>&lt;fieldset&gt;</code> with a <code>&lt;legend&gt;</code>.</li>
+      <li>Replace the div with a real submit button.</li>
+    </ol>`,
+    html: `<form>
+  Name <input type="text">
+  Email <input type="text">
+  Trail crew:
+  <input type="radio" value="mesa"> Mesa
+  <input type="radio" value="royal-arch"> Royal Arch
+  <div class="btn">Sign up</div>
+</form>`,
+    css: `form { font-family: system-ui, sans-serif; display: grid; gap: 8px; max-width: 320px; }`,
+    solution: { html: `<form>
+  <label for="name">Name</label>
+  <input type="text" id="name" name="name">
+  <label for="email">Email</label>
+  <input type="email" id="email" name="email">
+  <fieldset>
+    <legend>Trail crew</legend>
+    <label><input type="radio" name="crew" value="mesa"> Mesa</label>
+    <label><input type="radio" name="crew" value="royal-arch"> Royal Arch</label>
+  </fieldset>
+  <button type="submit">Sign up</button>
+</form>` },
+    hints: [
+      "Connect a label with for and id: <label for=\"email\">Email</label> <input id=\"email\">. Or wrap the input inside the label.",
+      "Radios in a group share a name, like name=\"crew\". That's what makes picking one unpick the other.",
+      "<fieldset><legend>Trail crew</legend> … </fieldset> wraps the radios.",
+    ],
+    checks: [
+      { label: "Every input has a label", test: ({ $$ }) => $$("input").length === 4 && $$("input").every((i) => i.labels.length > 0) },
+      { label: "The email field is type=\"email\"", test: ({ $$ }) => $$('input[type="email"]').length === 1 },
+      { label: "Every input has a name, and the radios share one", test: ({ $$ }) => $$("input").every((i) => i.name) && new Set($$('input[type="radio"]').map((r) => r.name)).size === 1 },
+      { label: "The radios are in a fieldset with a legend", test: ({ $, $$ }) => $$('fieldset input[type="radio"]').length === 2 && $("fieldset > legend").textContent.trim() !== "" },
+      { label: "There's a real submit button", test: ({ $ }) => ($("form button") || {}).type === "submit" || !!$('input[type="submit"]') },
+    ],
+  });
+</script>
+</body>
+</html>

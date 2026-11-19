@@ -1,0 +1,324 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Display and Normal Flow · Core Web Development</title>
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="core.css">
+<style>
+  .flow { font-size: 1.05rem; line-height: 1.7; color: var(--ink); background: var(--panel); border-radius: 8px; padding: 16px; }
+  .flow .box { background: color-mix(in srgb, var(--cobalt) 22%, transparent); outline: 2px solid var(--cobalt); color: var(--ink); font-weight: 700; transition: all 0.2s; }
+  .flow .box.b2 { background: color-mix(in srgb, var(--prop) 22%, transparent); outline-color: var(--prop); }
+  .flow .box.b3 { background: color-mix(in srgb, var(--val) 22%, transparent); outline-color: var(--val); }
+  .applies { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+  .applies li { display: grid; grid-template-columns: 110px 1fr; gap: 10px; font-size: 0.92rem; align-items: baseline; }
+  .applies li b { font: 600 0.85rem var(--font-code); font-variation-settings: "MONO" 1; }
+  .applies li.yes b { color: var(--good); } .applies li.no b { color: var(--bad); }
+  .applies li.no span { color: var(--muted); }
+  .summary { font-size: 0.98rem; }
+  .hide-row { display: flex; gap: 8px; align-items: center; padding: 12px; background: var(--panel); border-radius: 8px; flex-wrap: wrap; }
+  .hide-row .card { width: 90px; height: 70px; border-radius: 6px; display: grid; place-items: center; color: #fff; font: 700 0.95rem var(--font-code); font-variation-settings: "MONO" 1; }
+  .hide-row .card:nth-child(1) { background: var(--item-1); } .hide-row .card:nth-child(2) { background: var(--item-2); } .hide-row .card:nth-child(3) { background: var(--item-3); }
+  .cmp { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  @media (max-width: 640px) { .cmp { grid-template-columns: 1fr; } }
+  .cmp div { padding: 10px; border-radius: 6px; background: var(--stage); font-size: 0.88rem; display: grid; gap: 2px; }
+  .cmp div.cur { outline: 2px solid var(--cobalt); }
+  .cmp b { font: 600 0.85rem var(--font-code); font-variation-settings: "MONO" 1; color: var(--cobalt); }
+
+  .nf-stage { background: #fff; color: #1d2133; border: 1px solid var(--line); border-radius: 8px; padding: 14px; font: 0.95rem/1.5 Georgia, serif; overflow: hidden; }
+  .nf-wrap { border: 2px dashed #9aa2bf; padding: 8px; min-height: 160px; }
+  .nf-wrap .k { background: #9ec2e6; border: 2px solid #2f5680; padding: 8px; margin: 4px; font: 600 0.85rem var(--font-code); font-variation-settings: "MONO" 1; }
+  .nf-wrap .k:nth-child(2) { background: #f0b37a; border-color: #8a5228; }
+  .nf-wrap .k:nth-child(3) { background: #b9d99a; border-color: #4b6b2f; }
+  .nf-flow { background: #fff; color: #1d2133; border: 1px solid var(--line); border-radius: 8px; padding: 6px 14px; font: 1rem/1.6 Georgia, serif; }
+  .nf-flow > * { outline: 1px dashed #2f5680; outline-offset: 1px; }
+  .nf-flow span, .nf-flow strong { outline-color: #b4410c; }
+  .nf-flow h1 { font-size: 1.4rem; margin: 0.4em 0; }
+  .nf-flow img { display: inline; vertical-align: middle; }
+</style>
+<script src="book-2.js"></script>
+<script src="js/progress.js"></script>
+<script src="js/chrome.js"></script>
+<script src="js/quiz.js"></script>
+</head>
+<body>
+<main class="wrap">
+  <nav class="crumbs" aria-label="Site"><a class="crumb" href="book-2.html">← Contents</a><a class="crumb" href="glossary.html">Glossary</a></nav>
+  <header class="page-head">
+    <h1>Display and Normal Flow</h1>
+    <p class="lede">Before you write any layout CSS, the browser already has a plan for where every box goes: normal flow. Understanding it, and the ways CSS can override it, is the foundation for every layout you'll build.</p>
+    <div class="objectives">
+      <p class="callout-title">You'll be able to</p>
+      <ul>
+        <li>Describe normal flow: how block and inline boxes are placed by default.</li>
+        <li>Change an element's box type with <code>display</code>, and see which properties it then obeys.</li>
+        <li>Name the main ways CSS overrides normal flow: display, floats, positioning, flexbox and grid.</li>
+        <li>Hide content with <code>display: none</code>, <code>visibility: hidden</code> or <code>opacity: 0</code>, and know the difference.</li>
+      </ul>
+    </div>
+  </header>
+
+  <div class="section-title"><span class="eyebrow">Read</span><h2>Normal layout flow</h2></div>
+  <div class="prose">
+<p><span class="term">Normal flow</span> is how the browser lays out a page when you haven't told it otherwise. It puts elements on the page in the same order as your HTML, one after another. Because of that, a well-structured HTML document is already readable before any layout CSS. Start from good HTML and change the flow only where you need to.</p>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Read</span><h2>How are elements laid out by default?</h2></div>
+  <div class="prose">
+<p>Each element's content sits inside its padding, border and margin: the box model from the last lesson. Then:</p>
+    <ul>
+      <li><strong>Block boxes</strong> stack one below another, in the <em>block direction</em> (top to bottom for English). Each fills the width of its parent, and is as tall as its content. Their vertical margins collapse where they touch.</li>
+      <li><strong>Inline boxes</strong> sit side by side in the <em>inline direction</em> (left to right for English), like words. When a line runs out of room, they wrap onto the next line.</li>
+    </ul>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Play</span><h2>Normal flow example</h2><p>Every block box has a blue dashed outline; inline boxes have orange ones. Change the width of the container.</p></div>
+  <div class="panel" style="display:grid;gap:10px">
+    <div class="control"><label for="nf-w">body width</label><input id="nf-w" type="range" min="240" max="640" step="20" value="480"><span class="readout" id="nf-w-out"></span></div>
+    <div class="nf-flow" id="nf-flow">
+      <h1>Basic document flow</h1>
+      <p>I am a basic block level element. My adjacent block level elements sit on new lines below me.</p>
+      <p>By default we span 100% of the width of our parent element, and we are as tall as our child content. Our total width and height is our content + padding + border width/height.</p>
+      <p>Inline elements <span>like this one</span> and <strong>this one</strong> sit on the same line as each other and adjacent text nodes, if there is space on the same line. Overflowing inline elements <span>wrap onto a new line if possible, like this one containing text</span>.</p>
+    </div>
+  </div>
+
+  <div class="prose">
+<p>The <code>display</code> property changes which kind of box an element generates: <code>block</code>, <code>inline</code>, or <code>inline-block</code> (inline in the flow, but sized like a block). That decides which properties it listens to.</p>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Play</span><h2>Switch the display type</h2><p>Change display on three boxes, then give them a width, height, margin and padding to see which ones listen.</p></div>
+  <section class="playground">
+    <div class="panel controls">
+      <span class="eyebrow">.box (three of them)</span>
+      <div class="control"><label for="d">display</label>
+        <select id="d"><option>inline</option><option>block</option><option selected>inline-block</option></select></div>
+      <div class="control"><label for="w">width</label><input id="w" type="range" min="60" max="260" step="10" value="140"><span class="readout" id="w-out"></span></div>
+      <div class="control"><label for="h">height</label><input id="h" type="range" min="20" max="100" step="5" value="44"><span class="readout" id="h-out"></span></div>
+      <div class="control"><label for="mv">margin (top and bottom)</label><input id="mv" type="range" min="0" max="30" step="2" value="10"><span class="readout" id="mv-out"></span></div>
+      <div class="control"><label for="p">padding</label><input id="p" type="range" min="0" max="20" step="2" value="6"><span class="readout" id="p-out"></span></div>
+    </div>
+    <div class="stage-col">
+      <div class="stage"><p class="flow">Pack <span class="box b1">water</span> and <span class="box b2">snacks</span> before you set out, and check the <span class="box b3">forecast</span> because afternoon storms roll in fast above treeline.</p></div>
+      <div class="panel" style="display:grid;gap:10px">
+        <p class="summary" id="summary"></p>
+        <ul class="applies" id="applies"></ul>
+      </div>
+    </div>
+  </section>
+
+  <div class="section-title"><span class="eyebrow">Read</span><h2>Overriding normal flow</h2></div>
+  <div class="prose">
+<p>Normal flow can't put things side by side in columns, or pin a header to the top of the screen. For that, CSS has several layout tools, each covered in a later week:</p>
+    <ul>
+      <li><strong>The <code>display</code> property</strong>: besides block and inline, <code>display: flex</code> and <code>display: grid</code> switch on whole layout systems for an element's children.</li>
+      <li><strong><span class="term" data-term="Float">Floats</span></strong>: <code>float: left</code> moves a box to one side and lets text wrap around it, like an image in a magazine.</li>
+      <li><strong><span class="term" data-term="position">Positioning</span></strong>: <code>position</code> moves a box from where normal flow put it, or pins it to the screen.</li>
+      <li><strong><span class="term">Flexbox</span></strong> (Week 5): lays items out in one direction, a row or a column, and shares space between them.</li>
+      <li><strong><span class="term">Grid</span></strong> (Week 5): lays items out in rows and columns at once.</li>
+      <li><strong><span class="term">Responsive design</span></strong> (Week 6): changes the layout to suit the screen size.</li>
+    </ul>
+    <h3>Other layout techniques</h3>
+    <p>Two more exist but are less common: <strong>table layout</strong> (<code>display: table</code>, from before flexbox existed) and <strong>multi-column layout</strong> (<code>column-count: 3</code>), which flows text into columns like a newspaper.</p>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Play</span><h2>Same HTML, different layouts</h2><p>Three boxes in one container. Each button applies a different layout tool to the same HTML.</p></div>
+  <section class="playground even">
+    <div class="panel" style="display:grid;gap:10px;align-content:start">
+      <div class="presets" id="nf-lay" role="group" aria-label="Layout"></div>
+      <pre class="snippet" id="nf-code"></pre>
+      <p class="verdict" id="nf-note" aria-live="polite"></p>
+    </div>
+    <div class="nf-stage"><div class="nf-wrap" id="nf-wrap"><div class="k">Box 1: some text that runs a little longer</div><div class="k">Box 2</div><div class="k">Box 3</div><span style="font-size:0.85rem">Trailing text in the container, flowing after the boxes. It shows how other content reacts to each layout.</span></div></div>
+  </section>
+
+  <div class="section-title"><span class="eyebrow">Read</span><h2>Hiding things</h2></div>
+  <div class="prose">
+<p><code>display: none</code> is the most drastic display value: the element isn't drawn at all, and normal flow closes up the space it would have taken. Two other properties hide elements but keep their place in the flow.</p>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Play</span><h2>display: none vs visibility: hidden vs opacity: 0</h2><p>All three make card 2 invisible. Watch what happens to the space it took up.</p></div>
+  <section class="playground even">
+    <div class="stage-col">
+      <div class="seg" id="hide" role="group" aria-label="How to hide card 2">
+        <button class="btn" data-v="show" aria-pressed="true">Visible</button><button class="btn" data-v="none">display: none</button><button class="btn" data-v="hidden">visibility: hidden</button><button class="btn" data-v="opacity">opacity: 0</button>
+      </div>
+      <div class="hide-row"><div class="card">1</div><div class="card" id="c2">2</div><div class="card">3</div></div>
+    </div>
+    <div class="cmp" id="cmp">
+      <div data-v="none"><b>display: none</b>Gone completely. The space closes up and screen readers skip it.</div>
+      <div data-v="hidden"><b>visibility: hidden</b>Invisible, but its space stays. Screen readers skip it.</div>
+      <div data-v="opacity"><b>opacity: 0</b>Invisible but still there: it keeps its space, can be clicked, and screen readers still read it.</div>
+    </div>
+  </section>
+
+  <div class="section-title"><span class="eyebrow">Practice</span><h2>Change how boxes flow</h2><p>Three elements, three different display values.</p></div>
+  <div id="ex-display"></div>
+
+  <div class="section-title"><span class="eyebrow">Practice</span><h2>A first layout</h2><p>Use one display value to put the cards side by side.</p></div>
+  <div id="ex-layout"></div>
+
+  <section class="notes">
+    <div class="panel">
+      <h2>Key ideas</h2>
+      <ul>
+        <li>Normal flow places elements in source order: blocks stack, inline boxes sit side by side and wrap.</li>
+        <li>Good HTML in normal flow is already readable; layout CSS changes it only where needed.</li>
+        <li><code>display</code> chooses block, inline or inline-block, and switches on flex and grid.</li>
+        <li>Floats, positioning, flexbox and grid all override normal flow in different ways.</li>
+        <li><code>display: none</code> removes the box; <code>visibility: hidden</code> and <code>opacity: 0</code> keep its space.</li>
+      </ul>
+    </div>
+    <div class="panel mistake">
+      <h2>Common mistakes</h2>
+      <ul>
+        <li>Setting <code>width</code> on an inline element and wondering why it's ignored.</li>
+        <li>Reaching for floats or positioning to build a whole layout: use flexbox or grid.</li>
+        <li>Changing the visual order so it no longer matches the HTML order, confusing keyboard and screen reader users.</li>
+        <li>Hiding with <code>opacity: 0</code> when you meant to remove: it's still clickable and still read aloud.</li>
+      </ul>
+    </div>
+  </section>
+
+  <div class="section-title"><span class="eyebrow">Check yourself</span><h2>Quick check</h2></div>
+  <div class="panel quiz" id="quiz"></div>
+
+  <footer class="page-foot" data-book-nav><a href="book-2.html">← Contents</a></footer>
+</main>
+
+<script>
+  const $ = (id) => document.getElementById(id);
+  const SUM = {
+    inline: "Inline boxes flow inside the sentence like words. They're as wide as their text, and only side spacing pushes other words away.",
+    block: "Block boxes break the sentence apart: each starts on a new line and takes the full width unless you set one.",
+    "inline-block": "Inline-block boxes sit in the line like words but respect width, height and all margins. Notice how the line grows taller to fit them.",
+  };
+  function update() {
+    const d = $("d").value, w = $("w").value, h = $("h").value, mv = $("mv").value, p = $("p").value;
+    $("w-out").textContent = w + "px"; $("h-out").textContent = h + "px"; $("mv-out").textContent = mv + "px"; $("p-out").textContent = p + "px";
+    document.querySelectorAll(".flow .box").forEach((b) => Object.assign(b.style, { display: d, width: w + "px", height: h + "px", marginTop: mv + "px", marginBottom: mv + "px", padding: p + "px", marginInline: "4px" }));
+    $("summary").textContent = SUM[d];
+    const inl = d === "inline";
+    const rows = [
+      ["width", !inl, inl ? "Ignored. Inline boxes are as wide as their content." : "Applied."],
+      ["height", !inl, inl ? "Ignored. Height comes from the line of text." : "Applied."],
+      ["margin top/bottom", !inl, inl ? "Ignored. Lines don't move apart." : "Applied: pushes other content away."],
+      ["padding", true, inl ? "Drawn, but top and bottom padding overlap the lines above and below instead of pushing them." : "Applied."],
+      ["new line?", d === "block", d === "block" ? "Yes. Each box gets its own line." : "No. It stays in the flow of text."],
+    ];
+    $("applies").innerHTML = rows.map(([k, ok, t]) => `<li class="${ok ? "yes" : "no"}"><b>${ok ? "✓" : "✗"} ${k}</b><span>${t}</span></li>`).join("");
+  }
+  document.querySelectorAll(".controls select, .controls input").forEach((el) => el.addEventListener("input", update));
+  update();
+
+  $("hide").addEventListener("click", (e) => {
+    const b = e.target.closest("button"); if (!b) return;
+    const v = b.dataset.v, c = $("c2");
+    c.style.display = v === "none" ? "none" : ""; c.style.visibility = v === "hidden" ? "hidden" : ""; c.style.opacity = v === "opacity" ? "0" : "";
+    document.querySelectorAll("#hide button").forEach((x) => x.setAttribute("aria-pressed", String(x === b)));
+    document.querySelectorAll("#cmp div").forEach((x) => x.classList.toggle("cur", x.dataset.v === v));
+  });
+
+  // --- Normal flow example ---
+  function nfw() { const w = $("nf-w").value; $("nf-flow").style.width = w + "px"; $("nf-flow").style.maxWidth = "100%"; $("nf-w-out").textContent = w + "px"; }
+  $("nf-w").addEventListener("input", nfw);
+  nfw();
+
+  // --- Same HTML, different layouts ---
+  const LAY = {
+    "normal flow": ["", "", "Blocks stack in source order, each filling the width. The text flows after them."],
+    "display: flex": [".wrap { display: flex; }", "display:flex", "The boxes sit in a row and share the width. (The text becomes a fourth flex item.)"],
+    "display: grid": [".wrap {\n  display: grid;\n  grid-template-columns: 1fr 1fr;\n}", "display:grid;grid-template-columns:1fr 1fr", "Two equal columns: the items fill the grid cells in order, row by row."],
+    "float: left": [".k { float: left; width: 30%; }", "", "Each box floats to the left as far as it can; the text wraps around them."],
+    "position": [".k:nth-child(2) {\n  position: relative;\n  left: 60px;\n  top: 20px;\n}", "", "Box 2 is nudged from where normal flow put it. Its old space stays reserved; it can overlap other boxes."],
+    "columns": [".wrap { column-count: 2; }", "column-count:2", "Multi-column layout flows the content into two columns, like a newspaper."],
+  };
+  $("nf-lay").innerHTML = Object.keys(LAY).map((k) => `<button class="btn" type="button">${k}</button>`).join("");
+  function lay(k) {
+    const [code, wrapCss, note] = LAY[k];
+    const wrap = $("nf-wrap"), boxes = wrap.querySelectorAll(".k");
+    wrap.style.cssText = wrapCss;
+    boxes.forEach((bx, i) => { bx.style.cssText = k === "float: left" ? "float:left;width:30%" : k === "position" && i === 1 ? "position:relative;left:60px;top:20px" : ""; });
+    $("nf-code").textContent = code || "/* no layout CSS */";
+    $("nf-note").textContent = note;
+    document.querySelectorAll("#nf-lay .btn").forEach((x) => x.setAttribute("aria-pressed", String(x.textContent === k)));
+  }
+  $("nf-lay").addEventListener("click", (e) => { const b = e.target.closest(".btn"); if (b) lay(b.textContent); });
+  lay("normal flow");
+</script>
+<script>
+  makeExercise(document.getElementById("ex-display"), {
+    title: "Inline, inline-block and none",
+    task: `<ol>
+      <li>Make the menu items sit side by side on one line.</li>
+      <li>The badge already has a width of 80px, but it's ignored. Keep it in line with the text and make the width work.</li>
+      <li>Hide the old notice completely, so it takes up no space.</li>
+    </ol>`,
+    html: `<ul class="menu">
+  <li><a href="#">Trails</a></li>
+  <li><a href="#">Events</a></li>
+  <li><a href="#">Join</a></li>
+</ul>
+<p class="old-notice">The Mesa Trail bridge is closed (fixed last spring).</p>
+<p>Royal Arch <span class="badge">Hard</span> is 3.4 miles round trip.</p>`,
+    css: `body { font-family: system-ui, sans-serif; }
+.menu { list-style: none; padding: 0; }
+.menu li { margin-right: 16px; }
+.badge { width: 80px; padding: 4px 0; background: gold; text-align: center; }`,
+    solution: { css: `body { font-family: system-ui, sans-serif; }
+.menu { list-style: none; padding: 0; }
+.menu li { display: inline-block; margin-right: 16px; }
+.badge { display: inline-block; width: 80px; padding: 4px 0; background: gold; text-align: center; }
+.old-notice { display: none; }` },
+    hints: [
+      "List items are block elements, so each starts a new line. inline or inline-block puts them side by side.",
+      "Inline elements ignore width. inline-block flows like a word but accepts a width.",
+      "display: none removes an element from the page entirely.",
+    ],
+    checks: [
+      { label: "The menu items are on one line", test: ({ $$ }) => { const tops = $$(".menu li").map((li) => Math.round(li.getBoundingClientRect().top)); return new Set(tops).size === 1; } },
+      { label: "The badge is inline-block and 80px wide", test: ({ style }) => style(".badge", "display") === "inline-block" && style(".badge", "width") === "80px" },
+      { label: "The old notice is hidden", test: ({ style }) => style(".old-notice", "display") === "none" },
+    ],
+  });
+
+  makeExercise(document.getElementById("ex-layout"), {
+    title: "Cards in a row",
+    task: `<ol>
+      <li>Give <code>.cards</code> <code>display: flex</code> so the three cards sit side by side.</li>
+      <li>Add <code>gap: 12px</code> to <code>.cards</code> for space between them.</li>
+    </ol>
+    <p>Notice the HTML doesn't change at all: the order is still the order you'd read them in.</p>`,
+    html: `<div class="cards">
+  <div class="card">Mesa Trail</div>
+  <div class="card">Royal Arch</div>
+  <div class="card">Bear Peak</div>
+</div>`,
+    css: `body { font-family: system-ui, sans-serif; }
+.card { padding: 16px; background: #eef1fb; border: 2px solid #2340d9; }`,
+    solution: { css: `body { font-family: system-ui, sans-serif; }
+.card { padding: 16px; background: #eef1fb; border: 2px solid #2340d9; }
+.cards {
+  display: flex;
+  gap: 12px;
+}` },
+    hints: ["display goes on the container (.cards), not the cards."],
+    checks: [
+      { label: ".cards is a flex container", test: ({ style }) => style(".cards", "display") === "flex" },
+      { label: "The three cards share one row", test: ({ $$ }) => new Set($$(".card").map((c) => Math.round(c.getBoundingClientRect().top))).size === 1 },
+      { label: "There's a 12px gap", test: ({ $$ }) => { const [a, b] = $$(".card").map((c) => c.getBoundingClientRect()); return Math.abs(b.left - a.right - 12) < 0.5; } },
+    ],
+  });
+
+  makeQuiz(document.getElementById("quiz"), [
+    { id: "q1", q: "You set width: 200px on a link and nothing changes. Why?", opts: ["width only works in percentages", "Links need a class first", "Links are inline and ignore width"], a: 2, why: "Inline elements size to their content. Make it inline-block or block to set a width." },
+    { id: "q2", q: "Which display value flows like a word but accepts width and height?", opts: ["inline-block", "inline", "block"], a: 0, why: "inline-block combines the two." },
+    { id: "q3", q: "Which hides an element and closes the gap it leaves?", opts: ["visibility: hidden", "display: none", "opacity: 0"], a: 1, why: "display: none removes the element from the layout entirely." },
+    { id: "q4", q: "Which of these is inline by default?", opts: ["<p>", "<section>", "<span>"], a: 2, why: "span flows inside text; p and section are blocks." },
+    { id: "q5", q: "In normal flow, in what order are elements placed?", opts: ["The order they appear in the HTML", "Largest first", "Alphabetical by tag"], a: 0, why: "Normal flow follows source order." },
+    { id: "q6", q: "Which tool lets text wrap around a box, like an image in a magazine?", opts: ["float", "position", "display: grid"], a: 0, why: "Floats take a box out to one side and let content wrap around it." },
+  ]);
+</script>
+</body>
+</html>

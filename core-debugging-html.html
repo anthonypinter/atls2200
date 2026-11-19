@@ -1,0 +1,340 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Debugging HTML · Core Web Development</title>
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="core.css">
+<style>
+  .msgs { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; font-size: 0.93rem; }
+  .msgs li { padding: 8px 10px; border-radius: 6px; display: grid; gap: 2px; }
+  .msgs li.err { background: var(--bad-soft); color: var(--bad); }
+  .msgs li.warn { background: var(--stage); color: var(--prop); }
+  .msgs li.ok { background: var(--good-soft); color: var(--good); }
+  .msgs .where { font: 600 0.75rem var(--font-code); font-variation-settings: "MONO" 1; opacity: 0.85; }
+  .numbered { counter-reset: ln; }
+  .src-lines { margin: 0; padding: 10px 0; background: var(--panel); border: 1px solid var(--line); border-radius: 8px; font: 0.88rem/1.5 var(--font-code); font-variation-settings: "MONO" 1; overflow-x: auto; }
+  .src-lines div { padding: 0 12px 0 0; white-space: pre; }
+  .src-lines div::before { content: attr(data-n); display: inline-block; width: 2.4em; padding-right: 8px; text-align: right; color: var(--muted); }
+  .src-lines div.hit { background: var(--bad-soft); }
+  .inspector { display: grid; gap: 8px; }
+  .devtools-tabs { display: flex; gap: 2px; font: 600 0.8rem var(--font-code); font-variation-settings: "MONO" 1; }
+  .devtools-tabs span { padding: 4px 10px; border-radius: 6px 6px 0 0; background: var(--stage); color: var(--muted); }
+  .devtools-tabs span.on { background: var(--cobalt-soft); color: var(--cobalt); }
+</style>
+<script src="book-2.js"></script>
+<script src="js/progress.js"></script>
+<script src="js/chrome.js"></script>
+<script src="js/quiz.js"></script>
+</head>
+<body>
+<main class="wrap">
+  <nav class="crumbs" aria-label="Site"><a class="crumb" href="book-2.html">← Contents</a><a class="crumb" href="glossary.html">Glossary</a></nav>
+  <header class="page-head">
+    <h1>Debugging HTML</h1>
+    <p class="lede">Browsers quietly repair broken HTML, so mistakes hide. Learn the kinds of errors HTML has, see what the browser does with them in the DOM inspector, and use a validator to find every one.</p>
+    <div class="objectives">
+      <p class="callout-title">You'll be able to</p>
+      <ul>
+        <li>Tell syntax errors from logic errors.</li>
+        <li>Explain why broken HTML often still displays, and why that's a problem.</li>
+        <li>Use the DOM inspector to see the elements the browser actually built.</li>
+        <li>Run HTML through a <span class="term">validator</span> and act on its error messages.</li>
+      </ul>
+    </div>
+  </header>
+
+  <!-- ===== Debugging isn't scary ===== -->
+  <div class="section-title"><span class="eyebrow">Read</span><h2>Debugging isn't scary</h2></div>
+  <div class="prose">
+    <p>Everyone's code breaks, all the time. Debugging, finding and fixing what's wrong, is a normal part of the job, not a sign you've failed. Like any skill, it gets easier once you know your tools. Programming languages that need compiling stop and shout at you when something's wrong. HTML is different, and that makes it both easier and sneakier.</p>
+  </div>
+
+  <!-- ===== HTML and debugging ===== -->
+  <div class="section-title"><span class="eyebrow">Read</span><h2>HTML and debugging</h2></div>
+  <div class="prose">
+    <p>There are two kinds of error. A <strong>syntax error</strong> is a typo in the language itself: a missing closing tag, a missing quote. A <strong>logic error</strong> is valid code that does the wrong thing: an <code>&lt;h3&gt;</code> where you meant <code>&lt;h2&gt;</code>, a link to the wrong page.</p>
+    <p>HTML is <em>permissive</em>. When a browser meets a syntax error, it doesn't stop: it guesses what you meant and repairs it, following rules every browser shares. That's why broken pages often look fine. But the repair isn't always what you meant, different repairs can confuse screen readers, and a page that only works by luck will break the moment you add CSS or JavaScript.</p>
+    <pre class="snippet" data-lang="html">&lt;p&gt;This is &lt;strong&gt;badly &lt;em&gt;nested&lt;/strong&gt; text.&lt;/em&gt;&lt;/p&gt;</pre>
+  </div>
+
+  <!-- ===== Using the DOM inspector ===== -->
+  <div class="section-title"><span class="eyebrow">Read</span><h2>Using the DOM inspector</h2></div>
+  <div class="prose">
+    <p>The browser turns your HTML into a tree of elements called the DOM (Document Object Model). The <strong>DOM inspector</strong> in the browser's <span class="term">DevTools</span> shows that tree: not what you wrote, but what the browser built. Comparing the two shows you exactly where it had to guess.</p>
+    <p>To open it, right-click anything on a page and choose <strong>Inspect</strong>. The panel is called <em>Elements</em> in Chrome, Edge and Safari, and <em>Inspector</em> in Firefox.</p>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Play</span><h2>Your turn: study HTML in the DOM inspector</h2><p>This is MDN's debugging example, trail edition. Read the source, then look at the tree the browser built. Click an example to see one mistake at a time.</p></div>
+  <div class="two">
+    <div class="panel">
+      <div class="presets" id="dom-presets" role="group" aria-label="Examples">
+        <button class="btn" type="button" data-d="all" aria-pressed="true">The whole example</button>
+        <button class="btn" type="button" data-d="li" aria-pressed="false">Unclosed &lt;li&gt;</button>
+        <button class="btn" type="button" data-d="strong" aria-pressed="false">Unclosed &lt;strong&gt;</button>
+        <button class="btn" type="button" data-d="nest" aria-pressed="false">Bad nesting</button>
+        <button class="btn" type="button" data-d="quote" aria-pressed="false">Missing quote</button>
+      </div>
+      <label class="eyebrow" for="dom-src">Source</label>
+      <textarea class="src" id="dom-src" spellcheck="false" style="min-height:190px"></textarea>
+      <p class="hint" id="dom-note"></p>
+    </div>
+    <div class="panel inspector">
+      <div class="devtools-tabs" aria-hidden="true"><span class="on">Elements</span><span>Console</span><span>Network</span></div>
+      <ul class="tree" id="dom-tree" aria-label="The element tree the browser built"></ul>
+      <span class="eyebrow">What visitors see</span>
+      <div class="rendered" id="dom-out"></div>
+    </div>
+  </div>
+
+  <!-- ===== HTML validation ===== -->
+  <div class="section-title"><span class="eyebrow">Read</span><h2>HTML validation</h2></div>
+  <div class="prose">
+    <p>Reading the DOM tree works for small pages. For a whole page, use a validator: a program that checks your HTML against the rules and lists every problem. The standard one is the W3C Markup Validation Service at <a href="https://validator.w3.org/">validator.w3.org</a>. You can give it a URL, upload a file, or paste your code into <strong>Validate by Direct Input</strong>.</p>
+    <h3>Interpreting the error messages</h3>
+    <p>Validator messages are terse, but each gives a line number and points at the code. The common ones:</p>
+    <ul>
+      <li><em>Unclosed element <code>strong</code></em>: an opening tag with no closing tag.</li>
+      <li><em>End tag <code>strong</code> violates nesting rules</em>: tags closed in the wrong order.</li>
+      <li><em>Stray end tag <code>em</code></em>: a closing tag with nothing open to close.</li>
+      <li><em>End of file reached when inside an attribute value. Ignoring tag</em>: a missing closing quote.</li>
+      <li><em>An <code>img</code> element must have an <code>alt</code> attribute</em>.</li>
+    </ul>
+    <div class="callout tip"><p class="callout-title">Tip</p><p>Fix the first error, then validate again. One missing quote or tag can cause a dozen errors after it, and they all disappear together.</p></div>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Play</span><h2>Validating an HTML document</h2><p>A small validator that checks the most common mistakes, with messages worded like the W3C validator's. Edit the code until it's clean.</p></div>
+  <div class="two">
+    <div class="panel">
+      <label class="eyebrow" for="val-src">Your HTML</label>
+      <textarea class="src" id="val-src" spellcheck="false" style="min-height:220px"></textarea>
+      <div class="src-lines" id="val-lines" aria-hidden="true"></div>
+    </div>
+    <div class="panel"><span class="eyebrow">Messages</span><ul class="msgs" id="val-out" aria-live="polite"></ul>
+      <p class="hint">This checks a handful of common errors. Before you publish, run your real pages through validator.w3.org.</p></div>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Practice</span><h2>Fix the trail report</h2><p>The browser repairs this page well enough to read. Fix it so it doesn't have to.</p></div>
+  <div id="ex-debug"></div>
+
+  <div class="section-title"><span class="eyebrow">Practice</span><h2>Act on the validator's messages</h2><p>These are the messages the validator gave for this snippet. Fix each one.</p></div>
+  <div id="ex-messages"></div>
+
+  <section class="notes">
+    <div class="panel">
+      <h2>Key ideas</h2>
+      <ul>
+        <li>Syntax errors break the language's rules; logic errors are valid code that does the wrong thing.</li>
+        <li>Browsers repair broken HTML instead of stopping, so errors hide.</li>
+        <li>The DOM inspector shows what the browser built, not what you wrote.</li>
+        <li>A validator lists every syntax error, with line numbers.</li>
+        <li>Fix the first error, then validate again.</li>
+      </ul>
+    </div>
+    <div class="panel mistake">
+      <h2>Common mistakes</h2>
+      <ul>
+        <li>Assuming the page is fine because it looks fine.</li>
+        <li>Fixing errors from the bottom of the list up. Later errors are often caused by earlier ones.</li>
+        <li>Editing the DOM inspector and forgetting the change isn't saved to your file.</li>
+        <li>Missing a closing quote, which can swallow a whole tag or link.</li>
+      </ul>
+    </div>
+  </section>
+
+  <div class="section-title"><span class="eyebrow">Check yourself</span><h2>Quick check</h2></div>
+  <div class="panel quiz" id="quiz"></div>
+
+  <footer class="page-foot" data-book-nav><a href="book-2.html">← Contents</a></footer>
+</main>
+
+<script>
+  const $ = (id) => document.getElementById(id);
+  const esc = (s) => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+  const VOID = new Set(["area", "base", "br", "col", "embed", "hr", "img", "input", "link", "meta", "source", "track", "wbr"]);
+  const OPTIONAL_END = new Set(["p", "li", "dt", "dd", "option", "tr", "td", "th", "thead", "tbody", "tfoot", "html", "head", "body"]);
+
+  // --- DOM inspector ---
+  const DOM = {
+    all: `<h1>Trail report</h1>
+<p>What went wrong on Saturday?
+<ul>
+  <li><strong>Muddy: the lower trail was ankle deep
+  <li>Busy: the lot was full by 8am
+  <li>Closed: the <em>upper loop</strong> was shut</em>
+</ul>
+<p>Check the <a href="https://www.bouldercolorado.gov/trails>city's trail page</a> first.</p>`,
+    li: "<ul>\n  <li>Muddy\n  <li>Busy\n  <li>Closed\n</ul>",
+    strong: "<p><strong>Muddy: the lower trail was ankle deep</p>\n<p>Busy: the lot was full by 8am</p>",
+    nest: "<p>The <em>upper loop</strong> was shut</em></p>",
+    quote: '<p>Check the <a href="https://www.bouldercolorado.gov/trails>city\'s trail page</a> first.</p>\n<p>See you Saturday!</p>',
+  };
+  const DOM_NOTES = {
+    all: "Everything in the source is still there, but look at what moved: the strong spreads into every list item, and the link has vanished.",
+    li: "The browser closes each <li> when the next one starts. The tree is fine, but it's luck: the validator still notes the implied end tags.",
+    strong: "The unclosed <strong> is copied into the next paragraph, so it's bold too. Formatting leaks until something closes it.",
+    nest: "The browser closes and reopens elements to untangle the overlap. The result isn't quite what you wrote.",
+    quote: "Without the closing quote, the href swallows everything up to the next quote mark, and the link text disappears.",
+  };
+  function treeHTML(node) {
+    return [...node.childNodes].map((n) => {
+      if (n.nodeType === 3) { const t = n.textContent.replace(/\s+/g, " ").trim(); return t ? `<li><span class="txt">"${esc(t)}"</span></li>` : ""; }
+      if (n.nodeType !== 1) return "";
+      const tag = n.tagName.toLowerCase(), kids = treeHTML(n);
+      const attrs = [...n.attributes].map((a) => ` <span class="attr">${esc(a.name)}</span>=<span class="str">"${esc(a.value)}"</span>`).join("");
+      return `<li>&lt;<span class="tag-name">${tag}</span>${attrs}&gt;${kids ? `<ul>${kids}</ul>` : ""}</li>`;
+    }).join("");
+  }
+  let domKey = "all";
+  function dom() {
+    const body = new DOMParser().parseFromString(`<!doctype html><body>${$("dom-src").value}`, "text/html").body;
+    $("dom-tree").innerHTML = `<li>&lt;<span class="tag-name">body</span>&gt;<ul>${treeHTML(body)}</ul></li>`;
+    body.querySelectorAll("a").forEach((a) => a.addEventListener("click", (e) => e.preventDefault()));
+    $("dom-out").replaceChildren(...body.childNodes);
+    $("dom-note").textContent = $("dom-src").value === DOM[domKey] ? DOM_NOTES[domKey] : "";
+  }
+  $("dom-src").addEventListener("input", dom);
+  $("dom-presets").addEventListener("click", (e) => {
+    const b = e.target.closest("[data-d]");
+    if (!b) return;
+    domKey = b.dataset.d;
+    $("dom-src").value = DOM[domKey];
+    document.querySelectorAll("#dom-presets .btn").forEach((x) => x.setAttribute("aria-pressed", String(x === b)));
+    dom();
+  });
+  $("dom-src").value = DOM.all;
+  dom();
+
+  // --- A small validator: a tag stack, plus a few attribute rules ---
+  function validate(src) {
+    const msgs = [], stack = [], ids = new Map();
+    const lineAt = (i) => src.slice(0, i).split("\n").length;
+    // Scan tag by tag, tracking quotes, so a missing closing quote can be reported where it starts.
+    const re = /<!--[\s\S]*?-->|<(\/?)([a-zA-Z][a-zA-Z0-9-]*)/g;
+    let m;
+    while ((m = re.exec(src))) {
+      if (m[0].startsWith("<!--")) continue;
+      const [, close, rawName] = m, name = rawName.toLowerCase(), line = lineAt(m.index);
+      let k = re.lastIndex, quote = null, runaway = false;
+      for (; k < src.length; k++) {
+        const c = src[k];
+        if (quote) { if (c === quote) quote = null; else if (c === "<") runaway = true; }
+        else if (c === '"' || c === "'") quote = c;
+        else if (c === ">") break;
+      }
+      const attrs = src.slice(re.lastIndex, k);
+      if (runaway) msgs.push(["err", line, `An attribute value in <${name}> runs into other tags. A closing quote is probably missing.`]);
+      if (k >= src.length) { msgs.push(["err", line, "End of file reached when inside an attribute value. Ignoring tag."]); break; }
+      re.lastIndex = k + 1;
+      if (close) {
+        const at = stack.map((s) => s.name).lastIndexOf(name);
+        if (at === -1) { if (!OPTIONAL_END.has(name) || name !== "p") msgs.push(["err", line, `Stray end tag ${name}.`]); else msgs.push(["err", line, "No p element in scope but a p end tag seen."]); continue; }
+        const open = stack.slice(at + 1).filter((s) => !OPTIONAL_END.has(s.name));
+        if (open.length) msgs.push(["err", line, `End tag ${name} violates nesting rules: <${open[open.length - 1].name}> (line ${open[open.length - 1].line}) is still open.`]);
+        stack.length = at;
+        continue;
+      }
+      // Starting a new li/dt/dd/p implicitly closes an open one of the same kind.
+      if (["li", "dt", "dd", "p"].includes(name)) {
+        const at = stack.map((s) => s.name).lastIndexOf(name);
+        if (at !== -1 && !stack.slice(at + 1).some((s) => ["ul", "ol", "dl", "div", "section", "article", "blockquote"].includes(s.name))) {
+          const open = stack.slice(at + 1).filter((s) => !OPTIONAL_END.has(s.name));
+          if (open.length) msgs.push(["err", line, `End tag ${name} implied, but there were open elements (<${open.map((s) => s.name).join(">, <")}>).`]);
+          stack.length = at;
+        }
+      }
+      const idm = attrs.match(/\sid\s*=\s*["']?([^"'\s>]+)/i);
+      if (idm) { if (ids.has(idm[1])) msgs.push(["err", line, `Duplicate ID ${idm[1]} (first used on line ${ids.get(idm[1])}).`]); else ids.set(idm[1], line); }
+      if (name === "img" && !/\salt(\s|=|$)/i.test(attrs)) msgs.push(["err", line, "An img element must have an alt attribute."]);
+      if (/\s[a-z-]+=[^"'\s>]+\s+[a-z]+(?=[\s>]|$)/i.test(attrs) && !/\s[a-z-]+=[^"'\s>]+\s+[a-z-]+=/i.test(attrs)) msgs.push(["warn", line, `An attribute value in <${name}> has no quotes and seems to contain a space.`]);
+      if (!VOID.has(name)) stack.push({ name, line });
+    }
+    stack.filter((s) => !OPTIONAL_END.has(s.name)).forEach((s) => msgs.push(["err", s.line, `Unclosed element ${s.name}.`]));
+    return msgs.sort((a, b) => a[1] - b[1]);
+  }
+  function runValidator() {
+    const src = $("val-src").value, msgs = validate(src), bad = new Set(msgs.map((x) => x[1]));
+    $("val-lines").innerHTML = src.split("\n").map((l, i) => `<div data-n="${i + 1}" class="${bad.has(i + 1) ? "hit" : ""}">${esc(l) || " "}</div>`).join("");
+    $("val-out").innerHTML = msgs.length
+      ? msgs.map(([c, line, t]) => `<li class="${c}"><span class="where">${c === "err" ? "Error" : "Warning"} · line ${line}</span><span>${esc(t)}</span></li>`).join("")
+      : '<li class="ok">✓ No errors found by these checks.</li>';
+  }
+  $("val-src").addEventListener("input", runValidator);
+  $("val-src").value = DOM.all + '\n<img src="mud.jpg">';
+  runValidator();
+</script>
+<script>
+  makeExercise(document.getElementById("ex-debug"), {
+    title: "Trail report",
+    task: `<p>Fix every syntax error, so the page means what it was meant to:</p>
+    <ol>
+      <li>Close the first paragraph.</li>
+      <li>Close every list item.</li>
+      <li>Only <strong>Muddy:</strong> should be strong.</li>
+      <li>In the last item, only <em>upper loop</em> should be emphasized, with the tags nested correctly.</li>
+      <li>Fix the link's missing quote, so it goes to the city's trail page.</li>
+    </ol>`,
+    html: `<h1>Trail report</h1>
+<p>What went wrong on Saturday?
+<ul>
+  <li><strong>Muddy: the lower trail was ankle deep
+  <li>Busy: the lot was full by 8am
+  <li>Closed: the <em>upper loop</strong> was shut</em>
+</ul>
+<p>Check the <a href="https://www.bouldercolorado.gov/trails>city's trail page</a> first.</p>`,
+    solution: { html: `<h1>Trail report</h1>
+<p>What went wrong on Saturday?</p>
+<ul>
+  <li><strong>Muddy:</strong> the lower trail was ankle deep</li>
+  <li>Busy: the lot was full by 8am</li>
+  <li>Closed: the <em>upper loop</em> was shut</li>
+</ul>
+<p>Check the <a href="https://www.bouldercolorado.gov/trails">city's trail page</a> first.</p>` },
+    hints: ["Every <li> and <p> gets its closing tag.", "Close the strong right after “Muddy:”, and delete the stray </strong> in the last item.", "The href needs its closing quote: href=\"https://www.bouldercolorado.gov/trails\"."],
+    checks: [
+      { label: "The first paragraph is closed", test: ({ code }) => /<p>What went wrong on Saturday\?<\/p>/.test(code.html) },
+      { label: "All three list items are closed", test: ({ code }) => (code.html.match(/<\/li>/g) || []).length === 3 },
+      { label: "Only “Muddy:” is strong", test: ({ $$ }) => $$("strong").length === 1 && $$("strong")[0].textContent.trim() === "Muddy:" },
+      { label: "Only “upper loop” is emphasized, nested correctly", test: ({ $$, code }) => $$("em").length === 1 && $$("em")[0].textContent.trim() === "upper loop" && !/<\/strong>\s*was shut/.test(code.html) },
+      { label: "The link goes to the city's trail page", test: ({ $ }) => $("a").getAttribute("href") === "https://www.bouldercolorado.gov/trails" && $("a").textContent.trim() === "city's trail page" },
+    ],
+  });
+
+  makeExercise(document.getElementById("ex-messages"), {
+    title: "Three messages",
+    task: `<p>The validator reported:</p>
+    <ul>
+      <li><code>Line 2: Duplicate ID mesa.</code> The second section is about Royal Arch: give it <code>id="royal-arch"</code>.</li>
+      <li><code>Line 3: An img element must have an alt attribute.</code> Describe the photo: it shows a sandstone arch.</li>
+      <li><code>Line 4: Stray end tag em.</code> Remove the closing tag that has nothing to close.</li>
+    </ul>`,
+    html: `<section id="mesa"><h2>Mesa Trail</h2></section>
+<section id="mesa"><h2>Royal Arch</h2>
+<img src="arch.jpg" width="300" height="200">
+<p>Steep, but worth it.</em></p>
+</section>`,
+    solution: { html: `<section id="mesa"><h2>Mesa Trail</h2></section>
+<section id="royal-arch"><h2>Royal Arch</h2>
+<img src="arch.jpg" alt="A sandstone arch framed by pine trees" width="300" height="200">
+<p>Steep, but worth it.</p>
+</section>` },
+    hints: ["ids must be unique on a page.", "alt goes inside the img tag: alt=\"…\".", "Delete </em>: there's no <em> to close."],
+    checks: [
+      { label: "The second section's id is royal-arch", test: ({ $$ }) => $$("section").map((s) => s.id).join("|") === "mesa|royal-arch" },
+      { label: "The image has alt text", test: ({ $ }) => ($("img").getAttribute("alt") || "").trim().length > 3 },
+      { label: "There's no stray </em>", test: ({ code }) => !/<\/em>/.test(code.html) },
+    ],
+  });
+
+  makeQuiz(document.getElementById("quiz"), [
+    { id: "q1", q: "Your page has an h3 where you meant an h2. What kind of error is that?", opts: ["A logic error", "A syntax error", "Not an error"], a: 0, why: "The code is valid HTML; it just doesn't do what you meant." },
+    { id: "q2", q: "Why does broken HTML often still display?", opts: ["Browsers repair it instead of stopping", "HTML has no rules", "The validator fixes it"], a: 0, why: "HTML is permissive: browsers guess and repair, which hides mistakes." },
+    { id: "q3", q: "What does the DOM inspector show you?", opts: ["The elements the browser actually built", "Your original HTML file, unchanged", "A list of errors"], a: 0, why: "It shows the DOM: the tree after the browser has parsed, and repaired, your HTML." },
+    { id: "q4", q: "The validator lists 15 errors. Where should you start?", opts: ["The first one, then validate again", "The last one", "Whichever looks easiest"], a: 0, why: "Early errors often cause later ones. Fixing the first can clear many at once." },
+    { id: "q5", q: "What does “Stray end tag em” mean?", opts: ["There's a closing </em> with no open <em> to close", "An <em> was never closed", "em isn't a real element"], a: 0, why: "A stray end tag closes something that isn't open." },
+    { id: "q6", q: "A link and all the text after it disappear. What's the likely cause?", opts: ["A missing closing quote in the href", "A missing alt attribute", "Too many paragraphs"], a: 0, why: "Without the closing quote, the attribute value swallows everything up to the next quote mark." },
+  ]);
+</script>
+</body>
+</html>

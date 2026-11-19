@@ -1,0 +1,510 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Responsive Images · Core Web Development</title>
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="core.css">
+<style>
+  .stage.scroll { overflow-x: auto; min-height: 0; }
+  .container { border: 2px dashed var(--prop); border-radius: 8px; padding: 8px; position: relative; transition: width 0.2s; }
+  .container .lbl { font: 600 0.75rem var(--font-code); font-variation-settings: "MONO" 1; color: var(--prop); display: block; margin-bottom: 6px; }
+  .container img { display: block; border-radius: 4px; }
+  .status { font-size: 0.93rem; padding: 8px 10px; border-radius: 6px; }
+  .status.good { background: var(--good-soft); color: var(--good); } .status.bad { background: var(--bad-soft); color: var(--bad); }
+  .fit-box { border: 2px dashed var(--prop); border-radius: 6px; background: repeating-conic-gradient(var(--stage) 0 25%, var(--panel) 0 50%) 0 0 / 16px 16px; margin: 0 auto; transition: width 0.2s, height 0.2s; max-width: 100%; }
+  .fit-box img { width: 100%; height: 100%; display: block; }
+  .shape-row { display: grid; place-items: center; min-height: 340px; }
+  .cands { display: grid; gap: 8px; }
+  .cand { display: grid; grid-template-columns: 70px 1fr 70px; gap: 10px; align-items: center; padding: 8px 10px; border-radius: 6px; border: 1px solid var(--line); background: var(--panel); font: 0.88rem var(--font-code); font-variation-settings: "MONO" 1; }
+  .cand .bar { height: 10px; border-radius: 3px; background: var(--line); }
+  .cand.pick { border-color: var(--cobalt); box-shadow: inset 4px 0 0 var(--cobalt); }
+  .cand.pick .bar { background: var(--cobalt); }
+  .cand span:last-child { text-align: right; color: var(--muted); font-variant-numeric: tabular-nums; }
+  .saving { font: 800 1.4rem var(--font-display); color: var(--good); }
+
+
+  .mock { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 10px; display: grid; gap: 8px; }
+  .mock .cards { display: grid; gap: 8px; }
+  .mock .cards i { display: block; aspect-ratio: 3 / 2; border-radius: 4px; background: linear-gradient(170deg, var(--item-2) 0 45%, var(--item-3) 45%); }
+  .mock .cards i:first-child { outline: 3px solid var(--cobalt); outline-offset: 2px; }
+  .mock .bar { height: 10px; border-radius: 3px; background: var(--line); }
+  .facts { display: grid; grid-template-columns: max-content 1fr; gap: 4px 14px; font: 0.88rem var(--font-code); font-variation-settings: "MONO" 1; }
+  .facts dt { color: var(--muted); } .facts dd { margin: 0; color: var(--ink); }
+  .facts dd.bad { color: var(--bad); } .facts dd.good { color: var(--good); }
+  .cands { display: grid; gap: 6px; }
+  .cand { display: grid; grid-template-columns: 110px 1fr 70px; gap: 10px; align-items: center; padding: 6px 10px; border-radius: 6px; border: 1px solid var(--line); background: var(--panel); font: 0.85rem var(--font-code); font-variation-settings: "MONO" 1; }
+  .cand .bar { height: 8px; border-radius: 3px; background: var(--line); }
+  .cand.pick { border-color: var(--cobalt); box-shadow: inset 4px 0 0 var(--cobalt); } .cand.pick .bar { background: var(--cobalt); }
+  .cand span:last-child { text-align: right; color: var(--muted); }
+
+  .art { display: grid; grid-template-columns: minmax(0, 1fr); place-items: center; min-height: 300px; }
+  .art-frame { border: 2px dashed var(--prop); border-radius: 8px; padding: 8px; transition: width 0.2s; max-width: 100%; }
+  .art-frame .lbl { font: 600 0.75rem var(--font-code); font-variation-settings: "MONO" 1; color: var(--prop); display: block; margin-bottom: 6px; }
+  .art-frame svg { display: block; width: 100%; height: auto; border-radius: 4px; }
+  .snippet .on { background: var(--cobalt-soft); outline: 1px solid var(--cobalt); border-radius: 3px; }
+  .snippet .off, .snippet .off * { color: var(--muted) !important; }
+
+  .lazy-wrap { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px; }
+  @media (max-width: 760px) { .lazy-wrap { grid-template-columns: 1fr; } }
+  .scroller { height: 340px; overflow-y: auto; background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 10px; display: grid; gap: 10px; align-content: start; }
+  .scroller .lbl { font: 600 0.75rem var(--font-code); font-variation-settings: "MONO" 1; color: var(--muted); }
+  .post { display: grid; grid-template-columns: 120px 1fr; gap: 10px; align-items: center; }
+  .post .ph { aspect-ratio: 3 / 2; border-radius: 4px; background: repeating-linear-gradient(45deg, var(--stage) 0 8px, var(--panel) 8px 16px); border: 1px dashed var(--line); }
+  .post .ph.loaded { border: 0; background: linear-gradient(170deg, var(--c1) 0 45%, var(--c2) 45%); }
+  .post b { display: block; font-size: 0.95rem; } .post small { color: var(--muted); }
+  .netlog { font: 0.85rem var(--font-code); font-variation-settings: "MONO" 1; display: grid; gap: 4px; max-height: 260px; overflow-y: auto; }
+  .total { font: 800 1.4rem var(--font-display); color: var(--cobalt); }
+
+  .dx-row { display: flex; gap: 16px; align-items: center; flex-wrap: wrap; }
+  .dx-row img { display: block; width: 160px; height: 100px; border-radius: 8px; }
+  .dx-tbl { border-collapse: collapse; font: 0.85rem var(--font-code); font-variation-settings: "MONO" 1; }
+  .dx-tbl td { padding: 3px 10px; border-bottom: 1px solid var(--line); }
+  .dx-tbl tr.pick td { color: var(--cobalt); font-weight: 700; }
+</style>
+<script src="book-2.js"></script>
+<script src="js/progress.js"></script>
+<script src="js/chrome.js"></script>
+<script src="js/quiz.js"></script>
+</head>
+<body>
+<main class="wrap">
+  <nav class="crumbs" aria-label="Site"><a class="crumb" href="book-2.html">← Contents</a><a class="crumb" href="glossary.html">Glossary</a></nav>
+  <header class="page-head">
+    <h1>Responsive Images</h1>
+    <p class="lede">CSS can make an image fit any screen, but it can't change which file the browser downloads. HTML can: offer several sizes with <code>srcset</code> and <code>sizes</code>, a different crop with <code>&lt;picture&gt;</code>, and skip images nobody scrolls to with <code>loading="lazy"</code>.</p>
+    <div class="objectives">
+      <p class="callout-title">You'll be able to</p>
+      <ul>
+        <li>Explain the two problems responsive images solve: resolution switching and art direction.</li>
+        <li>Offer several file sizes with <code>srcset</code> and <code>w</code> descriptors, and describe the layout with <code>sizes</code>.</li>
+        <li>Offer sharper copies for high-density screens with <code>x</code> descriptors.</li>
+        <li>Change the crop on small screens with <code>&lt;picture&gt;</code> and <code>&lt;source&gt;</code>, and lazy-load images further down the page.</li>
+      </ul>
+    </div>
+  </header>
+
+  <div class="section-title"><span class="eyebrow">Read</span><h2>Why responsive images?</h2></div>
+  <div class="prose">
+<p>Say your page has a big, wide photo of a trail. On a laptop it looks great. On a phone, two things go wrong:</p>
+    <ul>
+      <li><strong>The file is too big.</strong> CSS like <code>max-width: 100%</code> shrinks how the image is <em>displayed</em>, but the phone still downloads the full 1600px file, which wastes data and time. Sending a smaller file to smaller screens is called <strong>resolution switching</strong>.</li>
+      <li><strong>The picture doesn't work small.</strong> A wide landscape shrunk to phone size turns the interesting part into a speck. Showing a different crop is called <strong><span class="term">art direction</span></strong>.</li>
+    </ul>
+    <p>For simple graphics like logos and icons, an SVG solves both: it's small and sharp at any size. For photos, HTML gives you <code>srcset</code>, <code>sizes</code> and <code>&lt;picture&gt;</code>.</p>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Play</span><h2>CSS can shrink an image, but…</h2><p>This photo is 800 × 500 pixels. Make the container narrower and see what each setting does. However small it shows, the browser downloaded all 800 pixels.</p></div>
+  <section class="playground">
+    <div class="panel controls">
+      <div class="control"><label for="cw">container width</label><input id="cw" type="range" min="200" max="900" step="10" value="420"><span class="readout" id="cw-out"></span></div>
+      <label class="control row" for="mw" style="cursor:pointer"><span class="prop" style="font:600 0.85rem var(--font-code);font-variation-settings:'MONO' 1">max-width: 100%</span><input id="mw" type="checkbox"></label>
+      <label class="control row" for="ha" style="cursor:pointer"><span class="prop" style="font:600 0.85rem var(--font-code);font-variation-settings:'MONO' 1">height: auto</span><input id="ha" type="checkbox"></label>
+      <p class="hint">The img tag has <code>width="800" height="500"</code> attributes, which you should always include.</p>
+    </div>
+    <div class="stage-col">
+      <div class="stage scroll"><div class="container" id="c1"><span class="lbl" id="c1-lbl"></span><img id="img1" alt="Hiker on a ridge above a valley" width="800" height="500"></div></div>
+      <div class="status" id="status1" aria-live="polite"></div>
+    </div>
+  </section>
+
+  <div class="section-title"><span class="eyebrow">Read</span><h2>How do you create responsive images?</h2></div>
+  <div class="prose">
+<h3>Resolution switching: Different sizes</h3>
+    <p>Make several copies of the image at different widths, and list them in <span class="term">srcset</span>. Each entry is a file name and its real width in pixels, written with a <code>w</code>:</p>
+    <pre class="snippet" data-lang="html">&lt;img src="arch-800.jpg"
+     srcset="arch-400.jpg 400w, arch-800.jpg 800w, arch-1600.jpg 1600w"
+     alt="The sandstone arch at the top of the trail"&gt;</pre>
+    <p>The browser works out how many real pixels it needs (including the screen's pixel density) and downloads the smallest file that will look sharp. <code>src</code> stays as the fallback for very old browsers.</p>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Play</span><h2>Send the right file with srcset</h2><p>Change how wide the image shows and the screen's pixel density. The browser picks the smallest file that's big enough.</p></div>
+  <section class="playground">
+    <div class="panel controls">
+      <div class="control"><label for="dw">image shows at (CSS px)</label><input id="dw" type="range" min="200" max="1200" step="20" value="380"><span class="readout" id="dw-out"></span></div>
+      <div class="control"><label>screen pixel density</label><div class="seg" id="ri-dpr">
+        <button class="btn" data-d="1">1x</button><button class="btn" data-d="2" aria-pressed="true">2x</button><button class="btn" data-d="3">3x</button></div></div>
+      <p class="hint">Most phones are 2x or 3x: each CSS pixel uses 2 or 3 real pixels across.</p>
+    </div>
+    <div class="stage-col">
+      <div class="panel" style="display:grid;gap:10px">
+        <span class="eyebrow" id="need"></span>
+        <div class="cands" id="ri-cands"></div>
+      </div>
+      <div class="panel" style="display:grid;gap:4px" aria-live="polite"><span class="saving" id="saving"></span><span class="hint" id="saving-note"></span></div>
+    </div>
+  </section>
+
+  <div class="prose">
+<p>There's a catch. The browser picks the file <em>before</em> your CSS has loaded, so it doesn't know your layout. Unless you say otherwise, it assumes the image fills the whole window. The <span class="term">sizes</span> attribute tells it how wide the image will really be:</p>
+    <pre class="snippet" data-lang="html">&lt;img srcset="mesa-400.jpg 400w, mesa-800.jpg 800w, mesa-1600.jpg 1600w"
+     sizes="(width &lt;= 600px) 100vw, 33vw"
+     src="mesa-800.jpg" alt="Mesa Trail at sunrise"&gt;</pre>
+    <p>Each part of <code>sizes</code> is a media condition and a width (a length or <code>vw</code>, never a percentage). The first condition that matches wins, and the last value, with no condition, is the default. Here: full width on screens up to 600px, a third of the window otherwise.</p>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Play</span><h2>Tell the browser the size with sizes</h2><p>This layout shows 1, 2 or 3 cards per row. Without sizes, the browser assumes each card is the full window wide.</p></div>
+  <section class="playground">
+    <div class="panel controls">
+      <div class="control"><label for="vw">window width</label><input id="vw" type="range" min="320" max="1600" step="20" value="1280"><span class="readout" id="vw-out"></span></div>
+      <div class="control"><label for="sz">sizes</label>
+        <select id="sz">
+          <option value="none">(no sizes attribute)</option>
+          <option value="100vw">100vw</option>
+          <option value="2col">(min-width: 700px) 50vw, 100vw</option>
+          <option value="3col" selected>(min-width: 1100px) 33vw, (min-width: 700px) 50vw, 100vw</option>
+        </select></div>
+      <div class="control"><label>screen pixel density</label><div class="seg" id="dpr"><button class="btn" data-d="1" aria-pressed="true">1x</button><button class="btn" data-d="2">2x</button></div></div>
+      <p class="hint">Read <code>sizes</code> left to right: the first media condition that's true wins, and the last value has no condition, so it's the default.</p>
+    </div>
+    <div class="stage-col">
+      <div class="mock" aria-hidden="true"><div class="bar" style="width:40%"></div><div class="cards" id="cards"></div></div>
+      <div class="panel"><dl class="facts" id="facts"></dl></div>
+      <div class="cands" id="cands"></div>
+      <pre class="snippet" id="sz-code"></pre>
+    </div>
+  </section>
+
+  <div class="prose">
+<h3>Resolution switching: Same size, different resolutions</h3>
+    <p>Some images always show at the same size, like a 160px-wide logo. They don't need <code>sizes</code>; they just need sharper copies for high-density screens, where each CSS pixel is made of 2 or 3 real pixels. Use <code>x</code> descriptors:</p>
+    <pre class="snippet" data-lang="html">&lt;img srcset="logo-160.png, logo-320.png 2x, logo-480.png 3x"
+     src="logo-160.png" alt="Trailhead"&gt;</pre>
+    <p>The first entry has no descriptor, so it counts as <code>1x</code>. Keep the display size fixed in CSS (<code>width: 160px</code>).</p>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Play</span><h2>Which copy gets picked?</h2><p>This image has 1x, 2x and 3x copies. Start with your own screen, then try other densities. (Zooming the page changes your pixel density, too.)</p></div>
+  <section class="playground">
+    <div class="panel" style="display:grid;gap:8px;align-content:start">
+      <span class="eyebrow">Pixel density</span>
+      <div class="seg" id="dx-seg" role="group" aria-label="Pixel density"><button class="btn" data-d="real">your screen</button><button class="btn" data-d="1">1x</button><button class="btn" data-d="2">2x</button><button class="btn" data-d="3">3x</button></div>
+      <p id="dx-out" aria-live="polite"></p>
+      <table class="dx-tbl" id="dx-tbl"></table>
+    </div>
+    <div class="dx-row"><img id="dx-img" alt="A sample logo; its text says which copy loaded"><pre class="snippet" style="margin:0">&lt;img srcset="logo-1x.svg,
+             logo-2x.svg 2x,
+             logo-3x.svg 3x"
+     src="logo-1x.svg" alt="…"&gt;</pre></div>
+  </section>
+
+  <div class="prose">
+<h3>Art direction</h3>
+    <p>When a smaller copy isn't enough and you need a different crop, wrap the image in <span class="term">picture</span>. Each <code>&lt;source&gt;</code> has a <code>media</code> condition and a <code>srcset</code>; the browser uses the first one that matches, and falls back to the <code>&lt;img&gt;</code>:</p>
+    <pre class="snippet" data-lang="html">&lt;picture&gt;
+  &lt;source media="(width &lt; 800px)" srcset="arch-square.jpg"&gt;
+  &lt;source media="(width &gt;= 800px)" srcset="arch-wide.jpg"&gt;
+  &lt;img src="arch-wide.jpg" alt="Royal Arch above the trees"&gt;
+&lt;/picture&gt;</pre>
+    <p>The <code>&lt;img&gt;</code> is required: it's what actually shows the picture, it holds the <code>alt</code> text, and your CSS targets it. Use <code>media</code> on sources only for art direction; for plain size switching, <code>srcset</code> and <code>sizes</code> let the browser make smarter choices.</p>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Play</span><h2>Change the crop with &lt;picture&gt;</h2><p>Change the window width and watch which source the browser uses.</p></div>
+  <section class="playground">
+    <div class="panel controls">
+      <div class="control"><label for="aw">window width</label><input id="aw" type="range" min="320" max="1200" step="10" value="420"><span class="readout" id="aw-out"></span></div>
+      <p class="hint">The browser checks each <code>&lt;source&gt;</code> in order and uses the first one whose <code>media</code> matches. If none match, it uses the <code>&lt;img&gt;</code>.</p>
+      <p class="hint">The <code>&lt;img&gt;</code> is required. It holds the <code>alt</code> text, and any CSS you write targets the <code>img</code>, not the <code>picture</code>.</p>
+    </div>
+    <div class="stage-col">
+      <div class="stage art"><div class="art-frame" id="art-frame"><span class="lbl" id="art-lbl"></span><div id="art"></div></div></div>
+      <pre class="snippet" id="pic-code"></pre>
+    </div>
+  </section>
+
+  <div class="prose">
+<h3>Why can't we just do this using CSS or JavaScript?</h3>
+    <p>Because they're too late. To show pages quickly, browsers start downloading images as soon as they see an <code>&lt;img&gt;</code> tag, using a <em>preload scanner</em>, before the CSS and JavaScript have even arrived. By the time a script could choose a smaller file, the big one is already downloading. Putting the choices in the HTML lets the browser choose right the first time.</p>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Read</span><h2>Lazy loading</h2></div>
+  <div class="prose">
+<p>One more HTML attribute saves data on long pages. <code>loading="lazy"</code> waits to download an image until the visitor scrolls near it. On a long gallery, people who never scroll to the bottom never download the images there. This is called <span class="term">lazy loading</span>.</p>
+    <div class="callout warn"><p class="callout-title">Watch out</p><p>Don't lazy-load the big image at the top of the page. It's the first thing visitors see, so it should start downloading as early as possible. And keep <code>width</code> and <code>height</code> on lazy images so the page doesn't jump when they arrive.</p></div>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Play</span><h2>Skip what nobody sees with loading="lazy"</h2><p>Scroll the page on the left and watch the network log.</p></div>
+  <section class="playground">
+    <div class="panel controls">
+      <div class="control"><label>loading</label><div class="seg" id="mode"><button class="btn" data-m="eager">eager (default)</button><button class="btn" data-m="lazy" aria-pressed="true">lazy</button></div></div>
+      <p class="hint">The first image is above the fold, so it is always loaded right away. Lazy-loading it would only make the page feel slower.</p>
+      <button class="btn" id="reset" style="justify-self:start">Reload the page</button>
+    </div>
+    <div class="lazy-wrap">
+      <div class="scroller" id="scroller" aria-label="Scrollable sample page"><span class="lbl">trailclub.github.io/hikes/</span></div>
+      <div class="panel" style="display:grid;gap:8px;align-content:start"><span class="eyebrow">Downloaded so far</span><span class="total" id="total"></span><div class="netlog" id="netlog" aria-live="polite"></div></div>
+    </div>
+  </section>
+
+  <div class="section-title"><span class="eyebrow">Read</span><h2>Implementing your own responsive images</h2></div>
+  <div class="prose">
+<p>For your own projects: export each photo at two or three widths (for example 400, 800 and 1600 pixels), list them in <code>srcset</code>, and add <code>sizes</code> if the image isn't full width. If a photo needs a different crop on phones, make a tighter crop and offer it with <code>&lt;picture&gt;</code>. In CSS, keep <code>img { max-width: 100%; height: auto; }</code>.</p>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Practice</span><h2>Make the images fit</h2><p>A big photo breaks the layout and an avatar gets squashed. Fix both, and offer smaller files.</p></div>
+  <div id="ex-img"></div>
+
+  <div class="section-title"><span class="eyebrow">Practice</span><h2>Send the right image</h2><p>Tell the browser how big one image is, swap the crop of another, and lazy-load the third.</p></div>
+  <div id="ex-picture"></div>
+
+  <section class="notes">
+    <div class="panel">
+      <h2>Key ideas</h2>
+      <ul>
+        <li>CSS shrinks how an image is displayed; only HTML can change which file is downloaded.</li>
+        <li><code>srcset</code> with <code>w</code> descriptors (<code>arch-800.jpg 800w</code>) plus <code>sizes</code> lets the browser pick the smallest sharp file.</li>
+        <li><code>x</code> descriptors (<code>logo-320.png 2x</code>) suit images that always show at one size.</li>
+        <li><code>&lt;picture&gt;</code> with <code>&lt;source media&gt;</code> changes the crop (art direction); the <code>&lt;img&gt;</code> inside is required.</li>
+        <li><code>loading="lazy"</code> on images further down the page, never the first one.</li>
+      </ul>
+    </div>
+    <div class="panel mistake">
+      <h2>Common mistakes</h2>
+      <ul>
+        <li>Leaving out <code>sizes</code> with <code>w</code> descriptors, so a small card image downloads at full-window size.</li>
+        <li>Using a percentage in <code>sizes</code>. It takes lengths or <code>vw</code>.</li>
+        <li>Forgetting the <code>&lt;img&gt;</code> inside <code>&lt;picture&gt;</code>. Without it, nothing shows.</li>
+        <li>Uploading a 4000px photo straight from a phone for something shown 400px wide.</li>
+      </ul>
+    </div>
+  </section>
+
+  <div class="section-title"><span class="eyebrow">Check yourself</span><h2>Quick check</h2></div>
+  <div class="panel quiz" id="quiz"></div>
+
+  <footer class="page-foot" data-book-nav><a href="book-2.html">← Contents</a></footer>
+</main>
+
+<script>
+(() => {
+  const $ = (id) => document.getElementById(id);
+  const PHOTO = "data:image/svg+xml," + encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="800" height="500" viewBox="0 0 800 500" preserveAspectRatio="none"><defs><linearGradient id="s" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f4a261"/><stop offset="1" stop-color="#fde2c4"/></linearGradient></defs><rect width="800" height="500" fill="url(#s)"/><circle cx="160" cy="150" r="46" fill="#fff3d6"/><path d="M0 500 L0 330 L140 250 L260 320 L400 200 L520 280 L640 190 L800 290 L800 500 Z" fill="#7d5a7a"/><path d="M0 500 L0 400 L200 360 L380 410 L560 330 L640 320 L800 380 L800 500 Z" fill="#3e4a61"/><g fill="#1b1f2b"><circle cx="620" cy="262" r="9"/><path d="M613 272 L627 272 L630 305 L610 305 Z"/><path d="M612 304 L605 322 L611 322 L618 306 Z"/><path d="M623 306 L630 322 L636 322 L628 304 Z"/><rect x="606" y="273" width="7" height="20" rx="2"/><path d="M630 276 L645 300" stroke="#1b1f2b" stroke-width="3"/></g></svg>`);
+  $("img1").src = PHOTO;
+
+  function part1() {
+    const cw = +$("cw").value, mw = $("mw").checked, ha = $("ha").checked;
+    $("cw-out").textContent = cw + "px";
+    $("c1").style.width = cw + "px";
+    const img = $("img1");
+    img.style.maxWidth = mw ? "100%" : "none";
+    img.style.height = ha ? "auto" : "";
+    $("c1-lbl").textContent = `container · ${cw}px`;
+    const inner = cw - 20, s = $("status1");
+    if (!mw && inner < 800) { s.className = "status bad"; s.textContent = `Overflowing: the image is still 800px wide and sticks out ${800 - inner}px past its container. Turn on max-width: 100%.`; }
+    else if (mw && !ha && inner < 800) { s.className = "status bad"; s.textContent = "It fits now, but it's squished: the width shrank while the height stayed at 500px. Turn on height: auto."; }
+    else { s.className = "status good"; s.textContent = inner >= 800 ? "The container is wider than the image, so it shows at its natural 800px. max-width never makes an image bigger." : "The image shrinks to fit and keeps its shape."; }
+  }
+  ["cw", "mw", "ha"].forEach((id) => $(id).addEventListener("input", part1));
+  part1();
+
+  const CANDS = [[400, 38], [800, 120], [1600, 390], [2400, 820]];
+  let dpr = 2;
+  function part3() {
+    const dw = +$("dw").value, need = dw * dpr;
+    $("dw-out").textContent = dw + "px";
+    $("need").textContent = `Needs ${dw} × ${dpr} = ${need} real pixels across`;
+    const pick = CANDS.find(([w]) => w >= need) || CANDS[CANDS.length - 1];
+    $("ri-cands").innerHTML = CANDS.map(([w, kb]) => `<div class="cand ${w === pick[0] ? "pick" : ""}"><span>trail-${w}.jpg</span><div class="bar" style="width:${(w / 2400) * 100}%"></div><span>${kb} KB</span></div>`).join("");
+    const big = CANDS[CANDS.length - 1][1];
+    $("saving").textContent = pick[1] === big ? "No savings at this size" : `Saves ${big - pick[1]} KB`;
+    $("saving-note").textContent = `The browser picks trail-${pick[0]}.jpg (${pick[1]} KB). Without srcset, every visitor downloads the ${big} KB file.` + (need > 2400 ? " Even the largest file is a little small here, so it will look slightly soft." : "");
+    document.querySelectorAll("#ri-dpr button").forEach((b) => b.setAttribute("aria-pressed", String(+b.dataset.d === dpr)));
+  }
+  $("ri-dpr").addEventListener("click", (e) => { const b = e.target.closest("button"); if (b) { dpr = +b.dataset.d; part3(); } });
+  $("dw").addEventListener("input", part3);
+  part3();
+})();
+(() => {
+  const $ = (id) => document.getElementById(id);
+  const t = (s) => `<span class="tag-name">${s}</span>`, a = (n, v) => `<span class="attr">${n}</span>=<span class="str">"${v}"</span>`;
+
+  // Part 1: srcset + sizes
+  const FILES = [[400, 30], [800, 95], [1200, 190], [1600, 320], [2400, 640]];
+  const SIZES = {
+    none: { text: null, fn: () => 1 },
+    "100vw": { text: "100vw", fn: () => 1 },
+    "2col": { text: "(min-width: 700px) 50vw, 100vw", fn: (w) => (w >= 700 ? 0.5 : 1) },
+    "3col": { text: "(min-width: 1100px) 33vw, (min-width: 700px) 50vw, 100vw", fn: (w) => (w >= 1100 ? 0.33 : w >= 700 ? 0.5 : 1) },
+  };
+  let dpr = 1;
+  function part1() {
+    const w = +$("vw").value, s = SIZES[$("sz").value];
+    $("vw-out").textContent = w + "px";
+    const cols = w >= 1100 ? 3 : w >= 700 ? 2 : 1;
+    $("cards").style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
+    $("cards").innerHTML = "<i></i>".repeat(cols * 2);
+    const actual = Math.round(w / cols), assumed = Math.round(w * s.fn(w));
+    const need = assumed * dpr, needReal = actual * dpr;
+    const pick = FILES.find(([fw]) => fw >= need) || FILES[FILES.length - 1];
+    const ideal = FILES.find(([fw]) => fw >= needReal) || FILES[FILES.length - 1];
+    const waste = pick[1] - ideal[1];
+    $("facts").innerHTML = `<dt>card really shows at</dt><dd>${actual}px</dd><dt>browser assumes</dt><dd class="${Math.abs(assumed - actual) > 20 ? "bad" : "good"}">${assumed}px${s.text ? "" : " (no sizes, so the full window)"}</dd><dt>so it needs</dt><dd>${assumed} × ${dpr} = ${need} pixels</dd><dt>result</dt><dd class="${waste > 0 ? "bad" : "good"}">${waste > 0 ? `${waste} KB wasted on every card` : "the right file"}</dd>`;
+    $("cands").innerHTML = FILES.map(([fw, kb]) => `<div class="cand ${fw === pick[0] ? "pick" : ""}"><span>trail-${fw}.jpg</span><div class="bar" style="width:${(fw / 2400) * 100}%"></div><span>${kb} KB</span></div>`).join("");
+    let code = `${t("&lt;img")} ${a("src", "trail-800.jpg")}\n     ${a("srcset", "trail-400.jpg 400w, trail-800.jpg 800w,")}\n             <span class="str">trail-1200.jpg 1200w, trail-1600.jpg 1600w, trail-2400.jpg 2400w"</span>`;
+    if (s.text) code += `\n     ${a("sizes", s.text)}`;
+    code += `\n     ${a("width", "1200")} ${a("height", "800")} ${a("alt", "Mesa Trail in fall")}${t("&gt;")}`;
+    $("sz-code").innerHTML = code;
+    document.querySelectorAll("#dpr .btn").forEach((b) => b.setAttribute("aria-pressed", String(+b.dataset.d === dpr)));
+  }
+  $("dpr").addEventListener("click", (e) => { const b = e.target.closest("button"); if (b) { dpr = +b.dataset.d; part1(); } });
+  ["vw", "sz"].forEach((id) => $(id).addEventListener("input", part1));
+  part1();
+
+  // Part 2: art direction. One scene, cropped three ways with viewBox.
+  const SCENE = `<defs><linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f4a261"/><stop offset="1" stop-color="#fde2c4"/></linearGradient></defs>
+    <rect width="1600" height="700" fill="url(#sky)"/><circle cx="260" cy="170" r="60" fill="#fff3d6"/>
+    <path d="M0 700 L0 430 L250 330 L480 420 L700 300 L900 380 L1250 260 L1600 400 L1600 700 Z" fill="#8f6a8a"/>
+    <path d="M820 700 L860 420 Q 1000 300 1140 420 L1180 700 L1110 700 L1090 470 Q 1000 390 910 470 L890 700 Z" fill="#a4482a"/>
+    <path d="M0 700 L0 560 L300 520 L620 580 L800 600 L1200 600 L1400 540 L1600 580 L1600 700 Z" fill="#3e4a61"/>
+    <g fill="#1b1f2b"><circle cx="1000" cy="566" r="9"/><rect x="993" y="575" width="14" height="30" rx="3"/></g>`;
+  const CROPS = [
+    { min: 900, file: "arch-wide.jpg", vb: "0 100 1600 600", w: 1600, h: 600, why: "wide crop: the whole valley" },
+    { min: 560, file: "arch-medium.jpg", vb: "500 138 1000 562", w: 1000, h: 562, why: "medium crop: closer on the arch" },
+    { min: 0, file: "arch-square.jpg", vb: "760 220 480 480", w: 480, h: 480, why: "square crop: just the arch and hiker" },
+  ];
+  function part2() {
+    const w = +$("aw").value;
+    $("aw-out").textContent = w + "px";
+    const c = CROPS.find((x) => w >= x.min);
+    $("art-frame").style.width = Math.min(w, 760) + "px";
+    $("art-lbl").textContent = `${w}px window → ${c.file} (${c.why})`;
+    $("art").innerHTML = `<svg viewBox="${c.vb}" width="${c.w}" height="${c.h}" role="img" aria-label="Royal Arch with a hiker beneath it">${SCENE}</svg>`;
+    const cls = (x) => (x === c ? "on" : "off");
+    $("pic-code").innerHTML = `${t("&lt;picture&gt;")}\n  <span class="${cls(CROPS[0])}">${t("&lt;source")} ${a("media", "(min-width: 900px)")} ${a("srcset", "arch-wide.jpg")}${t("&gt;")}</span>\n  <span class="${cls(CROPS[1])}">${t("&lt;source")} ${a("media", "(min-width: 560px)")} ${a("srcset", "arch-medium.jpg")}${t("&gt;")}</span>\n  <span class="${cls(CROPS[2])}">${t("&lt;img")} ${a("src", "arch-square.jpg")} ${a("alt", "Royal Arch with a hiker beneath it")}${t("&gt;")}</span>\n${t("&lt;/picture&gt;")}`;
+  }
+  $("aw").addEventListener("input", part2);
+  part2();
+
+  // Part 3: lazy loading inside a scrolling box
+  const POSTS = ["Royal Arch", "Mesa Trail", "Bear Peak", "Flagstaff Summit", "Green Mountain", "Sanitas Valley", "Walker Ranch", "Heil Valley", "Gross Reservoir", "Eldorado Canyon"];
+  const COLORS = [["--item-2", "--item-3"], ["--item-1", "--item-3"], ["--item-4", "--item-6"], ["--item-5", "--item-1"], ["--item-6", "--item-4"]];
+  let mode = "lazy", obs, bytes = 0;
+  function part3() {
+    if (obs) obs.disconnect();
+    bytes = 0;
+    const sc = $("scroller");
+    sc.scrollTop = 0;
+    sc.querySelectorAll(".post").forEach((p) => p.remove());
+    $("netlog").innerHTML = "";
+    POSTS.forEach((name, i) => {
+      const [c1, c2] = COLORS[i % COLORS.length];
+      sc.insertAdjacentHTML("beforeend", `<div class="post"><div class="ph" data-i="${i}" style="--c1:var(${c1});--c2:var(${c2})"></div><div><b>${name}</b><small>${(2 + i * 0.7).toFixed(1)} miles · ${i < 1 ? "loading=\"eager\"" : `loading="${mode}"`}</small></div></div>`);
+    });
+    const load = (ph) => {
+      if (ph.classList.contains("loaded")) return;
+      ph.classList.add("loaded");
+      const kb = 140 + ((+ph.dataset.i * 37) % 60);
+      bytes += kb;
+      $("netlog").insertAdjacentHTML("beforeend", `<span>200 · ${POSTS[+ph.dataset.i].toLowerCase().replace(/ /g, "-")}.jpg · ${kb} KB</span>`);
+      $("total").textContent = `${(bytes / 1024).toFixed(2)} MB · ${sc.querySelectorAll(".ph.loaded").length} of ${POSTS.length} images`;
+    };
+    const phs = [...sc.querySelectorAll(".ph")];
+    if (mode === "eager") phs.forEach(load);
+    else {
+      load(phs[0]);
+      obs = new IntersectionObserver((entries) => entries.forEach((en) => { if (en.isIntersecting) { load(en.target); obs.unobserve(en.target); } }), { root: sc, rootMargin: "0px 0px 120px 0px" });
+      phs.slice(1).forEach((p) => obs.observe(p));
+    }
+    document.querySelectorAll("#mode .btn").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.m === mode)));
+  }
+  $("mode").addEventListener("click", (e) => { const b = e.target.closest("button"); if (b) { mode = b.dataset.m; part3(); } });
+  $("reset").addEventListener("click", part3);
+  part3();
+})();
+
+  // --- x descriptors, for real ---
+  const DX = [1, 2, 3].map((d) => "data:image/svg+xml," + encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="${160 * d}" height="${100 * d}" viewBox="0 0 160 100"><rect width="160" height="100" rx="8" fill="${["#0b6b5e", "#2340d9", "#b4410c"][d - 1]}"/><text x="80" y="48" fill="#fff" font-family="sans-serif" font-size="26" font-weight="700" text-anchor="middle">${d}x copy</text><text x="80" y="74" fill="#fff" font-family="sans-serif" font-size="12" text-anchor="middle">${160 * d} × ${100 * d} pixels</text></svg>`));
+  const dxImg = document.getElementById("dx-img");
+  const real = Math.round(window.devicePixelRatio * 100) / 100;
+  let dxD = real;
+  function dxReport() {
+    const pick = dxD <= 1 ? 0 : dxD <= 2 ? 1 : 2;
+    dxImg.src = DX[pick];
+    document.getElementById("dx-out").textContent = (dxD === real ? `Your screen's pixel density is ${real}` : `Pretending the pixel density is ${dxD}`) + `, so the browser picks the ${pick + 1}x copy: the smallest one with at least ${Math.ceil(dxD) * 160} real pixels across.`;
+    document.getElementById("dx-tbl").innerHTML = [1, 2, 3].map((n, k) => `<tr class="${k === pick ? "pick" : ""}"><td>logo-${n}x.svg</td><td>${160 * n} px wide</td><td>${k === pick ? "← chosen" : ""}</td></tr>`).join("");
+    document.querySelectorAll("#dx-seg button").forEach((x) => x.setAttribute("aria-pressed", String(+x.dataset.d === dxD)));
+  }
+  document.getElementById("dx-seg").addEventListener("click", (e) => { const x = e.target.closest("button"); if (x) { dxD = x.dataset.d === "real" ? real : +x.dataset.d; dxReport(); } });
+  dxReport();
+</script>
+<script>
+  makeQuiz(document.getElementById("quiz"), [
+    { id: "q1", q: "Which two lines stop images from overflowing on small screens?", opts: ["width: 100vw; height: 100vh;", "max-width: 100%; height: auto;", "overflow: hidden;"], a: 1, why: "Images shrink to fit but never grow past their real size, and keep their shape." },
+    { id: "q2", q: "A wide photo must fill a square box without stretching. What do you use?", opts: ["background-size: contain", "width: 100%; height: 100%;", "object-fit: cover"], a: 2, why: "cover fills the box and crops the edges instead of squashing." },
+    { id: "q3", q: "What does srcset save?", opts: ["Download size on small screens", "Code in your stylesheet", "Alt text"], a: 0, why: "The browser downloads the smallest copy that will look sharp." },
+    { id: "q4", q: "In srcset, what does 800w mean?", opts: ["Show it 800px wide", "This file is 800px wide", "Use it on screens 800px wide"], a: 1, why: "w descriptors give each file's real width; the browser decides which to use." },
+    { id: "q5", q: "Why does srcset need sizes when an image isn't full-width?", opts: ["srcset doesn't work without it", "sizes makes the image sharper", "The browser chooses before your CSS loads, so it assumes full width"], a: 2, why: "sizes describes your layout so the browser can pick a smaller file." },
+    { id: "q6", q: "When should you use <picture> instead of srcset?", opts: ["To show a different crop on small screens", "Whenever you have several sizes", "For every image"], a: 0, why: "srcset already handles sizes. picture is for changing the image itself (or its format)." },
+    { id: "q7", q: "You forget the <img> inside <picture>. What shows?", opts: ["The first source", "Nothing", "The alt text"], a: 1, why: "The img is what displays the picture; sources only offer alternatives." },
+    { id: "q8", q: "Which image should NOT get loading=\"lazy\"?", opts: ["Images in a long gallery", "Photos near the bottom", "The large photo at the top of the page"], a: 2, why: "The first image is seen right away, so it should load immediately." },
+    { id: "q9", q: "A logo always shows 160px wide. How should you offer sharper copies?", opts: ["srcset with 1x, 2x and 3x copies", "sizes=\"160px\" only", "<picture> with media queries"], a: 0, why: "x descriptors are for fixed-size images; the browser picks by pixel density." },
+    { id: "q10", q: "Why can't JavaScript choose the image file instead?", opts: ["JavaScript can't read the window width", "The browser starts downloading images before scripts and CSS have loaded", "It's not allowed"], a: 1, why: "The preload scanner fetches images early, so the choice has to be in the HTML." },
+  ]);
+
+  makeExercise(document.getElementById("ex-img"), {
+    title: "Fluid images and srcset",
+    task: `<p>The image files don't exist, so you'll see empty boxes, but the checks read your code.</p>
+    <ol>
+      <li>In the CSS, let every image shrink to fit its container but never stretch past its real size, and keep its proportions.</li>
+      <li>The avatar is a wide photo in a square box. Crop it to fill the box instead of squashing it.</li>
+      <li>Give the big photo a <code>srcset</code> with <code>arch-400.jpg</code>, <code>arch-800.jpg</code> and <code>arch-1600.jpg</code>, using <code>w</code> descriptors.</li>
+    </ol>`,
+    html: `<img class="hero" src="arch-1600.jpg" alt="The sandstone arch at the top of the trail" width="1600" height="1000">
+<img class="avatar" src="sam.jpg" alt="Sam, the hike leader" width="96" height="96">`,
+    css: `.avatar { width: 96px; height: 96px; border-radius: 50%; }`,
+    solution: {
+      html: `<img class="hero" src="arch-1600.jpg"
+     srcset="arch-400.jpg 400w, arch-800.jpg 800w, arch-1600.jpg 1600w"
+     alt="The sandstone arch at the top of the trail" width="1600" height="1000">
+<img class="avatar" src="sam.jpg" alt="Sam, the hike leader" width="96" height="96">`,
+      css: `img { max-width: 100%; height: auto; }
+.avatar { width: 96px; height: 96px; border-radius: 50%; object-fit: cover; }`,
+    },
+    hints: [
+      "img { max-width: 100%; height: auto; } belongs in nearly every stylesheet.",
+      "object-fit: cover fills the box and trims the edges.",
+      "srcset=\"arch-400.jpg 400w, arch-800.jpg 800w, arch-1600.jpg 1600w\"",
+    ],
+    checks: [
+      { label: "Images have max-width: 100%", test: ({ style }) => style(".hero", "max-width") === "100%" },
+      { label: "Images keep their proportions (height: auto)", test: ({ $, doc }) => [...doc.styleSheets[0].cssRules].some((r) => r.style && r.style.height === "auto" && $(".hero").matches(r.selectorText)) },
+      { label: "The avatar is cropped, not squashed", test: ({ style }) => style(".avatar", "object-fit") === "cover" },
+      { label: "The photo offers 400w, 800w and 1600w files", test: ({ $ }) => { const s = ($(".hero").getAttribute("srcset") || "").replace(/\s+/g, " "); return ["arch-400.jpg 400w", "arch-800.jpg 800w", "arch-1600.jpg 1600w"].every((x) => s.includes(x)); } },
+    ],
+  });
+
+  makeExercise(document.getElementById("ex-picture"), {
+    title: "sizes, picture and loading",
+    task: `<ol>
+      <li>The first image is a third of the window wide on screens 900px and up, and full width below that. Add a <code>sizes</code> attribute that says so.</li>
+      <li>On screens up to 600px wide, show <code>arch-tall.jpg</code> instead of the wide arch photo. Use <code>&lt;picture&gt;</code> and <code>&lt;source&gt;</code>.</li>
+      <li>The gallery photo is far down the page. Lazy-load it, but not the first image.</li>
+    </ol>`,
+    html: `<img src="mesa-800.jpg" srcset="mesa-400.jpg 400w, mesa-800.jpg 800w, mesa-1600.jpg 1600w" alt="Mesa Trail at sunrise" width="800" height="500">
+
+<img src="arch-wide.jpg" alt="Royal Arch above the trees" width="800" height="400">
+
+<img class="gallery" src="flowers.jpg" alt="Wildflowers beside the trail" width="400" height="300">`,
+    solution: { html: `<img src="mesa-800.jpg" srcset="mesa-400.jpg 400w, mesa-800.jpg 800w, mesa-1600.jpg 1600w" sizes="(min-width: 900px) 33vw, 100vw" alt="Mesa Trail at sunrise" width="800" height="500">
+
+<picture>
+  <source media="(max-width: 600px)" srcset="arch-tall.jpg">
+  <img src="arch-wide.jpg" alt="Royal Arch above the trees" width="800" height="400">
+</picture>
+
+<img class="gallery" src="flowers.jpg" alt="Wildflowers beside the trail" width="400" height="300" loading="lazy">` },
+    hints: [
+      "sizes=\"(min-width: 900px) 33vw, 100vw\"",
+      "<picture> wraps a <source media=\"(max-width: 600px)\" srcset=\"arch-tall.jpg\"> and the original <img>, which stays last.",
+      "loading=\"lazy\" on the gallery image only.",
+    ],
+    checks: [
+      { label: "The first image's sizes describes the layout", test: ({ $ }) => /^\(min-width:900px\)(33|33\.3+)vw,100vw$/.test($("img").getAttribute("sizes").replace(/\s/g, "")) },
+      { label: "A <picture> swaps in arch-tall.jpg up to 600px", test: ({ $ }) => { const s = $("picture source"); return s.getAttribute("media").replace(/\s/g, "") === "(max-width:600px)" && s.getAttribute("srcset").trim() === "arch-tall.jpg"; } },
+      { label: "The <picture> still ends with the wide <img>", test: ({ $ }) => $("picture > img:last-child").getAttribute("src") === "arch-wide.jpg" && !!$("picture > img").getAttribute("alt") },
+      { label: "Only the gallery image is lazy", test: ({ $, $$ }) => $(".gallery").getAttribute("loading") === "lazy" && $$("img").filter((i) => i.getAttribute("loading") === "lazy").length === 1 },
+    ],
+  });
+</script>
+</body>
+</html>

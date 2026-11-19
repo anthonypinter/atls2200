@@ -55,10 +55,11 @@
 </head>
 <body>
 <main class="wrap">
-  <nav class="crumbs" aria-label="Site"><a class="crumb" href="index.html">← Field Guide</a></nav>
+  <nav class="crumbs" aria-label="Site"><a class="crumb" href="book.html">← Field Guide</a></nav>
 
   <header class="page-head">
     <h1>Class Dashboard</h1>
+    <p class="dash-book">Showing <strong id="book-name">…</strong> · <a id="book-switch" href="#"></a></p>
     <p class="lede">Who has read, tried and finished each section of every lesson, with notes for teaching that only instructors can see.</p>
   </header>
 
@@ -82,7 +83,7 @@
         <label>Find a student <input id="f-name" type="search" autocomplete="off"></label>
         <button class="btn" type="button" id="csv">Download CSV</button>
       </div>
-      <p class="dash-legend">Each cell is the share of a lesson's work done: sections read (and, for Play, Try it, Practice and Check yourself, used), quizzes finished and exercises passed. ✓ means the student marked the lesson complete. A section counts as read after enough active time for its length; used means the student changed playground controls, ran edited code, typed in an editor, pressed Check or answered the whole quiz. Reading time counts only while the page is visible and the student is active. ⚑ flags a pass after under 2 minutes in the lesson, or 5+ Checks without a pass. Students' browsers report this data, so treat it as a signal, not proof.</p>
+      <p class="dash-legend">Each cell is the share of a lesson's work done: sections read (and, for Play, Try it, Practice and Check yourself, used), quizzes finished and exercises passed. ✓ means the lesson is complete: in Core Web Development, every item on it is done (it completes itself at 100%); in the Field Guide, the student pressed Mark lesson complete. A section counts as read after enough active time for its length; used means the student changed playground controls, ran edited code, typed in an editor, pressed Check or answered the whole quiz. Reading time counts only while the page is visible and the student is active. ⚑ flags a pass after under 2 minutes in the lesson, or 5+ Checks without a pass. Students' browsers report this data, so treat it as a signal, not proof.</p>
       <div class="dash-scroll" tabindex="0"><table class="dash-table" id="grid"></table></div>
     </section>
 
@@ -127,7 +128,7 @@
     </section>
   </div>
 
-  <footer class="page-foot"><a href="index.html">← Contents</a><span class="mono">Setup and privacy: supabase/README.md in the course repository.</span></footer>
+  <footer class="page-foot"><a href="book.html">← Contents</a><span class="mono">Setup and privacy: supabase/README.md in the course repository.</span></footer>
 </main>
 
 <script>
@@ -137,7 +138,26 @@
   // Progress JSON is written by students' browsers, so never trust its shape.
   const obj = (x) => (x && typeof x === "object" && !Array.isArray(x) ? x : {});
   const time = (t) => { const d = new Date(t); return t && !isNaN(d) ? d.toLocaleString([], { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }) : ""; };
-  const P = window.Progress, book = window.BOOK;
+  const P = window.Progress;
+  // Which book to show: ?book=1 (the Field Guide, book.js) or ?book=2 (Core Web Development, book-2.js). A link from a
+  // lesson's instructor note passes ?lesson=, and Book 2's slugs start with core-. Otherwise Book 2, the course's book.
+  // The page itself loads book.js, and js/backend.js signs in with book.js's backend, so both manifests must name
+  // the same Supabase project.
+  const params = new URLSearchParams(location.search);
+  const which = params.get("book") || (params.get("lesson") && !params.get("lesson").startsWith("core-") ? "1" : "2");
+  let book = window.BOOK, PART = "Part";
+  // Number parts and lessons the way js/chrome.js does, leaving out lessons that aren't written yet.
+  function numberBook(b) {
+    const lessons = [];
+    b.parts.forEach((part, p) => {
+      part.num = p + 1;
+      part.lessons.forEach((l, i) => Object.assign(l, { num: `${p + 1}.${i + 1}`, part }));
+      part.lessons = part.lessons.filter((l) => !l.planned);
+      lessons.push(...part.lessons);
+    });
+    b.lessons = lessons;
+    return b;
+  }
   let db = null, index = null, people = [], progress = new Map(), roster = [], notes = [], tries = new Map(), recitations = [];
   const dur = (ms) => (!ms ? "—" : ms < 60000 ? `${Math.max(1, Math.round(ms / 1000))} s` : `${Math.round(ms / 60000)} min`);
   // Flags: a pass after very little time in the lesson, or many Checks without a pass.
@@ -156,8 +176,18 @@
   function gate(html) { $("gate").innerHTML = html; $("gate").hidden = false; $("app").hidden = true; }
 
   async function boot() {
-    if (!book.backend?.url) return gate(`<p>No backend is set up yet, so there are no accounts to show. Add the Supabase project to <code>book.js</code> (see <code>supabase/README.md</code>).</p>`);
-    await Promise.all([loadScript("search-index.js"), loadScript("js/backend.js")]);
+    if (which === "2") {
+      const fieldGuide = window.BOOK;
+      await loadScript("book-2.js");
+      book = numberBook(window.BOOK);
+      window.BOOK = fieldGuide;   // the page chrome and js/backend.js keep using book.js
+    }
+    PART = book.partLabel || "Part";
+    $("book-name").textContent = book.title || "Field Guide";
+    $("book-switch").href = `?book=${which === "2" ? 1 : 2}`;
+    $("book-switch").textContent = which === "2" ? "Switch to the Field Guide" : "Switch to Core Web Development";
+    if (!window.BOOK.backend?.url) return gate(`<p>No backend is set up yet, so there are no accounts to show. Add the Supabase project to <code>book.js</code> and <code>book-2.js</code> (see <code>supabase/README.md</code>).</p>`);
+    await Promise.all([loadScript(book.index || "search-index.js"), loadScript("js/backend.js")]);
     index = new Map(window.SEARCH_INDEX.lessons.map((l) => [l.slug, l]));
     let shown = undefined;
     const update = (B) => {
@@ -237,7 +267,7 @@
 
   function fillFilters() {
     const part = $("f-part").value;
-    $("f-part").innerHTML = `<option value="all">All parts</option>` + book.parts.map((p) => `<option value="${p.num}">Part ${p.num} · ${esc(p.title)}</option>`).join("");
+    $("f-part").innerHTML = `<option value="all">All ${PART.toLowerCase()}s</option>` + book.parts.filter((p) => p.lessons.length).map((p) => `<option value="${p.num}">${PART} ${p.num} · ${esc(p.title)}</option>`).join("");
     if (part) $("f-part").value = part;
     const rec = $("f-rec").value;
     const recs = [...new Set([...recitations.map((r) => r.code), ...people.map((p) => p.recitation).filter(Boolean)])];
@@ -263,7 +293,7 @@
   // Columns: the lessons of one part, or one column per part.
   function columns() {
     const part = $("f-part").value;
-    if (part === "all") return book.parts.map((p) => ({ label: `Part ${p.num}`, title: p.title, slugs: p.lessons.map((l) => l.slug) }));
+    if (part === "all") return book.parts.filter((p) => p.lessons.length).map((p) => ({ label: `${PART} ${p.num}`, title: p.title, slugs: p.lessons.map((l) => l.slug) }));
     return book.parts[part - 1].lessons.map((l) => ({ label: l.num, title: l.title, slugs: [l.slug] }));
   }
   function rowFor(p, cols) {
@@ -284,7 +314,7 @@
   }
   function drawGrid() {
     const cols = columns(), list = shownPeople();
-    const head = `<caption class="sr-only">Progress by student and ${$("f-part").value === "all" ? "part" : "lesson"}</caption><thead><tr><th scope="col">Student</th><th scope="col">Recitation</th><th scope="col">Section</th><th scope="col">Last active</th>${cols.map((c) => `<th scope="col" title="${esc(c.title)}">${esc(c.label)}</th>`).join("")}<th scope="col">Overall</th><th scope="col">Reading time</th><th scope="col">Flags</th></tr></thead>`;
+    const head = `<caption class="sr-only">Progress by student and ${$("f-part").value === "all" ? PART.toLowerCase() : "lesson"}</caption><thead><tr><th scope="col">Student</th><th scope="col">Recitation</th><th scope="col">Section</th><th scope="col">Last active</th>${cols.map((c) => `<th scope="col" title="${esc(c.title)}">${esc(c.label)}</th>`).join("")}<th scope="col">Overall</th><th scope="col">Reading time</th><th scope="col">Flags</th></tr></thead>`;
     if (!list.length) { $("grid").innerHTML = head + `<tbody><tr><td colspan="${cols.length + 7}">No students to show.</td></tr></tbody>`; return; }
     const sums = cols.map(() => 0);
     const body = list.map((p) => {
@@ -302,8 +332,8 @@
     if (!p) { $("detail").innerHTML = ""; return; }
     const data = obj(progress.get(p.id)?.data);
     const out = [`<p><strong>${esc([p.first_name, p.last_name].filter(Boolean).join(" ") || "No name given yet")}</strong> · ${esc(p.email)}${p.recitation ? ` · recitation ${esc(p.recitation)}` : ""}${p.course_section ? ` · section ${esc(p.course_section)}` : ""} · last active ${esc(time(progress.get(p.id)?.at) || "never")}</p>`];
-    for (const part of book.parts) {
-      out.push(`<h3>Part ${part.num} · ${esc(part.title)}</h3>`);
+    for (const part of book.parts.filter((p) => p.lessons.length)) {
+      out.push(`<h3>${PART} ${part.num} · ${esc(part.title)}</h3>`);
       for (const l of part.lessons) {
         const st = lessonStats(data, l.slug, p.email);
         const rows = st.sections.map((s) => `<tr><th scope="row">${esc(s.title)}</th><td>${esc(s.kind)}</td><td>${dur(s.rec.ms)}</td><td>${esc(time(s.rec.seen)) || '<span class="no">—</span>'}</td><td>${esc(time(s.rec.interacted)) || '<span class="no">—</span>'}</td><td>${s.done ? '<span class="yes">✓ done</span>' : '<span class="no">not yet</span>'}</td></tr>`).join("");
@@ -316,7 +346,7 @@
           return `<p>Exercise <code>${esc(e.id.split("/")[1])}</code>: ${e.done ? `<span class="yes">passed ${esc(time(e.rec.passed))}</span>` : '<span class="no">not passed</span>'}${count}</p>`
             + (files.length ? `<details><summary>Their latest code</summary>${files.map(([k, v]) => `<p class="eyebrow">${esc(k)}</p><pre tabindex="0"><code>${esc(v)}</code></pre>`).join("")}</details>` : "");
         }).join("");
-        out.push(`<details class="dash-lesson"><summary>${l.num} ${esc(l.title)}${st.completed ? ' <span class="yes">✓ marked complete</span>' : ""}<span class="no">${dur(st.ms)}</span>${st.flags.length ? ` <span class="flag">⚑ ${esc(st.flags.join("; "))}</span>` : ""}${pctCell(st.done, st.total)}</summary><div>
+        out.push(`<details class="dash-lesson"><summary>${l.num} ${esc(l.title)}${st.completed ? ' <span class="yes">✓ complete</span>' : ""}<span class="no">${dur(st.ms)}</span>${st.flags.length ? ` <span class="flag">⚑ ${esc(st.flags.join("; "))}</span>` : ""}${pctCell(st.done, st.total)}</summary><div>
           <div class="dash-scroll" tabindex="0"><table class="dash-table"><thead><tr><th scope="col">Section</th><th scope="col">Kind</th><th scope="col">Reading time</th><th scope="col">Seen</th><th scope="col">Used</th><th scope="col">Status</th></tr></thead><tbody>${rows}</tbody></table></div>${quiz}${ex}</div></details>`);
       }
     }
@@ -358,12 +388,12 @@
   }
 
   function csv() {
-    const rows = [["email", "first_name", "last_name", "recitation", "course_section", "lesson", "title", "sections_done", "sections_total", "quizzes", "exercises_passed", "exercises_total", "checks", "marked_complete", "percent", "reading_minutes", "flags"]];
+    const rows = [["email", "first_name", "last_name", "recitation", "course_section", PART.toLowerCase(), "lesson", "title", "sections_done", "sections_total", "quizzes", "exercises_passed", "exercises_total", "checks", "complete", "percent", "reading_minutes", "flags"]];
     for (const p of shownPeople()) {
       const data = obj(progress.get(p.id)?.data);
       for (const l of book.lessons) {
         const st = lessonStats(data, l.slug, p.email);
-        rows.push([p.email, p.first_name || "", p.last_name || "", p.recitation || "", p.course_section || "", l.slug, `${l.num} ${l.title}`,
+        rows.push([p.email, p.first_name || "", p.last_name || "", p.recitation || "", p.course_section || "", l.part.num, l.slug, `${l.num} ${l.title}`,
           st.sections.filter((s) => s.done).length, st.sections.length,
           st.qs.map((q) => (q.done ? `${q.best.score}/${q.best.total}` : "")).join(" "),
           st.es.filter((e) => e.done).length, st.es.length, st.es.reduce((n, e) => n + Number(e.tries?.checks || 0), 0),
@@ -374,7 +404,7 @@
     const cell = (v) => { let s = String(v ?? ""); if (/^[=+\-@]/.test(s)) s = "'" + s; return `"${s.replace(/"/g, '""')}"`; };
     const a = document.createElement("a");
     a.href = URL.createObjectURL(new Blob([rows.map((r) => r.map(cell).join(",")).join("\n")], { type: "text/csv" }));
-    a.download = `class-progress-${new Date().toISOString().slice(0, 10)}.csv`;
+    a.download = `class-progress-${which === "2" ? "core-web-dev" : "field-guide"}-${new Date().toISOString().slice(0, 10)}.csv`;
     a.click();
     setTimeout(() => URL.revokeObjectURL(a.href), 1000);
   }
@@ -446,7 +476,7 @@
   }
   async function addRoster(e) {
     e.preventDefault();
-    const domain = (book.backend.emailDomain || "").toLowerCase();
+    const domain = (window.BOOK.backend.emailDomain || "").toLowerCase();
     const rows = [], bad = [];
     for (const line of $("r-emails").value.split("\n").map((x) => x.trim()).filter(Boolean)) {
       const [email, section] = line.split(",").map((x) => x.trim());

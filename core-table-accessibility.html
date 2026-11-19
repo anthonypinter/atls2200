@@ -1,0 +1,332 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Accessible Tables · Core Web Development</title>
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="core.css">
+<style>
+  .tw { overflow-x: auto; background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 14px; }
+  .at { border-collapse: collapse; color: var(--ink); font-size: 0.95rem; }
+  .at th, .at td { border: 1px solid var(--muted); padding: 7px 12px; text-align: left; }
+  .at th { background: var(--cobalt-soft); }
+  .at.plain th { background: none; }
+  .at caption { font-weight: 700; text-align: left; padding-bottom: 8px; }
+  .at tfoot td, .at tfoot th { background: var(--stage); font-weight: 700; }
+  .at .cur { outline: 3px solid var(--cobalt); outline-offset: -3px; }
+  .at .lit { background: color-mix(in srgb, var(--good) 22%, transparent); }
+  .at td { cursor: pointer; }
+  .sr-box { font: 0.95rem/1.5 var(--font-code); font-variation-settings: "MONO" 1; padding: 12px 14px; border-radius: 8px; background: var(--stage); }
+  .sr-box.weak { background: var(--bad-soft); color: var(--bad); }
+  .arrows { display: grid; grid-template-columns: repeat(3, 44px); grid-template-rows: repeat(2, 36px); gap: 4px; }
+  .arrows .btn { padding: 0; font-size: 1rem; }
+  .arrows [data-d="up"] { grid-column: 2; }
+  .arrows [data-d="left"] { grid-column: 1; grid-row: 2; }
+  .arrows [data-d="down"] { grid-column: 2; grid-row: 2; }
+  .arrows [data-d="right"] { grid-column: 3; grid-row: 2; }
+  .check { display: flex; gap: 10px; align-items: center; cursor: pointer; font-size: 0.95rem; }
+  .check input { accent-color: var(--cobalt); }
+</style>
+<script src="book-2.js"></script>
+<script src="js/progress.js"></script>
+<script src="js/chrome.js"></script>
+<script src="js/quiz.js"></script>
+</head>
+<body>
+<main class="wrap">
+  <nav class="crumbs" aria-label="Site"><a class="crumb" href="book-2.html">← Contents</a><a class="crumb" href="glossary.html">Glossary</a></nav>
+  <header class="page-head">
+    <h1>Accessible Tables</h1>
+    <p class="lede">A sighted reader finds a cell's meaning by glancing up to its column and across to its row. A screen reader user can't glance. Your markup has to tell their software which headers go with each cell.</p>
+    <div class="objectives">
+      <p class="callout-title">You'll be able to</p>
+      <ul>
+        <li>Explain how screen reader users move through a table.</li>
+        <li>Connect headers to cells with <code>scope</code>, and with <code>id</code> and <code>headers</code> for complex tables.</li>
+        <li>Add a <code>&lt;caption&gt;</code>, and group rows with <code>&lt;thead&gt;</code>, <code>&lt;tbody&gt;</code> and <code>&lt;tfoot&gt;</code>.</li>
+      </ul>
+    </div>
+  </header>
+
+  <!-- ===== Recap ===== -->
+  <div class="section-title"><span class="eyebrow">Read</span><h2>Recap of tables for visually impaired users</h2></div>
+  <div class="prose">
+    <p>Look at any table and you take in its shape at once: what the columns are, where the totals are, which row you care about. A <span class="term">screen reader</span> user hears a table one cell at a time, moving with keyboard shortcuts. Hearing "1,400" on its own is useless: 1,400 what, for which trail?</p>
+    <p>Screen readers solve this by announcing the matching headers as you move: go across a row and they say the column header; go down a column and they say the row header. But they can only do that if the HTML says which cells are headers.</p>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Play</span><h2>Move through a table without looking</h2><p>Use the arrows to move like a screen reader user would. Then turn on the header markup and do it again.</p></div>
+  <section class="playground">
+    <div class="panel controls" style="display:grid;gap:12px;align-content:start">
+      <label class="check"><input type="checkbox" id="n-th"> <span>Headers are <code>&lt;th scope&gt;</code></span></label>
+      <label class="check"><input type="checkbox" id="n-cap"> <span>Add a <code>&lt;caption&gt;</code></span></label>
+      <span class="eyebrow">Move</span>
+      <div class="arrows" id="arrows" role="group" aria-label="Move the table cursor">
+        <button class="btn" type="button" data-d="up" aria-label="Up">↑</button>
+        <button class="btn" type="button" data-d="left" aria-label="Left">←</button>
+        <button class="btn" type="button" data-d="down" aria-label="Down">↓</button>
+        <button class="btn" type="button" data-d="right" aria-label="Right">→</button>
+      </div>
+    </div>
+    <div class="stage-col">
+      <div class="tw"><table class="at" id="nav-t"></table></div>
+      <div class="sr-box" id="nav-say" aria-live="polite"></div>
+    </div>
+  </section>
+
+  <!-- ===== Headers & scope ===== -->
+  <div class="section-title"><span class="eyebrow">Read</span><h2>Using column and row headers</h2></div>
+  <div class="prose">
+    <p>The first step is the one from the last lesson: header cells are <code>&lt;th&gt;</code>, not bold <code>&lt;td&gt;</code>s. Labels at the top of each column are column headers. The first cell of each row is often a label too, like the trail name, and that makes it a row header.</p>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Read</span><h2>The scope attribute</h2></div>
+  <div class="prose">
+    <p><code>scope</code> tells assistive technology which direction a header points:</p>
+    <pre class="snippet" data-lang="html">&lt;tr&gt;
+  &lt;th scope="col"&gt;Trail&lt;/th&gt;
+  &lt;th scope="col"&gt;Miles&lt;/th&gt;
+&lt;/tr&gt;
+&lt;tr&gt;
+  &lt;th scope="row"&gt;Mesa&lt;/th&gt;
+  &lt;td&gt;6.7&lt;/td&gt;
+&lt;/tr&gt;</pre>
+    <p><code>scope="col"</code> labels the cells below it; <code>scope="row"</code> labels the cells beside it. For headers that sit over a group of columns or rows, there's <code>scope="colgroup"</code> and <code>scope="rowgroup"</code>.</p>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Read</span><h2>The id and headers attributes</h2></div>
+  <div class="prose">
+    <p>When a table has two levels of headers, <code>scope</code> may not be enough. The precise alternative: give every header an <code>id</code>, then list, on each data cell, the ids of all the headers that apply to it, separated by spaces:</p>
+    <pre class="snippet" data-lang="html">&lt;th id="weekend" colspan="2"&gt;Weekend&lt;/th&gt;
+&lt;th id="sat"&gt;Sat&lt;/th&gt;
+&lt;th id="mesa"&gt;Mesa&lt;/th&gt;
+&lt;td headers="mesa weekend sat"&gt;48&lt;/td&gt;</pre>
+    <p>It's a lot of typing, and easy to get wrong. Prefer simpler tables where you can: often a complicated table reads better split in two.</p>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Play</span><h2>Which headers label this cell?</h2><p>Click any number. The headers its <code>headers</code> attribute points to light up.</p></div>
+  <section class="playground even">
+    <div class="tw"><table class="at" id="hd-t" data-use></table></div>
+    <div class="stage-col">
+      <pre class="snippet" id="hd-code"></pre>
+      <div class="sr-box" id="hd-say" aria-live="polite"></div>
+    </div>
+  </section>
+
+  <!-- ===== Caption ===== -->
+  <div class="section-title"><span class="eyebrow">Read</span><h2>Adding a caption with &lt;caption&gt;</h2></div>
+  <div class="prose">
+    <p>A <code>&lt;caption&gt;</code>, directly after the opening <code>&lt;table&gt;</code> tag, is the table's title. Screen readers announce it when a user enters the table, so they can decide whether to explore it or skip on. Keep it short: "Boulder trail visits by day", not a paragraph.</p>
+  </div>
+
+  <!-- ===== thead/tbody/tfoot ===== -->
+  <div class="section-title"><span class="eyebrow">Read</span><h2>Adding structure with &lt;thead&gt;, &lt;tbody&gt; and &lt;tfoot&gt;</h2></div>
+  <div class="prose">
+    <p>Larger tables benefit from grouping their rows:</p>
+    <ul>
+      <li><code>&lt;thead&gt;</code> wraps the header row(s).</li>
+      <li><code>&lt;tbody&gt;</code> wraps the data. Browsers add one for you if you leave it out.</li>
+      <li><code>&lt;tfoot&gt;</code> wraps a summary row, like totals.</li>
+    </ul>
+    <p>They don't change how the table looks, but they make it easier to style (Week 4), they let browsers repeat the header on every printed page, and they spell out the table's structure for anyone reading your code.</p>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Practice</span><h2>Structure a table</h2><p>This table has the right data but no structure, so screen readers can't tell headers from data.</p></div>
+  <div id="ex-table"></div>
+
+  <div class="section-title"><span class="eyebrow">Practice</span><h2>Row headers and a total</h2><p>Finish the trail-visits table so every number has both of its labels.</p></div>
+  <div id="ex-rows"></div>
+
+  <!-- ===== Nesting ===== -->
+  <div class="section-title"><span class="eyebrow">Read</span><h2>Nesting tables</h2></div>
+  <div class="prose">
+    <p>You can put a table inside a table cell. Don't, unless there's truly no other way. Screen readers struggle to explain where you are in a table inside a table, and the markup gets hard to follow. Two tables side by side, or one table with a clearer set of columns, nearly always works better.</p>
+  </div>
+
+  <section class="notes">
+    <div class="panel">
+      <h2>Key ideas</h2>
+      <ul>
+        <li>Screen reader users hear a table one cell at a time; headers give each cell its meaning.</li>
+        <li>Use <code>&lt;th&gt;</code> for every header, with <code>scope="col"</code> or <code>scope="row"</code>.</li>
+        <li>For complex tables, <code>id</code> on headers and <code>headers</code> on data cells link them exactly.</li>
+        <li>A short <code>&lt;caption&gt;</code> lets users decide whether to read the table.</li>
+        <li><code>&lt;thead&gt;</code>, <code>&lt;tbody&gt;</code> and <code>&lt;tfoot&gt;</code> spell out the structure.</li>
+      </ul>
+    </div>
+    <div class="panel mistake">
+      <h2>Common mistakes</h2>
+      <ul>
+        <li>Styling header cells to look like headers without making them <code>&lt;th&gt;</code>.</li>
+        <li>Forgetting the row headers: the first cell of each row is usually a label.</li>
+        <li>A <code>headers</code> attribute that lists an id nobody has, or misspells one.</li>
+        <li>Putting the table's title in a heading or paragraph above it instead of a caption.</li>
+        <li>Nesting tables.</li>
+      </ul>
+    </div>
+  </section>
+
+  <div class="section-title"><span class="eyebrow">Check yourself</span><h2>Quick check</h2></div>
+  <div class="panel quiz" id="quiz"></div>
+
+  <footer class="page-foot" data-book-nav><a href="book-2.html">← Contents</a></footer>
+</main>
+
+<script>
+  const $ = (id) => document.getElementById(id);
+
+  // --- Move through a table ---
+  const HEAD = ["Trail", "Miles", "Gain (ft)", "Level"];
+  const ROWS = [["Royal Arch", "3.4", "1,400", "Hard"], ["Mesa Trail", "6.7", "1,100", "Moderate"], ["Chautauqua Loop", "1.2", "250", "Easy"], ["Bear Peak", "5.3", "2,800", "Hard"]];
+  let pos = [1, 1], last = null, entered = false;
+  function navRender() {
+    const th = $("n-th").checked, cap = $("n-cap").checked;
+    const t = $("nav-t");
+    t.className = "at" + (th ? "" : " plain");
+    const all = [HEAD, ...ROWS];
+    t.innerHTML = (cap ? "<caption>Boulder trails</caption>" : "") + all.map((row, r) => `<tr>${row.map((v, c) => {
+      const isH = th && (r === 0 || c === 0), tag = isH ? "th" : "td";
+      const sc = isH ? ` scope="${r === 0 ? "col" : "row"}"` : "";
+      return `<${tag}${sc} class="${r === pos[0] && c === pos[1] ? "cur" : ""}">${r === 0 && !th ? `<b>${v}</b>` : v}</${tag}>`;
+    }).join("")}</tr>`).join("");
+    const [r, c] = pos, v = all[r][c];
+    let say = "";
+    if (!entered) say = cap ? `"Table, Boulder trails, 5 rows, 4 columns." ` : `"Table, 5 rows, 4 columns." `;
+    if (!th) {
+      $("nav-say").className = "sr-box weak";
+      say += `"${v}." Just the value. Which trail? Which column?`;
+    } else {
+      $("nav-say").className = "sr-box";
+      if (r === 0) say += `"Column header, ${v}."`;
+      else if (c === 0) say += `"Row header, ${v}."`;
+      else if (last === "row") say += `"${ROWS[r - 1][0]}, ${v}." Moving down a column announces the row header.`;
+      else if (last === "col") say += `"${HEAD[c]}, ${v}." Moving along a row announces the column header.`;
+      else say += `"${ROWS[r - 1][0]}, ${HEAD[c]}, ${v}."`;
+    }
+    $("nav-say").textContent = say;
+    entered = true;
+  }
+  $("arrows").addEventListener("click", (e) => {
+    const b = e.target.closest("[data-d]");
+    if (!b) return;
+    const d = b.dataset.d;
+    if (d === "up") pos[0] = Math.max(0, pos[0] - 1);
+    if (d === "down") pos[0] = Math.min(ROWS.length, pos[0] + 1);
+    if (d === "left") pos[1] = Math.max(0, pos[1] - 1);
+    if (d === "right") pos[1] = Math.min(HEAD.length - 1, pos[1] + 1);
+    last = d === "up" || d === "down" ? "row" : "col";
+    navRender();
+  });
+  ["n-th", "n-cap"].forEach((id) => $(id).addEventListener("change", () => { entered = false; last = null; navRender(); }));
+  navRender();
+
+  // --- headers and id ---
+  const HD = `<caption>Trail visits (hundreds)</caption>
+<thead>
+  <tr><td></td><th id="wd" colspan="2" scope="colgroup">Weekday</th><th id="we" colspan="2" scope="colgroup">Weekend</th></tr>
+  <tr><td></td><th id="mon">Mon</th><th id="thu">Thu</th><th id="sat">Sat</th><th id="sun">Sun</th></tr>
+</thead>
+<tbody>
+  <tr><th id="mesa">Mesa</th><td headers="mesa wd mon">12</td><td headers="mesa wd thu">15</td><td headers="mesa we sat">48</td><td headers="mesa we sun">41</td></tr>
+  <tr><th id="arch">Royal Arch</th><td headers="arch wd mon">8</td><td headers="arch wd thu">9</td><td headers="arch we sat">30</td><td headers="arch we sun">27</td></tr>
+</tbody>`;
+  $("hd-t").innerHTML = HD;
+  function hdPick(td) {
+    $("hd-t").querySelectorAll(".cur, .lit").forEach((x) => x.classList.remove("cur", "lit"));
+    td.classList.add("cur");
+    const ids = td.getAttribute("headers").split(" ");
+    const names = ids.map((id) => { const h = document.getElementById(id); h.classList.add("lit"); return h.textContent; });
+    $("hd-code").textContent = `<td headers="${ids.join(" ")}">${td.textContent}</td>`;
+    $("hd-say").textContent = `"${names.join(", ")}, ${td.textContent}."`;
+  }
+  $("hd-t").addEventListener("click", (e) => { const td = e.target.closest("td[headers]"); if (td) hdPick(td); });
+  hdPick($("hd-t").querySelector("td[headers]:nth-of-type(3)"));
+</script>
+<script>
+  makeExercise(document.getElementById("ex-table"), {
+    title: "Trail table",
+    task: `<ol>
+      <li>Add the caption <em>Boulder trails</em>.</li>
+      <li>Put the first row in a <code>&lt;thead&gt;</code> and turn its cells into header cells with <code>scope="col"</code>.</li>
+      <li>Put the two trail rows in a <code>&lt;tbody&gt;</code>.</li>
+    </ol>`,
+    html: `<table>
+  <tr><td>Trail</td><td>Miles</td><td>Difficulty</td></tr>
+  <tr><td>Mesa</td><td>6.7</td><td>Moderate</td></tr>
+  <tr><td>Royal Arch</td><td>3.4</td><td>Hard</td></tr>
+</table>`,
+    css: `table { border-collapse: collapse; font-family: system-ui, sans-serif; }
+th, td { border: 1px solid #c8cbd6; padding: 6px 12px; text-align: left; }
+caption { font-weight: bold; margin-bottom: 6px; }`,
+    solution: { html: `<table>
+  <caption>Boulder trails</caption>
+  <thead>
+    <tr><th scope="col">Trail</th><th scope="col">Miles</th><th scope="col">Difficulty</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>Mesa</td><td>6.7</td><td>Moderate</td></tr>
+    <tr><td>Royal Arch</td><td>3.4</td><td>Hard</td></tr>
+  </tbody>
+</table>` },
+    hints: ["<caption> goes right after the opening <table> tag.", "Header cells are <th>, not <td>. Add scope=\"col\" because each one labels a column."],
+    checks: [
+      { label: "The caption says “Boulder trails”", test: ({ $ }) => $("table > caption").textContent.trim() === "Boulder trails" },
+      { label: "The first row is in a <thead>", test: ({ $$ }) => $$("thead tr").length === 1 },
+      { label: "The header cells are <th scope=\"col\">", test: ({ $$ }) => $$("thead th").length === 3 && $$("thead th").every((th) => th.getAttribute("scope") === "col") && $$("thead td").length === 0 },
+      { label: "The two trails are in the <tbody>", test: ({ $$ }) => $$("tbody tr").length === 2 && $$("tbody td").length >= 4 },
+    ],
+  });
+
+  makeExercise(document.getElementById("ex-rows"), {
+    title: "Visits by trail",
+    task: `<ol>
+      <li>Each trail name labels its row. Make them <code>&lt;th scope="row"&gt;</code>.</li>
+      <li>Add a <code>&lt;tfoot&gt;</code> after the <code>&lt;tbody&gt;</code> with one row: a <code>&lt;th scope="row"&gt;</code> saying <em>Total</em>, then <code>&lt;td&gt;</code>s for <em>20</em> and <em>78</em>.</li>
+    </ol>`,
+    html: `<table>
+  <caption>Trail visits (hundreds)</caption>
+  <thead>
+    <tr><td></td><th scope="col">Weekday</th><th scope="col">Weekend</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>Mesa</td><td>12</td><td>48</td></tr>
+    <tr><td>Royal Arch</td><td>8</td><td>30</td></tr>
+  </tbody>
+</table>`,
+    css: `table { border-collapse: collapse; font-family: system-ui, sans-serif; }
+th, td { border: 1px solid #c8cbd6; padding: 6px 12px; text-align: left; }
+caption { font-weight: bold; margin-bottom: 6px; }
+tfoot { background: #f2f4fa; font-weight: bold; }`,
+    solution: { html: `<table>
+  <caption>Trail visits (hundreds)</caption>
+  <thead>
+    <tr><td></td><th scope="col">Weekday</th><th scope="col">Weekend</th></tr>
+  </thead>
+  <tbody>
+    <tr><th scope="row">Mesa</th><td>12</td><td>48</td></tr>
+    <tr><th scope="row">Royal Arch</th><td>8</td><td>30</td></tr>
+  </tbody>
+  <tfoot>
+    <tr><th scope="row">Total</th><td>20</td><td>78</td></tr>
+  </tfoot>
+</table>` },
+    hints: ["Change both <td> and </td> around each trail name to th.", "tfoot holds a <tr>, just like tbody."],
+    checks: [
+      { label: "Both trail names are <th scope=\"row\">", test: ({ $$ }) => $$("tbody tr").length === 2 && $$("tbody tr").every((tr) => tr.cells[0].tagName === "TH" && tr.cells[0].getAttribute("scope") === "row") },
+      { label: "A tfoot row starts with a Total row header", test: ({ $ }) => { const h = $("tfoot tr").cells[0]; return h.tagName === "TH" && h.getAttribute("scope") === "row" && /total/i.test(h.textContent); } },
+      { label: "The totals are 20 and 78", test: ({ $$ }) => $$("tfoot td").map((t) => t.textContent.trim()).join() === "20,78" },
+    ],
+  });
+
+  makeQuiz(document.getElementById("quiz"), [
+    { id: "q1", q: "A screen reader user moves down the Miles column. What should they hear with each step?", opts: ["The row header and the value: “Mesa, 6.7”", "Only the value: “6.7”", "The whole row"], a: 0, why: "Moving down a column, the row header changes, so it's announced." },
+    { id: "q2", q: "The first cell of each row holds the trail name. What should it be?", opts: ["<th scope=\"row\">", "<td><b>…</b></td>", "<th scope=\"col\">"], a: 0, why: "It labels the cells beside it, so it's a row header." },
+    { id: "q3", q: "When do you need id and headers instead of scope?", opts: ["When cells have more than one level of headers", "On every table", "Only for tables with images"], a: 0, why: "Complex tables need cells linked to each header explicitly." },
+    { id: "q4", q: "Where does <caption> go?", opts: ["Right after the opening <table> tag", "In a <p> before the table", "Inside the <thead>"], a: 0, why: "caption must be the table's first child." },
+    { id: "q5", q: "Which element holds a totals row?", opts: ["<tfoot>", "<tbody>", "<tr class=\"total\">"], a: 0, why: "tfoot groups summary rows at the end of a table." },
+    { id: "q6", q: "What's the advice on tables inside tables?", opts: ["Avoid them: they're hard for screen readers to explain", "Use them for complex data", "Use them for layout"], a: 0, why: "Nested tables confuse assistive technology; split the data instead." },
+  ]);
+</script>
+</body>
+</html>

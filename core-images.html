@@ -1,0 +1,433 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>HTML Images · Core Web Development</title>
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="core.css">
+<style>
+  .article { background: #fff; color: #1d2133; border-radius: var(--radius); border: 1px solid var(--line); padding: 18px; display: grid; gap: 12px; font-family: Georgia, serif; min-width: 0; }
+  .article .masthead { display: flex; align-items: center; gap: 10px; font: 800 1.1rem var(--font-display); color: #0b6b5e; }
+  .article h3 { font: 700 1.4rem/1.2 Georgia, serif; }
+  .article p { font-size: 1rem; }
+  .article img { display: block; max-width: 100%; height: auto; border-radius: 6px; }
+  .article .logo img { width: 40px; height: 40px; }
+  .slot { position: relative; display: block; }
+  .logo .slot { display: inline-block; }
+  .slot .num { position: absolute; top: 6px; left: 6px; background: #2340d9; color: #fff; font: 700 0.75rem var(--font-code); border-radius: 50%; width: 22px; height: 22px; display: grid; place-items: center; z-index: 1; }
+  .logo .num { top: -6px; left: -8px; }
+  /* Screen reader view */
+  .spoken { display: block; font: 0.9rem/1.4 var(--font-code); font-variation-settings: "MONO" 1; padding: 10px 12px; border-radius: 6px; border: 2px dashed #9aa2bf; color: #1d2133; background: #f2f4fa; }
+  .spoken.skip { color: #8a8fa3; font-style: italic; }
+  .spoken.bad { border-color: #b42318; background: #fde8e6; color: #b42318; }
+  .logo .spoken { padding: 4px 8px; }
+
+  #fig-demo figure { margin: 0; display: grid; gap: 6px; }
+  #fig-demo figcaption, #fig-demo .cap-p { font-size: 0.9rem; color: #5a6280; font-style: italic; margin: 0; }
+  .spoken-line { font: 0.9rem/1.5 var(--font-code); font-variation-settings: "MONO" 1; padding: 10px 12px; border-radius: 6px; background: var(--stage); margin: 0; }
+  .spoken-line.weak { background: var(--bad-soft); color: var(--bad); }
+  .choices { display: grid; gap: 14px; }
+  .choice { display: grid; gap: 6px; }
+  .choice .what { font-weight: 700; display: flex; gap: 8px; align-items: center; }
+  .choice .what .n { background: var(--cobalt); color: var(--panel); font: 700 0.75rem var(--font-code); border-radius: 50%; width: 22px; height: 22px; display: grid; place-items: center; flex: none; }
+  .choice select { font: 0.88rem var(--font-body); padding: 7px; border: 1px solid var(--line); border-radius: 6px; background: var(--paper); color: var(--ink); width: 100%; }
+  .grade { font-size: 0.88rem; }
+  .grade.right { color: var(--good); } .grade.wrong { color: var(--bad); }
+  .site-tree { margin: 0; padding: 10px 14px; list-style: none; background: var(--stage); border-radius: 8px; font: 0.88rem/1.7 var(--font-code); font-variation-settings: "MONO" 1; }
+  .site-tree .here { color: var(--cobalt); font-weight: 700; }
+  .page-box { background: #fff; color: #1d2133; border: 1px solid var(--line); border-radius: 8px; padding: 14px; font-family: Georgia, serif; display: grid; gap: 8px; min-height: 120px; align-content: start; }
+  .page-box img { display: block; max-width: 100%; height: auto; }
+  .page-box .broken { display: inline-flex; gap: 6px; align-items: center; font-size: 0.9rem; color: #5a6280; border: 1px dashed #9aa2bf; padding: 6px 8px; border-radius: 4px; }
+  .page-box .reserve { background: repeating-linear-gradient(45deg, #eef0f6 0 10px, #e2e5ef 10px 20px); border-radius: 4px; aspect-ratio: 640 / 300; }
+  .page-box .follow { transition: none; }
+  .page-box .follow.moved { outline: 3px solid #b42318; outline-offset: 2px; }
+</style>
+<script src="book-2.js"></script>
+<script src="js/progress.js"></script>
+<script src="js/chrome.js"></script>
+<script src="js/quiz.js"></script>
+</head>
+<body>
+<main class="wrap">
+  <nav class="crumbs" aria-label="Site"><a class="crumb" href="book-2.html">← Contents</a><a class="crumb" href="glossary.html">Glossary</a></nav>
+  <header class="page-head">
+    <h1>HTML Images</h1>
+    <p class="lede">One empty element, <code>&lt;img&gt;</code>, puts a picture on the page. Getting it right means a path that works, a size the browser knows in advance, and alt text for the people who can't see it.</p>
+    <div class="objectives">
+      <p class="callout-title">You'll be able to</p>
+      <ul>
+        <li>Add an image with <code>src</code>, <code>alt</code>, <code>width</code> and <code>height</code>.</li>
+        <li>Fix a broken image path.</li>
+        <li>Write alt text that fits the image's job on the page.</li>
+        <li>Caption an image with <code>&lt;figure&gt;</code> and <code>&lt;figcaption&gt;</code>.</li>
+        <li>Know when an image belongs in CSS instead, and when you're allowed to use one.</li>
+      </ul>
+    </div>
+  </header>
+
+  <!-- ===== How do we put an image on a webpage? ===== -->
+  <div class="section-title"><span class="eyebrow">Read</span><h2>How do we put an image on a webpage?</h2></div>
+  <div class="prose">
+    <p><code>&lt;img&gt;</code> is an <span class="term">empty element</span>: no closing tag, and everything goes in attributes. The one it can't do without is <code>src</code>, the path to the image file:</p>
+    <pre class="snippet" data-lang="html">&lt;img src="images/royal-arch.jpg" alt="Hikers under a sandstone arch"&gt;</pre>
+    <p><code>src</code> works like a link's <code>href</code>. A <span class="term" data-term="Relative path">relative path</span> starts from the folder the current page is in, <code>../</code> goes up one folder, and file names must match exactly: on most web servers <code>Arch.JPG</code> and <code>arch.jpg</code> are different files. You can also point at an <span class="term" data-term="Absolute path">absolute URL</span>, but only use images you have permission to use, and don't "hotlink" to files on someone else's server.</p>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Play</span><h2>Does it load?</h2><p>You're editing <code>trails/royal-arch.html</code>. Write a <code>src</code> that reaches the photo in the <code>images</code> folder.</p></div>
+  <section class="playground even">
+    <div class="stage-col">
+      <ul class="site-tree" aria-label="Site files">
+        <li>📁 site/</li>
+        <li>&nbsp;&nbsp;├ index.html</li>
+        <li>&nbsp;&nbsp;├ 📁 images/</li>
+        <li>&nbsp;&nbsp;│&nbsp;&nbsp;└ royal-arch.jpg</li>
+        <li>&nbsp;&nbsp;└ 📁 trails/</li>
+        <li class="here">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;└ royal-arch.html ← you are here</li>
+      </ul>
+      <div class="presets" id="src-presets" role="group" aria-label="Try a path">
+        <button class="btn" type="button" data-s="images/royal-arch.jpg">images/royal-arch.jpg</button>
+        <button class="btn" type="button" data-s="../images/Royal-Arch.jpg">../images/Royal-Arch.jpg</button>
+        <button class="btn" type="button" data-s="../images/royal-arch.jpg">../images/royal-arch.jpg</button>
+        <button class="btn" type="button" data-s="/images/royal-arch.jpg">/images/royal-arch.jpg</button>
+      </div>
+      <label class="eyebrow" for="src-in">src=</label>
+      <input class="src" id="src-in" spellcheck="false" autocomplete="off">
+    </div>
+    <div class="stage-col">
+      <div class="page-box" id="src-out"></div>
+      <p class="verdict" id="src-note" aria-live="polite"></p>
+    </div>
+  </section>
+
+  <!-- ===== Alternative text ===== -->
+  <div class="section-title"><span class="eyebrow">Read</span><h2>Alternative text</h2></div>
+  <div class="prose">
+    <p>The <code>alt</code> attribute holds a text version of the image. It's what a <span class="term">screen reader</span> reads aloud, what search engines index, and what appears when the image fails to load. Good <span class="term">alt text</span> describes what the image <em>does on this page</em>, not every detail. Ask: if I read this page aloud to a friend, what would I say about this picture?</p>
+    <ul>
+      <li><strong>Content:</strong> a photo in a trail report. Describe what matters to the report.</li>
+      <li><strong>Link:</strong> a logo linking home. Describe where the link goes: "Boulder Trail Club home".</li>
+      <li><strong>Text in an image:</strong> put the same words in the alt. (Better still, use real text.)</li>
+      <li><strong>Decoration:</strong> a flourish or divider. Use an empty <code>alt=""</code> so screen readers skip it. Don't leave <code>alt</code> out, or many screen readers read the file name instead.</li>
+    </ul>
+    <div class="callout tip"><p class="callout-title">Tip</p><p>Don't start alt text with "Image of". Screen readers already announce that it's an image.</p></div>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Play</span><h2>Write alt text for an article</h2><p>Choose alt text for each image, then switch views to hear it, or to see what's left when the images fail to load.</p></div>
+  <section class="playground">
+    <div class="panel controls">
+      <span class="eyebrow">Choose alt text</span>
+      <div class="choices" id="choices"></div>
+      <p class="score" id="score"></p>
+    </div>
+    <div class="stage-col">
+      <div class="seg" role="group" aria-label="View">
+        <button class="btn" type="button" id="v-see" aria-pressed="true">What you see</button>
+        <button class="btn" type="button" id="v-hear" aria-pressed="false">What a screen reader says</button>
+        <button class="btn" type="button" id="v-broken" aria-pressed="false">Image failed to load</button>
+      </div>
+      <article class="article" id="article"></article>
+    </div>
+  </section>
+
+  <!-- ===== Width and height ===== -->
+  <div class="section-title"><span class="eyebrow">Read</span><h2>Width and height</h2></div>
+  <div class="prose">
+    <p>Set <code>width</code> and <code>height</code> to the image's real size in pixels, with no units:</p>
+    <pre class="snippet" data-lang="html">&lt;img src="images/longs-peak.jpg" alt="…" width="640" height="300"&gt;</pre>
+    <p>The browser draws the page before the image arrives. Without the dimensions it reserves no space, then shoves everything below down when the file lands, often just as you go to click something. With them, it holds an empty box of the right shape. CSS can still resize the image, and it keeps that shape.</p>
+    <p>Don't use the attributes to shrink a huge photo, though: the browser still downloads every byte. Resize the file itself.</p>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Play</span><h2>Watch the page jump</h2><p>Load the image slowly, with and without its dimensions, and watch the paragraph underneath.</p></div>
+  <section class="playground even">
+    <div class="panel controls" style="display:grid;gap:10px;align-content:start">
+      <label class="toggle"><input type="checkbox" id="dims"> <code>width="640" height="300"</code></label>
+      <button class="btn primary" type="button" id="reload">Load the image slowly</button>
+      <pre class="snippet" id="dims-code"></pre>
+    </div>
+    <div class="stage-col">
+      <div class="page-box" id="jump"></div>
+      <p class="verdict" id="jump-note" aria-live="polite"></p>
+    </div>
+  </section>
+
+  <!-- ===== Image titles ===== -->
+  <div class="section-title"><span class="eyebrow">Read</span><h2>Image titles</h2></div>
+  <div class="prose">
+    <p>Like links, images can take a <code>title</code> attribute, which shows as a tooltip when you hover. It's not a good place for information: touch screens and keyboards can't hover, and many screen readers ignore it. If something matters, put it in the alt text or a visible caption.</p>
+  </div>
+
+  <!-- ===== figure and figcaption ===== -->
+  <div class="section-title"><span class="eyebrow">Read</span><h2>Annotating images with figures and figure captions</h2></div>
+  <div class="prose">
+    <p>When an image needs a visible caption, wrap the image and caption in <code>&lt;figure&gt;</code> and put the caption in <code>&lt;figcaption&gt;</code>. That ties them together, for screen readers and for CSS. A figure doesn't have to hold an image: a code listing, a chart, a quote or a video can be a figure too.</p>
+    <p>Alt text and caption do different jobs. The <strong>alt</strong> replaces the image for people who can't see it. The <strong>caption</strong> is for everyone and adds information, like who took the photo. Don't repeat the same words in both, or a screen reader reads them twice.</p>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Play</span><h2>Paragraph or figcaption?</h2><p>The same image and caption, marked up two ways.</p></div>
+  <section class="playground even">
+    <div class="stage-col">
+      <div class="seg" role="group" aria-label="Markup"><button class="btn" type="button" id="fig-p" aria-pressed="true">img + p</button><button class="btn" type="button" id="fig-f" aria-pressed="false">figure + figcaption</button></div>
+      <div class="article" id="fig-demo"></div>
+    </div>
+    <div class="stage-col">
+      <div class="panel" style="display:grid;gap:8px"><span class="eyebrow">The markup</span><pre class="snippet" id="fig-code"></pre></div>
+      <div class="panel" style="display:grid;gap:8px"><span class="eyebrow">What a screen reader says</span><p class="spoken-line" id="fig-say"></p></div>
+    </div>
+  </section>
+
+  <div class="section-title"><span class="eyebrow">Practice</span><h2>Write useful alt text</h2><p>Each image needs alt text that fits its job on the page, and the photo needs a visible caption.</p></div>
+  <div id="ex-alt"></div>
+
+  <!-- ===== CSS background images ===== -->
+  <div class="section-title"><span class="eyebrow">Read</span><h2>CSS background images</h2></div>
+  <div class="prose">
+    <p>CSS can also put images on a page, with <code>background-image</code>. Those images are pure decoration: they have no alt text, screen readers don't know they exist, and they don't print by default.</p>
+    <p>So the rule is simple: if the image <strong>means something</strong> in your content, use <code>&lt;img&gt;</code>. If it's <strong>only decoration</strong>, a background image is fine. You'll use them in Week 4.</p>
+  </div>
+
+  <!-- ===== Image licensing ===== -->
+  <div class="section-title"><span class="eyebrow">Read</span><h2>Image licensing</h2></div>
+  <div class="prose">
+    <p>Finding an image online doesn't mean you can use it. Images on your site should be:</p>
+    <ul>
+      <li><strong>Yours:</strong> you made it, or you own the rights.</li>
+      <li><strong>Permission granted:</strong> the owner said yes, ideally in writing.</li>
+      <li><strong>Openly licensed:</strong> for example under a Creative Commons licence or in the public domain. Follow the licence's terms, which often means crediting the creator.</li>
+    </ul>
+    <p>Search engines and sites like Wikimedia Commons, Unsplash and Openverse let you filter by licence. When in doubt, take your own photo.</p>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Practice</span><h2>Fix the trail gallery</h2><p>None of these images load, and the ones that would load would make the page jump.</p></div>
+  <div id="ex-gallery"></div>
+
+  <section class="notes">
+    <div class="panel">
+      <h2>Key ideas</h2>
+      <ul>
+        <li><code>&lt;img&gt;</code> is empty: <code>src</code> says where the file is, and paths work like links.</li>
+        <li>File names are case-sensitive on most servers.</li>
+        <li>Alt text describes what the image does on the page. Decoration gets <code>alt=""</code>.</li>
+        <li><code>width</code> and <code>height</code> stop the page jumping while images load.</li>
+        <li><code>&lt;figure&gt;</code> and <code>&lt;figcaption&gt;</code> tie a caption to its image.</li>
+        <li>Meaningful images go in HTML; decorative ones can go in CSS.</li>
+      </ul>
+    </div>
+    <div class="panel mistake">
+      <h2>Common mistakes</h2>
+      <ul>
+        <li>A path relative to the wrong folder, or <code>Photo.JPG</code> for <code>photo.jpg</code>.</li>
+        <li>Missing alt, so screen readers read <code>IMG_4031.jpg</code> aloud.</li>
+        <li>Alt text that starts with "Image of", or repeats the caption word for word.</li>
+        <li>Putting important information in <code>title</code>.</li>
+        <li>Using any image you found on a search engine.</li>
+      </ul>
+    </div>
+  </section>
+
+  <div class="section-title"><span class="eyebrow">Check yourself</span><h2>Quick check</h2></div>
+  <div class="panel quiz" id="quiz"></div>
+
+  <footer class="page-foot" data-book-nav><a href="book-2.html">← Contents</a></footer>
+</main>
+
+<script>
+  const $ = (id) => document.getElementById(id);
+  const svg = (s) => "data:image/svg+xml," + encodeURIComponent(s);
+  const IMGS = {
+    logo: svg(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40"><circle cx="20" cy="20" r="19" fill="#0b6b5e"/><path d="M8 28 L17 14 L22 21 L26 16 L33 28 Z" fill="#fff"/></svg>`),
+    photo: svg(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 300"><defs><linearGradient id="s" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#5b9be0"/><stop offset="1" stop-color="#cfe4f7"/></linearGradient></defs><rect width="640" height="300" fill="url(#s)"/><circle cx="520" cy="70" r="30" fill="#fff6c9"/><path d="M0 300 L120 170 L200 230 L330 70 L460 210 L540 150 L640 240 L640 300 Z" fill="#4d5b73"/><path d="M290 120 L330 70 L372 125 L350 115 L330 130 L310 112 Z" fill="#fff"/><path d="M100 192 L120 170 L142 186 L125 182 Z" fill="#fff"/><path d="M0 300 L90 250 L200 280 L320 240 L460 285 L640 260 L640 300 Z" fill="#2f5d3a"/></svg>`),
+    chart: svg(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 260" font-family="Arial" font-size="16"><rect width="640" height="260" fill="#fff"/><text x="20" y="28" font-weight="700" font-size="18" fill="#1d2133">Trail visits per year</text><line x1="60" y1="220" x2="620" y2="220" stroke="#9aa2bf"/><rect x="110" y="150" width="110" height="70" fill="#0b6b5e"/><rect x="290" y="115" width="110" height="105" fill="#0b6b5e"/><rect x="470" y="60" width="110" height="160" fill="#0b6b5e"/><text x="165" y="142" text-anchor="middle" fill="#1d2133">12,000</text><text x="345" y="107" text-anchor="middle" fill="#1d2133">15,500</text><text x="525" y="52" text-anchor="middle" fill="#1d2133">19,000</text><text x="165" y="242" text-anchor="middle" fill="#5a6280">2022</text><text x="345" y="242" text-anchor="middle" fill="#5a6280">2023</text><text x="525" y="242" text-anchor="middle" fill="#5a6280">2024</text></svg>`),
+    divider: svg(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 24"><path d="M0 12 Q20 0 40 12 T80 12 T120 12 T160 12 T200 12 T240 12 T280 12 T320 12 T360 12 T400 12 T440 12 T480 12 T520 12 T560 12 T600 12 T640 12" fill="none" stroke="#b4410c" stroke-width="3"/></svg>`),
+  };
+  const SLOTS = [
+    { key: "logo", file: "logo-final-v3.png", what: "The logo, which links to the home page", w: 40, h: 40,
+      opts: [{ alt: null, why: "No alt: the link has no name, so it's announced as \"link, logo-final-v3.png.\"" },
+             { alt: "Logo", why: "\"Logo\" doesn't say where the link goes." },
+             { alt: "Trailhead home", good: true, why: "It names the destination, which is what a link needs." }] },
+    { key: "photo", file: "IMG_4031.jpg", what: "Photo for the news story", w: 640, h: 300,
+      opts: [{ alt: "IMG_4031.jpg", why: "A file name tells the listener nothing." },
+             { alt: "Image of a mountain", why: "Too vague, and \"Image of\" is repeated by the screen reader anyway." },
+             { alt: "Longs Peak with fresh snow on its summit under a clear blue sky", good: true, why: "It describes what matters for this story: the snow." }] },
+    { key: "chart", file: "visits-chart.svg", what: "Chart of trail visits", w: 640, h: 260,
+      opts: [{ alt: "Chart", why: "The listener learns there's a chart but not what it shows." },
+             { alt: "Bar chart: trail visits rose from 12,000 in 2022 to 19,000 in 2024", good: true, why: "It gives the takeaway with the key numbers." },
+             { alt: "", why: "Empty alt hides real information. Only use it for decoration." }] },
+    { key: "divider", file: "squiggle.svg", what: "Decorative squiggle divider", w: 640, h: 24,
+      opts: [{ alt: null, why: "No alt: some screen readers read \"squiggle.svg\" out loud." },
+             { alt: "Orange wavy line", why: "Accurate, but it's noise. The line adds no information." },
+             { alt: "", good: true, why: "Empty alt tells screen readers to skip a purely decorative image." }] },
+  ];
+  const picks = SLOTS.map(() => 0);
+  let view = "see";
+  const esc = (s) => String(s).replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;");
+  const label = (o) => o.alt === null ? "(no alt attribute)" : o.alt === "" ? 'alt="" (empty)' : `alt="${o.alt}"`;
+
+  $("choices").innerHTML = SLOTS.map((s, i) => `<div class="choice"><label class="what" for="c${i}"><span class="n">${i + 1}</span>${s.what}</label><select id="c${i}" data-i="${i}">${s.opts.map((o, j) => `<option value="${j}">${esc(label(o))}</option>`).join("")}</select><div class="grade" id="g${i}"></div></div>`).join("");
+  document.querySelectorAll("#choices select").forEach((sel) => sel.addEventListener("input", () => { picks[+sel.dataset.i] = +sel.value; render(); }));
+
+  function img(i) {
+    const s = SLOTS[i], o = s.opts[picks[i]];
+    const tag = `<span class="num" aria-hidden="true">${i + 1}</span>`;
+    if (view === "hear") {
+      if (o.alt === "") return `<span class="slot">${tag}<span class="spoken skip">(skipped)</span></span>`;
+      if (o.alt === null) return `<span class="slot">${tag}<span class="spoken bad">"${s.key === "logo" ? "link, " : ""}image, ${s.file}"</span></span>`;
+      return `<span class="slot">${tag}<span class="spoken">"${s.key === "logo" ? "link, " : ""}image, ${esc(o.alt)}"</span></span>`;
+    }
+    const src = view === "broken" ? "images/" + s.file : IMGS[s.key];
+    const alt = o.alt === null ? "" : ` alt="${esc(o.alt)}"`;
+    return `<span class="slot">${tag}<img src="${src}"${alt} width="${s.w}" height="${s.h}"></span>`;
+  }
+
+  function render() {
+    $("article").innerHTML = `
+      <a class="masthead logo" href="#article">${img(0)} Trailhead Weekly</a>
+      <h3>Snow arrives early on Longs Peak</h3>
+      ${img(1)}
+      <p>Rangers reported six inches of snow above 12,000 feet on Tuesday, three weeks earlier than last year.</p>
+      ${img(3)}
+      <p>Visits keep climbing, which means busier trailheads on clear weekends.</p>
+      ${img(2)}`;
+    let right = 0;
+    SLOTS.forEach((s, i) => {
+      const o = s.opts[picks[i]];
+      if (o.good) right++;
+      const g = $("g" + i); g.className = "grade " + (o.good ? "right" : "wrong"); g.textContent = (o.good ? "Good choice. " : "") + o.why;
+    });
+    $("score").textContent = `${right} / ${SLOTS.length} good choices`;
+    ["see", "hear", "broken"].forEach((v) => $("v-" + v).setAttribute("aria-pressed", String(view === v)));
+  }
+  ["see", "hear", "broken"].forEach((v) => $("v-" + v).addEventListener("click", () => { view = v; render(); }));
+  render();
+
+  // figure and figcaption
+  let figMode = "p";
+  function fig() {
+    const alt = "Longs Peak with fresh snow on its summit under a clear blue sky";
+    const cap = "Longs Peak from the Chasm Lake trail, October 9. Photo by ranger Ana Ortiz.";
+    const img = `<img src="${IMGS.photo}" alt="${alt}" width="640" height="300">`;
+    $("fig-demo").innerHTML = figMode === "f" ? `<figure>${img}<figcaption>${cap}</figcaption></figure>` : `${img}<p class="cap-p">${cap}</p>`;
+    $("fig-code").textContent = figMode === "f"
+      ? `<figure>\n  <img src="longs-peak.jpg" alt="${alt}">\n  <figcaption>${cap}</figcaption>\n</figure>`
+      : `<img src="longs-peak.jpg" alt="${alt}">\n<p>${cap}</p>`;
+    const say = $("fig-say");
+    if (figMode === "f") { say.className = "spoken-line"; say.textContent = `"Figure: ${cap} Image, ${alt}." The caption is announced as belonging to the image.`; }
+    else { say.className = "spoken-line weak"; say.textContent = `"Image, ${alt}." … then later, as an ordinary paragraph: "${cap}" Nothing says the two are connected.`; }
+    $("fig-p").setAttribute("aria-pressed", String(figMode === "p")); $("fig-f").setAttribute("aria-pressed", String(figMode === "f"));
+  }
+  $("fig-p").addEventListener("click", () => { figMode = "p"; fig(); });
+  $("fig-f").addEventListener("click", () => { figMode = "f"; fig(); });
+  fig();
+  // --- Does it load? ---
+  const PAGE = "https://site.example/trails/royal-arch.html";
+  function srcCheck() {
+    const v = $("src-in").value.trim();
+    let path = "";
+    try { path = new URL(v, PAGE).pathname; } catch (e) { path = "?"; }
+    const ok = path === "/images/royal-arch.jpg";
+    const caseOnly = !ok && path.toLowerCase() === "/images/royal-arch.jpg";
+    $("src-out").innerHTML = `<strong>Royal Arch Trail</strong>` + (ok
+      ? `<img src="${IMGS.photo}" alt="Hikers under a sandstone arch" width="640" height="300">`
+      : `<span class="broken">🖼️ Hikers under a sandstone arch</span>`) + `<p>A steep 3.4-mile round trip.</p>`;
+    $("src-note").className = "verdict " + (ok ? "ok" : "bad");
+    $("src-note").textContent = ok
+      ? (v.startsWith("/") ? `✓ Loads. A leading / starts from the site's root, which works here, but breaks if the site lives in a subfolder (like most GitHub Pages sites).` : `✓ Loads: ../ climbs out of trails/, then into images/.`)
+      : caseOnly ? `✗ The browser asks for ${path}. Close, but the capital letters don't match the file name.`
+      : `✗ The browser asks for ${path}, which doesn't exist. It shows the alt text instead.`;
+  }
+  $("src-in").addEventListener("input", srcCheck);
+  $("src-presets").addEventListener("click", (e) => { const b = e.target.closest("[data-s]"); if (b) { $("src-in").value = b.dataset.s; srcCheck(); } });
+  $("src-in").value = "images/royal-arch.jpg";
+  srcCheck();
+
+  // --- Watch the page jump ---
+  let timer;
+  function jump(loading) {
+    const d = $("dims").checked;
+    $("dims-code").textContent = `<img src="longs-peak.jpg"\n     alt="Longs Peak in snow"${d ? '\n     width="640" height="300"' : ""}>`;
+    const img = loading ? (d ? `<div class="reserve" aria-label="Space reserved for the image"></div>` : "") : `<img src="${IMGS.photo}" alt="Longs Peak in snow" width="640" height="300">`;
+    $("jump").innerHTML = `<strong>Snow on Longs Peak</strong>${img}<p class="follow" id="follow">Rangers reported six inches of snow above 12,000 feet.</p>`;
+  }
+  function slowLoad() {
+    clearTimeout(timer);
+    const d = $("dims").checked;
+    jump(true);
+    $("jump-note").className = "verdict";
+    $("jump-note").textContent = d ? "Loading… the browser has already reserved a box the right shape." : "Loading… the browser doesn't know how tall the image is, so it reserves nothing.";
+    timer = setTimeout(() => {
+      jump(false);
+      if (!d) $("follow").classList.add("moved");
+      $("jump-note").className = "verdict " + (d ? "ok" : "bad");
+      $("jump-note").textContent = d ? "✓ The image filled its box. Nothing moved." : "✗ The paragraph jumped down 300px when the image arrived.";
+    }, 1200);
+  }
+  $("reload").addEventListener("click", slowLoad);
+  $("dims").addEventListener("change", () => { clearTimeout(timer); jump(false); $("jump-note").textContent = ""; });
+  jump(false);
+</script>
+<script>
+  makeExercise(document.getElementById("ex-alt"), {
+    title: "Alt text for three images",
+    task: `<p>The images don't exist, so the preview shows their alt text. That's what a screen reader would say.</p>
+    <ol>
+      <li>The logo is a link to the home page. Its alt text should say where the link goes.</li>
+      <li>The divider is pure decoration. Screen readers should skip it.</li>
+      <li>Wrap the photo and its paragraph in a <code>&lt;figure&gt;</code>, turn the paragraph into a <code>&lt;figcaption&gt;</code>, and give the photo a real description.</li>
+    </ol>`,
+    html: `<a href="index.html"><img src="logo.svg" alt="logo.svg" width="60" height="60"></a>
+<img src="divider.png" width="400" height="20">
+<img src="royal-arch.jpg" alt="image" width="400" height="260">
+<p>Royal Arch, at the top of a steep 1.7-mile climb.</p>`,
+    solution: { html: `<a href="index.html"><img src="logo.svg" alt="Boulder Trail Club home" width="60" height="60"></a>
+<img src="divider.png" alt="" width="400" height="20">
+<figure>
+  <img src="royal-arch.jpg" alt="A sandstone arch framing a view of the plains" width="400" height="260">
+  <figcaption>Royal Arch, at the top of a steep 1.7-mile climb.</figcaption>
+</figure>` },
+    hints: [
+      "For an image that's the only thing in a link, describe the destination: “Boulder Trail Club home”.",
+      "Decorative images get an empty alt: alt=\"\". Leaving alt out makes screen readers read the file name.",
+      "Don't start with “image of”. Say what someone would need to know if they couldn't see it.",
+    ],
+    checks: [
+      { label: "The logo's alt says it goes home", test: ({ $ }) => { const a = $("a img").getAttribute("alt"); return /home/i.test(a) && !/logo|\.svg/i.test(a); } },
+      { label: "The divider has an empty alt", test: ({ $ }) => { const d = $('img[src="divider.png"]'); return d.hasAttribute("alt") && d.getAttribute("alt") === ""; } },
+      { label: "The photo is in a <figure> with a <figcaption>", test: ({ $ }) => !!$('figure img[src="royal-arch.jpg"]') && $("figure figcaption").textContent.includes("Royal Arch") },
+      { label: "The photo's alt describes it", test: ({ $ }) => { const a = $('img[src="royal-arch.jpg"]').getAttribute("alt").trim(); return a.length >= 12 && !/^(image|photo|picture)\b|\.jpg/i.test(a); } },
+    ],
+  });
+
+  makeExercise(document.getElementById("ex-gallery"), {
+    title: "The gallery page",
+    task: `<p>This page is <code>trails/gallery.html</code>. The photos are in the site's <code>images</code> folder, named <code>mesa.jpg</code> and <code>bear-peak.jpg</code> (all lowercase). Each is 800 × 600 pixels.</p>
+    <ol>
+      <li>Fix both <code>src</code> paths so they climb out of <code>trails/</code> and match the file names exactly.</li>
+      <li>Give both images <code>width="800"</code> and <code>height="600"</code>.</li>
+      <li>The Bear Peak photo has its description in a <code>title</code>. Move it into the <code>alt</code> and delete the <code>title</code>.</li>
+    </ol>`,
+    html: `<h1>Trail gallery</h1>
+<img src="images/Mesa.JPG" alt="Mesa Trail winding through tall grass below the Flatirons">
+<img src="images/bear-peak.jpg" alt="" title="The rocky summit of Bear Peak at sunrise">`,
+    solution: { html: `<h1>Trail gallery</h1>
+<img src="../images/mesa.jpg" alt="Mesa Trail winding through tall grass below the Flatirons" width="800" height="600">
+<img src="../images/bear-peak.jpg" alt="The rocky summit of Bear Peak at sunrise" width="800" height="600">` },
+    hints: ["From trails/, ../ goes up to the site folder. Then images/…", "Mesa.JPG and mesa.jpg are different files on a web server."],
+    checks: [
+      { label: "Both src paths are ../images/ with lowercase names", test: ({ $$ }) => $$("img").map((i) => i.getAttribute("src")).join() === "../images/mesa.jpg,../images/bear-peak.jpg" },
+      { label: "Both images are 800 × 600", test: ({ $$ }) => $$("img").length === 2 && $$("img").every((i) => i.getAttribute("width") === "800" && i.getAttribute("height") === "600") },
+      { label: "Bear Peak's description is in alt, with no title", test: ({ $$ }) => { const b = $$("img")[1]; return /bear peak/i.test(b.getAttribute("alt")) && !b.hasAttribute("title"); } },
+    ],
+  });
+
+  makeQuiz(document.getElementById("quiz"), [
+    { id: "q1", q: "Your page is in a posts/ folder and the image is in images/ at the site root. Which src works?", opts: ["../images/photo.jpg", "images/photo.jpg", "posts/images/photo.jpg"], a: 0, why: "../ climbs out of posts/ before going into images/." },
+    { id: "q2", q: "A purely decorative swirl sits between two sections. What alt should it have?", opts: ["alt=\"swirl\"", "alt=\"\"", "No alt attribute"], a: 1, why: "An empty alt tells screen readers to skip it. Leaving alt out makes many read the file name." },
+    { id: "q3", q: "Your logo links to the home page. What's the best alt text?", opts: ["Boulder Trail Club home", "Logo", "Image of a mountain logo"], a: 0, why: "For a linked image, describe where the link goes." },
+    { id: "q4", q: "Why set width and height on an <img>?", opts: ["They're required for the image to show", "So the page doesn't jump around while the image loads", "To make the file smaller"], a: 1, why: "The browser can reserve the right amount of space before the file arrives." },
+    { id: "q5", q: "Which element pairs an image with a visible caption?", opts: ["<p> after the image", "<img caption=\"…\">", "<figure> with <figcaption>"], a: 2, why: "figure groups the image and figcaption holds its caption." },
+    { id: "q6", q: "A decorative texture behind a heading. Where should it go?", opts: ["A CSS background image", "An <img> with alt text", "An <img> with a title"], a: 0, why: "Decoration that carries no meaning belongs in CSS." },
+  ]);
+</script>
+</body>
+</html>

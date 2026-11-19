@@ -1,0 +1,349 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>How the Web Works · Core Web Development</title>
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="core.css">
+<style>
+  .url { display: flex; flex-wrap: wrap; font: 600 clamp(0.9rem, 2.4vw, 1.15rem) var(--font-code); font-variation-settings: "MONO" 1; background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 14px 16px; }
+  .url button { font: inherit; font-variation-settings: inherit; border: 0; background: transparent; padding: 4px 1px; border-bottom: 3px solid transparent; cursor: pointer; color: color-mix(in srgb, var(--c) 60%, var(--ink)); }
+  .url button[aria-pressed="true"] { border-bottom-color: var(--c); background: color-mix(in srgb, var(--c) 12%, transparent); }
+  .parsed { display: grid; grid-template-columns: max-content 1fr; gap: 6px 14px; font: 0.9rem var(--font-code); font-variation-settings: "MONO" 1; margin: 0; }
+  .parsed dt { color: var(--prop); } .parsed dd { margin: 0; color: var(--val); overflow-wrap: anywhere; }
+  .diagram { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 10px; text-align: center; }
+  .diagram .box { padding: 14px; border-radius: var(--radius); border: 1px solid var(--line); background: var(--panel); display: grid; gap: 4px; }
+  .diagram .box b { font-family: var(--font-display); font-size: 1.05rem; }
+  .diagram .box span { font-size: 0.85rem; color: var(--muted); }
+  .diagram .arrows { font: 0.85rem var(--font-code); font-variation-settings: "MONO" 1; color: var(--muted); display: grid; gap: 6px; }
+  .diagram .arrows .req { color: var(--cobalt); } .diagram .arrows .res { color: var(--val); }
+  @media (max-width: 600px) { .diagram { grid-template-columns: 1fr; } }
+  .file-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; font: 0.95rem var(--font-code); font-variation-settings: "MONO" 1; }
+  .file-list li.ok { color: var(--good); } .file-list li.bad { color: var(--bad); }
+  .tree-plain { margin: 0; padding: 12px 14px; background: var(--stage); border-radius: 8px; font: 0.92rem/1.6 var(--font-code); font-variation-settings: "MONO" 1; white-space: pre; overflow-x: auto; }
+</style>
+<script src="book-2.js"></script>
+<script src="js/progress.js"></script>
+<script src="js/chrome.js"></script>
+<script src="js/quiz.js"></script>
+</head>
+<body>
+<main class="wrap">
+  <nav class="crumbs" aria-label="Site"><a class="crumb" href="book-2.html">← Contents</a><a class="crumb" href="glossary.html">Glossary</a></nav>
+  <header class="page-head">
+    <h1>How the Web Works</h1>
+    <p class="lede">A website is a folder of files on someone else's computer. Follow what happens between typing an address and seeing a page, then set up the folder your own site will live in.</p>
+    <div class="objectives">
+      <p class="callout-title">You'll be able to</p>
+      <ul>
+        <li>Explain the roles of the client and the server.</li>
+        <li>Describe the steps from typing a URL to seeing a page: DNS, the connection, HTTP.</li>
+        <li>Name the parts of a URL and read common HTTP status codes.</li>
+        <li>Organize a site's files in folders, with names that work on any server.</li>
+      </ul>
+    </div>
+  </header>
+
+  <!-- ===== Clients and servers ===== -->
+  <div class="section-title"><span class="eyebrow">Read</span><h2>Clients and servers</h2></div>
+  <div class="prose">
+    <p>Every computer on the web plays one of two roles. A <span class="term" data-term="Client and server">client</span> is the device you browse on, and the browser running on it. A server is a computer somewhere else that stores websites and sends out their files when asked.</p>
+    <div class="diagram" aria-label="The client sends a request, the server sends a response">
+      <div class="box"><b>Client</b><span>Your laptop or phone, running a browser</span></div>
+      <div class="arrows"><span class="req">request →</span><span class="res">← response</span></div>
+      <div class="box"><b>Server</b><span>Stores the site's files and sends copies on request</span></div>
+    </div>
+    <p>The client always starts the conversation by sending a <em>request</em>. The server answers with a <em>response</em>: the file, or a message explaining why it can't send it. A server never sends you anything you didn't ask for.</p>
+  </div>
+
+  <!-- ===== The other parts of the toolbox ===== -->
+  <div class="section-title"><span class="eyebrow">Read</span><h2>The other parts of the toolbox</h2></div>
+  <div class="prose">
+    <p>A client and a server need more than each other. Picture the client as your house and the server as a shop:</p>
+    <ul>
+      <li><strong>Your internet connection</strong> is the street between them.</li>
+      <li><strong>TCP/IP</strong> are the rules for how data travels along that street, like the rules for how a delivery is packed and addressed.</li>
+      <li><strong>DNS</strong> is the address book. You know the shop's name; DNS finds its street address.</li>
+      <li><strong>HTTP</strong> is the language the client and server use to talk: "Can I have this file?" "Here it is."</li>
+      <li><strong>Component files</strong> are what the shop sells: code files (HTML, CSS, JavaScript) and assets (images, fonts, video).</li>
+    </ul>
+  </div>
+
+  <!-- ===== So what happens, exactly? ===== -->
+  <div class="section-title"><span class="eyebrow">Play</span><h2>So what happens, exactly?</h2><p>Step through what the browser does when you type <code>trailclub.github.io</code> and press Enter. Then break something and run it again.</p></div>
+  <div class="two">
+    <div class="panel">
+      <div class="presets" id="trip-break" role="group" aria-label="Break something">
+        <button class="btn" type="button" data-break="none" aria-pressed="true">Everything works</button>
+        <button class="btn" type="button" data-break="dns" aria-pressed="false">Typo in the domain</button>
+        <button class="btn" type="button" data-break="404" aria-pressed="false">Page doesn't exist</button>
+        <button class="btn" type="button" data-break="css" aria-pressed="false">Stylesheet path is wrong</button>
+      </div>
+      <p class="hint" id="trip-url"></p>
+      <div class="presets"><button class="btn run" type="button" id="trip-step">Next step →</button><button class="btn" type="button" id="trip-all">Show every step</button><button class="btn" type="button" id="trip-reset">Start over</button></div>
+    </div>
+    <div class="panel"><span class="eyebrow">What happens</span><ol class="timeline" id="trip" aria-live="polite"></ol></div>
+  </div>
+
+  <!-- ===== DNS and packets ===== -->
+  <div class="section-title"><span class="eyebrow">Read</span><h2>DNS explained</h2></div>
+  <div class="prose">
+    <p>Computers find each other by IP address, a string of numbers like <code>185.199.108.153</code>. Nobody wants to remember those, so websites also get a <span class="term">domain name</span>, like <code>github.io</code>. The Domain Name System (DNS) is a worldwide set of servers that look up which IP address goes with which domain name. Your browser asks DNS first, every time it meets a domain it doesn't already know.</p>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Read</span><h2>Packets explained</h2></div>
+  <div class="prose">
+    <p>Files don't travel in one piece. They're split into thousands of small chunks called packets. Each packet can take a different route, and the browser puts them back together when they arrive. If one gets lost, only that small piece is sent again, and many people can download the same site at once without waiting in line.</p>
+  </div>
+
+  <!-- ===== HTTP basics ===== -->
+  <div class="section-title"><span class="eyebrow">Read</span><h2>HTTP basics</h2></div>
+  <div class="prose">
+    <p>HTTP (HyperText Transfer Protocol) is the set of rules for requests and responses. Every response starts with an <span class="term">HTTP status code</span>, a three-digit number that says how the request went. You'll meet these all the time:</p>
+    <table class="mini-table">
+      <thead><tr><th>Code</th><th>Means</th><th>You'll see it when</th></tr></thead>
+      <tbody>
+        <tr><td><code>200</code></td><td>OK</td><td>The file was found and sent. You never notice it.</td></tr>
+        <tr><td><code>301</code></td><td>Moved permanently</td><td>The page has a new address; the browser follows it automatically.</td></tr>
+        <tr><td><code>404</code></td><td>Not found</td><td>Nothing exists at that path: a typo, or a capital letter in the wrong place.</td></tr>
+        <tr><td><code>500</code></td><td>Server error</td><td>Something broke on the server's side, not yours.</td></tr>
+      </tbody>
+    </table>
+    <p>Today almost every site uses <strong>HTTPS</strong>, the same rules sent over an encrypted connection, so nobody in between can read or change what's sent.</p>
+  </div>
+
+  <!-- ===== Components of a URL ===== -->
+  <div class="section-title"><span class="eyebrow">Play</span><h2>Components of a URL</h2><p>Every <span class="term">URL</span> has the same parts. Click a part to see what it does, or paste any address on the right.</p></div>
+  <section class="playground even">
+    <div class="panel" style="display:grid;gap:14px;align-content:start">
+      <div class="url" id="url" role="group" aria-label="Parts of a URL"></div>
+      <div class="explain" id="part-info" aria-live="polite" style="display:grid;gap:6px"></div>
+    </div>
+    <div class="panel" style="display:grid;gap:12px;align-content:start">
+      <label class="eyebrow" for="own">Take apart any URL</label>
+      <input class="src" id="own" type="text" value="https://www.nps.gov/romo/planyourvisit/hiking.htm?season=fall#maps" spellcheck="false">
+      <dl class="parsed" id="parsed"></dl>
+      <p class="hint">This uses the same URL parser your browser uses.</p>
+    </div>
+  </section>
+
+  <!-- ===== Dealing with files ===== -->
+  <div class="section-title"><span class="eyebrow">Read</span><h2>Dealing with files</h2></div>
+  <div class="prose">
+    <p>When you build a site, you build that folder of files yourself. Keep everything for one site in one project folder, with the home page, <span class="term">index.html</span>, at the top. When someone visits the folder without naming a file, the server sends <code>index.html</code>.</p>
+    <h3>What structure should a website have?</h3>
+    <pre class="tree-plain">trail-club/
+├── index.html
+├── about.html
+├── images/
+│   └── mesa-trail.jpg
+├── styles/
+│   └── style.css
+└── scripts/
+    └── main.js</pre>
+    <h3>File names</h3>
+    <p>Your laptop may forgive sloppy names; servers don't. Most servers treat <code>Mesa.jpg</code> and <code>mesa.jpg</code> as two different files, and spaces in names turn into <code>%20</code> in addresses. So name every file and folder in <strong>lowercase</strong>, use <strong>hyphens</strong> instead of spaces, and stick to letters, numbers and hyphens.</p>
+    <h3>File paths</h3>
+    <p>To use one file from another, you write its path: <code>images/mesa-trail.jpg</code> from <code>index.html</code>, for example. You'll learn every kind of path in Creating Links.</p>
+    <div class="callout tip"><p class="callout-title">Tip</p><p>Set your computer to always show file extensions. A file that looks like <code>photo.jpg</code> may really be <code>photo.jpg.png</code>, and the path won't match.</p></div>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Play</span><h2>Will this file name work?</h2><p>Type file names, one per line. Each one is checked against the rules that keep names working on every server.</p></div>
+  <div class="two">
+    <div class="panel"><label class="eyebrow" for="names">File names</label><textarea class="src" id="names" spellcheck="false">index.html
+My Hike Photos.JPG
+trail_map.pdf
+about.html
+Mesa Trail!.html
+mesa-trail.jpg</textarea></div>
+    <div class="panel"><span class="eyebrow">Verdict</span><ul class="file-list" id="names-out" aria-live="polite"></ul></div>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Practice</span><h2>Build a full URL</h2><p>A short path only works inside your own site. To link to another site, you need every part of the address.</p></div>
+  <div id="ex-url"></div>
+
+  <div class="section-title"><span class="eyebrow">Practice</span><h2>Fix the file names</h2><p>The files were renamed to follow the rules. Update the page so its paths match.</p></div>
+  <div id="ex-files"></div>
+
+  <section class="notes">
+    <div class="panel">
+      <h2>Key ideas</h2>
+      <ul>
+        <li>The client (your browser) sends requests; the server sends responses.</li>
+        <li>DNS turns a domain name into an IP address before anything else happens.</li>
+        <li>HTTP carries requests and responses. Every response has a status code: 200 OK, 404 Not found.</li>
+        <li>A page is many files. The browser asks for each one separately.</li>
+        <li>A URL is protocol, domain, path, and sometimes a query and a fragment.</li>
+        <li>Name files in lowercase with hyphens, and keep one site in one folder with <code>index.html</code> at the top.</li>
+      </ul>
+    </div>
+    <div class="panel mistake">
+      <h2>Common mistakes</h2>
+      <ul>
+        <li>A capital letter in a file name that the code spells in lowercase. It works on your laptop and 404s on the server.</li>
+        <li>Spaces in file names.</li>
+        <li>Naming the home page <code>Home.html</code> or <code>index.htm</code> instead of <code>index.html</code>.</li>
+        <li>Linking to another site without <code>https://</code>, so the browser treats the domain as a file in your folder.</li>
+      </ul>
+    </div>
+  </section>
+
+  <div class="section-title"><span class="eyebrow">Check yourself</span><h2>Quick check</h2></div>
+  <div class="panel quiz" id="quiz"></div>
+
+  <footer class="page-foot" data-book-nav><a href="book-2.html">← Contents</a></footer>
+</main>
+
+<script>
+  const $ = (id) => document.getElementById(id);
+  const esc = (s) => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+
+  // --- So what happens, exactly? ---
+  const TRIPS = {
+    none: ["trailclub.github.io", [
+      ["DNS lookup: the browser asks what IP address <b>trailclub.github.io</b> has. Answer: 185.199.108.153", "run"],
+      ["Connect to that server, and set up an encrypted HTTPS connection", "run"],
+      ["Send an HTTP request: <b>GET /index.html</b>", "run"],
+      ["The server answers <b>200 OK</b> and sends index.html, in packets", "good"],
+      ["Read the HTML. It mentions styles/style.css and images/mesa-trail.jpg, so request those too", "run"],
+      ["Both answer <b>200 OK</b>", "good"],
+      ["Put it all together and show the styled page", "good"],
+    ]],
+    dns: ["trailclub.gihtub.io", [
+      ["DNS lookup: what IP address does <b>trailclub.gihtub.io</b> have?", "run"],
+      ["DNS has no record of that domain", "bad"],
+      ["Nothing can be requested, because there's no server to ask. The browser shows “This site can't be reached”", "bad"],
+    ]],
+    "404": ["trailclub.github.io/hikes/mesa.html", [
+      ["DNS lookup for <b>trailclub.github.io</b>: 185.199.108.153", "run"],
+      ["Connect, and set up HTTPS", "run"],
+      ["Send an HTTP request: <b>GET /hikes/mesa.html</b>", "run"],
+      ["The server answers <b>404 Not Found</b>. The file is really called Mesa.html, and capital letters count", "bad"],
+      ["The browser shows the server's 404 page", "bad"],
+    ]],
+    css: ["trailclub.github.io", [
+      ["DNS lookup for <b>trailclub.github.io</b>: 185.199.108.153", "run"],
+      ["Connect, and set up HTTPS", "run"],
+      ["Send an HTTP request: <b>GET /index.html</b>", "run"],
+      ["<b>200 OK</b>: index.html arrives", "good"],
+      ["The HTML links <b>Styles/style.css</b>, so request it", "run"],
+      ["<b>404 Not Found</b>: the folder is called styles, in lowercase", "bad"],
+      ["The page shows up, but unstyled: black Times text on white. Each file succeeds or fails on its own", "bad"],
+    ]],
+  };
+  let trip = "none", shown = 0;
+  function drawTrip() {
+    const steps = TRIPS[trip][1];
+    $("trip-url").innerHTML = `Address typed: <code>https://${esc(TRIPS[trip][0])}</code>`;
+    $("trip").innerHTML = steps.slice(0, shown).map(([t, c], i) => `<li class="${c}"><span>${i + 1}</span><span>${t}</span></li>`).join("")
+      || '<li><span></span><span>Press Next step to begin.</span></li>';
+    $("trip-step").disabled = shown >= steps.length;
+  }
+  $("trip-step").addEventListener("click", () => { shown++; drawTrip(); });
+  $("trip-all").addEventListener("click", () => { shown = TRIPS[trip][1].length; drawTrip(); });
+  $("trip-reset").addEventListener("click", () => { shown = 0; drawTrip(); });
+  $("trip-break").addEventListener("click", (e) => {
+    const b = e.target.closest("[data-break]");
+    if (!b) return;
+    trip = b.dataset.break; shown = 0;
+    document.querySelectorAll("#trip-break .btn").forEach((x) => x.setAttribute("aria-pressed", String(x === b)));
+    drawTrip();
+  });
+  drawTrip();
+
+  // --- Components of a URL ---
+  const PARTS = [
+    ["https://", "Protocol", "How to talk to the server. https means HTTP over an encrypted connection.", "var(--cobalt)"],
+    ["trailclub.github.io", "Domain name", "Which server to ask. DNS turns it into an IP address.", "var(--prop)"],
+    ["/hikes/mesa.html", "Path", "Which file on that server, inside its folders. A path that ends in a folder gets that folder's index.html.", "var(--val)"],
+    ["?season=fall", "Query", "Extra information for the server or the page's JavaScript, as name=value pairs after a ?.", "var(--item-4)"],
+    ["#maps", "Fragment", "A spot on the page: the browser scrolls to the element with id=\"maps\". It's never sent to the server.", "var(--item-5)"],
+  ];
+  $("url").innerHTML = PARTS.map(([t, , , c], i) => `<button type="button" data-i="${i}" style="--c:${c}" aria-pressed="false">${esc(t)}</button>`).join("");
+  function showPart(i) {
+    document.querySelectorAll("#url button").forEach((b) => b.setAttribute("aria-pressed", String(+b.dataset.i === i)));
+    $("part-info").innerHTML = `<span class="eyebrow">Selected</span><h3>${PARTS[i][1]}</h3><p>${esc(PARTS[i][2])}</p>`;
+  }
+  $("url").addEventListener("click", (e) => { const b = e.target.closest("button"); if (b) showPart(+b.dataset.i); });
+  showPart(1);
+  function parse() {
+    let u;
+    try { u = new URL($("own").value.trim()); } catch { $("parsed").innerHTML = "<dt>Error</dt><dd>That isn't a full URL. Does it start with https://?</dd>"; return; }
+    const rows = [["Protocol", u.protocol], ["Domain", u.hostname], ["Path", u.pathname], ["Query", u.search || "(none)"], ["Fragment", u.hash || "(none)"]];
+    $("parsed").innerHTML = rows.map(([k, v]) => `<dt>${k}</dt><dd>${esc(v)}</dd>`).join("");
+  }
+  $("own").addEventListener("input", parse);
+  parse();
+
+  // --- Will this file name work? ---
+  function checkName(n) {
+    const problems = [];
+    if (/\s/.test(n)) problems.push("has spaces");
+    if (/[A-Z]/.test(n)) problems.push("has capital letters");
+    if (/[^a-zA-Z0-9.\-_\s]/.test(n)) problems.push("has special characters");
+    if (/_/.test(n)) problems.push("underscore: hyphens are the usual choice");
+    if (!/\.[a-z0-9]+$/i.test(n)) problems.push("no extension");
+    return problems;
+  }
+  function names() {
+    $("names-out").innerHTML = $("names").value.split("\n").map((n) => n.trim()).filter(Boolean).map((n) => {
+      const p = checkName(n);
+      const hard = p.filter((x) => !x.startsWith("underscore"));
+      return `<li class="${hard.length ? "bad" : "ok"}">${hard.length ? "✗" : "✓"} ${esc(n)}${p.length ? ` <span class="hint">· ${p.join(", ")}</span>` : ""}</li>`;
+    }).join("");
+  }
+  $("names").addEventListener("input", names);
+  names();
+</script>
+<script>
+  makeExercise(document.getElementById("ex-url"), {
+    title: "Link to the city's trail map",
+    task: `<p>The trail map lives on another website, so <code>map.pdf</code> won't find it. Change the link's <code>href</code> to a full URL with these parts:</p>
+    <ul>
+      <li>Protocol: <code>https</code></li>
+      <li>Domain: <code>www.bouldercolorado.gov</code></li>
+      <li>Path: <code>/trails/map.pdf</code></li>
+    </ul>`,
+    html: `<p>Before you go, download the <a href="map.pdf">official trail map</a>.</p>`,
+    solution: { html: `<p>Before you go, download the <a href="https://www.bouldercolorado.gov/trails/map.pdf">official trail map</a>.</p>` },
+    hints: ["A full URL starts with the protocol and ://", "Then the domain, then the path: https://www.bouldercolorado.gov/trails/map.pdf"],
+    checks: [
+      { label: "The link uses https", test: ({ $ }) => $("a").getAttribute("href").startsWith("https://") },
+      { label: "It points at www.bouldercolorado.gov", test: ({ $ }) => new URL($("a").getAttribute("href")).hostname === "www.bouldercolorado.gov" },
+      { label: "The path is /trails/map.pdf", test: ({ $ }) => new URL($("a").getAttribute("href")).pathname === "/trails/map.pdf" },
+    ],
+  });
+
+  makeExercise(document.getElementById("ex-files"), {
+    title: "Paths that match the files",
+    task: `<p>The site's files are now named like this:</p>
+    <pre class="snippet">index.html
+trail-map.html
+images/
+  mesa-trail.jpg</pre>
+    <p>Update the link and the image so their paths match exactly, letter for letter.</p>`,
+    html: `<h1>Mesa Trail</h1>
+<p>See the <a href="Trail Map.html">trail map</a>.</p>
+<img src="Images/Mesa Trail.JPG" alt="The Mesa Trail below the Flatirons">`,
+    solution: { html: `<h1>Mesa Trail</h1>
+<p>See the <a href="trail-map.html">trail map</a>.</p>
+<img src="images/mesa-trail.jpg" alt="The Mesa Trail below the Flatirons">` },
+    hints: ["Paths are case-sensitive on servers: Images and images are different folders.", "Spaces became hyphens, and everything is lowercase: trail-map.html, images/mesa-trail.jpg."],
+    checks: [
+      { label: "The link points to trail-map.html", test: ({ $ }) => $("a").getAttribute("href") === "trail-map.html" },
+      { label: "The image is images/mesa-trail.jpg", test: ({ $ }) => $("img").getAttribute("src") === "images/mesa-trail.jpg" },
+    ],
+  });
+
+  makeQuiz(document.getElementById("quiz"), [
+    { id: "q1", q: "Which is the client?", opts: ["The browser on your laptop", "The computer that stores the website", "The DNS server"], a: 0, why: "The client is the device and browser that requests pages. The server stores and sends them." },
+    { id: "q2", q: "What's the first thing that happens when you type a new domain and press Enter?", opts: ["The browser asks DNS for the domain's IP address", "The server sends index.html", "The browser downloads the CSS"], a: 0, why: "The browser can't contact a server until DNS tells it the server's address." },
+    { id: "q3", q: "The browser asks for a file and the server answers 404. What does that mean?", opts: ["The server is down", "There's no file at that path", "The file moved somewhere else"], a: 1, why: "404 is Not Found. A moved file gets a 301 instead." },
+    { id: "q4", q: "In https://trails.example.com/hikes/mesa.html, which part names the file?", opts: ["/hikes/mesa.html", "trails.example.com", "https"], a: 0, why: "The path after the domain names the file, inside the server's folders." },
+    { id: "q5", q: "Your page loads but has no styles at all. What's the most likely cause?", opts: ["The stylesheet's request failed, often from a wrong path or a capital letter", "The HTML file failed to load", "DNS failed"], a: 0, why: "Each file is a separate request. The HTML arrived, but the CSS didn't." },
+    { id: "q6", q: "Which file name is safest to use on a website?", opts: ["Trail Map.html", "trail-map.html", "trail map!.html"], a: 1, why: "Lowercase letters with hyphens work the same on every server and in every URL." },
+  ]);
+</script>
+</body>
+</html>

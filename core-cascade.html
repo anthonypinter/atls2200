@@ -1,0 +1,470 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Cascade · Core Web Development</title>
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="core.css">
+<style>
+  .seg-list { display: grid; gap: 6px; }
+  .seg-list .btn { text-align: left; }
+  #art { border: 2px dashed var(--prop); border-radius: 8px; padding: 14px; display: grid; gap: 10px; position: relative; color: #161a2b; background: #fff; }
+  /* The demo is a light "page" in both themes, so sample colors like firebrick stay readable. */
+  #art .kid-wrap { border-color: #d9deeb; } #art .kid-wrap .who { color: #5a6280; } #art > .who { color: #b4410c; }
+  #art > .who, .kid-wrap .who { font: 600 0.72rem var(--font-code); font-variation-settings: "MONO" 1; }
+  .kid-wrap { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 10px; align-items: center; padding: 8px 10px; border-radius: 6px; border: 1px solid var(--line); }
+  .kid-wrap .who { display: block; color: var(--muted); margin-bottom: 4px; }
+  .badge { font: 600 0.75rem var(--font-code); font-variation-settings: "MONO" 1; padding: 3px 8px; border-radius: 4px; white-space: nowrap; }
+  .badge.yes { background: var(--good-soft); color: var(--good); } .badge.no { background: var(--bad-soft); color: var(--bad); } .badge.see { background: var(--stage); color: var(--muted); }
+  #art h3 { margin: 0; font: inherit; font-weight: 700; font-size: 1.2em; }
+  #art p { margin: 0; }
+  #art a { color: inherit; }
+  #art button, #art input { padding: 6px 10px; }
+  #art.fix button, #art.fix input { font: inherit; color: inherit; }
+  .why { font-size: 0.92rem; }
+
+  .rules { display: grid; gap: 10px; }
+  .rulecard { display: grid; grid-template-columns: auto 1fr auto; gap: 12px; align-items: center; padding: 12px; border-radius: 8px; border: 1px solid var(--line); background: var(--panel); }
+  .rulecard.win { border-color: var(--good); box-shadow: inset 4px 0 0 var(--good); }
+  .rulecard .order { display: grid; gap: 4px; }
+  .rulecard .order button { font-size: 0.8rem; padding: 2px 8px; min-width: 28px; min-height: 26px; }
+  .rulecard .body { display: grid; gap: 6px; min-width: 0; }
+  .rulecard select { font: 0.92rem var(--font-code); font-variation-settings: "MONO" 1; color: var(--cobalt); background: var(--paper); border: 1px solid var(--line); border-radius: 6px; padding: 5px; max-width: 100%; }
+  .decl { font: 0.92rem var(--font-code); font-variation-settings: "MONO" 1; }
+  .rulecard:not(.win) .decl { text-decoration: line-through; color: var(--muted); }
+  .rulecard .imp { display: flex; gap: 6px; align-items: center; font: 0.8rem var(--font-code); font-variation-settings: "MONO" 1; color: var(--bad); cursor: pointer; white-space: nowrap; }
+  .sw { display: inline-block; width: 12px; height: 12px; border-radius: 3px; vertical-align: middle; margin-right: 4px; }
+  .result-row { display: flex; flex-wrap: wrap; gap: 12px 20px; align-items: center; margin-top: 14px; padding: 14px 16px; border-radius: var(--radius); background: var(--panel); border: 1px solid var(--line); }
+  .result-row .sample { font: 800 1.5rem var(--font-display); }
+  @media (max-width: 520px) { .rulecard { grid-template-columns: 1fr; } .rulecard .order { grid-auto-flow: column; justify-content: start; } }
+  .calc { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  @media (max-width: 700px) { .calc { grid-template-columns: 1fr; } }
+  .rule { display: grid; gap: 10px; }
+  .rule input { font: 1rem var(--font-code); font-variation-settings: "MONO" 1; padding: 9px 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--paper); color: var(--ink); width: 100%; }
+  .score3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+  .score3 div { display: grid; justify-items: center; padding: 8px 4px; border-radius: 6px; background: var(--stage); }
+  .score3 b { font: 800 1.6rem var(--font-display); font-variant-numeric: tabular-nums; }
+  .score3 small { font-size: 0.72rem; color: var(--muted); text-align: center; }
+  .rule.win { outline: 3px solid var(--good); }
+  .sp-result { margin-top: 16px; padding: 14px 16px; border-radius: var(--radius); background: var(--panel); border: 1px solid var(--line); display: flex; flex-wrap: wrap; gap: 10px 20px; align-items: center; }
+  .sp-result .sample { font: 800 1.4rem var(--font-display); }
+  .swatch { display: inline-block; width: 12px; height: 12px; border-radius: 3px; vertical-align: middle; margin-right: 4px; }
+
+  .ctl-demo { background: #fff; color: #1d2133; border: 1px solid var(--line); border-radius: 8px; padding: 14px; display: grid; gap: 10px; }
+  .ctl-demo .parent { color: firebrick; font: 1rem Georgia, serif; border: 2px dashed #e0a3a3; padding: 10px; border-radius: 6px; }
+  .ctl-demo .parent a { font-weight: 700; }
+  .ctl-demo blockquote { margin: 0; }
+</style>
+<script src="book-2.js"></script>
+<script src="js/progress.js"></script>
+<script src="js/chrome.js"></script>
+<script src="js/quiz.js"></script>
+</head>
+<body>
+<main class="wrap">
+  <nav class="crumbs" aria-label="Site"><a class="crumb" href="book-2.html">← Contents</a><a class="crumb" href="glossary.html">Glossary</a></nav>
+  <header class="page-head">
+    <h1>The Cascade</h1>
+    <p class="lede">Several rules often try to style the same element. CSS settles every argument the same way, with three ideas: the cascade, specificity and inheritance. Once you know them, "why isn't my CSS working?" usually answers itself.</p>
+    <div class="objectives">
+      <p class="callout-title">You'll be able to</p>
+      <ul>
+        <li>Explain how source order, specificity and inheritance decide an element's final style.</li>
+        <li>Work out a selector's specificity and predict which rule wins.</li>
+        <li>Control inheritance with <code>inherit</code>, <code>initial</code>, <code>unset</code> and <code>revert</code>.</li>
+        <li>Explain why inline styles and <code>!important</code> make CSS hard to maintain.</li>
+      </ul>
+    </div>
+  </header>
+
+  <div class="section-title"><span class="eyebrow">Read</span><h2>Conflicting rules</h2></div>
+  <div class="prose">
+<h3>Cascade</h3>
+    <p>When two rules with equally strong selectors set the same property, the one that comes <em>later</em> wins:</p>
+    <pre class="snippet" data-lang="css">h1 { color: red; }
+h1 { color: blue; }  /* headings are blue */</pre>
+    <h3>Specificity</h3>
+    <p>But a more specific selector beats a less specific one, wherever it is. A class is more specific than an element name, so this heading is red even though the <code>h1</code> rule comes later:</p>
+    <pre class="snippet" data-lang="css">.main-heading { color: red; }
+h1 { color: blue; }</pre>
+    <h3>Inheritance</h3>
+    <p>Some values set on a parent are passed down to its children. Set <code>color: blue</code> on <code>body</code> and every paragraph and span inside turns blue, unless a rule targets them directly.</p>
+    <h3>Understanding how the concepts work together</h3>
+    <p>These three ideas together decide every property of every element. The rest of this lesson takes each in turn.</p>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Read</span><h2>Understanding inheritance</h2></div>
+  <div class="prose">
+<p><span class="term">Inheritance</span> is why you can set a font once and have the whole page use it. Roughly: <strong>text properties inherit</strong> (<code>color</code>, <code>font-*</code>, <code>line-height</code>, <code>text-align</code>), and <strong>box properties don't</strong> (<code>border</code>, <code>padding</code>, <code>margin</code>, <code>width</code>, <code>background</code>). That's sensible: if a border on a <code>&lt;section&gt;</code> put a border on every paragraph inside it, nobody would use borders.</p>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Play</span><h2>What gets inherited?</h2><p>Set a property on the article. The badges read what the browser actually computed for each child.</p></div>
+  <section class="playground">
+    <div class="panel controls">
+      <span class="eyebrow">Set on article</span>
+      <div class="seg-list" id="props"></div>
+      <label class="check" style="display:flex;gap:8px;align-items:center;margin-top:8px;cursor:pointer"><input type="checkbox" id="fix"><span style="font:600 0.85rem var(--font-code);font-variation-settings:'MONO' 1;color:var(--prop)">button, input { font: inherit; color: inherit }</span></label>
+    </div>
+    <div class="stage-col">
+      <article id="art">
+        <span class="who">article</span>
+        <div class="kid-wrap"><div><span class="who">h3</span><h3 data-kid>Mesa Trail</h3></div><span class="badge" data-badge></span></div>
+        <div class="kid-wrap"><div><span class="who">p</span><p data-kid>Rolling foothills with views of the Flatirons.</p></div><span class="badge" data-badge></span></div>
+        <div class="kid-wrap"><div><span class="who">a</span><a href="#art" data-kid>Trail map</a></div><span class="badge" data-badge></span></div>
+        <div class="kid-wrap"><div><span class="who">button</span><button type="button" data-kid>Save trail</button></div><span class="badge" data-badge></span></div>
+        <div class="kid-wrap"><div><span class="who">input</span><input data-kid value="Search trails" aria-label="Search trails"></div><span class="badge" data-badge></span></div>
+      </article>
+      <p class="why" id="why"></p>
+    </div>
+  </section>
+
+  <div class="prose">
+<h3>Controlling inheritance</h3>
+    <p>Every property also accepts special values that control inheritance:</p>
+    <ul>
+      <li><code>inherit</code>: take the parent's value, even for a property that normally doesn't inherit.</li>
+      <li><code>initial</code>: use the property's starting value from the CSS specification (for <code>color</code>, that's black).</li>
+      <li><code>revert</code>: go back to the browser's default style for this element (for a link, blue).</li>
+      <li><code>unset</code>: act like <code>inherit</code> for properties that inherit, and like <code>initial</code> for the rest.</li>
+    </ul>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Play</span><h2>Inheritance control values</h2><p>The paragraph is firebrick. Choose a value for the link's <code>color</code>.</p></div>
+  <section class="playground even">
+    <div class="panel" style="display:grid;gap:10px;align-content:start">
+      <div class="seg" id="ctl" role="group" aria-label="Value for the link's color">
+        <button class="btn" type="button" data-v="">(no rule)</button>
+        <button class="btn" type="button" data-v="inherit">inherit</button>
+        <button class="btn" type="button" data-v="initial">initial</button>
+        <button class="btn" type="button" data-v="revert">revert</button>
+        <button class="btn" type="button" data-v="unset">unset</button>
+      </div>
+      <pre class="snippet" id="ctl-code"></pre>
+      <p class="verdict" id="ctl-note" aria-live="polite"></p>
+    </div>
+    <div class="ctl-demo"><p class="parent" id="ctl-p">Read the <a href="#ctl" id="ctl-a">trail report</a> before you go.</p></div>
+  </section>
+
+  <div class="prose">
+<h3>Resetting all property values</h3>
+    <p>The shorthand <code>all</code> applies one of those values to (almost) every property at once. <code>blockquote { all: unset; }</code> wipes out every style on the element, so you can start it from scratch.</p>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Practice</span><h2>Let it inherit</h2><p>This stylesheet sets the same font and colour three times. Set them once and let inheritance do the rest.</p></div>
+  <div id="ex-inherit"></div>
+
+  <div class="section-title"><span class="eyebrow">Read</span><h2>Understanding the cascade</h2></div>
+  <div class="prose">
+<p>When rules disagree about the same property on the same element, the browser checks three things, in order of importance:</p>
+    <ol>
+      <li><strong>Importance</strong>: is a declaration marked <code><span class="term">!important</span></code>?</li>
+      <li><strong><span class="term">Specificity</span></strong>: which selector is more specific?</li>
+      <li><strong><span class="term">Source order</span></strong>: which rule comes later?</li>
+    </ol>
+    <h3>Source order</h3>
+    <p>If importance and specificity tie, later wins. That includes the order of your <code>&lt;link&gt;</code> tags: link a general stylesheet after a specific one, and the general one can win.</p>
+    <h3>Specificity</h3>
+    <p>The browser scores each selector in three columns:</p>
+    <ul>
+      <li><strong>IDs:</strong> each <code>#id</code> scores one in the first column.</li>
+      <li><strong>Classes, attributes and pseudo-classes:</strong> each <code>.class</code>, <code>[attr]</code> or <code>:hover</code> scores one in the second.</li>
+      <li><strong>Elements and pseudo-elements:</strong> each <code>h2</code> or <code>::before</code> scores one in the third.</li>
+    </ul>
+    <p>Scores are compared column by column, from left to right, so one ID outranks any number of classes, and one class outranks any number of elements. <code>*</code> and combinators score nothing.</p>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Play</span><h2>Score two selectors</h2><p>Both rules color the same heading. Type selectors to compare their scores.</p></div>
+  <div class="calc">
+    <div class="panel rule" id="sp-ra"><label class="eyebrow" for="sp-a"><span class="swatch" style="background:var(--prop)"></span>Rule A (written first)</label><input id="sp-a" value="#featured h2" spellcheck="false"><div class="score3" id="sp-sa"></div></div>
+    <div class="panel rule" id="sp-rb"><label class="eyebrow" for="sp-b"><span class="swatch" style="background:var(--cobalt)"></span>Rule B (written second)</label><input id="sp-b" value=".card .title" spellcheck="false"><div class="score3" id="sp-sb"></div></div>
+  </div>
+  <div class="sp-result" aria-live="polite"><span class="sample" id="sp-sample">Mesa Trail</span><span id="sp-verdict"></span></div>
+
+  <div class="prose">
+<h3>Inline styles</h3>
+    <p>A <code>style=""</code> attribute beats every selector in every stylesheet. That's one reason to avoid inline styles: the only way to override them is <code>!important</code>.</p>
+    <h3>!important</h3>
+    <p>Adding <code>!important</code> to a declaration makes it beat every normal declaration, whatever the specificity. It's tempting as a quick fix, but the next time you need to change that property, only another <code>!important</code> will do, and soon nobody can tell which rule wins. Fix the specificity instead.</p>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Play</span><h2>Which rule wins?</h2><p>Three rules try to colour the same heading, <code>&lt;h3 class="title" id="top"&gt;</code>. Change the selectors, reorder the rules, or add <code>!important</code>.</p></div>
+  <div class="rules" id="rules"></div>
+  <div class="result-row" aria-live="polite"><span class="sample" id="sample">Mesa Trail</span><span id="verdict"></span></div>
+  <div class="panel" style="margin-top:14px">
+    <span class="eyebrow">The browser checks in this order</span>
+    <ul style="margin:8px 0 0;padding-left:1.2em;display:grid;gap:4px">
+      <li><code>!important</code> beats everything without it.</li>
+      <li>Then higher specificity wins (IDs, then classes, then elements).</li>
+      <li>If it's still a tie, the rule that comes later in the CSS wins.</li>
+    </ul>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Practice</span><h2>Win without !important</h2><p>Someone forced a rule to win. Undo it properly.</p></div>
+  <div id="ex-important"></div>
+
+  <div class="section-title"><span class="eyebrow">Read</span><h2>The effect of CSS location</h2></div>
+  <div class="prose">
+<p>Your stylesheets aren't the only ones. The browser has its default (user-agent) stylesheet, and users can add their own, for example to force larger text. They're layered in this order, each overriding the ones before:</p>
+    <ol>
+      <li>Browser defaults</li>
+      <li>User styles</li>
+      <li>Your styles (the author)</li>
+      <li>Your <code>!important</code> styles</li>
+      <li>User <code>!important</code> styles</li>
+      <li>Browser <code>!important</code> styles</li>
+    </ol>
+    <p>Notice the flip: for <code>!important</code>, the user beats the author. That's deliberate, so people who need large text or high contrast always get it.</p>
+  </div>
+
+  <section class="notes">
+    <div class="panel">
+      <h2>Key ideas</h2>
+      <ul>
+        <li>Later rules beat earlier ones, but only when specificity ties.</li>
+        <li>Specificity: IDs, then classes/attributes/pseudo-classes, then elements. Compare column by column.</li>
+        <li>Text properties inherit; box properties don't.</li>
+        <li><code>inherit</code>, <code>initial</code>, <code>revert</code> and <code>unset</code> control inheritance for any property.</li>
+        <li>Inline styles beat selectors, and <code>!important</code> beats both. Avoid them.</li>
+      </ul>
+    </div>
+    <div class="panel mistake">
+      <h2>Common mistakes</h2>
+      <ul>
+        <li>Fighting specificity with <code>!important</code> instead of a better selector.</li>
+        <li>Expecting a border or padding on a parent to apply to its children.</li>
+        <li>Linking stylesheets in the wrong order, so a general file overrides a specific one.</li>
+        <li>Styling with IDs, which makes later overrides need even stronger selectors.</li>
+        <li>Forgetting that buttons and inputs don't inherit the page's font.</li>
+      </ul>
+    </div>
+  </section>
+
+  <div class="section-title"><span class="eyebrow">Check yourself</span><h2>Quick check</h2></div>
+  <div class="panel quiz" id="quiz"></div>
+
+  <footer class="page-foot" data-book-nav><a href="book-2.html">← Contents</a></footer>
+</main>
+
+<script>
+  const $ = (id) => document.getElementById(id);
+  const PROPS = {
+    "color: firebrick": ["color", "firebrick", "color"],
+    "font-family: Lora, serif": ["fontFamily", '"Lora", serif', "font-family"],
+    "font-style: italic": ["fontStyle", "italic", "font-style"],
+    "text-align: center": ["textAlign", "center", "text-align"],
+    "border: 3px solid": ["border", "3px solid", "border-top-width"],
+    "padding: 20px": ["padding", "20px", "padding-top"],
+    "background: lightyellow": ["background", "lightyellow", "background-color"],
+  };
+  let current = "color: firebrick";
+  $("props").innerHTML = Object.keys(PROPS).map((k) => `<button class="btn" data-k="${k}">${k}</button>`).join("");
+  $("props").addEventListener("click", (e) => { const b = e.target.closest("button"); if (b) { current = b.dataset.k; inherit(); } });
+  $("fix").addEventListener("input", inherit);
+
+  function inherit() {
+    const art = $("art"), [js, val, cssProp] = PROPS[current];
+    art.removeAttribute("style");
+    art.style[js] = val;
+    art.classList.toggle("fix", $("fix").checked);
+    const parentVal = getComputedStyle(art).getPropertyValue(cssProp);
+    const kids = [...art.querySelectorAll("[data-kid]")], badges = [...art.querySelectorAll("[data-badge]")];
+    let formNote = false;
+    kids.forEach((k, i) => {
+      const v = getComputedStyle(k).getPropertyValue(cssProp), b = badges[i];
+      if (cssProp === "background-color" && v === "rgba(0, 0, 0, 0)" && !/^(BUTTON|INPUT)$/.test(k.tagName)) { b.className = "badge see"; b.textContent = "transparent (see-through)"; }
+      else if (v === parentVal) { b.className = "badge yes"; b.textContent = "inherited"; }
+      else { b.className = "badge no"; b.textContent = "not inherited"; if (/^(BUTTON|INPUT)$/.test(k.tagName)) formNote = true; }
+    });
+    document.querySelectorAll("#props .btn").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.k === current)));
+    const inheritable = ["color", "font-family", "font-style", "text-align"].includes(cssProp);
+    let why = inheritable ? `${current.split(":")[0]} is a text property, so it inherits.` : `${current.split(":")[0]} is a box property, so it stays on the article only.`;
+    if (formNote && cssProp !== "text-align") why += " Buttons and inputs are the exception: the browser gives them their own font and color. Turn on the checkbox to make them inherit.";
+    if (cssProp === "background-color") why += " The children look yellow only because their backgrounds are transparent.";
+    $("why").textContent = why;
+  }
+  inherit();
+
+  // Cascade
+  const SELECTORS = ["h3", ".title", "#top", "article h3", "article .title", "h3.title"];
+  const COLORS = [["var(--prop)", "orange"], ["var(--cobalt)", "blue"], ["var(--val)", "teal"]];
+  let rules = [{ sel: "h3", color: 0, imp: false }, { sel: ".title", color: 1, imp: false }, { sel: "h3.title", color: 2, imp: false }];
+  function specificity(s) {
+    let a = 0, b = 0, c = 0;
+    s = s.replace(/#[\w-]+/g, () => { a++; return " "; }).replace(/\.[\w-]+/g, () => { b++; return " "; });
+    (s.match(/[a-z][\w-]*/gi) || []).forEach(() => c++);
+    return [a, b, c];
+  }
+  function cmp(x, y) { if (x.imp !== y.imp) return x.imp ? 1 : -1; const sx = specificity(x.sel), sy = specificity(y.sel); for (let i = 0; i < 3; i++) if (sx[i] !== sy[i]) return sx[i] - sy[i]; return 0; }
+  function cascade() {
+    let win = 0;
+    rules.forEach((r, i) => { if (i > 0 && cmp(r, rules[win]) >= 0) win = i; });
+    $("rules").innerHTML = rules.map((r, i) => `<div class="rulecard ${i === win ? "win" : ""}">
+      <div class="order"><button class="btn" data-up="${i}" ${i === 0 ? "disabled" : ""} aria-label="Move up">↑</button><button class="btn" data-down="${i}" ${i === rules.length - 1 ? "disabled" : ""} aria-label="Move down">↓</button></div>
+      <div class="body"><span class="eyebrow">Rule ${i + 1} · specificity ${specificity(r.sel).join("-")}</span>
+        <div><select data-sel="${i}" aria-label="Selector for rule ${i + 1}">${SELECTORS.map((s) => `<option ${s === r.sel ? "selected" : ""}>${s}</option>`).join("")}</select> <span class="decl">{ color: <span class="sw" style="background:${COLORS[r.color][0]}"></span>${COLORS[r.color][1]}${r.imp ? " !important" : ""}; }</span></div></div>
+      <label class="imp"><input type="checkbox" data-imp="${i}" ${r.imp ? "checked" : ""}>!important</label></div>`).join("");
+    $("sample").style.color = COLORS[rules[win].color][0];
+    const w = rules[win], others = rules.filter((_, i) => i !== win);
+    let why;
+    if (w.imp && others.every((o) => !o.imp)) why = "it's the only !important one.";
+    else if (others.every((o) => { const c = cmp(w, o); return c > 0; })) why = "its specificity is the highest.";
+    else why = "it ties with another rule and comes later.";
+    $("verdict").textContent = `Rule ${win + 1} (${COLORS[w.color][1]}) wins because ${why}`;
+  }
+  $("rules").addEventListener("click", (e) => {
+    const up = e.target.closest("[data-up]"), down = e.target.closest("[data-down]");
+    if (up) { const i = +up.dataset.up; [rules[i - 1], rules[i]] = [rules[i], rules[i - 1]]; cascade(); }
+    if (down) { const i = +down.dataset.down; [rules[i + 1], rules[i]] = [rules[i], rules[i + 1]]; cascade(); }
+  });
+  $("rules").addEventListener("input", (e) => {
+    if (e.target.dataset.sel !== undefined) rules[+e.target.dataset.sel].sel = e.target.value;
+    if (e.target.dataset.imp !== undefined) rules[+e.target.dataset.imp].imp = e.target.checked;
+    cascade();
+  });
+  cascade();
+  // Specificity: [ids, classes/attributes/pseudo-classes, elements/pseudo-elements]
+  function spScore(sel) {
+    let s = sel.split(",")[0];
+    s = s.replace(/:where\([^)]*\)/g, "");
+    s = s.replace(/:(?:is|not|has)\(([^)]*)\)/g, " $1 ");
+    let a = 0, b = 0, c = 0;
+    s = s.replace(/::[\w-]+/g, () => { c++; return " "; });
+    s = s.replace(/#[\w-]+/g, () => { a++; return " "; });
+    s = s.replace(/\.[\w-]+/g, () => { b++; return " "; });
+    s = s.replace(/\[[^\]]*\]/g, () => { b++; return " "; });
+    s = s.replace(/:[\w-]+(\([^)]*\))?/g, () => { b++; return " "; });
+    (s.match(/[a-zA-Z][\w-]*/g) || []).forEach(() => c++);
+    return [a, b, c];
+  }
+  const spValid = (s) => { try { document.querySelector(s); return !!s.trim(); } catch (e) { return false; } };
+  function box(sc) {
+    return [["IDs", sc[0]], ["classes, attributes, :pseudo", sc[1]], ["elements", sc[2]]].map(([l, n]) => `<div><b>${n}</b><small>${l}</small></div>`).join("");
+  }
+  function spCompare() {
+    const A = $("sp-a").value, B = $("sp-b").value;
+    if (!spValid(A) || !spValid(B)) {
+      $("sp-sa").innerHTML = spValid(A) ? box(spScore(A)) : ""; $("sp-sb").innerHTML = spValid(B) ? box(spScore(B)) : "";
+      $("sp-verdict").textContent = "Type a valid selector in both boxes."; $("sp-ra").classList.remove("win"); $("sp-rb").classList.remove("win"); return;
+    }
+    const sa = spScore(A), sb = spScore(B);
+    $("sp-sa").innerHTML = box(sa); $("sp-sb").innerHTML = box(sb);
+    let winner = "B", why = "The scores tie, so the rule written later (B) wins.";
+    for (let i = 0; i < 3; i++) {
+      if (sa[i] !== sb[i]) {
+        winner = sa[i] > sb[i] ? "A" : "B";
+        const col = ["IDs", "classes", "elements"][i];
+        why = `Rule ${winner} wins: it has more ${col} (${Math.max(sa[i], sb[i])} vs ${Math.min(sa[i], sb[i])})` + (i > 0 ? `, and the columns to the left tied.` : ".");
+        break;
+      }
+    }
+    $("sp-ra").classList.toggle("win", winner === "A"); $("sp-rb").classList.toggle("win", winner === "B");
+    $("sp-sample").style.color = winner === "A" ? "var(--prop)" : "var(--cobalt)";
+    $("sp-verdict").textContent = why;
+  }
+  $("sp-a").addEventListener("input", spCompare); $("sp-b").addEventListener("input", spCompare);
+  spCompare();
+
+  // --- Inheritance control values ---
+  const CTL = {
+    "": "No rule targets the link, so the browser's default link style applies: blue (or purple once visited).",
+    inherit: "inherit takes the parent's value: firebrick, like the rest of the paragraph.",
+    initial: "initial uses color's starting value from the specification: black. Not the browser's link blue.",
+    revert: "revert goes back to the browser's default for a link: blue.",
+    unset: "color normally inherits, so unset acts like inherit: firebrick.",
+  };
+  function ctl(v) {
+    const a = $("ctl-a");
+    a.style.color = v;
+    $("ctl-code").textContent = v ? `.parent a {\n  color: ${v};\n}` : "/* no rule for the link */";
+    $("ctl-note").textContent = CTL[v] + ` (computed: ${getComputedStyle(a).color})`;
+    document.querySelectorAll("#ctl .btn").forEach((x) => x.setAttribute("aria-pressed", String(x.dataset.v === v)));
+  }
+  $("ctl").addEventListener("click", (e) => { const b = e.target.closest("[data-v]"); if (b) ctl(b.dataset.v); });
+  $("ctl-a").addEventListener("click", (e) => e.preventDefault());
+  ctl("inherit");
+
+</script>
+<script>
+  makeExercise(document.getElementById("ex-inherit"), {
+    title: "Set the font once",
+    task: `<ol>
+      <li>Set the font and text color on <code>body</code> instead, and delete the repeated declarations.</li>
+      <li>Buttons don't inherit fonts by default. Make the button use the page's font with <code>inherit</code>.</li>
+    </ol>`,
+    html: `<div class="card">
+  <h2>Mesa Trail</h2>
+  <p>A rolling trail along the base of the Flatirons.</p>
+  <ul><li>6.7 miles</li><li>Moderate</li></ul>
+  <button>Save trail</button>
+</div>`,
+    css: `h2 { font-family: Georgia, serif; color: #1d2a3a; }
+p { font-family: Georgia, serif; color: #1d2a3a; }
+li { font-family: Georgia, serif; color: #1d2a3a; }
+
+.card { border: 2px solid #2340d9; padding: 12px; }`,
+    solution: { css: `body { font-family: Georgia, serif; color: #1d2a3a; }
+
+button { font-family: inherit; }
+
+.card { border: 2px solid #2340d9; padding: 12px; }` },
+    hints: [
+      "Text properties like font-family and color are inherited, so everything inside body gets them.",
+      "button { font-family: inherit; } (or font: inherit) brings the page's font into the button.",
+    ],
+    checks: [
+      { label: "body sets Georgia and #1d2a3a", test: ({ style }) => style("body", "font-family").includes("Georgia") && style("body", "color") === "rgb(29, 42, 58)" },
+      { label: "The font and color are declared only once", test: ({ doc }) => { const rules = [...doc.styleSheets[0].cssRules]; return rules.filter((r) => r.style && r.style.fontFamily && r.style.fontFamily !== "inherit").length === 1 && rules.filter((r) => r.style && r.style.color && r.style.color !== "inherit").length === 1; } },
+      { label: "Everything is still Georgia", test: ({ $$, style }) => $$("h2, p, li").every((el) => style(el, "font-family").includes("Georgia")) },
+      { label: "The button uses the page's font", test: ({ style }) => style("button", "font-family") === style("body", "font-family") },
+    ],
+  });
+
+  makeExercise(document.getElementById("ex-important"), {
+    title: "The red alert",
+    task: `<p>The alert paragraph should be red, but <code>#news p</code> is more specific than <code>.alert</code>, so someone added <code>!important</code>.</p>
+    <ol>
+      <li>Delete <code>!important</code>.</li>
+      <li>Change the <code>.alert</code> selector so it's more specific than <code>#news p</code>, while still matching only the alert.</li>
+    </ol>`,
+    html: `<section id="news">
+  <p>Mesa Trail reopens on Saturday.</p>
+  <p class="alert">Royal Arch is closed for repairs.</p>
+</section>`,
+    css: `body { font-family: system-ui, sans-serif; }
+
+#news p {
+  color: gray;
+}
+
+.alert {
+  color: red !important;
+}`,
+    solution: { css: `body { font-family: system-ui, sans-serif; }
+
+#news p {
+  color: gray;
+}
+
+#news .alert {
+  color: red;
+}` },
+    hints: ["#news p scores 1-0-1. You need at least an ID and a class: 1-1-0.", "#news .alert, or #news p.alert, both work."],
+    checks: [
+      { label: "No !important anywhere", test: ({ code }) => !/!\s*important/i.test(code.css) },
+      { label: "The alert is red", test: ({ style }) => style(".alert", "color") === "rgb(255, 0, 0)" },
+      { label: "The other paragraph is still gray", test: ({ style }) => style("p:not(.alert)", "color") === "rgb(128, 128, 128)" },
+    ],
+  });
+
+  makeQuiz(document.getElementById("quiz"), [
+    { id: "q1", q: "Two rules, both h1, set different colours. Which wins?", opts: ["The later one", "The first one", "Neither"], a: 0, why: "Equal specificity, so source order decides." },
+    { id: "q2", q: "Which selector is most specific?", opts: ["#main p", ".card .title .tag", "article section div p"], a: 0, why: "1-0-1 beats 0-3-0: one ID outranks any number of classes." },
+    { id: "q3", q: "You put a border on a <section>. Do the paragraphs inside get borders?", opts: ["No, border doesn't inherit", "Yes", "Only the first one"], a: 0, why: "Box properties don't inherit." },
+    { id: "q4", q: "a { color: inherit; } makes links…", opts: ["the same colour as their parent text", "black", "blue"], a: 0, why: "inherit takes the parent's value." },
+    { id: "q5", q: "Why avoid !important as a fix?", opts: ["Only another !important can override it later", "Browsers ignore it", "It slows the page"], a: 0, why: "It short-circuits specificity, so overrides escalate." },
+    { id: "q6", q: "What does an inline style=\"\" attribute beat?", opts: ["Every selector in every stylesheet", "Only element selectors", "Nothing"], a: 0, why: "Inline styles beat all normal selectors; only !important beats them." },
+  ]);
+</script>
+</body>
+</html>

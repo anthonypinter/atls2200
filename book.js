@@ -1,8 +1,8 @@
 /* The book manifest: the single source of truth for the reading order.
-   index.html (table of contents), js/chrome.js (sidebar, breadcrumbs, prev/next) and scripts/check.mjs all read it.
+   book.html (table of contents), js/chrome.js (sidebar, breadcrumbs, prev/next) and scripts/check.mjs all read it.
    To add a lesson: create <slug>.html (start from an existing lesson), then add one line below in reading order.
    Lesson fields: slug (file name without .html), title, desc (one sentence for the contents card),
-   props (3–4 code chips), mini (diagram key in index.html). Optional, added as lessons move to the textbook format
+   props (3–4 code chips), mini (diagram key in book.html). Optional, added as lessons move to the textbook format
    (templates/lesson.html): minutes, the time to read and work through the whole lesson. Learning objectives live in
    each lesson page, in its header.
    related (optional): slugs of lessons to suggest under "Related lessons". List each pair once: the link appears on

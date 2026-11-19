@@ -1,0 +1,385 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Shadows and Effects · Core Web Development</title>
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="core.css">
+<style>
+  .light-stage { display: grid; place-items: center; min-height: 300px; background: #eef1f6; border-radius: var(--radius); border: 1px solid var(--line); padding: 30px; }
+  #sh-card { width: min(100%, 260px); padding: 20px; border-radius: 12px; background: #fff; color: #1d2133; display: grid; gap: 6px; }
+  #sh-card h3 { margin: 0; font: 800 1.2rem var(--font-display); }
+  #sh-card p { margin: 0; font-size: 0.92rem; color: #5a6280; }
+  .presets { display: flex; flex-wrap: wrap; gap: 6px; }
+  .presets .btn { font-size: 0.82rem; padding: 5px 9px; }
+  .check { display: flex; gap: 8px; align-items: center; font-size: 0.92rem; cursor: pointer; }
+  .check input { accent-color: var(--cobalt); }
+  .control input[type="color"] { width: 100%; height: 32px; border: 1px solid var(--line); border-radius: 6px; background: var(--paper); padding: 2px; }
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .status { font-size: 0.93rem; padding: 8px 10px; border-radius: 6px; background: var(--stage); }
+  .photo-stage { position: relative; min-height: 220px; border-radius: var(--radius); overflow: hidden; display: grid; place-items: center; padding: 20px;
+    background: linear-gradient(180deg, #9cc7ea, #f6e3c9 55%, #7d5a7a 56%, #3e4a61); }
+  .photo-stage.busy { background: repeating-linear-gradient(45deg, #f6e3c9 0 14px, #9cc7ea 14px 28px, #fff 28px 42px); }
+  #ts { font: 800 clamp(1.6rem, 6vw, 2.6rem) var(--font-display); color: #fff; text-align: center; }
+  .compare { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  @media (max-width: 560px) { .compare { grid-template-columns: 1fr; } }
+  .compare .panel { display: grid; gap: 8px; justify-items: center; text-align: center; }
+  .icon-wrap { display: grid; place-items: center; height: 150px; width: 100%; background: #eef1f6; border-radius: 8px; }
+  .icon-wrap img { width: 110px; height: 110px; }
+  .filters img { width: 100%; max-width: 360px; border-radius: 8px; display: block; margin-inline: auto; }
+
+  .bl-stage { position: relative; height: 220px; border-radius: 8px; overflow: hidden; border: 1px solid var(--line); background: #fff; }
+  .bl-a { position: absolute; inset: 20px 30% 20px 20px; border-radius: 10px; background-color: #3fa66b; background-image: repeating-linear-gradient(45deg, #fff 0 12px, #1d2133 12px 24px); }
+  .bl-b { position: absolute; inset: 60px 20px 40px 40%; border-radius: 50%; background: #8a3ffc; display: grid; place-items: center; color: #fff; font: 800 1.4rem system-ui, sans-serif; }
+  .sh-stage { background: #fff; color: #1d2133; border: 1px solid var(--line); border-radius: 8px; padding: 14px; font: 0.95rem/1.6 Georgia, serif; }
+  .sh-stage .ball { float: left; width: 130px; height: 130px; border-radius: 50%; background: radial-gradient(circle at 35% 35%, #f0b37a, #b4410c); margin: 0 14px 6px 0; }
+  .clip-h { font: 900 clamp(2rem, 7vw, 3.6rem)/1.1 system-ui, sans-serif; margin: 0; background-image: linear-gradient(90deg, #0b6b5e, #2340d9, #b4410c); }
+  .clip-h.on { -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+</style>
+<script src="book-2.js"></script>
+<script src="js/progress.js"></script>
+<script src="js/chrome.js"></script>
+<script src="js/quiz.js"></script>
+</head>
+<body>
+<main class="wrap">
+  <nav class="crumbs" aria-label="Site"><a class="crumb" href="book-2.html">← Contents</a><a class="crumb" href="glossary.html">Glossary</a></nav>
+  <header class="page-head">
+    <h1>Shadows and Effects</h1>
+    <p class="lede">Shadows add depth, filters change how an element is drawn, and blend modes mix layers like a photo editor. Used lightly, they give a page polish; overdone, they make it hard to read.</p>
+    <div class="objectives">
+      <p class="callout-title">You'll be able to</p>
+      <ul>
+        <li>Add soft, layered and inset box shadows, and text shadows that keep text readable.</li>
+        <li>Apply filters like <code>blur()</code>, <code>grayscale()</code> and <code>drop-shadow()</code>.</li>
+        <li>Mix layers with <code>background-blend-mode</code> and <code>mix-blend-mode</code>.</li>
+        <li>Wrap text around a shape, and fill text with a gradient.</li>
+      </ul>
+    </div>
+  </header>
+
+  <div class="section-title"><span class="eyebrow">Read</span><h2>Box shadows</h2></div>
+  <div class="prose">
+<h3>A simple box shadow</h3>
+    <p><code>box-shadow</code> takes up to five values: horizontal offset, vertical offset, blur, spread, and a colour.</p>
+    <pre class="snippet" data-lang="css">.simple {
+  box-shadow: 5px 5px 5px rgb(0 0 0 / 70%);
+}</pre>
+    <p>The best shadows are barely noticeable. Use a semi-transparent colour rather than solid black, and let it fall slightly downward, as if lit from above. A shadow is painted, not laid out: it takes no space and never pushes other boxes away.</p>
+    <h3>Multiple box shadows</h3>
+    <p>Separate several shadows with commas. Stacking a tight, darker one with a wide, faint one looks much more natural than either alone:</p>
+    <pre class="snippet" data-lang="css">.card {
+  box-shadow:
+    0 1px 2px rgb(0 0 0 / 12%),
+    0 8px 24px rgb(0 0 0 / 10%);
+}</pre>
+    <h3>Other box shadow features</h3>
+    <p>The <code>inset</code> keyword draws the shadow inside the box, which makes it look pressed in. Swapping an outer shadow for an inset one on <code>:active</code> is a classic "pressed button" effect.</p>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Play</span><h2>box-shadow</h2><p>A shadow has an x offset, a y offset, a blur, a spread and a colour. Try the presets, then adjust them yourself.</p></div>
+  <section class="playground">
+    <div class="panel controls">
+      <div class="presets" id="presets"></div>
+      <div class="two-col">
+        <div class="control"><label for="x">x offset</label><input id="x" type="range" min="-30" max="30" value="0"><span class="readout" id="x-out"></span></div>
+        <div class="control"><label for="y">y offset</label><input id="y" type="range" min="-30" max="40" value="8"><span class="readout" id="y-out"></span></div>
+        <div class="control"><label for="b">blur</label><input id="b" type="range" min="0" max="60" value="24"><span class="readout" id="b-out"></span></div>
+        <div class="control"><label for="s">spread</label><input id="s" type="range" min="-20" max="20" value="-4"><span class="readout" id="s-out"></span></div>
+      </div>
+      <div class="two-col">
+        <div class="control"><label for="c">color</label><input id="c" type="color" value="#1d2133"></div>
+        <div class="control"><label for="o">opacity</label><input id="o" type="range" min="0" max="100" value="18"><span class="readout" id="o-out"></span></div>
+      </div>
+      <label class="check"><input type="checkbox" id="inset"><code>inset</code> (shadow inside the box)</label>
+      <label class="check"><input type="checkbox" id="layer">Add a second, tighter shadow layer</label>
+    </div>
+    <div class="stage-col">
+      <div class="light-stage"><div id="sh-card"><h3>Mesa Trail</h3><p>6.7 miles · Moderate · Dogs on leash</p></div></div>
+      <p class="status" id="status" aria-live="polite"></p>
+    </div>
+  </section>
+
+  <div class="prose">
+<h3>Text shadows</h3>
+    <p><code>text-shadow</code> works the same way, without spread or inset. Its best use is keeping big headings readable on a busy photo; on body text it just looks blurry.</p>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Play</span><h2>text-shadow for readable text on images</h2></div>
+  <section class="playground">
+    <div class="panel controls">
+      <div class="control"><label for="tb">blur</label><input id="tb" type="range" min="0" max="20" value="0"><span class="readout" id="tb-out"></span></div>
+      <div class="control"><label for="to">shadow darkness</label><input id="to" type="range" min="0" max="100" value="0"><span class="readout" id="to-out"></span></div>
+      <label class="check"><input type="checkbox" id="busy" checked>Busy background</label>
+    </div>
+    <div class="stage-col">
+      <div class="photo-stage busy" id="pstage"><span id="ts">Above Treeline</span></div>
+      <p class="status" id="ts-status" aria-live="polite"></p>
+    </div>
+  </section>
+
+  <div class="section-title"><span class="eyebrow">Practice</span><h2>Add depth with shadows</h2><p>Make the card float with a soft, natural shadow, and lift the heading off the photo.</p></div>
+  <div id="ex-shadow"></div>
+
+  <div class="section-title"><span class="eyebrow">Read</span><h2>Filters</h2></div>
+  <div class="prose">
+<p>The <code>filter</code> property changes how an element is drawn, like a photo editor: <code>blur(10px)</code>, <code>grayscale(60%)</code>, <code>brightness()</code>, <code>contrast()</code>, <code>invert()</code>, <code>hue-rotate()</code>, <code>sepia()</code>. It applies to the whole element, text and children included.</p>
+    <p><code>filter: drop-shadow()</code> is a shadow that follows the element's actual shape, including transparent areas of an image, where <code>box-shadow</code> always follows the rectangle.</p>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Look</span><h2>box-shadow vs filter: drop-shadow()</h2><p>box-shadow follows the element's rectangle. drop-shadow follows the shape you can see.</p></div>
+  <div class="compare">
+    <div class="panel"><span class="eyebrow">box-shadow</span><div class="icon-wrap"><img id="i1" alt="Mountain icon" width="110" height="110"></div><p class="hint">The shadow outlines the image's square box.</p></div>
+    <div class="panel"><span class="eyebrow">filter: drop-shadow()</span><div class="icon-wrap"><img id="i2" alt="Mountain icon" width="110" height="110"></div><p class="hint">The shadow traces the mountain's shape.</p></div>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Play</span><h2>Other filters</h2></div>
+  <section class="playground filters">
+    <div class="panel controls">
+      <div class="control"><label for="fname">filter</label><select id="fname"><option value="none">none</option><option value="grayscale(1)">grayscale(1)</option><option value="sepia(1)">sepia(1)</option><option value="blur(4px)">blur(4px)</option><option value="brightness(0.6)">brightness(0.6)</option><option value="contrast(1.6)">contrast(1.6)</option><option value="saturate(2)">saturate(2)</option><option value="hue-rotate(120deg)">hue-rotate(120deg)</option></select></div>
+      <p class="hint">A common use: show photos in grayscale and bring the color back on hover.</p>
+    </div>
+    <div class="stage"><img id="fimg" alt="Sunset over the Flatirons" width="360" height="200"></div>
+  </section>
+
+  <div class="section-title"><span class="eyebrow">Read</span><h2>Blend modes</h2></div>
+  <div class="prose">
+<p>Blend modes decide how overlapping colours mix, as in Photoshop: <code>multiply</code> darkens, <code>screen</code> lightens, <code>overlay</code> boosts contrast, <code>difference</code> inverts.</p>
+    <h3>background-blend-mode</h3>
+    <p>Blends an element's own background layers together, like a background image with its background colour: <code>background-blend-mode: multiply</code> tints the image with the colour.</p>
+    <h3>mix-blend-mode</h3>
+    <p>Blends a whole element with whatever is behind it on the page.</p>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Play</span><h2>Try each blend mode</h2><p>The striped box has a green background colour under a stripe image; the purple circle overlaps it.</p></div>
+  <section class="playground even">
+    <div class="panel" style="display:grid;gap:10px;align-content:start">
+      <div class="control"><label for="bl-bg">background-blend-mode (striped box)</label><select id="bl-bg"><option>normal</option><option>multiply</option><option>screen</option><option>overlay</option><option>difference</option><option>luminosity</option></select></div>
+      <div class="control"><label for="bl-mix">mix-blend-mode (circle)</label><select id="bl-mix"><option>normal</option><option>multiply</option><option>screen</option><option>overlay</option><option>difference</option><option>exclusion</option></select></div>
+      <pre class="snippet" id="bl-code"></pre>
+    </div>
+    <div class="bl-stage"><div class="bl-a" id="bl-a"></div><div class="bl-b" id="bl-b">Mix</div></div>
+  </section>
+
+  <div class="section-title"><span class="eyebrow">Read</span><h2>CSS shapes</h2></div>
+  <div class="prose">
+<p>Text normally wraps around a floated element's rectangle. <code>shape-outside</code> makes it wrap around a shape instead, such as a circle:</p>
+    <pre class="snippet" data-lang="css">img {
+  float: left;
+  shape-outside: circle(50%);
+}</pre>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Play</span><h2>Wrap text around a circle</h2><p>Switch <code>shape-outside</code> on and off.</p></div>
+  <section class="playground even">
+    <div class="panel" style="display:grid;gap:10px;align-content:start">
+      <label class="toggle"><input type="checkbox" id="shape-on" checked> <code>shape-outside: circle(50%)</code></label>
+    </div>
+    <div class="sh-stage"><div class="ball" id="ball"></div>The sun sets behind the Flatirons around eight in midsummer, painting the sandstone orange. Hikers on the Mesa Trail stop to watch the light change, then hurry down before dark. Notice how these lines hug the curve of the circle when the shape is on, and stay square when it's off.</div>
+  </section>
+
+  <div class="section-title"><span class="eyebrow">Read</span><h2>-webkit-background-clip: text</h2></div>
+  <div class="prose">
+<p><code>background-clip</code> decides how far a background reaches. Its <code>text</code> value clips the background to the letters, so a gradient or image fills the text. Make the text itself transparent to see it:</p>
+    <pre class="snippet" data-lang="css">h2 {
+  background-image: linear-gradient(90deg, #0b6b5e, #2340d9, #b4410c);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}</pre>
+    <p>The <code>-webkit-</code> prefix is a <em>vendor prefix</em>: a browser-specific version from before the feature was standardised. Some browsers still need it here, so write both. Check that the text stays readable, and that a colour shows if the effect isn't supported.</p>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Play</span><h2>Gradient text</h2><p>Switch clipping on.</p></div>
+  <section class="playground even">
+    <div class="panel" style="display:grid;gap:10px;align-content:start"><label class="toggle"><input type="checkbox" id="clip-on" checked> <code>background-clip: text</code> and transparent text</label></div>
+    <div class="panel" style="background:#fff"><h2 class="clip-h on" id="clip-h">Above Treeline</h2></div>
+  </section>
+
+  <div class="section-title"><span class="eyebrow">Practice</span><h2>Effects on a trail card</h2><p>A pressed button, a grayscale photo and gradient text.</p></div>
+  <div id="ex-effects"></div>
+
+  <section class="notes">
+    <div class="panel">
+      <h2>Key ideas</h2>
+      <ul>
+        <li><code>box-shadow</code>: x, y, blur, spread, colour; stack several with commas.</li>
+        <li>Shadows take no space; <code>inset</code> draws them inside.</li>
+        <li><code>filter</code> edits how a whole element is drawn; <code>drop-shadow()</code> follows its shape.</li>
+        <li><code>background-blend-mode</code> mixes an element's own layers; <code>mix-blend-mode</code> mixes it with the page.</li>
+        <li><code>background-clip: text</code> fills letters with a background; keep a readable fallback.</li>
+      </ul>
+    </div>
+    <div class="panel mistake">
+      <h2>Common mistakes</h2>
+      <ul>
+        <li>Solid black shadows, or shadows so big they look like smudges.</li>
+        <li><code>text-shadow</code> on body text.</li>
+        <li>Relying on a shadow alone to separate a card from its background, especially in dark mode.</li>
+        <li>Gradient text with no fallback colour, which can vanish entirely.</li>
+        <li>Blend modes that destroy text contrast.</li>
+      </ul>
+    </div>
+  </section>
+
+  <div class="section-title"><span class="eyebrow">Check yourself</span><h2>Quick check</h2></div>
+  <div class="panel quiz" id="quiz"></div>
+
+  <footer class="page-foot" data-book-nav><a href="book-2.html">← Contents</a></footer>
+</main>
+
+<script>
+  const $ = (id) => document.getElementById(id);
+  const hexA = (hex, a) => { const n = parseInt(hex.slice(1), 16); return `rgb(${n >> 16} ${(n >> 8) & 255} ${n & 255} / ${a}%)`; };
+  const PRESETS = {
+    "None": [0, 0, 0, 0, 0, false, false],
+    "Subtle": [0, 2, 6, 0, 12, false, false],
+    "Raised": [0, 8, 24, -4, 18, false, true],
+    "Floating": [0, 24, 50, -10, 28, false, true],
+    "Inset": [0, 3, 8, 0, 20, true, false],
+    "Hard retro": [8, 8, 0, 0, 100, false, false],
+  };
+  $("presets").innerHTML = Object.keys(PRESETS).map((k) => `<button class="btn">${k}</button>`).join("");
+  $("presets").addEventListener("click", (e) => {
+    const b = e.target.closest("button"); if (!b) return;
+    const [x, y, bl, s, o, ins, lay] = PRESETS[b.textContent];
+    Object.entries({ x, y, b: bl, s, o }).forEach(([k, v]) => ($(k).value = v));
+    $("inset").checked = ins; $("layer").checked = lay; shadow();
+  });
+  function shadow() {
+    const [x, y, b, s, o] = ["x", "y", "b", "s", "o"].map((k) => +$(k).value), ins = $("inset").checked;
+    ["x", "y", "b", "s"].forEach((k) => ($(k + "-out").textContent = $(k).value + "px")); $("o-out").textContent = o + "%";
+    const col = hexA($("c").value, o);
+    let v = `${ins ? "inset " : ""}${x}px ${y}px ${b}px ${s}px ${col}`;
+    if ($("layer").checked && !ins) v = `0 1px 2px ${hexA($("c").value, Math.min(100, o + 6))}, ` + v;
+    $("sh-card").style.boxShadow = o === 0 ? "none" : v;
+    let msg;
+    if (o === 0 || (b === 0 && x === 0 && y === 0 && s <= 0)) msg = "No visible shadow. The card blends into the background.";
+    else if (ins) msg = "An inset shadow is drawn inside the box, so it looks pressed in. Good for input fields and wells.";
+    else if (o > 50 && b === 0) msg = "No blur and full opacity gives a hard, graphic shadow: a deliberate retro look, not a realistic one.";
+    else if (o > 40) msg = "That's a heavy shadow. Try lowering the opacity; real shadows are faint.";
+    else msg = "A soft shadow lifts the card off the page." + ($("layer").checked ? " The second tight layer adds a crisp edge right under the card." : "");
+    $("status").textContent = msg;
+  }
+  document.querySelectorAll("#x, #y, #b, #s, #c, #o, #inset, #layer").forEach((el) => el.addEventListener("input", shadow));
+  shadow();
+
+  function textShadow() {
+    const b = +$("tb").value, o = +$("to").value;
+    $("tb-out").textContent = b + "px"; $("to-out").textContent = o + "%";
+    $("pstage").classList.toggle("busy", $("busy").checked);
+    $("ts").style.textShadow = o ? `0 2px ${b}px rgb(0 0 0 / ${o}%)` : "none";
+    $("ts-status").textContent = o < 30 ? "White text gets lost against the light parts of the background. Raise the darkness and add some blur." : b < 4 ? "Readable, but a sharp shadow looks like a smudged copy. A little blur softens it." : "A soft, dark glow behind the letters keeps them readable on any background.";
+  }
+  ["tb", "to", "busy"].forEach((id) => $(id).addEventListener("input", textShadow));
+  textShadow();
+
+  const ICON = "data:image/svg+xml," + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="110" height="110" viewBox="0 0 110 110"><path d="M5 95 L40 30 L58 60 L72 40 L105 95 Z" fill="#0b6b5e"/><path d="M33 43 L40 30 L47 43 L40 39 Z" fill="#fff"/></svg>');
+  $("i1").src = ICON; $("i2").src = ICON;
+  $("i1").style.boxShadow = "6px 8px 10px rgb(0 0 0 / 35%)";
+  $("i2").style.filter = "drop-shadow(6px 8px 6px rgb(0 0 0 / 35%))";
+
+  $("fimg").src = "data:image/svg+xml," + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="360" height="200" viewBox="0 0 360 200"><defs><linearGradient id="g" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ff7b54"/><stop offset="1" stop-color="#ffd56b"/></linearGradient></defs><rect width="360" height="200" fill="url(#g)"/><circle cx="270" cy="120" r="34" fill="#fff3d6"/><path d="M0 200 L0 120 L50 70 L80 110 L120 50 L160 115 L200 80 L240 140 L360 120 L360 200 Z" fill="#8a4f3a"/><path d="M0 200 L0 170 L360 160 L360 200 Z" fill="#2f5d3a"/></svg>');
+  $("fname").addEventListener("input", () => ($("fimg").style.filter = $("fname").value));
+
+  // --- Blend modes ---
+  function bl() {
+    const bg = $("bl-bg").value, mix = $("bl-mix").value;
+    $("bl-a").style.backgroundBlendMode = bg; $("bl-b").style.mixBlendMode = mix;
+    $("bl-code").textContent = `.striped {\n  background-color: #3fa66b;\n  background-image: repeating-linear-gradient(…);\n  background-blend-mode: ${bg};\n}\n.circle {\n  mix-blend-mode: ${mix};\n}`;
+  }
+  ["bl-bg", "bl-mix"].forEach((id) => $(id).addEventListener("input", bl));
+  bl();
+
+  // --- Shapes and clip ---
+  $("shape-on").addEventListener("change", (e) => { $("ball").style.shapeOutside = e.target.checked ? "circle(50%)" : "none"; });
+  $("ball").style.shapeOutside = "circle(50%)";
+  $("clip-on").addEventListener("change", (e) => $("clip-h").classList.toggle("on", e.target.checked));
+</script>
+<script>
+  makeExercise(document.getElementById("ex-shadow"), {
+    title: "A realistic shadow",
+    task: `<ol>
+      <li>Give the card a shadow that falls slightly downward and uses a semi-transparent color.</li>
+      <li>Make it realistic by stacking two shadows: a tight one and a wide, soft one.</li>
+      <li>Add a <code>text-shadow</code> to the heading on the dark banner.</li>
+    </ol>`,
+    html: `<div class="banner"><h1>Royal Arch</h1></div>
+<div class="card">
+  <h2>Trail notes</h2>
+  <p>Steep, rocky and worth it.</p>
+</div>`,
+    css: `body { font-family: system-ui, sans-serif; background: #f4f5f8; padding: 12px; }
+.banner { background: #3b4a5c; color: white; padding: 24px; }
+.banner h1 { margin: 0; }
+.card { background: white; padding: 16px; margin-top: 16px; border-radius: 8px; }`,
+    solution: { css: `body { font-family: system-ui, sans-serif; background: #f4f5f8; padding: 12px; }
+.banner { background: #3b4a5c; color: white; padding: 24px; }
+.banner h1 { margin: 0; text-shadow: 0 2px 4px rgb(0 0 0 / 50%); }
+.card {
+  background: white; padding: 16px; margin-top: 16px; border-radius: 8px;
+  box-shadow: 0 1px 2px rgb(0 0 0 / 15%), 0 8px 24px rgb(0 0 0 / 12%);
+}` },
+    hints: [
+      "box-shadow: x y blur color. A positive y pushes the shadow down.",
+      "rgb(0 0 0 / 15%) is black at 15%: much softer than solid black.",
+      "Separate two shadows with a comma.",
+    ],
+    checks: (() => {
+      const shadows = (s) => s === "none" ? [] : s.split(/,(?![^(]*\))/).map((x) => {
+        const color = (x.match(/rgba?\([^)]*\)/) || [""])[0], nums = x.replace(color, "").trim().split(/\s+/).map(parseFloat);
+        const alpha = /rgba\(/.test(color) ? parseFloat(color.split(",")[3]) : 1;
+        return { y: nums[1], alpha };
+      });
+      return [
+        { label: "The card's shadow falls downward", test: ({ style }) => { const s = shadows(style(".card", "box-shadow")); return s.length > 0 && s.every((x) => x.y > 0); } },
+        { label: "Its color is semi-transparent", test: ({ style }) => { const s = shadows(style(".card", "box-shadow")); return s.length > 0 && s.every((x) => x.alpha < 1); } },
+        { label: "Two shadows are stacked", test: ({ style }) => shadows(style(".card", "box-shadow")).length >= 2 },
+        { label: "The heading has a text-shadow", test: ({ style }) => style(".banner h1", "text-shadow") !== "none" },
+      ];
+    })(),
+  });
+
+  makeExercise(document.getElementById("ex-effects"), {
+    title: "Pressed, grayscale and gradient",
+    task: `<ol>
+      <li>Add a <code>.btn:active</code> rule with <code>box-shadow: inset 0 2px 4px rgb(0 0 0 / 40%)</code>, so the button looks pressed while clicked.</li>
+      <li>Give <code>.photo</code> <code>filter: grayscale(100%)</code>.</li>
+      <li>Fill the <code>h2</code> with its gradient: <code>-webkit-background-clip: text</code>, <code>background-clip: text</code> and <code>-webkit-text-fill-color: transparent</code>.</li>
+    </ol>`,
+    html: `<div class="card">
+  <div class="photo"></div>
+  <h2>Royal Arch</h2>
+  <button class="btn">Save trail</button>
+</div>`,
+    css: `body { font-family: system-ui, sans-serif; }
+.photo { height: 100px; border-radius: 8px; background: linear-gradient(160deg, #f0b37a, #b4410c 60%, #0b6b5e); }
+h2 { font-size: 2.2rem; color: #0b6b5e; background-image: linear-gradient(90deg, #0b6b5e, #2340d9); }
+.btn { padding: 10px 18px; border: 0; border-radius: 6px; background: #0b6b5e; color: white; box-shadow: 0 2px 4px rgb(0 0 0 / 25%); }
+`,
+    solution: { css: `body { font-family: system-ui, sans-serif; }
+.photo { height: 100px; border-radius: 8px; background: linear-gradient(160deg, #f0b37a, #b4410c 60%, #0b6b5e); filter: grayscale(100%); }
+h2 { font-size: 2.2rem; color: #0b6b5e; background-image: linear-gradient(90deg, #0b6b5e, #2340d9); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+.btn { padding: 10px 18px; border: 0; border-radius: 6px; background: #0b6b5e; color: white; box-shadow: 0 2px 4px rgb(0 0 0 / 25%); }
+.btn:active { box-shadow: inset 0 2px 4px rgb(0 0 0 / 40%); }
+` },
+    hints: [".btn:active is a separate rule after .btn.", "Keep color: #0b6b5e on the h2: it's the fallback if clipping isn't supported."],
+    checks: [
+      { label: "A .btn:active rule sets an inset shadow", test: ({ doc }) => [...doc.styleSheets[0].cssRules].some((r) => /\.btn:active/.test(r.selectorText || "") && /inset/.test(r.style.boxShadow)) },
+      { label: "The photo is grayscale", test: ({ style }) => /grayscale\((1|100%)\)/.test(style(".photo", "filter")) },
+      { label: "The heading is clipped to its text", test: ({ style }) => style("h2", "-webkit-background-clip") === "text" && /rgba\(0, 0, 0, 0\)|transparent/.test(style("h2", "-webkit-text-fill-color")) },
+    ],
+  });
+
+  makeQuiz(document.getElementById("quiz"), [
+    { id: "q1", q: "Which shadow color looks most natural?", opts: ["black", "gray", "rgb(0 0 0 / 15%)"], a: 2, why: "A semi-transparent shadow lets the background show through, like a real shadow." },
+    { id: "q2", q: "You want a shadow that follows a transparent PNG's outline. Which do you use?", opts: ["filter: drop-shadow()", "box-shadow", "text-shadow"], a: 0, why: "drop-shadow follows the visible shape; box-shadow follows the rectangle." },
+    { id: "q3", q: "Does a big box-shadow push nearby elements away?", opts: ["Yes", "No, shadows are painted on top and take no space", "Only with spread"], a: 1, why: "Shadows don't affect layout at all." },
+    { id: "q4", q: "What's the best use for text-shadow?", opts: ["All body text", "Links", "Big text over a busy photo"], a: 2, why: "It helps large text stand out from a busy background; on body text it just blurs." },
+    { id: "q5", q: "What does the inset keyword do to a box-shadow?", opts: ["Draws it inside the box", "Makes it smaller", "Removes the blur"], a: 0, why: "Inset shadows make a box look pressed in." },
+    { id: "q6", q: "Which property makes text wrap around a floated circle instead of its square box?", opts: ["shape-outside", "border-radius", "mix-blend-mode"], a: 0, why: "shape-outside changes the wrap area of a float." },
+  ]);
+</script>
+</body>
+</html>

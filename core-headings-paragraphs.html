@@ -1,0 +1,275 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Headings and Paragraphs · Core Web Development</title>
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="core.css">
+<style>
+  .outline { list-style: none; margin: 0; padding: 12px 14px; background: var(--stage); border-radius: 8px; display: grid; gap: 4px; font-size: 0.95rem; min-height: 60px; }
+  .outline li { display: flex; gap: 8px; align-items: baseline; }
+  .outline .lvl { font: 600 0.75rem var(--font-code); font-variation-settings: "MONO" 1; color: var(--cobalt); min-width: 2em; }
+  .outline li.skip .lvl, .outline li.skip { color: var(--bad); }
+  .problems { margin: 0; padding-left: 1.2em; font-size: 0.92rem; display: grid; gap: 4px; }
+  .problems li.bad { color: var(--bad); } .problems li.ok { color: var(--good); list-style: none; margin-left: -1.2em; }
+  .recipe { white-space: normal; }
+  .recipe.plain { font: 1rem/1.4 Georgia, serif; }
+  .fake { font-size: 1.6em; font-weight: bold; display: block; margin: 0.3em 0; }
+</style>
+<script src="book-2.js"></script>
+<script src="js/progress.js"></script>
+<script src="js/chrome.js"></script>
+<script src="js/quiz.js"></script>
+</head>
+<body>
+<main class="wrap">
+  <nav class="crumbs" aria-label="Site"><a class="crumb" href="book-2.html">← Contents</a><a class="crumb" href="glossary.html">Glossary</a></nav>
+  <header class="page-head">
+    <h1>Headings and Paragraphs</h1>
+    <p class="lede">Headings and paragraphs give text its shape. Learn the six heading levels, how to nest them into an outline, and why that outline matters to readers, screen readers and search engines.</p>
+    <div class="objectives">
+      <p class="callout-title">You'll be able to</p>
+      <ul>
+        <li>Mark up text with <code>&lt;h1&gt;</code>–<code>&lt;h6&gt;</code> and <code>&lt;p&gt;</code>.</li>
+        <li>Build a heading outline: one <code>&lt;h1&gt;</code>, no skipped levels.</li>
+        <li>Explain why structure helps people skim, screen readers navigate, and search engines rank.</li>
+        <li>Choose elements for what they mean, not how they look.</li>
+      </ul>
+    </div>
+  </header>
+
+  <!-- ===== Headings and paragraphs ===== -->
+  <div class="section-title"><span class="eyebrow">Read</span><h2>Headings and paragraphs</h2></div>
+  <div class="prose">
+    <p>Most text on the web is <span class="term" data-term="Heading">headings</span> and paragraphs. A paragraph goes in a <code>&lt;p&gt;</code> element:</p>
+    <pre class="snippet" data-lang="html">&lt;p&gt;The Mesa Trail runs along the foot of the Flatirons for 6.7 miles.&lt;/p&gt;</pre>
+    <p>A heading goes in one of six heading elements, <code>&lt;h1&gt;</code> through <code>&lt;h6&gt;</code>. The number is the heading's level: <code>&lt;h1&gt;</code> is the main heading of the page, <code>&lt;h2&gt;</code>s are its sections, <code>&lt;h3&gt;</code>s are sections inside those, and so on.</p>
+    <pre class="snippet" data-lang="html">&lt;h1&gt;Mesa Trail&lt;/h1&gt;
+&lt;h2&gt;Getting there&lt;/h2&gt;
+&lt;h3&gt;Parking&lt;/h3&gt;</pre>
+  </div>
+
+  <!-- ===== Implementing structural hierarchy ===== -->
+  <div class="section-title"><span class="eyebrow">Read</span><h2>Implementing structural hierarchy</h2></div>
+  <div class="prose">
+    <p>Headings nest like a table of contents. A trail guide might look like this:</p>
+    <pre class="snippet" data-lang="html">&lt;h1&gt;Boulder Trail Guide&lt;/h1&gt;
+&lt;p&gt;Twelve hikes within half an hour of town.&lt;/p&gt;
+
+&lt;h2&gt;Easy hikes&lt;/h2&gt;
+&lt;h3&gt;Bobolink Trail&lt;/h3&gt;
+&lt;p&gt;Flat, shady and good for kids.&lt;/p&gt;
+
+&lt;h2&gt;Hard hikes&lt;/h2&gt;
+&lt;h3&gt;Bear Peak&lt;/h3&gt;
+&lt;p&gt;A steep 2,800-foot climb.&lt;/p&gt;</pre>
+    <p>Three rules keep an outline easy to follow:</p>
+    <ul>
+      <li><strong>One <code>&lt;h1&gt;</code> per page.</strong> It's the page's title.</li>
+      <li><strong>Don't skip levels.</strong> An <code>&lt;h2&gt;</code> section's subsections are <code>&lt;h3&gt;</code>s, never <code>&lt;h4&gt;</code>s.</li>
+      <li><strong>Keep it shallow.</strong> More than three levels gets hard to follow. If you need <code>&lt;h5&gt;</code>, split the page instead.</li>
+    </ul>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Play</span><h2>See your outline</h2><p>This is the list of headings a screen reader offers its users. Edit the HTML and watch the outline, and the warnings, update.</p></div>
+  <div class="two">
+    <div class="panel">
+      <div class="presets" id="ol-presets" role="group" aria-label="Examples">
+        <button class="btn" type="button" data-ol="good">Good outline</button>
+        <button class="btn" type="button" data-ol="skip">Skipped level</button>
+        <button class="btn" type="button" data-ol="many">Two h1s</button>
+        <button class="btn" type="button" data-ol="fake">Fake heading</button>
+      </div>
+      <label class="eyebrow" for="ol-src">Your HTML</label>
+      <textarea class="src" id="ol-src" spellcheck="false" style="min-height:200px"></textarea>
+    </div>
+    <div class="panel"><span class="eyebrow">Headings list</span><ol class="outline" id="ol-out" aria-live="polite"></ol><ul class="problems" id="ol-problems"></ul></div>
+  </div>
+
+  <!-- ===== Why do we need structure? ===== -->
+  <div class="section-title"><span class="eyebrow">Read</span><h2>Why do we need structure?</h2></div>
+  <div class="prose">
+    <p>Browsers don't guess. Text typed into an HTML file without elements comes out as one long run of words, because <span class="term">whitespace</span> collapses. Headings and paragraphs fix that, and they help in ways you can't see:</p>
+    <ul>
+      <li><strong>People skim.</strong> Readers look for the heading that matches what they want and jump straight there.</li>
+      <li><strong>Screen readers navigate by headings.</strong> A <span class="term">screen reader</span> user can list a page's headings and jump between them, the way you'd glance down a page.</li>
+      <li><strong>Search engines read headings</strong> to work out what a page is about.</li>
+      <li><strong>CSS and JavaScript need something to target.</strong> You can style every <code>&lt;h2&gt;</code> at once, but you can't style "the line that's sort of a title".</li>
+    </ul>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Play</span><h2>The same text, with and without structure</h2><p>Switch between plain text and marked-up text. The words are identical.</p></div>
+  <div class="two">
+    <div class="panel">
+      <label class="toggle"><input type="checkbox" id="rc-on" checked> Add headings and paragraphs</label>
+      <pre class="snippet" id="rc-code"></pre>
+    </div>
+    <div class="panel"><span class="eyebrow">What the browser shows</span><div class="rendered recipe" id="rc-out"></div></div>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Practice</span><h2>Giving content structure</h2><p>Turn a block of plain text into a page with a heading outline.</p></div>
+  <div id="ex-structure"></div>
+
+  <!-- ===== Why do we need semantics? ===== -->
+  <div class="section-title"><span class="eyebrow">Read</span><h2>Why do we need semantics?</h2></div>
+  <div class="prose">
+    <p>You could make any text look like a heading with CSS: big and bold. But looking like a heading isn't the same as <em>being</em> one:</p>
+    <pre class="snippet" data-lang="html">&lt;span style="font-size: 32px; font-weight: bold"&gt;Mesa Trail&lt;/span&gt;</pre>
+    <p>Sighted visitors see a heading. A screen reader sees an ordinary bit of text: it isn't in the headings list, so nobody can jump to it. Search engines don't treat it as important either. That's what <span class="term">semantic HTML</span> means: choosing elements for what the content <em>is</em>, then using CSS for how it looks.</p>
+    <div class="callout warn"><p class="callout-title">Watch out</p><p>The opposite mistake is just as common: picking <code>&lt;h4&gt;</code> because it's the size you want. Choose the level that fits the outline, then change the size with CSS.</p></div>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Practice</span><h2>Fix the outline</h2><p>This page has three structural problems. The outline playground above can help you find them.</p></div>
+  <div id="ex-fix"></div>
+
+  <section class="notes">
+    <div class="panel">
+      <h2>Key ideas</h2>
+      <ul>
+        <li>Paragraphs go in <code>&lt;p&gt;</code>; headings go in <code>&lt;h1&gt;</code>–<code>&lt;h6&gt;</code>.</li>
+        <li>One <code>&lt;h1&gt;</code> per page, then <code>&lt;h2&gt;</code> sections, <code>&lt;h3&gt;</code> subsections.</li>
+        <li>Never skip a level going down. Jumping back up (h3 to h2) is fine.</li>
+        <li>Screen reader users navigate by headings, and search engines read them.</li>
+        <li>Pick elements for meaning; change their look with CSS.</li>
+      </ul>
+    </div>
+    <div class="panel mistake">
+      <h2>Common mistakes</h2>
+      <ul>
+        <li>Choosing a heading level for its size instead of its place in the outline.</li>
+        <li>Big bold text in a <code>&lt;span&gt;</code> or <code>&lt;p&gt;</code> instead of a real heading.</li>
+        <li>Several <code>&lt;h1&gt;</code>s on one page.</li>
+        <li>Using empty <code>&lt;p&gt;&lt;/p&gt;</code> or <code>&lt;br&gt;</code>s to add space. That's CSS's job.</li>
+      </ul>
+    </div>
+  </section>
+
+  <div class="section-title"><span class="eyebrow">Check yourself</span><h2>Quick check</h2></div>
+  <div class="panel quiz" id="quiz"></div>
+
+  <footer class="page-foot" data-book-nav><a href="book-2.html">← Contents</a></footer>
+</main>
+
+<script>
+  const $ = (id) => document.getElementById(id);
+  const esc = (s) => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+
+  // --- Outline: parse the HTML and list its headings the way assistive tech does ---
+  const OL = {
+    good: "<h1>Boulder Trail Guide</h1>\n<p>Twelve hikes near town.</p>\n<h2>Easy hikes</h2>\n<h3>Bobolink Trail</h3>\n<p>Flat and shady.</p>\n<h2>Hard hikes</h2>\n<h3>Bear Peak</h3>\n<p>A steep climb.</p>",
+    skip: "<h1>Boulder Trail Guide</h1>\n<h2>Easy hikes</h2>\n<h4>Bobolink Trail</h4>\n<p>Flat and shady.</p>",
+    many: "<h1>Boulder Trail Guide</h1>\n<h1>Easy hikes</h1>\n<p>Flat and shady.</p>\n<h1>Hard hikes</h1>",
+    fake: "<h1>Boulder Trail Guide</h1>\n<p><b>Easy hikes</b></p>\n<p>Flat and shady.</p>\n<span style=\"font-size:24px;font-weight:bold\">Hard hikes</span>\n<p>A steep climb.</p>",
+  };
+  function outline() {
+    const doc = new DOMParser().parseFromString(`<!doctype html><body>${$("ol-src").value}`, "text/html");
+    const hs = [...doc.querySelectorAll("h1, h2, h3, h4, h5, h6")];
+    const problems = [];
+    let prev = 0;
+    $("ol-out").innerHTML = hs.map((h) => {
+      const lvl = +h.tagName[1], skip = lvl > prev + 1;
+      if (skip) problems.push(`“${h.textContent.trim()}” is an h${lvl} after ${prev ? "an h" + prev : "no heading"}: level ${prev + 1} was skipped.`);
+      prev = lvl;
+      return `<li class="${skip ? "skip" : ""}" style="padding-left:${(lvl - 1) * 18}px"><span class="lvl">h${lvl}</span><span>${esc(h.textContent.trim() || "(empty)")}</span></li>`;
+    }).join("") || '<li class="txt">No headings at all</li>';
+    const h1s = hs.filter((h) => h.tagName === "H1").length;
+    if (h1s === 0) problems.push("There's no h1.");
+    if (h1s > 1) problems.push(`There are ${h1s} h1s. A page should have one.`);
+    const fakes = [...doc.querySelectorAll("span, b, strong, p, div")].filter((el) => /font-size|font-weight/.test(el.getAttribute("style") || "") || (/^(B|STRONG)$/.test(el.tagName) && el.parentElement.tagName === "P" && el.parentElement.textContent.trim() === el.textContent.trim()));
+    fakes.forEach((f) => problems.push(`“${f.textContent.trim()}” looks like a heading but isn't one, so it's missing from this list.`));
+    $("ol-problems").innerHTML = problems.length ? problems.map((p) => `<li class="bad">${esc(p)}</li>`).join("") : '<li class="ok">✓ One h1, and no skipped levels.</li>';
+  }
+  $("ol-src").addEventListener("input", outline);
+  $("ol-presets").addEventListener("click", (e) => {
+    const b = e.target.closest("[data-ol]");
+    if (!b) return;
+    $("ol-src").value = OL[b.dataset.ol];
+    document.querySelectorAll("#ol-presets .btn").forEach((x) => x.setAttribute("aria-pressed", String(x === b)));
+    outline();
+  });
+  $("ol-src").value = OL.skip;
+  outline();
+
+  // --- With and without structure ---
+  const RECIPE = [["h1", "Trail Mix"], ["p", "Enough for four hikers on a long day."], ["h2", "Ingredients"], ["p", "Two cups of peanuts, one cup of raisins, one cup of chocolate chips."], ["h2", "Method"], ["p", "Mix everything in a big bowl. Split it into four bags."]];
+  function recipe() {
+    const on = $("rc-on").checked;
+    const code = RECIPE.map(([t, x]) => (on ? `<${t}>${x}</${t}>` : x)).join("\n");
+    $("rc-code").textContent = code;
+    $("rc-out").innerHTML = new DOMParser().parseFromString(`<!doctype html><body>${on ? code : esc(code)}`, "text/html").body.innerHTML;
+    $("rc-out").classList.toggle("plain", !on);
+  }
+  $("rc-on").addEventListener("change", recipe);
+  recipe();
+</script>
+<script>
+  makeExercise(document.getElementById("ex-structure"), {
+    title: "Structure a trail report",
+    task: `<p>Mark up this text:</p>
+    <ol>
+      <li><strong>Royal Arch Trail Report</strong> is the page's main heading.</li>
+      <li><strong>Conditions</strong> and <strong>Parking</strong> are section headings, one level down.</li>
+      <li>Each of the three sentences is its own paragraph.</li>
+    </ol>`,
+    html: `Royal Arch Trail Report
+We hiked to the arch on Saturday morning.
+Conditions
+The upper trail was icy, so bring traction.
+Parking
+The Chautauqua lot was full by 8am.`,
+    solution: { html: `<h1>Royal Arch Trail Report</h1>
+<p>We hiked to the arch on Saturday morning.</p>
+<h2>Conditions</h2>
+<p>The upper trail was icy, so bring traction.</p>
+<h2>Parking</h2>
+<p>The Chautauqua lot was full by 8am.</p>` },
+    hints: ["The main heading is an h1. Section headings one level down are h2s.", "Each sentence goes in its own <p>…</p>."],
+    checks: [
+      { label: "“Royal Arch Trail Report” is the only h1", test: ({ $$ }) => $$("h1").length === 1 && $$("h1")[0].textContent.trim() === "Royal Arch Trail Report" },
+      { label: "“Conditions” and “Parking” are h2s", test: ({ $$ }) => $$("h2").map((h) => h.textContent.trim()).join("|") === "Conditions|Parking" },
+      { label: "There are three paragraphs, one per sentence", test: ({ $$ }) => $$("p").length === 3 && $$("p").every((p) => /\.$/.test(p.textContent.trim()) && !/\.\s+\S/.test(p.textContent.trim())) },
+    ],
+  });
+
+  makeExercise(document.getElementById("ex-fix"), {
+    title: "Three outline problems",
+    task: `<ol>
+      <li>The page has two <code>&lt;h1&gt;</code>s. <strong>Directions</strong> is a section, so make it an <code>&lt;h2&gt;</code>.</li>
+      <li><strong>From Boulder</strong> is a subsection of Directions, but it skips a level. Fix its level.</li>
+      <li><strong>What to bring</strong> is styled to look like a heading but isn't one. Make it a real section heading.</li>
+    </ol>`,
+    html: `<h1>Bear Peak</h1>
+<p>The hardest hike in Boulder, with the best view.</p>
+<h1>Directions</h1>
+<h4>From Boulder</h4>
+<p>Start at the NCAR trailhead.</p>
+<p style="font-size: 24px; font-weight: bold">What to bring</p>
+<p>Three liters of water and a jacket.</p>`,
+    solution: { html: `<h1>Bear Peak</h1>
+<p>The hardest hike in Boulder, with the best view.</p>
+<h2>Directions</h2>
+<h3>From Boulder</h3>
+<p>Start at the NCAR trailhead.</p>
+<h2>What to bring</h2>
+<p>Three liters of water and a jacket.</p>` },
+    hints: ["Only Bear Peak, the page's title, should be an h1.", "A subsection of an h2 is an h3.", "Replace the styled paragraph with an h2, and drop the style attribute."],
+    checks: [
+      { label: "There's exactly one h1", test: ({ $$ }) => $$("h1").length === 1 },
+      { label: "“Directions” is an h2", test: ({ $$ }) => $$("h2").some((h) => h.textContent.trim() === "Directions") },
+      { label: "“From Boulder” is an h3", test: ({ $$ }) => $$("h3").some((h) => h.textContent.trim() === "From Boulder") },
+      { label: "“What to bring” is a real h2 heading", test: ({ $$ }) => $$("h2").some((h) => h.textContent.trim() === "What to bring") && !$$("p").some((p) => p.textContent.trim() === "What to bring") },
+    ],
+  });
+
+  makeQuiz(document.getElementById("quiz"), [
+    { id: "q1", q: "How many h1 elements should a page usually have?", opts: ["One", "One per section", "As many as you like"], a: 0, why: "The h1 is the page's main heading. Sections below it use h2." },
+    { id: "q2", q: "A section is an h2. What should its subsections be?", opts: ["h3", "h4", "Whatever size looks right"], a: 0, why: "Go down one level at a time. Skipping to h4 leaves a gap in the outline." },
+    { id: "q3", q: "You want a smaller heading under an h1. Which do you use?", opts: ["h2, then make it smaller with CSS if needed", "h4, because it's smaller", "A bold paragraph"], a: 0, why: "Pick the level for the outline, then set the size with CSS." },
+    { id: "q4", q: "Why doesn't big bold text in a <span> count as a heading?", opts: ["Screen readers and search engines only know it's a heading if it's an h1–h6", "Spans can't be bold", "It does count, as long as it's big enough"], a: 0, why: "Headings are about meaning. Only heading elements appear in a screen reader's headings list." },
+    { id: "q5", q: "You type text into an HTML file with no elements around it. What do you get?", opts: ["One long run of text", "Paragraphs wherever you pressed Enter", "An error"], a: 0, why: "Line breaks are whitespace, and whitespace collapses. Use <p> for paragraphs." },
+    { id: "q6", q: "Which outline has a problem?", opts: ["h1, h2, h3, h2", "h1, h2, h2, h3", "h1, h3, h3, h2"], a: 2, why: "Going from h1 straight to h3 skips level 2. Coming back up from h3 to h2 is fine." },
+  ]);
+</script>
+</body>
+</html>

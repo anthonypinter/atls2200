@@ -1,0 +1,394 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Fundamental Text Styling · Core Web Development</title>
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="core.css">
+<style>
+  .reading { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 24px; overflow-x: auto; min-width: 0; }
+  .reading .text { transition: all 0.2s; color: var(--ink); }
+  .reading .text h3 { font-size: 1.6em; margin: 0 0 0.4em; line-height: 1.2; font-family: inherit; font-weight: inherit; }
+  .reading .text p { margin: 0 0 0.9em; max-width: none; }
+  .checks { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+  .checks li { display: flex; gap: 10px; align-items: baseline; font-size: 0.93rem; padding: 8px 10px; border-radius: 6px; background: var(--good-soft); color: var(--good); }
+  .checks li.warn { background: var(--bad-soft); color: var(--bad); }
+  .checks li b { white-space: nowrap; font-family: var(--font-code); font-variation-settings: "MONO" 1; font-size: 0.85rem; }
+  .scale { display: grid; gap: 4px; background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 18px; overflow-x: auto; min-width: 0; }
+  .scale .row { display: grid; grid-template-columns: 110px 1fr; gap: 16px; align-items: baseline; }
+  .scale .tag { font: 0.8rem var(--font-code); font-variation-settings: "MONO" 1; color: var(--muted); white-space: nowrap; }
+  .scale .tag b { color: var(--cobalt); }
+  .scale .sample { font-family: var(--font-display); font-weight: 750; line-height: 1.15; white-space: nowrap; }
+
+  .generic { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 8px; }
+  .generic div { background: #fff; color: #1d2133; border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; display: grid; gap: 4px; }
+  .generic code { font-size: 0.78rem; color: var(--muted); }
+  .generic span { font-size: 1.35rem; }
+  .ts-sample { background: #fff; color: #1d2133; border: 1px solid var(--line); border-radius: 8px; padding: 18px; font: 1.6rem Georgia, serif; min-height: 90px; display: grid; place-items: center; text-align: center; }
+  .longhands { margin: 0; padding: 0; list-style: none; font: 0.88rem/1.8 var(--font-code); font-variation-settings: "MONO" 1; }
+  .longhands b { color: var(--prop); font-weight: 600; }
+</style>
+<script src="book-2.js"></script>
+<script src="js/progress.js"></script>
+<script src="js/chrome.js"></script>
+<script src="js/quiz.js"></script>
+</head>
+<body>
+<main class="wrap">
+  <nav class="crumbs" aria-label="Site"><a class="crumb" href="book-2.html">← Contents</a><a class="crumb" href="glossary.html">Glossary</a></nav>
+  <header class="page-head">
+    <h1>Fundamental Text Styling</h1>
+    <p class="lede">Most of what's on a web page is text, so how it reads matters more than almost any other design choice. CSS splits text styling in two: the font itself, and how the text is laid out.</p>
+    <div class="objectives">
+      <p class="callout-title">You'll be able to</p>
+      <ul>
+        <li>Write a font stack that always falls back to something sensible.</li>
+        <li>Set font size, style, weight, case, decoration and shadows.</li>
+        <li>Lay text out with alignment, line height, letter and word spacing, and a readable line length.</li>
+        <li>Read and write the <code>font</code> shorthand.</li>
+      </ul>
+    </div>
+  </header>
+
+  <div class="section-title"><span class="eyebrow">Read</span><h2>What is involved in styling text in CSS?</h2></div>
+  <div class="prose">
+<p>Text sits inside its element's content box and flows from the start of the line to the end, wrapping onto new lines. You can't select a single word or line with CSS, only whole elements (with two exceptions, <code>::first-line</code> and <code>::first-letter</code>). The properties fall into two groups:</p>
+    <ul>
+      <li><strong>Font styles</strong> change the letters themselves: which font, how big, bold, italic, colour.</li>
+      <li><strong>Text layout styles</strong> change the space around them: alignment, line spacing, letter and word spacing.</li>
+    </ul>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Read</span><h2>Fonts</h2></div>
+  <div class="prose">
+<h3>Color</h3>
+    <p><code>color</code> sets the colour of the text (and of text decorations like underlines). It's named <code>color</code>, not <code>font-color</code> or <code>text-color</code>.</p>
+    <h3>Font families</h3>
+    <p><code>font-family</code> names the font to use. It only works if the font is available: installed on the visitor's computer, or downloaded as a web font (next lesson). A few <em>web safe fonts</em>, like Arial, Verdana, Georgia and Times New Roman, are on nearly every computer.</p>
+    <p>Because you can't be sure, list several fonts in order of preference. That's a <span class="term">font stack</span>: the browser uses the first one it has. Always end with a <strong>generic family</strong> name, which every browser maps to some font it does have:</p>
+    <pre class="snippet" data-lang="css">p {
+  font-family: "Trebuchet MS", Verdana, sans-serif;
+}</pre>
+    <p>Quote names with spaces in them. The generic families look like this in your browser:</p>
+  </div>
+
+  <div class="generic" id="generic"></div>
+
+  <div class="section-title"><span class="eyebrow">Play</span><h2>Try a font stack</h2><p>Type a font stack. The browser draws the sample in the first font it has.</p></div>
+  <section class="playground even">
+    <div class="panel" style="display:grid;gap:8px;align-content:start">
+      <label class="eyebrow" for="fst">font-family:</label>
+      <input class="src" id="fst" spellcheck="false" autocomplete="off" value='"Trail Sans", Georgia, serif'>
+      <div class="presets" id="fst-presets" role="group" aria-label="Examples">
+        <button class="btn" type="button">"Trail Sans", Georgia, serif</button>
+        <button class="btn" type="button">"Trebuchet MS", Verdana, sans-serif</button>
+        <button class="btn" type="button">Courier New, monospace</button>
+        <button class="btn" type="button">"Made Up Font"</button>
+      </div>
+      <p class="verdict" id="fst-note" aria-live="polite"></p>
+    </div>
+    <div class="ts-sample" id="fst-out">The quick brown fox jumps over the lazy dog</div>
+  </section>
+
+  <div class="prose">
+<h3>Font size</h3>
+    <p><code>font-size</code> takes any length. Browsers default to 16px. Set sizes in <code>rem</code> so they follow the visitor's text-size setting (<code>1rem</code> is 16px by default, <code>1.5rem</code> 24px). Watch out for <code>em</code> on font sizes: it's relative to the parent's font size, so it compounds through nested elements.</p>
+    <p>Heading sizes look best when they belong together. A <em>type scale</em> multiplies each level by the same ratio.</p>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Play</span><h2>Heading sizes that belong together</h2><p>Pick a base size and a ratio.</p></div>
+  <section class="playground">
+    <div class="panel controls">
+      <div class="control"><label for="base">base size</label><input id="base" type="range" min="14" max="22" value="16"><span class="readout" id="base-out"></span></div>
+      <div class="control"><label for="ratio">ratio</label>
+        <select id="ratio"><option value="1.125">1.125 (subtle)</option><option value="1.25" selected>1.25 (balanced)</option><option value="1.333">1.333 (clear)</option><option value="1.5">1.5 (bold)</option><option value="1.618">1.618 (dramatic)</option></select></div>
+    </div>
+    <div class="scale" id="scale"></div>
+  </section>
+
+  <div class="prose">
+<h3>Font style, font weight, text transform, and text decoration</h3>
+    <ul>
+      <li><code>font-style</code>: <code>italic</code> or <code>normal</code>. Use it to un-italicise, say, an <code>&lt;em&gt;</code>.</li>
+      <li><code>font-weight</code>: <code>normal</code>, <code>bold</code>, or a number from 100 to 900 (400 is normal, 700 bold), if the font has those weights.</li>
+      <li><code>text-transform</code>: <code>uppercase</code>, <code>lowercase</code> or <code>capitalize</code>. It changes how text looks, not the text itself, so a screen reader still reads the original.</li>
+      <li><code>text-decoration</code>: <code>underline</code>, <code>overline</code>, <code>line-through</code>, or <code>none</code> (often used on links). It's a shorthand, so <code>underline wavy red</code> works too.</li>
+    </ul>
+    <h3>Text drop shadows</h3>
+    <p><code>text-shadow: 4px 4px 5px red</code> sets the shadow's horizontal offset, vertical offset, blur and colour. Separate several shadows with commas.</p>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Play</span><h2>Style the letters</h2><p>Mix and match. The CSS appears below.</p></div>
+  <section class="playground even">
+    <div class="panel" style="display:grid;gap:10px;align-content:start">
+      <div class="control"><label for="ts-style">font-style</label><select id="ts-style"><option>normal</option><option>italic</option></select></div>
+      <div class="control"><label for="ts-weight">font-weight</label><select id="ts-weight"><option>300</option><option selected>400</option><option>700</option><option>900</option></select></div>
+      <div class="control"><label for="ts-tt">text-transform</label><select id="ts-tt"><option>none</option><option>uppercase</option><option>lowercase</option><option>capitalize</option></select></div>
+      <div class="control"><label for="ts-td">text-decoration</label><select id="ts-td"><option>none</option><option>underline</option><option>underline wavy #b4410c</option><option>line-through</option><option>overline</option></select></div>
+      <div class="control"><label for="ts-sh">text-shadow</label><select id="ts-sh"><option>none</option><option>2px 2px 0 #9ec2e6</option><option>4px 4px 5px red</option><option>1px 1px 1px red, 2px 2px 1px red</option><option>0 0 8px #2340d9</option></select></div>
+      <pre class="snippet" id="ts-code"></pre>
+    </div>
+    <div class="ts-sample" id="ts-out">the Royal Arch trail</div>
+  </section>
+
+  <div class="section-title"><span class="eyebrow">Read</span><h2>Text layout</h2></div>
+  <div class="prose">
+<h3>Text alignment</h3>
+    <p><code>text-align</code>: <code>left</code>, <code>right</code>, <code>center</code> or <code>justify</code>. Left-align long paragraphs (in English); centred text is fine for a short heading but hard to read for more than a line or two, and <code>justify</code> can leave rivers of gaps.</p>
+    <h3>Line height</h3>
+    <p><code>line-height</code> sets the height of each line. Write it without a unit, like <code>1.6</code>, so it's a multiple of the font size and scales with it. Around 1.4 to 1.8 is comfortable for body text.</p>
+    <h3>Letter and word spacing</h3>
+    <p><code>letter-spacing</code> and <code>word-spacing</code> add (or remove, with negative values) space between letters and words. A little extra letter spacing helps small uppercase text.</p>
+    <h3>Line length</h3>
+    <p>Not a property of its own, but it matters most: lines of about 45 to 75 characters read best. Limit paragraphs with <code>max-width: 65ch</code>, where <code>ch</code> is roughly one character wide.</p>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Play</span><h2>Tune the text</h2><p>Adjust each setting and watch the readability checks respond.</p></div>
+  <section class="playground" id="tester">
+    <div class="panel controls">
+      <div class="control"><label for="ff">font-family</label>
+        <select id="ff">
+          <option value='"Atkinson Hyperlegible", sans-serif'>Atkinson Hyperlegible</option>
+          <option value='"Lora", Georgia, serif'>Lora (serif)</option>
+          <option value='Georgia, serif'>Georgia (serif)</option>
+          <option value='system-ui, sans-serif'>system-ui (your OS font)</option>
+          <option value='Arial, Helvetica, sans-serif'>Arial</option>
+          <option value='"Times New Roman", serif'>Times New Roman</option>
+          <option value='"Recursive", monospace' data-mono>monospace</option>
+        </select></div>
+      <div class="control"><label for="fs">font-size</label><input id="fs" type="range" min="12" max="28" value="18"><span class="readout" id="fs-out"></span></div>
+      <div class="control"><label for="lh">line-height</label><input id="lh" type="range" min="1" max="2.4" step="0.05" value="1.6"><span class="readout" id="lh-out"></span></div>
+      <div class="control"><label for="mw">max-width (line length)</label><input id="mw" type="range" min="25" max="130" value="65"><span class="readout" id="mw-out"></span></div>
+      <div class="control"><label for="fw">font-weight</label>
+        <select id="fw"><option>300</option><option selected>400</option><option>700</option></select></div>
+      <div class="control"><label for="ls">letter-spacing</label><input id="ls" type="range" min="-0.05" max="0.2" step="0.01" value="0"><span class="readout" id="ls-out"></span></div>
+      <div class="control"><label for="ta">text-align</label>
+        <select id="ta"><option>left</option><option>center</option><option>justify</option><option>right</option></select></div>
+    </div>
+    <div class="stage-col">
+      <div class="reading"><div class="text" id="text">
+        <h3>Why the trail closes in spring</h3>
+        <p>Every April, the lower section of the Mesa Trail closes for about six weeks. Snowmelt turns the clay soil into deep mud, and hikers who step around the puddles widen the trail and trample the wildflowers growing at its edges.</p>
+        <p>Rangers reopen the trail once the ground can hold a footprint without sinking. Until then, the upper loop stays open and drains much faster.</p>
+      </div></div>
+      <ul class="checks" id="checks" aria-live="polite"></ul>
+    </div>
+  </section>
+
+  <div class="prose">
+<h3>Other properties worth looking at</h3>
+    <p>There are many more: <code>font-variant</code> (small caps), <code>text-indent</code>, <code>text-overflow</code> (an ellipsis for cut-off text), <code>white-space</code> (whether text wraps), <code>word-break</code>, <code>text-wrap: balance</code> (evens out the lines of a heading) and <code>writing-mode</code> (vertical text). Look them up on MDN when you need them.</p>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Practice</span><h2>Make it readable</h2><p>The text is set in one long, cramped line. Fix the font, the spacing and the line length.</p></div>
+  <div id="ex-type"></div>
+
+  <div class="section-title"><span class="eyebrow">Read</span><h2>Font shorthand</h2></div>
+  <div class="prose">
+<p>The <code>font</code> shorthand sets most font properties in one line. The order is strict: optional style, variant and weight first, then the required <strong>size</strong> (with an optional <code>/line-height</code>), then the required <strong>family</strong> last:</p>
+    <pre class="snippet" data-lang="css">font: italic bold 1.25rem/1.5 Georgia, serif;</pre>
+    <p>Leave out the size or the family and the whole declaration is ignored. And anything you leave out is reset to its default, so put <code>font</code> before any longhands you want to keep.</p>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Play</span><h2>Expand the shorthand</h2><p>Type a <code>font</code> value. The browser shows the longhands it sets, or ignores it.</p></div>
+  <section class="playground even">
+    <div class="panel" style="display:grid;gap:8px;align-content:start">
+      <label class="eyebrow" for="fs-in">font:</label>
+      <input class="src" id="fs-in" spellcheck="false" autocomplete="off" value="italic bold 1.25rem/1.5 Georgia, serif">
+      <div class="presets" id="fs-presets" role="group" aria-label="Examples">
+        <button class="btn" type="button">italic bold 1.25rem/1.5 Georgia, serif</button>
+        <button class="btn" type="button">1rem system-ui, sans-serif</button>
+        <button class="btn" type="button">bold Georgia</button>
+        <button class="btn" type="button">300 2rem/1.1 "Trebuchet MS", sans-serif</button>
+      </div>
+      <ul class="longhands" id="fs-out" aria-live="polite"></ul>
+    </div>
+    <div class="ts-sample" id="fs-sample">Royal Arch, 3.4 miles</div>
+  </section>
+
+  <div class="section-title"><span class="eyebrow">Practice</span><h2>A trail page header</h2><p>Style the heading and introduction.</p></div>
+  <div id="ex-header"></div>
+
+  <section class="notes">
+    <div class="panel">
+      <h2>Key ideas</h2>
+      <ul>
+        <li>End every font stack with a generic family: <code>serif</code>, <code>sans-serif</code> or <code>monospace</code>.</li>
+        <li>Use <code>rem</code> for font sizes; at least <code>1rem</code> (16px) for body text.</li>
+        <li>Unitless <code>line-height</code> around 1.4 to 1.8; lines of 45 to 75 characters.</li>
+        <li><code>text-transform</code> changes how text looks, not what it says.</li>
+        <li>The <code>font</code> shorthand needs a size and a family, in that order, and resets what you leave out.</li>
+      </ul>
+    </div>
+    <div class="panel mistake">
+      <h2>Common mistakes</h2>
+      <ul>
+        <li>A font name with spaces and no quotes, or a stack with no generic fallback.</li>
+        <li><code>font-color</code> or <code>text-color</code>: the property is <code>color</code>.</li>
+        <li>Centring or justifying long paragraphs.</li>
+        <li>Typing headings in capitals in the HTML instead of using <code>text-transform</code>.</li>
+        <li>A <code>font</code> shorthand without a size, which throws the whole declaration away.</li>
+      </ul>
+    </div>
+  </section>
+
+  <div class="section-title"><span class="eyebrow">Check yourself</span><h2>Quick check</h2></div>
+  <div class="panel quiz" id="quiz"></div>
+
+  <footer class="page-foot" data-book-nav><a href="book-2.html">← Contents</a></footer>
+</main>
+
+<script>
+  const $ = (id) => document.getElementById(id);
+  function update() {
+    const ff = $("ff").value, fs = +$("fs").value, lh = +$("lh").value, mw = +$("mw").value, fw = $("fw").value, ls = +$("ls").value, ta = $("ta").value;
+    $("fs-out").textContent = fs + "px"; $("lh-out").textContent = lh.toFixed(2); $("mw-out").textContent = mw + "ch"; $("ls-out").textContent = ls.toFixed(2) + "em";
+    Object.assign($("text").style, { fontFamily: ff, fontSize: fs + "px", lineHeight: lh, maxWidth: mw + "ch", fontWeight: fw, letterSpacing: ls + "em", textAlign: ta,
+      fontVariationSettings: $("ff").selectedOptions[0].hasAttribute("data-mono") ? '"MONO" 1' : "normal" });
+
+    const c = [];
+    c.push(mw < 45 ? ["warn", "Line length", `About ${mw} characters per line is short. Eyes jump back too often.`]
+         : mw > 75 ? ["warn", "Line length", `About ${mw} characters per line is long. Readers lose their place.`]
+         : ["", "Line length", `About ${mw} characters per line. Comfortable.`]);
+    c.push(lh < 1.4 ? ["warn", "Line height", "Lines are cramped. Try 1.4 or more for body text."]
+         : lh > 1.9 ? ["warn", "Line height", "Lines are so far apart that paragraphs fall apart."]
+         : ["", "Line height", "Good spacing between lines."]);
+    c.push(fs < 16 ? ["warn", "Font size", `${fs}px is small for body text, especially on phones.`] : ["", "Font size", `${fs}px is a readable size for body text.`]);
+    if (ta === "center" || ta === "right") c.push(["warn", "Alignment", "Long paragraphs are hard to read when every line starts at a different spot."]);
+    else if (ta === "justify") c.push(["warn", "Alignment", "Justified text on the web leaves uneven gaps between words."]);
+    else c.push(["", "Alignment", "Left-aligned text gives every line the same starting point."]);
+    if (Math.abs(ls) > 0.06) c.push(["warn", "Letter spacing", "Large letter-spacing makes words harder to recognize. Save it for short uppercase labels."]);
+    if (fw === "300" && fs < 18) c.push(["warn", "Weight", "Light weights at small sizes get thin and faint."]);
+    $("checks").innerHTML = c.map(([cls, k, t]) => `<li class="${cls}"><b>${cls ? "✗" : "✓"} ${k}</b><span>${t}</span></li>`).join("");
+  }
+  document.querySelectorAll("#tester select, #tester input").forEach((el) => el.addEventListener("input", update));
+  update();
+
+  function scale() {
+    const base = +$("base").value, r = +$("ratio").value;
+    $("base-out").textContent = base + "px";
+    const levels = [["h1", 4], ["h2", 3], ["h3", 2], ["h4", 1], ["body", 0], ["small", -1]];
+    $("scale").innerHTML = levels.map(([n, p]) => {
+      const px = base * r ** p;
+      return `<div class="row"><span class="tag"><b>${n}</b> ${Math.round(px)}px · ${(px / 16).toFixed(2)}rem</span><span class="sample" style="font-size:${px}px;${n === "body" || n === "small" ? "font-family:var(--font-body);font-weight:400" : ""}">Mesa Trail</span></div>`;
+    }).join("");
+  }
+  ["base", "ratio"].forEach((id) => $(id).addEventListener("input", scale));
+  scale();
+
+  // --- Generic families ---
+  $("generic").innerHTML = ["serif", "sans-serif", "monospace", "cursive", "fantasy", "system-ui"].map((g) => `<div><code>${g}</code><span style="font-family:${g}">Royal Arch</span></div>`).join("");
+
+  // --- Font stack ---
+  function fst() {
+    const v = $("fst").value, out = $("fst-out");
+    out.style.fontFamily = ""; out.style.fontFamily = v;
+    const ok = out.style.fontFamily !== "";
+    const generic = /(^|,)\s*(serif|sans-serif|monospace|cursive|fantasy|system-ui)\s*$/.test(v);
+    $("fst-note").className = "verdict " + (ok && generic ? "ok" : "bad");
+    $("fst-note").textContent = !ok ? "✗ Not a valid font-family value, so it's ignored. Quote names that contain spaces or digits." : generic ? "✓ Ends with a generic family, so there's always a sensible fallback." : "✗ No generic family at the end. If none of these fonts exist, the browser falls back to its default font, whatever that is.";
+  }
+  $("fst").addEventListener("input", fst);
+  $("fst-presets").addEventListener("click", (e) => { const b = e.target.closest(".btn"); if (b) { $("fst").value = b.textContent; fst(); } });
+  fst();
+
+  // --- Style the letters ---
+  function ts() {
+    const p = { "font-style": $("ts-style").value, "font-weight": $("ts-weight").value, "text-transform": $("ts-tt").value, "text-decoration": $("ts-td").value, "text-shadow": $("ts-sh").value };
+    const out = $("ts-out");
+    Object.entries(p).forEach(([k, v]) => out.style.setProperty(k, v));
+    $("ts-code").textContent = "h1 {\n" + Object.entries(p).filter(([k, v]) => !["normal", "none", "400"].includes(v)).map(([k, v]) => `  ${k}: ${v};`).join("\n") + "\n}";
+  }
+  ["ts-style", "ts-weight", "ts-tt", "ts-td", "ts-sh"].forEach((id) => $(id).addEventListener("input", ts));
+  ts();
+
+  // --- Font shorthand ---
+  function fsh() {
+    const v = $("fs-in").value, s = $("fs-sample");
+    s.style.font = ""; s.style.font = v;
+    if (!s.style.font) { $("fs-out").innerHTML = "<li>✗ Invalid: the browser ignores the whole declaration. It needs a size, then a family.</li>"; return; }
+    $("fs-out").innerHTML = ["font-style", "font-variant", "font-weight", "font-size", "line-height", "font-family"].map((k) => `<li><b>${k}</b>: ${s.style.getPropertyValue(k) || "(reset)"}</li>`).join("");
+  }
+  $("fs-in").addEventListener("input", fsh);
+  $("fs-presets").addEventListener("click", (e) => { const b = e.target.closest(".btn"); if (b) { $("fs-in").value = b.textContent; fsh(); } });
+  fsh();
+</script>
+<script>
+  makeExercise(document.getElementById("ex-type"), {
+    title: "Comfortable body text",
+    task: `<ol>
+      <li>End the body's font list with a generic family.</li>
+      <li>Give paragraphs a unitless line-height between 1.4 and 1.8.</li>
+      <li>Limit paragraphs to between 45 and 75 characters per line, using <code>ch</code>.</li>
+    </ol>`,
+    html: `<article>
+  <h1>Hiking the Mesa Trail</h1>
+  <p>The Mesa Trail runs nearly seven miles along the base of the Flatirons, from Chautauqua in the north to the South Mesa trailhead. It rolls up and down through meadows and pine forest, crossing a dozen side trails that climb toward the peaks.</p>
+  <p>Start early in summer. The trail has little shade in the open meadows, and afternoon storms build quickly over the mountains.</p>
+</article>`,
+    css: `body { font-family: "Trail Sans"; }
+p { line-height: 20px; }`,
+    solution: { css: `body { font-family: "Trail Sans", system-ui, sans-serif; }
+p { line-height: 1.6; max-width: 65ch; }` },
+    hints: [
+      "\"Trail Sans\" isn't installed, so the browser needs a fallback: add sans-serif at the end.",
+      "A unitless line-height like 1.6 scales with the font size.",
+      "max-width: 65ch is about 65 characters wide.",
+    ],
+    checks: [
+      { label: "The font list ends with a generic family", test: ({ style }) => /(^|,\s*)(serif|sans-serif|monospace|system-ui|cursive)$/.test(style("body", "font-family")) },
+      { label: "Paragraph line-height is unitless, 1.4–1.8", test: ({ doc }) => { const r = [...doc.styleSheets[0].cssRules].find((r) => r.style && r.style.lineHeight && r.selectorText.includes("p")); const n = Number(r && r.style.lineHeight); return n >= 1.4 && n <= 1.8; } },
+      { label: "Paragraphs are 45–75ch wide at most", test: ({ code }) => { const m = /max-width:\s*([\d.]+)ch/.exec(code.css); return !!m && m[1] >= 45 && m[1] <= 75; } },
+    ],
+  });
+
+  makeExercise(document.getElementById("ex-header"), {
+    title: "Header text",
+    task: `<ol>
+      <li>Make the <code>h1</code> <code>text-transform: uppercase</code> with <code>letter-spacing: 0.1em</code>. Leave the HTML text as it is.</li>
+      <li>Give the <code>h1</code> <code>text-shadow: 2px 2px 0 #9ec2e6</code>.</li>
+      <li>Set the <code>.lede</code> paragraph with one <code>font</code> shorthand: italic, <code>1.25rem</code>, line height <code>1.5</code>, <code>Georgia, serif</code>.</li>
+      <li>Remove the underline from the link with <code>text-decoration</code>.</li>
+    </ol>`,
+    html: `<h1>Royal Arch Trail</h1>
+<p class="lede">A steep climb to a sandstone arch above Boulder.</p>
+<a href="#">Read the trail report</a>`,
+    css: `body { font-family: system-ui, sans-serif; }
+`,
+    solution: { css: `body { font-family: system-ui, sans-serif; }
+
+h1 {
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  text-shadow: 2px 2px 0 #9ec2e6;
+}
+
+.lede {
+  font: italic 1.25rem/1.5 Georgia, serif;
+}
+
+a {
+  text-decoration: none;
+}
+` },
+    hints: ["font: italic 1.25rem/1.5 Georgia, serif; (style, then size/line-height, then family).", "text-decoration: none removes the underline."],
+    checks: [
+      { label: "The h1 is uppercase, spaced 0.1em, and the HTML is unchanged", test: ({ $, style }) => style("h1", "text-transform") === "uppercase" && Math.abs(parseFloat(style("h1", "letter-spacing")) - 3.2) < 0.1 && $("h1").textContent === "Royal Arch Trail" },
+      { label: "The h1 has the shadow", test: ({ style }) => /rgb\(158, 194, 230\) 2px 2px 0px/.test(style("h1", "text-shadow")) },
+      { label: ".lede is italic Georgia, 20px, line height 30px", test: ({ style }) => style(".lede", "font-style") === "italic" && style(".lede", "font-size") === "20px" && style(".lede", "line-height") === "30px" && style(".lede", "font-family").includes("Georgia") },
+      { label: "The link has no underline", test: ({ style }) => style("a", "text-decoration-line") === "none" },
+    ],
+  });
+
+  makeQuiz(document.getElementById("quiz"), [
+    { id: "q1", q: "What's a comfortable line length for paragraphs?", opts: ["About 45 to 75 characters", "The full width of the screen", "About 20 characters"], a: 0, why: "Shorter lines are easier to track. max-width in ch makes it easy to set." },
+    { id: "q2", q: "Why end a font-family list with sans-serif?", opts: ["It's required", "So there's always a sensible fallback", "It makes text bolder"], a: 1, why: "If no named font is available, the generic family still gives a similar style." },
+    { id: "q3", q: "Which line-height is best for body text?", opts: ["1", "16px", "1.6"], a: 2, why: "Around 1.4 to 1.8, without a unit so it scales with the font size." },
+    { id: "q4", q: "Which text should you center?", opts: ["Short headings", "Long paragraphs", "Everything"], a: 0, why: "Centered long text is hard to read because each line starts in a different place." },
+    { id: "q5", q: "Which font shorthand is valid?", opts: ["font: bold 1rem Georgia, serif;", "font: bold Georgia;", "font: Georgia 1rem bold;"], a: 0, why: "Size and family are required, size first, family last." },
+    { id: "q6", q: "text-transform: uppercase. What does a screen reader read?", opts: ["The original text from the HTML", "The text spelled letter by letter", "Nothing"], a: 0, why: "text-transform changes only how the text looks." },
+  ]);
+</script>
+</body>
+</html>

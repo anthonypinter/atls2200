@@ -1,0 +1,376 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CSS Custom Properties · Core Web Development</title>
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="core.css">
+<style>
+  /* The sample site's own variables. Controls on this page change them live. */
+  #site { --brand: #0b6b5e; --accent: #b4410c; --radius: 10px; --space: 14px; --bg: #f7f4ef; --text: #1d2133; --card: #ffffff;
+    background: var(--bg); color: var(--text); padding: var(--space); border-radius: 12px; display: grid; gap: var(--space); font-family: var(--font-body); transition: background 0.2s, color 0.2s; }
+  #site.dark { --bg: #161a24; --text: #eef0f6; --card: #222838; }
+  #site .top { display: flex; justify-content: space-between; align-items: center; gap: var(--space); flex-wrap: wrap; }
+  #site .logo { font: 800 1.2rem var(--font-display); color: var(--brand); }
+  #site .pill { background: var(--accent); color: #fff; border-radius: 999px; padding: 4px 12px; font-size: 0.85rem; font-weight: 700; }
+  #site .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: var(--space); }
+  #site .tcard { background: var(--card); border-radius: var(--radius); padding: var(--space); display: grid; gap: 8px; border-top: 5px solid var(--brand); }
+  #site .tcard h3 { margin: 0; font-size: 1.05rem; color: var(--brand); }
+  #site .tcard p { margin: 0; font-size: 0.9rem; }
+  #site .tcard button { font: 700 0.9rem var(--font-body); background: var(--brand); color: #fff; border: 0; border-radius: calc(var(--radius) / 2); padding: 8px 12px; cursor: pointer; justify-self: start; }
+  #site .tcard .sale { color: var(--sale, crimson); font-weight: 700; font-size: 0.85rem; }
+  #site .featured { --brand: #7a3fb8; }
+  #site [data-uses].show { outline: 3px dashed var(--accent); outline-offset: 3px; }
+  #site.no-feature .featured { --brand: inherit; }
+  .var-btns { display: flex; flex-wrap: wrap; gap: 6px; }
+  .var-btns .btn { font-size: 0.82rem; }
+  .use-note { font-size: 0.9rem; color: var(--muted); min-height: 1.4em; }
+  .check { display: flex; gap: 8px; align-items: center; cursor: pointer; font-size: 0.95rem; }
+  .check input { accent-color: var(--cobalt); }
+  .control input[type="color"] { width: 100%; height: 34px; border: 1px solid var(--line); border-radius: 6px; background: var(--paper); padding: 2px; }
+
+  @property --box-color-reg { syntax: "<color>"; inherits: false; initial-value: #9aa2bf; }
+  .nest { display: grid; gap: 0; }
+  .nest div { border: 2px solid #1d2133; padding: 10px 10px 10px 14px; border-radius: 6px; color: #1d2133; font: 600 0.85rem var(--font-code); font-variation-settings: "MONO" 1; }
+  .nest.plain div { background: var(--box-color, #fff); }
+  .nest.reg div { background: var(--box-color-reg); }
+  .fb-out { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+  .fb-out li { display: grid; grid-template-columns: 1fr auto; gap: 10px; align-items: center; padding: 8px 10px; border-radius: 6px; background: var(--stage); font: 0.86rem var(--font-code); font-variation-settings: "MONO" 1; }
+  .fb-out .sw { width: 60px; height: 26px; border-radius: 4px; border: 1px solid var(--line); }
+</style>
+<script src="book-2.js"></script>
+<script src="js/progress.js"></script>
+<script src="js/chrome.js"></script>
+<script src="js/quiz.js"></script>
+</head>
+<body>
+<main class="wrap">
+  <nav class="crumbs" aria-label="Site"><a class="crumb" href="book-2.html">← Contents</a><a class="crumb" href="glossary.html">Glossary</a></nav>
+  <header class="page-head">
+    <h1>CSS Custom Properties</h1>
+    <p class="lede">Type a colour forty times and changing it means forty edits. A custom property (often called a CSS variable) stores a value once, under a name, so every rule that uses it updates together.</p>
+    <div class="objectives">
+      <p class="callout-title">You'll be able to</p>
+      <ul>
+        <li>Declare custom properties with <code>--name</code> and use them with <code>var()</code>.</li>
+        <li>Define global values on <code>:root</code>, and override them for one part of the page.</li>
+        <li>Give <code>var()</code> a fallback, and explain what happens with an invalid value.</li>
+        <li>Register a typed property with <code>@property</code>, and read or set values from JavaScript.</li>
+      </ul>
+    </div>
+  </header>
+
+  <div class="section-title"><span class="eyebrow">Read</span><h2>Declaring custom properties</h2></div>
+  <div class="prose">
+<h3>Using a prefix of two dashes (<code>--</code>)</h3>
+    <p>A <span class="term">CSS variable</span> is a property whose name starts with two dashes. You declare it in a rule, like any other property:</p>
+    <pre class="snippet" data-lang="css">section {
+  --main-bg-color: brown;
+}</pre>
+    <p>Names are case-sensitive: <code>--Brand</code> and <code>--brand</code> are different.</p>
+    <h3>Using the <code>@property</code> at-rule</h3>
+    <p>For more control, <code>@property</code> registers a custom property with a type, whether it inherits, and a starting value. More on that below.</p>
+    <h3>Referencing custom properties with <code>var()</code></h3>
+    <p>To use the value, put its name in <code>var()</code>: <code>background-color: var(--main-bg-color);</code>. Writing <code>color: --brand;</code> does nothing: you always need <code>var()</code>.</p>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Read</span><h2>First steps, and the :root pseudo-class</h2></div>
+  <div class="prose">
+<p>The usual pattern is to declare site-wide values once, on <code>:root</code> (the <code>&lt;html&gt;</code> element), so every element can use them:</p>
+    <pre class="snippet" data-lang="css">:root {
+  --brand: #0b6b5e;
+  --space: 16px;
+}
+.btn {
+  background: var(--brand);
+  padding: var(--space);
+}</pre>
+    <p>Change <code>--brand</code> in one place and every button, link and heading that uses it follows. The same trick gives you a dark theme: redefine just the colour variables inside <code>@media (prefers-color-scheme: dark)</code>.</p>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Play</span><h2>Change a variable</h2><p>Change one variable and watch every part of the site that uses it update. Then try the dark theme and the override.</p></div>
+  <section class="playground">
+    <div class="panel controls">
+      <span class="eyebrow">Variables on #site</span>
+      <div class="control"><label for="v-brand">--brand</label><input id="v-brand" type="color" value="#0b6b5e"></div>
+      <div class="control"><label for="v-accent">--accent</label><input id="v-accent" type="color" value="#b4410c"></div>
+      <div class="control"><label for="v-radius">--radius</label><input id="v-radius" type="range" min="0" max="24" value="10"><span class="readout" id="r-out"></span></div>
+      <div class="control"><label for="v-space">--space</label><input id="v-space" type="range" min="4" max="28" step="2" value="14"><span class="readout" id="s-out"></span></div>
+      <span class="eyebrow" style="margin-top:6px">Try these too</span>
+      <label class="check"><input type="checkbox" id="dark">Dark theme (redefines --bg, --text, --card)</label>
+      <label class="check"><input type="checkbox" id="feature" checked>Featured card overrides --brand</label>
+      <label class="check"><input type="checkbox" id="sale">Define --sale</label>
+    </div>
+    <div class="stage-col">
+      <div class="var-btns" id="vbtns" role="group" aria-label="Show where a variable is used"></div>
+      <p class="use-note" id="use-note">Pick a variable above to outline everything that uses it.</p>
+      <div id="site">
+        <div class="top"><span class="logo" data-uses="--brand">Trailhead</span><span class="pill" data-uses="--accent">3 new trails</span></div>
+        <div class="cards">
+          <div class="tcard" data-uses="--brand --radius --space"><h3 data-uses="--brand">Royal Arch</h3><p>3.4 mi · Hard</p><span class="sale" data-uses="--sale">Guided hike: 20% off</span><button data-uses="--brand --radius">Save</button></div>
+          <div class="featured"><div class="tcard" data-uses="--brand --radius --space"><h3 data-uses="--brand">Mesa Trail</h3><p>6.7 mi · Featured</p><button data-uses="--brand --radius">Save</button></div></div>
+          <div class="tcard" data-uses="--brand --radius --space"><h3 data-uses="--brand">Chautauqua</h3><p>1.2 mi · Easy</p><button data-uses="--brand --radius">Save</button></div>
+        </div>
+      </div>
+      <p class="hint" id="explain"></p>
+    </div>
+  </section>
+
+  <div class="section-title"><span class="eyebrow">Practice</span><h2>Use a variable</h2><p>One brand colour is typed three times. Store it once, then make a sale card that changes it.</p></div>
+  <div id="ex-vars"></div>
+
+  <div class="section-title"><span class="eyebrow">Read</span><h2>Inheritance of custom properties</h2></div>
+  <div class="prose">
+<p>Custom properties inherit, like <code>color</code>. An element sees the value set on itself or on its nearest ancestor. That's what makes overrides work: set <code>--brand</code> on one <code>.card</code>, and that card and everything inside it use the new value, while the rest of the page doesn't change.</p>
+    <h3>Using <code>@property</code> to control inheritance</h3>
+    <p>A registered property can switch inheritance off. Then only the element it's set on gets the value; its children get the <code>initial-value</code>:</p>
+    <pre class="snippet" data-lang="css">@property --box-color {
+  syntax: "&lt;color&gt;";
+  inherits: false;
+  initial-value: #9aa2bf;
+}</pre>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Play</span><h2>Who sees the value?</h2><p>Four nested boxes, each with <code>background: var(--box-color)</code>. Set the variable on one of them.</p></div>
+  <section class="playground even">
+    <div class="panel" style="display:grid;gap:10px;align-content:start">
+      <div class="seg" id="nest-on" role="group" aria-label="Set --box-color on">
+        <button class="btn" type="button" data-v="0">box 1</button><button class="btn" type="button" data-v="1">box 2</button><button class="btn" type="button" data-v="2">box 3</button>
+      </div>
+      <label class="toggle"><input type="checkbox" id="nest-reg"> registered with <code>@property</code>, <code>inherits: false</code></label>
+      <p class="verdict" id="nest-note" aria-live="polite"></p>
+    </div>
+    <div class="nest plain" id="nest"><div>box 1<div>box 2<div>box 3<div>box 4</div></div></div></div></div>
+  </section>
+
+  <div class="section-title"><span class="eyebrow">Read</span><h2>Custom property fallback values</h2></div>
+  <div class="prose">
+<h3>Defining fallbacks in the <code>var()</code> function</h3>
+    <p>Add a second value to <code>var()</code>, after a comma, to use when the variable isn't defined: <code>var(--sale, crimson)</code>. Fallbacks can nest: <code>var(--my-var, var(--my-background, pink))</code>.</p>
+    <h3>Fallbacks using the <code>@property</code> initial value</h3>
+    <p>A registered property also falls back to its <code>initial-value</code> when it's given a value of the wrong type, like <code>peenk</code> for a <code>&lt;color&gt;</code>.</p>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Read</span><h2>Invalid custom properties</h2></div>
+  <div class="prose">
+<p>Normally an invalid declaration is simply skipped. Variables are different: the browser can't know whether <code>var(--text-color)</code> makes sense until it substitutes the value. So with <code>:root { --text-color: 16px; }</code>, the rule <code>p { color: var(--text-color); }</code> isn't skipped. It becomes invalid when used, and <code>color</code> falls back to its inherited value, not to your previous rule. (Registering the property with a <code>&lt;color&gt;</code> syntax prevents that.)</p>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Play</span><h2>What does var() resolve to?</h2><p>Choose what <code>--my-var</code> is set to.</p></div>
+  <section class="playground even">
+    <div class="panel" style="display:grid;gap:10px;align-content:start">
+      <div class="seg" id="fb" role="group" aria-label="--my-var">
+        <button class="btn" type="button" data-v="">not defined</button>
+        <button class="btn" type="button" data-v="#2340d9">#2340d9</button>
+        <button class="btn" type="button" data-v="16px">16px</button>
+      </div>
+      <p class="hint">The parent's text colour is <code>#b4410c</code>.</p>
+    </div>
+    <div class="panel"><ul class="fb-out" id="fb-out"></ul></div>
+  </section>
+
+  <div class="section-title"><span class="eyebrow">Practice</span><h2>Register a property</h2><p>Use <code>@property</code> to make a colour variable safe.</p></div>
+  <div id="ex-prop"></div>
+
+  <div class="section-title"><span class="eyebrow">Read</span><h2>Values in JavaScript</h2></div>
+  <div class="prose">
+<p>JavaScript (Week 7) can read and change custom properties, which is how interactive themes work. Changing one variable restyles everything that uses it:</p>
+    <pre class="snippet" data-lang="js">// read
+getComputedStyle(element).getPropertyValue("--brand");
+// set
+element.style.setProperty("--brand", "#b4410c");</pre>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Play</span><h2>Set a variable from JavaScript</h2><p>Each button runs <code>document.documentElement.style.setProperty("--demo-hue", …)</code>. Everything below uses <code>hsl(var(--demo-hue) 70% 40%)</code>.</p></div>
+  <section class="playground even">
+    <div class="panel" style="display:grid;gap:10px;align-content:start">
+      <div class="presets" id="js-hue" role="group" aria-label="Hue"><button class="btn" type="button">20</button><button class="btn" type="button">160</button><button class="btn" type="button">225</button><button class="btn" type="button">300</button></div>
+      <pre class="snippet" id="js-read"></pre>
+    </div>
+    <div class="panel" id="js-demo" style="display:grid;gap:8px"><b style="color:hsl(var(--demo-hue, 225) 70% 40%);font-size:1.4rem">Trail Club</b><span style="background:hsl(var(--demo-hue, 225) 70% 40%);color:#fff;padding:8px 12px;border-radius:6px;justify-self:start">Join a hike</span><span style="border-left:6px solid hsl(var(--demo-hue, 225) 70% 40%);padding-left:10px">Next: Saturday at 8am</span></div>
+  </section>
+
+  <section class="notes">
+    <div class="panel">
+      <h2>Key ideas</h2>
+      <ul>
+        <li>Custom properties start with <code>--</code> and are read with <code>var()</code>.</li>
+        <li>Declare global values on <code>:root</code>; override them on any element for that part of the page.</li>
+        <li>They inherit, unless registered with <code>@property</code> and <code>inherits: false</code>.</li>
+        <li><code>var(--x, fallback)</code> covers an undefined variable.</li>
+        <li>A wrong-type value isn't skipped: the property falls back to inherited or initial.</li>
+      </ul>
+    </div>
+    <div class="panel mistake">
+      <h2>Common mistakes</h2>
+      <ul>
+        <li><code>color: --brand;</code> without <code>var()</code>.</li>
+        <li>Mismatched case: <code>--Brand</code> versus <code>--brand</code>.</li>
+        <li>Declaring a variable on one element and expecting a sibling to see it.</li>
+        <li>A space after <code>var(</code> in the name, or a missing <code>--</code>.</li>
+        <li>Expecting a bad value in a variable to be ignored like a normal invalid declaration.</li>
+      </ul>
+    </div>
+  </section>
+
+  <div class="section-title"><span class="eyebrow">Check yourself</span><h2>Quick check</h2></div>
+  <div class="panel quiz" id="quiz"></div>
+
+  <footer class="page-foot" data-book-nav><a href="book-2.html">← Contents</a></footer>
+</main>
+
+<script>
+  const $ = (id) => document.getElementById(id);
+  const site = $("site");
+  const VARS = ["--brand", "--accent", "--radius", "--space", "--sale"];
+  let shown = null;
+  $("vbtns").innerHTML = VARS.map((v) => `<button class="btn" data-v="${v}">${v}</button>`).join("");
+  $("vbtns").addEventListener("click", (e) => { const b = e.target.closest("button"); if (!b) return; shown = shown === b.dataset.v ? null : b.dataset.v; highlight(); });
+  function highlight() {
+    let n = 0;
+    site.querySelectorAll("[data-uses]").forEach((el) => { const on = !!shown && el.dataset.uses.split(" ").includes(shown); el.classList.toggle("show", on); if (on) n++; });
+    if (shown === "--space") n += 2; // also the site's padding and both grid gaps
+    document.querySelectorAll("#vbtns button").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.v === shown)));
+    $("use-note").textContent = shown ? `${shown} is used in ${n} places. Change it once and they all update.` : "Pick a variable above to outline everything that uses it.";
+  }
+  function update() {
+    site.style.setProperty("--brand", $("v-brand").value);
+    site.style.setProperty("--accent", $("v-accent").value);
+    site.style.setProperty("--radius", $("v-radius").value + "px");
+    site.style.setProperty("--space", $("v-space").value + "px");
+    $("r-out").textContent = $("v-radius").value + "px"; $("s-out").textContent = $("v-space").value + "px";
+    site.classList.toggle("dark", $("dark").checked);
+    site.classList.toggle("no-feature", !$("feature").checked);
+    if ($("sale").checked) site.style.setProperty("--sale", "#1a7f37"); else site.style.removeProperty("--sale");
+    const notes = [];
+    if ($("feature").checked) notes.push("The featured card is purple because its wrapper redefines --brand. Only it and its children see that value.");
+    notes.push($("sale").checked ? "--sale is now defined (green), so the sale text uses it." : "--sale isn't defined anywhere, so the sale text falls back to crimson.");
+    $("explain").textContent = notes.join(" ");
+  }
+  document.querySelectorAll(".controls input").forEach((el) => el.addEventListener("input", update));
+  update(); highlight();
+
+  // --- Nested inheritance ---
+  let nestOn = 1;
+  function nest() {
+    const reg = $("nest-reg").checked, boxes = [...$("nest").querySelectorAll("div")];
+    $("nest").className = "nest " + (reg ? "reg" : "plain");
+    boxes.forEach((d, i) => { d.style.removeProperty("--box-color"); d.style.removeProperty("--box-color-reg"); });
+    boxes[nestOn].style.setProperty(reg ? "--box-color-reg" : "--box-color", "#f0b37a");
+    $("nest-note").textContent = reg ? `Only box ${nestOn + 1} is orange: with inherits: false, its children get the initial value (grey).` : `Box ${nestOn + 1} and everything inside it are orange: custom properties inherit. Boxes above it don't see the value.`;
+    document.querySelectorAll("#nest-on .btn").forEach((x) => x.setAttribute("aria-pressed", String(+x.dataset.v === nestOn)));
+  }
+  $("nest-on").addEventListener("click", (e) => { const b = e.target.closest("[data-v]"); if (b) { nestOn = +b.dataset.v; nest(); } });
+  $("nest-reg").addEventListener("change", nest);
+  nest();
+
+  // --- Fallbacks ---
+  const FB = ["var(--my-var)", "var(--my-var, crimson)", "var(--my-var, var(--other, pink))"];
+  function fb(v) {
+    const host = document.createElement("div"); host.style.color = "#b4410c"; document.body.append(host);
+    if (v) host.style.setProperty("--my-var", v);
+    $("fb-out").innerHTML = FB.map((expr) => {
+      const p = document.createElement("p"); p.style.color = expr; host.append(p);
+      const c = getComputedStyle(p).color; p.remove();
+      return `<li><span>color: ${expr}</span><span class="sw" style="background:${c}" title="${c}"></span></li>`;
+    }).join("") + `<li><span>${v === "16px" ? "16px isn't a colour: every rule became invalid at computed time and inherited #b4410c from the parent, even the ones with a fallback (fallbacks only cover undefined)." : v ? "Defined, so every var() uses it and the fallbacks are ignored." : "Not defined: the plain var() inherits the parent's colour; the others use their fallbacks."}</span><span></span></li>`;
+    host.remove();
+    document.querySelectorAll("#fb .btn").forEach((x) => x.setAttribute("aria-pressed", String(x.dataset.v === v)));
+  }
+  $("fb").addEventListener("click", (e) => { const b = e.target.closest("[data-v]"); if (b) fb(b.dataset.v); });
+  fb("");
+
+  // --- JavaScript ---
+  function hue(v) {
+    $("js-demo").style.setProperty("--demo-hue", v);
+    $("js-read").textContent = `el.style.setProperty("--demo-hue", "${v}");\ngetComputedStyle(el).getPropertyValue("--demo-hue");\n// → "${getComputedStyle($("js-demo")).getPropertyValue("--demo-hue").trim()}"`;
+  }
+  $("js-hue").addEventListener("click", (e) => { const b = e.target.closest(".btn"); if (b) hue(b.textContent); });
+  hue("225");
+</script>
+<script>
+  makeExercise(document.getElementById("ex-vars"), {
+    title: "One color, defined once",
+    task: `<ol>
+      <li>Define <code>--brand: #0b6b5e</code> on <code>:root</code> and use <code>var(--brand)</code> in all three places.</li>
+      <li>Make the sale card crimson by redefining <code>--brand</code> on <code>.sale</code>, in just one declaration.</li>
+    </ol>`,
+    html: `<div class="card">
+  <h2>Mesa Trail map</h2>
+  <button>Buy · $8</button>
+</div>
+<div class="card sale">
+  <h2>Royal Arch map</h2>
+  <button>Sale · $5</button>
+</div>`,
+    css: `body { font-family: system-ui, sans-serif; }
+.card { border: 2px solid #0b6b5e; padding: 12px; margin-bottom: 12px; }
+.card h2 { color: #0b6b5e; margin: 0 0 8px; }
+.card button { background: #0b6b5e; color: white; border: 0; padding: 6px 12px; font: inherit; }`,
+    solution: { css: `:root { --brand: #0b6b5e; }
+
+body { font-family: system-ui, sans-serif; }
+.card { border: 2px solid var(--brand); padding: 12px; margin-bottom: 12px; }
+.card h2 { color: var(--brand); margin: 0 0 8px; }
+.card button { background: var(--brand); color: white; border: 0; padding: 6px 12px; font: inherit; }
+
+.sale { --brand: crimson; }` },
+    hints: [
+      ":root { --brand: #0b6b5e; } defines it for the whole page.",
+      "Use it with var(): color: var(--brand);",
+      "Variables inherit, so .sale { --brand: crimson; } changes it for that card and everything inside.",
+    ],
+    checks: [
+      { label: "--brand is defined on :root", test: ({ doc, style }) => style(doc.documentElement, "--brand").toLowerCase() === "#0b6b5e" },
+      { label: "#0b6b5e is typed only once", test: ({ code }) => (code.css.match(/#0b6b5e/gi) || []).length === 1 },
+      { label: "The normal card is still green", test: ({ $, style }) => { const c = $(".card:not(.sale)"); return style(c, "border-top-color") === "rgb(11, 107, 94)" && style(c.querySelector("h2"), "color") === "rgb(11, 107, 94)" && style(c.querySelector("button"), "background-color") === "rgb(11, 107, 94)"; } },
+      { label: "The sale card is crimson, from one declaration", test: ({ $, style, code }) => { const c = $(".sale"); return style(c, "border-top-color") === "rgb(220, 20, 60)" && style(c.querySelector("h2"), "color") === "rgb(220, 20, 60)" && style(c.querySelector("button"), "background-color") === "rgb(220, 20, 60)" && (code.css.match(/crimson|#dc143c/gi) || []).length === 1; } },
+    ],
+  });
+
+  makeExercise(document.getElementById("ex-prop"), {
+    title: "A typed accent colour",
+    task: `<ol>
+      <li>Register <code>--accent</code> with <code>@property</code>: <code>syntax: "&lt;color&gt;"</code>, <code>inherits: true</code>, <code>initial-value: teal</code>.</li>
+      <li>Give <code>.badge</code> <code>background-color: var(--accent)</code>.</li>
+      <li>Someone set <code>--accent: peenk</code> on the warning badge. Leave it: with the property registered, that badge falls back to teal instead of breaking.</li>
+      <li>Set <code>--accent: #b4410c</code> on <code>.badge.hot</code>.</li>
+    </ol>`,
+    html: `<span class="badge">Open</span>
+<span class="badge warn">Icy</span>
+<span class="badge hot">Busy</span>`,
+    css: `body { font-family: system-ui, sans-serif; }
+.badge { color: white; padding: 4px 10px; border-radius: 99px; }
+.badge.warn { --accent: peenk; }
+`,
+    solution: { css: `@property --accent {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: teal;
+}
+
+body { font-family: system-ui, sans-serif; }
+.badge { color: white; padding: 4px 10px; border-radius: 99px; background-color: var(--accent); }
+.badge.warn { --accent: peenk; }
+.badge.hot { --accent: #b4410c; }
+` },
+    hints: ["@property goes at the top level, like @media, with syntax, inherits and initial-value inside.", "Quote the syntax: \"<color>\"."],
+    checks: [
+      { label: "The plain badge is teal", test: ({ style }) => style(".badge:not(.warn):not(.hot)", "background-color") === "rgb(0, 128, 128)" },
+      { label: "The warning badge falls back to teal", test: ({ style }) => style(".badge.warn", "background-color") === "rgb(0, 128, 128)" },
+      { label: "The hot badge is #b4410c", test: ({ style }) => style(".badge.hot", "background-color") === "rgb(180, 65, 12)" },
+    ],
+  });
+
+  makeQuiz(document.getElementById("quiz"), [
+    { id: "q1", q: "How do you use a variable named --brand?", opts: ["color: var(--brand);", "color: --brand;", "color: $brand;"], a: 0, why: "You always read a variable with var()." },
+    { id: "q2", q: "Why define variables on :root?", opts: ["It's required syntax", "So every element on the page can use them", "So they load faster"], a: 1, why: ":root is the top of the page, and variables inherit down from it." },
+    { id: "q3", q: "You redefine --brand on one .card. What changes?", opts: ["Every element on the page", "That card and its children", "Nothing; variables can't be redefined"], a: 1, why: "Elements see the value from their nearest ancestor that defines it." },
+    { id: "q4", q: "What does var(--sale, crimson) do if --sale isn't defined?", opts: ["Uses crimson", "Uses black", "Breaks the rule"], a: 0, why: "The second value is a fallback for a missing variable." },
+    { id: "q5", q: "What does inherits: false in @property do?", opts: ["Children get the initial-value, not the parent's value", "The property can't be changed", "It stops var() working"], a: 0, why: "Only the element the value is set on uses it." },
+    { id: "q6", q: "In JavaScript, how do you change --brand on an element?", opts: ["el.style.setProperty(\"--brand\", \"red\")", "el.style.brand = \"red\"", "el.brand = \"red\""], a: 0, why: "Custom properties are set with setProperty and read with getPropertyValue." },
+  ]);
+</script>
+</body>
+</html>

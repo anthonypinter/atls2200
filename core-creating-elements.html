@@ -1,0 +1,496 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Creating Elements · Core Web Development</title>
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="core.css">
+<style>
+  .check { display: flex; gap: 8px; align-items: flex-start; cursor: pointer; font-size: 0.92rem; }
+  .check input { accent-color: var(--cobalt); margin-top: 4px; }
+  .app { background: #fbfaf7; color: #1d2133; border-radius: 8px; padding: 14px; display: grid; gap: 10px; font-family: var(--font-body); }
+  .app h3 { font: 700 1.05rem var(--font-display); margin: 0; color: #0b6b5e; }
+  .app form { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; }
+  .app label { grid-column: 1 / -1; font-size: 0.85rem; color: #5a6280; }
+  .app input { font: 1rem var(--font-body); padding: 7px 10px; border: 1px solid #d9d4c7; border-radius: 6px; background: #fff; color: #1d2133; min-width: 0; }
+  .app form button { font: 700 0.9rem var(--font-body); background: #0b6b5e; color: #fff; border: 0; border-radius: 6px; padding: 7px 14px; cursor: pointer; }
+  .app ul { margin: 0; padding: 0; list-style: none; display: grid; gap: 6px; min-height: 30px; }
+  .app li { display: flex; justify-content: space-between; align-items: center; gap: 8px; background: #fff; border: 1px solid #e4e0d6; border-radius: 6px; padding: 6px 6px 6px 12px; animation: pop 0.25s; }
+  .app li span { overflow-wrap: anywhere; min-width: 0; }
+  .app li button { font: 600 0.8rem var(--font-body); background: #fde8e6; color: #b42318; border: 1px solid #f3b8b1; border-radius: 5px; padding: 3px 9px; cursor: pointer; }
+  .app .empty { display: block; color: #5a6280; font-size: 0.9rem; background: none; border: 0; padding: 0; }
+  @keyframes pop { from { transform: scale(0.9); opacity: 0; } }
+  .code { display: grid; grid-template-columns: minmax(0, 1fr); background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 8px 0; overflow-x: auto; }
+  .code .l { padding: 0 14px; font: 0.84rem/1.6 var(--font-code); font-variation-settings: "MONO" 1; white-space: pre; border-left: 3px solid transparent; min-width: max-content; }
+  .code .l.ran { background: var(--good-soft); border-left-color: var(--good); }
+  .code .l.gone { text-decoration: line-through; }
+  .code .l.gone, .code .l.gone *, #b-code .later, #b-code .later * { color: var(--muted) !important; }
+  .code .l.changed { background: var(--bad-soft); border-left-color: var(--bad); }
+
+  .build { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(220px, 100%), 1fr)); gap: 12px; }
+  .zone { border: 2px dashed var(--line); border-radius: 10px; padding: 12px; display: grid; gap: 8px; align-content: start; min-height: 150px; }
+  .zone .eyebrow { font-size: 0.7rem; }
+  .zone ul { margin: 0; padding-left: 1.2em; display: grid; gap: 4px; }
+  .zone .floating { justify-self: start; font: 0.95rem var(--font-body); padding: 6px 12px; border-radius: 6px; background: var(--panel); border: 2px solid var(--cobalt); }
+  .zone .floating.done { color: var(--good); border-color: var(--good); font-weight: 700; }
+  .zone .new { color: var(--good); font-weight: 700; }
+  .stepper { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+  .stepper .count { font: 600 0.85rem var(--font-code); font-variation-settings: "MONO" 1; color: var(--muted); }
+
+  #gal-code { white-space: pre-wrap; }
+  .gal { display: grid; gap: 10px; max-width: 560px; }
+  .gal-full { position: relative; border-radius: 8px; overflow: hidden; aspect-ratio: 16 / 9; background: #222; }
+  .gal-full img { display: block; width: 100%; height: 100%; object-fit: cover; }
+  .gal-overlay { position: absolute; inset: 0; background: rgb(0 0 0 / 0%); pointer-events: none; transition: background 0.2s; }
+  .gal-full.dark .gal-overlay { background: rgb(0 0 0 / 50%); }
+  .gal-full button { position: absolute; top: 10px; left: 10px; }
+  .gal-thumbs { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; }
+  .gal-thumbs img { display: block; width: 100%; aspect-ratio: 16 / 9; object-fit: cover; border-radius: 5px; cursor: pointer; border: 2px solid transparent; }
+  .gal-thumbs img:hover, .gal-thumbs img:focus-visible { border-color: var(--cobalt); outline: none; }
+  .gal-thumbs img.current { border-color: var(--prop); }
+</style>
+<script src="book-2.js"></script>
+<script src="js/progress.js"></script>
+<script src="js/chrome.js"></script>
+<script src="js/quiz.js"></script>
+</head>
+<body>
+<main class="wrap">
+  <nav class="crumbs" aria-label="Site"><a class="crumb" href="book-2.html">← Contents</a><a class="crumb" href="glossary.html">Glossary</a></nav>
+  <header class="page-head">
+    <h1>Creating Elements</h1>
+    <p class="lede">So far you've changed elements that were already in the HTML. JavaScript can also build new ones: that's how a to-do list grows when you add an item, how search results appear, and how a gallery fills itself from a list of images.</p>
+    <div class="objectives">
+      <p class="callout-title">You'll be able to</p>
+      <ul>
+        <li>Create, fill and attach elements with <code>createElement()</code>, <code>textContent</code> and <code>appendChild()</code>.</li>
+        <li>Remove elements, and explain why <code>textContent</code> is safer than <code>innerHTML</code>.</li>
+        <li>Build MDN's dynamic shopping list from a form and a list.</li>
+        <li>Generate an image gallery from an array of data, with click and keyboard handlers.</li>
+      </ul>
+    </div>
+  </header>
+
+  <div class="section-title"><span class="eyebrow">Read</span><h2>Creating and placing new nodes</h2></div>
+  <div class="prose">
+    <p>So far you've changed elements that were already in the HTML. JavaScript can also build new ones, which is how a to-do list grows when you add an item, or how search results appear. It takes three steps:</p>
+    <pre class="snippet" data-lang="js">const li = document.createElement("li");   // 1. make it
+li.textContent = "Trail mix";               // 2. fill it
+li.classList.add("item");
+list.append(li);                            // 3. attach it</pre>
+    <p><span class="term">createElement()</span> makes an element in memory. It isn't on the page yet, and it won't show up anywhere until you attach it to something that is. Forgetting that last step is the most common reason a new element never appears. <code>append()</code> adds it as the last child; <code>prepend()</code> adds it as the first. You'll also see the older <code>appendChild()</code>, which works the same way.</p>
+    <p>To take an element away, call <code>remove()</code> on it: <code>li.remove()</code>.</p>
+    <p>An element can only be in one place at a time. Appending an element that's already on the page moves it rather than copying it. To make a copy, use <code>cloneNode(true)</code>.</p>
+    <p>There's a shortcut you'll see a lot: setting <code>innerHTML</code> to a string of HTML. It's handy for building markup you wrote yourself. But never use it for text a visitor typed. If someone types <code>&lt;img src=x onerror=…&gt;</code>, <code>innerHTML</code> turns it into a real element, and the code inside runs. <span class="term">textContent</span> shows exactly what was typed and never runs it.</p>
+    <div class="callout tip"><p class="callout-title">Tip</p><p>After adding an item to a list, clear the input and put focus back in it with <code>input.focus()</code>, so people can type the next one straight away.</p></div>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Play</span><h2>Created isn't the same as on the page</h2><p><code>createElement()</code> makes an element in memory. It doesn't show up anywhere until you attach it to something that's already on the page.</p></div>
+  <section class="playground">
+    <div class="panel controls">
+      <div class="stepper"><button class="btn run" id="b-next">Next line ▸</button><button class="btn" id="b-reset">Restart</button><span class="count" id="b-count"></span></div>
+      <pre class="snippet" id="b-code"></pre>
+      <p class="hint" id="b-why"></p>
+    </div>
+    <div class="build">
+      <div class="zone"><span class="eyebrow">In memory (not on the page)</span><div id="b-mem"></div></div>
+      <div class="zone"><span class="eyebrow">On the page</span><ul id="b-page"><li>Trail mix</li><li>Water</li></ul></div>
+    </div>
+  </section>
+
+  <div class="section-title"><span class="eyebrow">Read</span><h2>A dynamic shopping list</h2></div>
+  <div class="prose">
+<p>MDN's shopping list puts it all together. The HTML is a label, an input, a button and an empty list. The JavaScript, step by step:</p>
+    <ol>
+      <li>Store references to the list, the input and the button.</li>
+      <li>Add a listener to the button (or better, the form's <code>submit</code>).</li>
+      <li>In it, store the input's current <code>value</code>, then empty the input.</li>
+      <li>Create an <code>&lt;li&gt;</code>, a <code>&lt;span&gt;</code> and a <code>&lt;button&gt;</code>. Append the span and button to the list item, set the span's text to the value and the button's text to "Delete", then append the list item to the list.</li>
+      <li>Add a listener to the delete button that removes its list item.</li>
+      <li>Finally, call <code>input.focus()</code> so people can type the next item straight away.</li>
+    </ol>
+    <pre class="snippet" data-lang="js">form.addEventListener("submit", (event) =&gt; {
+  event.preventDefault();
+  const myItem = input.value;
+  input.value = "";
+
+  const listItem = document.createElement("li");
+  const listText = document.createElement("span");
+  const listBtn = document.createElement("button");
+
+  listItem.appendChild(listText);
+  listText.textContent = myItem;
+  listItem.appendChild(listBtn);
+  listBtn.textContent = "Delete";
+  list.appendChild(listItem);
+
+  listBtn.addEventListener("click", () =&gt; {
+    list.removeChild(listItem);
+  });
+
+  input.focus();
+});</pre>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Play</span><h2>Build a shopping list</h2><p>Add and delete items and watch which lines of code run. Then try each mistake.</p></div>
+  <section class="playground">
+    <div class="panel controls">
+      <span class="eyebrow">Try a mistake</span>
+      <label class="check"><input type="checkbox" id="m-prevent">Leave out event.preventDefault()</label>
+      <label class="check"><input type="checkbox" id="m-append">Forget list.appendChild(listItem)</label>
+      <label class="check"><input type="checkbox" id="m-html">Use innerHTML instead of textContent</label>
+      <p class="hint" id="m-why">Add a few items, then turn on a mistake and add another. For the innerHTML one, try typing <code>&lt;b&gt;Milk&lt;/b&gt;</code>.</p>
+    </div>
+    <div class="stage-col">
+      <div class="app">
+        <h3>My shopping list</h3>
+        <form id="form"><label for="item">Enter a new item</label><input id="item" autocomplete="off" value="Trail mix"><button>Add item</button></form>
+        <ul id="list"></ul>
+      </div>
+      <ol class="console" id="out" aria-label="Console output"><li class="muted">Add an item.</li></ol>
+      <div class="code" id="code" aria-label="Code"></div>
+    </div>
+  </section>
+
+  <div class="section-title"><span class="eyebrow">Practice</span><h2>Build and remove list items</h2><p>Write two functions: one adds an item to a list, the other clears out finished ones.</p></div>
+  <div id="ex-create"></div>
+
+  <div class="section-title"><span class="eyebrow">Read</span><h2>An image gallery</h2></div>
+  <div class="prose">
+<p>MDN's image gallery challenge builds a set of thumbnails from data. Clicking a thumbnail shows it large; a button darkens and lightens the big image.</p>
+    <h3>Start from data</h3>
+    <p>Instead of writing five <code>&lt;img&gt;</code> elements in the HTML, keep the images in an array of objects. Each object has the file name and the alt text:</p>
+    <pre class="snippet" data-lang="js">const images = [
+  { filename: "pic1.jpg", alt: "Closeup of a human eye" },
+  { filename: "pic2.jpg", alt: "Rock that looks like a wave" },
+  // …
+];</pre>
+    <h3>Looping through the images</h3>
+    <p>Loop through the array. For each item, create an <code>&lt;img&gt;</code>, set its <code>src</code> and <code>alt</code>, and append it to the thumbnail bar:</p>
+    <pre class="snippet" data-lang="js">for (const image of images) {
+  const newImage = document.createElement("img");
+  newImage.src = `images/${image.filename}`;
+  newImage.alt = image.alt;
+  newImage.tabIndex = 0;
+  thumbBar.appendChild(newImage);
+
+  newImage.addEventListener("click", updateDisplayedImage);
+  newImage.addEventListener("keydown", (e) =&gt; {
+    if (e.code === "Enter") updateDisplayedImage(e);
+  });
+}
+
+function updateDisplayedImage(e) {
+  displayedImage.src = e.target.src;
+  displayedImage.alt = e.target.alt;
+}</pre>
+    <p>Images can't normally be focused, so <code>tabIndex = 0</code> puts each one in the tab order, and the <code>keydown</code> listener lets keyboard users press Enter to choose it. (In your own work a <code>&lt;button&gt;</code> around each image gets you both for free.)</p>
+    <h3>The darken/lighten button</h3>
+    <p>The button's listener checks its own class. If it's <code>dark</code>, it switches to <code>light</code>, changes its text to "Lighten" and shows a translucent black overlay; otherwise it does the reverse. <code>classList.toggle()</code> is a compact way to flip a class on and off.</p>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Play</span><h2>Image gallery</h2><p>Built entirely by the loop above. Click a thumbnail, or tab to one and press Enter.</p></div>
+  <section class="playground">
+    <div class="gal">
+      <div class="gal-full" id="gal-full"><img id="gal-img" alt=""><div class="gal-overlay"></div><button class="btn" type="button" id="gal-dark">Darken</button></div>
+      <div class="gal-thumbs" id="gal-thumbs" role="group" aria-label="Thumbnails"></div>
+    </div>
+    <div class="stage-col"><pre class="snippet" id="gal-code" data-lang="js"></pre></div>
+  </section>
+
+  <div class="section-title"><span class="eyebrow">Practice</span><h2>Build the thumbnails</h2><p>Turn an array of image data into thumbnails that update the big image.</p></div>
+  <div id="ex-gallery"></div>
+
+  <section class="notes">
+    <div class="panel">
+      <h2>Key ideas</h2>
+      <ul>
+        <li>Three steps: <code>createElement()</code> to make it, fill it in, then <code>appendChild()</code> or <code>append()</code> to attach it.</li>
+        <li>A created element isn't on the page until it's attached to something that is.</li>
+        <li><code>remove()</code> takes an element out; appending one that's already on the page moves it.</li>
+        <li>Use <code>textContent</code> for anything a visitor typed, never <code>innerHTML</code>.</li>
+        <li>Keep repeated content in an array of objects and build the elements in a loop.</li>
+      </ul>
+    </div>
+    <div class="panel mistake">
+      <h2>Common mistakes</h2>
+      <ul>
+        <li>Creating an element and never attaching it.</li>
+        <li>Using <code>innerHTML</code> with user input, which can run code.</li>
+        <li>Adding listeners to elements before they've been created.</li>
+        <li>Clickable images or divs with no keyboard support.</li>
+      </ul>
+    </div>
+  </section>
+
+  <div class="section-title"><span class="eyebrow">Check yourself</span><h2>Quick check</h2></div>
+  <div class="panel quiz" id="quiz"></div>
+
+  <footer class="page-foot" data-book-nav><a href="book-2.html">← Contents</a></footer>
+</main>
+
+<script src="js/runner.js"></script>
+<script>
+  const $ = (id) => document.getElementById(id);
+  // The exercise code. `k` names the line for highlighting; `alt` is the line when a mistake is on.
+  const CODE = [
+    { c: 'const list = document.querySelector("ul");' },
+    { c: 'const input = document.querySelector("input");' },
+    { c: 'const form = document.querySelector("form");' },
+    { c: "" },
+    { c: 'form.addEventListener("submit", (event) => {', k: "s" },
+    { c: "  event.preventDefault();", k: "s", m: "m-prevent", drop: true },
+    { c: "  const myItem = input.value;", k: "s" },
+    { c: '  input.value = "";', k: "s" },
+    { c: "" },
+    { c: '  const listItem = document.createElement("li");', k: "s" },
+    { c: '  const listText = document.createElement("span");', k: "s" },
+    { c: '  const listBtn = document.createElement("button");', k: "s" },
+    { c: "" },
+    { c: "  listItem.appendChild(listText);", k: "s" },
+    { c: "  listText.textContent = myItem;", k: "s", m: "m-html", alt: "  listText.innerHTML = myItem;" },
+    { c: "  listItem.appendChild(listBtn);", k: "s" },
+    { c: '  listBtn.textContent = "Delete";', k: "s" },
+    { c: "  list.appendChild(listItem);", k: "s", m: "m-append", drop: true },
+    { c: "" },
+    { c: '  listBtn.addEventListener("click", () => {', k: "s" },
+    { c: "    listItem.remove();", k: "d" },
+    { c: "  });", k: "s" },
+    { c: "" },
+    { c: "  input.focus();", k: "s" },
+    { c: "});", k: "s" },
+  ];
+  let lastRun = null;
+  const on = (id) => $(id).checked;
+  function renderCode() {
+    $("code").innerHTML = CODE.map((l) => {
+      const mistake = l.m && on(l.m);
+      const cls = [lastRun && l.k === lastRun && !(mistake && l.drop) ? "ran" : "", mistake ? (l.drop ? "gone" : "changed") : ""].join(" ");
+      return `<div class="l ${cls}">${hlJS(mistake && l.alt ? l.alt : l.c) || " "}</div>`;
+    }).join("");
+  }
+  function log(cls, text) { const out = $("out"); if (out.querySelector(".muted")) out.innerHTML = ""; const li = document.createElement("li"); li.className = cls; li.textContent = text; out.prepend(li); while (out.children.length > 6) out.lastChild.remove(); }
+  function emptyNote() { const list = $("list"); if (!list.querySelector("li:not(.empty)")) list.innerHTML = `<li class="empty">No items yet.</li>`; else list.querySelector(".empty")?.remove(); }
+
+  // Safely imitate innerHTML: parse in an inert document, strip anything that could run, report it.
+  function unsafeHTML(target, html) {
+    const doc = new DOMParser().parseFromString(`<body>${html}<\/body>`, "text/html");
+    const blocked = [];
+    doc.body.querySelectorAll("script, iframe, object, embed").forEach((el) => { blocked.push(`<${el.tagName.toLowerCase()}>`); el.remove(); });
+    doc.body.querySelectorAll("*").forEach((el) => [...el.attributes].forEach((a) => { if (/^on/i.test(a.name) || /^\s*javascript:/i.test(a.value)) { blocked.push(`${a.name}="${a.value}"`); el.removeAttribute(a.name); } }));
+    target.append(...[...doc.body.childNodes].map((n) => document.importNode(n, true)));
+    return blocked;
+  }
+
+  $("form").addEventListener("submit", (event) => {
+    event.preventDefault(); // always stopped here so the demo page itself never reloads
+    if (on("m-prevent")) {
+      $("list").innerHTML = ""; emptyNote(); lastRun = null; renderCode();
+      log("err", "The page reloaded: without preventDefault(), submitting the form loads the page again from scratch, and every item is gone.");
+      $("m-why").textContent = "Submitting a form makes the browser load a new page by default. preventDefault() cancels that so your JavaScript can handle it.";
+      return;
+    }
+    const myItem = $("item").value;
+    $("item").value = "";
+    const listItem = document.createElement("li");
+    const listText = document.createElement("span");
+    const listBtn = document.createElement("button");
+    listItem.appendChild(listText);
+    let why = "Each line ran in order. Everything inside the listener runs again for every new item.";
+    if (on("m-html")) {
+      const blocked = unsafeHTML(listText, myItem);
+      if (blocked.length) { log("err", `Blocked for this demo: ${blocked.join(", ")}. On a real page using innerHTML, this would have run code that someone typed.`); why = "Anything typed into an innerHTML line becomes real HTML, including attributes like onerror that run JavaScript. That's how cross-site scripting (XSS) attacks work. textContent never runs anything."; }
+      else why = /</.test(myItem) ? "innerHTML turned the tags you typed into real HTML. It looks harmless here, but someone could type HTML that runs code. Use textContent for anything users type." : "innerHTML looks the same as textContent for plain text. Now type something with a tag in it, such as <b>Milk</b>.";
+    } else {
+      listText.textContent = myItem;
+      if (/</.test(myItem)) why = "textContent showed the tags as plain text instead of running them as HTML. That's why it's the safe choice.";
+    }
+    listItem.appendChild(listBtn);
+    listBtn.textContent = "Delete";
+    listBtn.type = "button";
+    if (!on("m-append")) $("list").appendChild(listItem);
+    else { why = "The li was created and filled in, but never attached to the page, so nothing appeared. There's no error message for this: the element just sits in memory."; }
+    listBtn.addEventListener("click", () => {
+      listItem.remove(); emptyNote(); lastRun = "d"; renderCode();
+      log("log", `Removed <li>${myItem.length > 30 ? myItem.slice(0, 30) + "…" : myItem}</li>`);
+      $("m-why").textContent = "Each Delete button got its own listener when its item was created, so it knows exactly which listItem to remove.";
+    });
+    $("item").focus();
+    emptyNote(); lastRun = "s"; renderCode();
+    if (!on("m-html") || !/</.test(myItem)) log("log", on("m-append") ? "Created <li>, but it isn't on the page." : `Added <li>${myItem || "(empty)"}</li>`);
+    $("m-why").textContent = why;
+  });
+  ["m-prevent", "m-append", "m-html"].forEach((id) => $(id).addEventListener("change", renderCode));
+
+  // Part 2: element builder
+  const BUILD = [
+    { c: 'const li = document.createElement("li");', why: "A new, empty <li> now exists in memory. Nobody can see it yet." },
+    { c: 'li.textContent = "Headlamp";', why: "It has text now, but it still isn't attached to anything on the page." },
+    { c: 'li.classList.add("new");', why: "Classes, attributes and styles can all be set before it's on the page." },
+    { c: 'const list = document.querySelector("#packing");', why: "Find an element that's already on the page to attach it to." },
+    { c: "list.append(li);", why: "Now it's attached, so the browser shows it. append() adds it as the last child." },
+    { c: "list.prepend(li);", why: "Appending or prepending an element that's already on the page moves it. There's still only one li." },
+    { c: "li.remove();", why: "remove() takes it off the page. The li variable still exists in memory, so it could be added back." },
+  ];
+  let b = 0;
+  function renderBuild() {
+    $("b-code").innerHTML = BUILD.map((s, i) => `<span${i < b ? "" : ' class="later"'}>${hlJS(s.c)}</span>`).join("\n");
+    $("b-why").textContent = b ? BUILD[b - 1].why : "Step through the code one line at a time.";
+    $("b-count").textContent = `${b} / ${BUILD.length}`;
+    $("b-next").disabled = b >= BUILD.length;
+    const created = b >= 1, text = b >= 2, cls = b >= 3, onPage = b >= 5 && b < 7, first = b === 6;
+    const node = `<li class="${cls ? "new" : ""}">${text ? "Headlamp" : "&nbsp;"}</li>`;
+    $("b-mem").innerHTML = created && !onPage ? `<span class="floating ${cls ? "done" : ""}">&lt;li${cls ? ' class="new"' : ""}&gt;${text ? "Headlamp" : ""}&lt;/li&gt;</span>` : `<p class="hint">${b >= 7 ? "Removed from the page, but the li variable still holds it." : onPage ? "Nothing here: the li moved onto the page." : "Empty"}</p>`;
+    if (b >= 7) $("b-mem").innerHTML += `<span class="floating done">&lt;li class="new"&gt;Headlamp&lt;/li&gt;</span>`;
+    $("b-page").innerHTML = (first ? node : "") + "<li>Trail mix</li><li>Water</li>" + (onPage && !first ? node : "");
+  }
+  $("b-next").addEventListener("click", () => { if (b < BUILD.length) b++; renderBuild(); });
+  $("b-reset").addEventListener("click", () => { b = 0; renderBuild(); });
+
+
+  emptyNote(); renderCode(); renderBuild();
+
+  // --- image gallery ---
+  (() => {
+    const scenes = [
+      ["#f2a65a", "#7a4e8c", "#3d2b4f", "Sunset over a mountain ridge"],
+      ["#9ed2f0", "#5a8f4e", "#2f5a2a", "Green hills under a blue sky"],
+      ["#1b2a4a", "#3c4f7a", "#0d1424", "Night sky above a dark ridge"],
+      ["#e8e2d0", "#b9b2a0", "#8a8476", "Snowy peaks on a cloudy day"],
+      ["#f7d06b", "#d9822b", "#8c3b1e", "Red desert cliffs at noon"],
+    ];
+    const svg = ([sky, far, near]) => "data:image/svg+xml," + encodeURIComponent(
+      `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 90"><rect width="160" height="90" fill="${sky}"/><circle cx="120" cy="24" r="10" fill="#fff8" /><path d="M0 70 L40 30 L70 55 L100 25 L160 65 V90 H0Z" fill="${far}"/><path d="M0 90 L0 75 L50 55 L95 78 L130 62 L160 80 V90Z" fill="${near}"/></svg>`);
+    const images = scenes.map((s, i) => ({ filename: `pic${i + 1}.jpg`, src: svg(s), alt: s[3] }));
+    const thumbBar = $("gal-thumbs"), displayedImage = $("gal-img");
+    function updateDisplayedImage(e) {
+      displayedImage.src = e.target.src;
+      displayedImage.alt = e.target.alt;
+      thumbBar.querySelectorAll("img").forEach((im) => im.classList.toggle("current", im === e.target));
+      $("gal-code").textContent = `// updateDisplayedImage(e)\ndisplayedImage.src = e.target.src;   // ${e.target.dataset.file}\ndisplayedImage.alt = "${e.target.alt}";`;
+    }
+    for (const image of images) {
+      const newImage = document.createElement("img");
+      newImage.src = image.src;
+      newImage.alt = image.alt;
+      newImage.dataset.file = image.filename;
+      newImage.tabIndex = 0;
+      thumbBar.appendChild(newImage);
+      newImage.addEventListener("click", updateDisplayedImage);
+      newImage.addEventListener("keydown", (e) => { if (e.code === "Enter" || e.key === "Enter") updateDisplayedImage(e); });
+    }
+    updateDisplayedImage({ target: thumbBar.firstElementChild });
+    $("gal-dark").addEventListener("click", (e) => {
+      const btn = e.currentTarget, dark = $("gal-full").classList.toggle("dark");
+      btn.textContent = dark ? "Lighten" : "Darken";
+      $("gal-code").textContent = `btn.textContent = "${btn.textContent}";\noverlay.style.backgroundColor = "rgb(0 0 0 / ${dark ? 50 : 0}%)";`;
+    });
+  })();
+</script>
+<script>
+  makeQuiz(document.getElementById("quiz"), [
+    { id: "q1", q: "This code runs with no error, but nothing appears. Why?", pre: 'const p = document.createElement("p");\np.textContent = "Hello";', opts: ["textContent is wrong", "p was never appended to the page", "createElement needs a < >"], a: 1, why: "createElement only makes it in memory. Append it to an element that's already on the page." },
+    { id: "q2", q: "Which is safest for showing text a user typed?", opts: ["el.innerHTML = userText;", "el.textContent = userText;"], a: 1, why: "textContent never interprets the text as HTML, so typed code can't run." },
+    { id: "q3", q: "You append an element that's already in list A to list B. What happens?", opts: ["It moves to list B", "It's copied, so it's in both", "An error"], a: 0, why: "An element can only be in one place. Use cloneNode(true) for a copy." },
+    { id: "q4", q: "How do you remove an element you have in a variable called card?", opts: ["card.delete()", "card.remove()", "document.remove(card)"], a: 1, why: "remove() takes the element off the page." },
+    { id: "q90", q: "Why does the gallery set tabIndex = 0 on each thumbnail?", opts: ["To sort the images", "So keyboard users can focus them", "To make them load faster"], a: 1, why: "Images aren't focusable by default; tabIndex 0 puts them in the tab order." },
+    { id: "q91", q: "In the shopping list, what does input.focus() do after adding an item?", opts: ["Clears the input", "Puts the cursor back in the input", "Submits the form"], a: 1, why: "People can type the next item straight away." },
+  ]);
+
+  makeExercise(document.getElementById("ex-create"), {
+    title: "A packing list",
+    task: `<ol>
+      <li><code>addItem(list, text)</code> creates an <code>&lt;li&gt;</code> with that text, adds it to the end of <code>list</code>, and returns it. Text someone typed must show exactly as typed, never as HTML.</li>
+      <li><code>clearDone(list)</code> removes every <code>li</code> with the class <code>done</code>, and leaves the rest.</li>
+    </ol>`,
+    js: `function addItem(list, text) {
+  // Your code here
+}
+
+function clearDone(list) {
+  // Your code here
+}
+
+// Try it:
+const list = document.createElement("ul");
+addItem(list, "Water");
+addItem(list, "Snacks").classList.add("done");
+clearDone(list);
+console.log(list.innerHTML);`,
+    solution: `function addItem(list, text) {
+  const li = document.createElement("li");
+  li.textContent = text;
+  list.append(li);
+  return li;
+}
+
+function clearDone(list) {
+  for (const li of list.querySelectorAll("li.done")) {
+    li.remove();
+  }
+}
+
+// Try it:
+const list = document.createElement("ul");
+addItem(list, "Water");
+addItem(list, "Snacks").classList.add("done");
+clearDone(list);
+console.log(list.innerHTML);`,
+    expose: ["addItem", "clearDone"],
+    hints: [
+      "document.createElement(\"li\") makes it; li.textContent = text fills it; list.append(li) attaches it.",
+      "Don't forget return li; at the end of addItem.",
+      "list.querySelectorAll(\"li.done\") finds the finished items. Call remove() on each.",
+    ],
+    checks: [
+      { label: "addItem adds an li to the end and returns it", test: ({ fns }) => { const ul = document.createElement("ul"); ul.innerHTML = "<li>Map</li>"; const li = fns.addItem(ul, "Water"); return ul.children.length === 2 && ul.lastElementChild === li && li.tagName === "LI" && li.textContent === "Water"; } },
+      { label: "Typed text shows as text, not HTML", test: ({ fns }) => { const ul = document.createElement("ul"); const li = fns.addItem(ul, "<b>Snacks</b>"); return li.textContent === "<b>Snacks</b>" && !li.querySelector("b"); } },
+      { label: "clearDone removes only the done items", test: ({ fns }) => { const ul = document.createElement("ul"); ul.innerHTML = '<li class="done">A</li><li>B</li><li class="done">C</li><li>D</li>'; fns.clearDone(ul); return [...ul.children].map((li) => li.textContent).join("") === "BD"; } },
+    ],
+  });
+
+  makeExercise(document.getElementById("ex-gallery"), {
+    title: "Thumbnails from data",
+    task: `<p><code>buildThumbs(images, thumbBar, displayedImage)</code> gets an array like <code>[{ src: "a.jpg", alt: "A lake" }, …]</code>, an empty container and the big <code>&lt;img&gt;</code>.</p>
+    <ol>
+      <li>Loop through <code>images</code>. For each one, create an <code>&lt;img&gt;</code>, set its <code>src</code> and <code>alt</code>, and append it to <code>thumbBar</code>.</li>
+      <li>When a thumbnail is clicked, copy its <code>src</code> and <code>alt</code> to <code>displayedImage</code>.</li>
+    </ol>`,
+    js: `function buildThumbs(images, thumbBar, displayedImage) {
+  for (const image of images) {
+    // create, fill, append, listen
+  }
+}`,
+    solution: `function buildThumbs(images, thumbBar, displayedImage) {
+  for (const image of images) {
+    const newImage = document.createElement("img");
+    newImage.src = image.src;
+    newImage.alt = image.alt;
+    thumbBar.appendChild(newImage);
+
+    newImage.addEventListener("click", (e) => {
+      displayedImage.src = e.target.src;
+      displayedImage.alt = e.target.alt;
+    });
+  }
+}`,
+    expose: ["buildThumbs"],
+    hints: [
+      "const newImage = document.createElement(\"img\");",
+      "newImage.src = image.src; newImage.alt = image.alt; thumbBar.appendChild(newImage);",
+      "newImage.addEventListener(\"click\", (e) => { displayedImage.src = e.target.src; … });",
+    ],
+    checks: (() => {
+      const data = [{ src: "data:,a", alt: "A lake" }, { src: "data:,b", alt: "A ridge" }, { src: "data:,c", alt: "A field" }];
+      const run = (fns) => { const bar = document.createElement("div"), big = document.createElement("img"); fns.buildThumbs(data, bar, big); return { bar, big }; };
+      return [
+        { label: "Creates one <img> per item", test: ({ fns }) => { const { bar } = run(fns); return bar.querySelectorAll("img").length === 3; } },
+        { label: "Each thumbnail has the right src and alt", test: ({ fns }) => { const { bar } = run(fns); const ims = bar.querySelectorAll("img"); return ims.length === 3 && ims[1].getAttribute("src") === "data:,b" && ims[1].alt === "A ridge"; } },
+        { label: "Clicking a thumbnail updates the big image", test: ({ fns }) => { const { bar, big } = run(fns); const im = bar.querySelectorAll("img")[2]; if (!im) return false; im.click(); return big.getAttribute("src") === "data:,c" && big.alt === "A field"; } },
+      ];
+    })(),
+  });
+</script>
+</body>
+</html>

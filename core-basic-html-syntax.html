@@ -1,0 +1,523 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Basic HTML Syntax · Core Web Development</title>
+<link rel="stylesheet" href="style.css">
+<style>
+  /* Anatomy explorers (element and document) */
+  .anatomy { font: 1.15rem/2.2 var(--font-code); font-variation-settings: "MONO" 1; background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 18px 20px; overflow-x: auto; white-space: nowrap; }
+  .part { border-radius: 4px; cursor: pointer; padding: 1px 1px; -webkit-box-decoration-break: clone; box-decoration-break: clone; }
+  /* The example element wraps inside its box (so every part stays visible), but a tag never splits across lines. */
+  #el { white-space: normal; overflow-x: visible; }
+  #el [data-p="open"], #el [data-p="close"], #el [data-p="nested"] { white-space: nowrap; }
+  .part:hover { background: var(--stage); }
+  .part.on { background: var(--cobalt-soft); box-shadow: 0 0 0 2px var(--cobalt); }
+  .parts-list { display: flex; flex-wrap: wrap; gap: 6px; }
+  .explain h3 { font-family: var(--font-code); font-variation-settings: "MONO" 1; color: var(--cobalt); }
+  .doc-lines { margin: 0; padding: 14px 0; list-style: none; background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); font: 0.95rem/1.5 var(--font-code); font-variation-settings: "MONO" 1; overflow-x: auto; }
+  .doc-lines button { all: unset; box-sizing: border-box; display: block; width: 100%; padding: 3px 18px; white-space: pre; cursor: pointer; }
+  .doc-lines button:hover { background: var(--stage); }
+  .doc-lines button[aria-pressed="true"] { background: var(--cobalt-soft); box-shadow: inset 4px 0 0 var(--cobalt); }
+  .doc-lines button:focus-visible { outline: 3px solid var(--cobalt); outline-offset: -3px; }
+
+  /* Two-column editors */
+  .two { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  @media (max-width: 700px) { .two { grid-template-columns: 1fr; } }
+  .two .panel { display: grid; gap: 8px; align-content: start; min-width: 0; }
+  textarea.src, input.src { font: 0.95rem/1.5 var(--font-code); font-variation-settings: "MONO" 1; width: 100%; padding: 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--paper); color: var(--ink); }
+  textarea.src { min-height: 130px; resize: vertical; }
+  .rendered { padding: 12px 14px; border-radius: 8px; background: #fff; color: #1d2133; border: 1px solid var(--line); font-family: Georgia, serif; font-size: 1.05rem; overflow-wrap: anywhere; min-height: 60px; }
+  .rendered.pre { white-space: pre-wrap; font-family: var(--font-code); font-size: 0.95rem; }
+  .presets { display: flex; flex-wrap: wrap; gap: 6px; }
+  .toggle { display: inline-flex; align-items: center; gap: 8px; font-size: 0.95rem; }
+
+  /* DOM tree */
+  .tree { margin: 0; padding: 12px 14px; list-style: none; background: var(--stage); border-radius: 8px; font: 0.9rem/1.7 var(--font-code); font-variation-settings: "MONO" 1; overflow-x: auto; min-height: 60px; }
+  .tree ul { list-style: none; margin: 0; padding-left: 18px; border-left: 1px dashed var(--line); margin-left: 6px; }
+  .tree .txt { color: var(--muted); font-style: italic; }
+  .tree .void { font-size: 0.7rem; font-family: var(--font-code); text-transform: uppercase; letter-spacing: 0.05em; color: var(--val); margin-left: 6px; }
+  .verdict { font-size: 0.95rem; }
+  .verdict.ok { color: var(--good); } .verdict.bad { color: var(--bad); }
+
+  /* Attribute table */
+  .attr-table, .ent-table { width: 100%; border-collapse: collapse; font-size: 0.92rem; }
+  .attr-table td, .attr-table th, .ent-table td, .ent-table th { border-bottom: 1px solid var(--line); padding: 6px 8px; text-align: left; vertical-align: top; }
+  .attr-table th, .ent-table th { color: var(--muted); font-weight: 700; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.05em; }
+  .attr-table td { font-family: var(--font-code); font-variation-settings: "MONO" 1; overflow-wrap: anywhere; }
+  .ent-table td:first-child { font-size: 1.2rem; text-align: center; width: 40px; }
+  .empty-val { color: var(--muted); font-style: italic; }
+  #ent-out { white-space: pre-wrap; overflow-wrap: anywhere; }
+</style>
+<script src="book-2.js"></script>
+<script src="js/progress.js"></script>
+<script src="js/chrome.js"></script>
+<script src="js/quiz.js"></script>
+</head>
+<body>
+<main class="wrap">
+  <nav class="crumbs" aria-label="Site"><a class="crumb" href="book-2.html">← Contents</a><a class="crumb" href="glossary.html">Glossary</a></nav>
+  <header class="page-head">
+    <h1>Basic HTML Syntax</h1>
+    <p class="lede">Every web page is written in the same small grammar: elements made of tags, attributes that add details, and a document that wraps it all up. Learn the parts, see how the browser reads them, and write a page of your own.</p>
+    <div class="objectives">
+      <p class="callout-title">You'll be able to</p>
+      <ul>
+        <li>Name the parts of an element: opening tag, content, closing tag and attributes.</li>
+        <li>Nest elements correctly, and spot void elements that never close.</li>
+        <li>Write attributes with the right quotes, including boolean attributes.</li>
+        <li>Set up a complete HTML document and explain what each part is for.</li>
+        <li>Show special characters with character references, and leave notes in comments.</li>
+      </ul>
+    </div>
+  </header>
+
+  <!-- ===== What is HTML? ===== -->
+  <div class="section-title"><span class="eyebrow">Read</span><h2>What is HTML?</h2></div>
+  <div class="prose">
+    <p><span class="term">HTML</span> (HyperText Markup Language) isn't a programming language. It's a <em>markup</em> language: you wrap pieces of content in labels that tell the browser what each piece is. Take this line of text:</p>
+    <pre class="snippet" data-lang="html">The Mesa Trail is 6.7 miles long.</pre>
+    <p>On its own it's just text. Wrap it in a paragraph <span class="term">element</span> and the browser knows it's a paragraph:</p>
+    <pre class="snippet" data-lang="html">&lt;p&gt;The Mesa Trail is 6.7 miles long.&lt;/p&gt;</pre>
+    <p>HTML lives in plain text files that end in <code>.html</code>. A site's home page is usually called <span class="term">index.html</span>, because that's the file a server sends when someone visits a folder without naming a file.</p>
+    <div class="callout tip"><p class="callout-title">Tip</p><p>Browsers don't care about capital letters in tag names, so <code>&lt;P&gt;</code> and <code>&lt;p&gt;</code> mean the same thing. Write them in lowercase anyway: it's what everyone else does, and it's easier to read.</p></div>
+  </div>
+
+  <!-- ===== Anatomy of an HTML element ===== -->
+  <div class="section-title"><span class="eyebrow">Read</span><h2>Anatomy of an HTML element</h2></div>
+  <div class="prose">
+    <p>Most elements have three parts. The opening <span class="term">tag</span> is the element's name between angle brackets. Then comes the content. The closing tag repeats the name with a forward slash in front of it:</p>
+    <pre class="snippet" data-lang="html">&lt;p&gt;Pack water and a map.&lt;/p&gt;</pre>
+    <p>Forgetting the closing tag is the most common beginner mistake. Sometimes the page still looks fine, because the browser guesses where the element should end. Often it guesses wrong, and the rest of the page ends up bold, or a link swallows three paragraphs.</p>
+    <h3>Nesting elements</h3>
+    <p>Elements can go inside other elements. This is called <span class="term">nesting</span>. To stress the word <em>very</em> in a paragraph, put a <code>&lt;strong&gt;</code> element inside the <code>&lt;p&gt;</code>:</p>
+    <pre class="snippet" data-lang="html">&lt;p&gt;The last mile is &lt;strong&gt;very&lt;/strong&gt; steep.&lt;/p&gt;</pre>
+    <p>Think of nested elements as boxes inside boxes. You close the inner box before the outer one, so the tags close in reverse order. <code>&lt;p&gt;&lt;strong&gt;…&lt;/p&gt;&lt;/strong&gt;</code> overlaps, and the browser has to repair it.</p>
+    <h3>Void elements</h3>
+    <p>A few elements can't hold any content, so they have no closing tag. These are <span class="term" data-term="Empty element">void elements</span>. A line break is one: <code>&lt;br&gt;</code>. So are <code>&lt;img&gt;</code>, <code>&lt;input&gt;</code>, <code>&lt;meta&gt;</code>, <code>&lt;link&gt;</code> and <code>&lt;hr&gt;</code>. You may see them written with a slash, as in <code>&lt;br /&gt;</code>. The slash is allowed but does nothing.</p>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Play</span><h2>Name every part</h2><p>Click any part of the element, or pick a name below.</p></div>
+  <section class="playground even">
+    <div class="stage-col">
+      <div class="anatomy" id="el" aria-label="An HTML element"></div>
+      <div class="parts-list" id="names" role="group" aria-label="Parts of an element"></div>
+    </div>
+    <div class="panel explain" id="explain" aria-live="polite" style="display:grid;gap:8px;align-content:start"></div>
+  </section>
+
+  <div class="section-title"><span class="eyebrow">Play</span><h2>How the browser reads your nesting</h2><p>Type some HTML, or pick an example. The tree shows the elements the browser actually builds. Compare what you wrote with what it made.</p></div>
+  <div class="two">
+    <div class="panel">
+      <div class="presets" id="nest-presets" role="group" aria-label="Examples">
+        <button class="btn" type="button" data-nest="good">Correct nesting</button>
+        <button class="btn" type="button" data-nest="overlap">Overlapping tags</button>
+        <button class="btn" type="button" data-nest="unclosed">Missing closing tag</button>
+        <button class="btn" type="button" data-nest="void">Void element</button>
+      </div>
+      <label class="eyebrow" for="nest">What you write</label>
+      <textarea class="src" id="nest" spellcheck="false"></textarea>
+      <p class="verdict" id="nest-verdict" aria-live="polite"></p>
+    </div>
+    <div class="panel"><span class="eyebrow">What the browser builds</span><ul class="tree" id="nest-tree" aria-label="Element tree"></ul><p class="hint">Text inside an element is shown in <i>italics</i>. Void elements are marked as void, and nothing is ever inside them.</p></div>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Practice</span><h2>Your first elements</h2><p>Mark up one sentence with emphasis and strong importance.</p></div>
+  <div id="ex-first"></div>
+
+  <!-- ===== Attributes ===== -->
+  <div class="section-title"><span class="eyebrow">Read</span><h2>Attributes</h2></div>
+  <div class="prose">
+    <p><span class="term">Attributes</span> add information about an element that you don't want to show as content. They always go in the opening tag. A <code>class</code> attribute, for example, gives the element a name you can target with CSS:</p>
+    <pre class="snippet" data-lang="html">&lt;p class="trail-note"&gt;Closed after heavy rain.&lt;/p&gt;</pre>
+    <p>Every attribute follows the same pattern: a space after the element name (or the previous attribute), the attribute's name, an equals sign, and the value in quotes.</p>
+    <h3>Adding attributes to an element</h3>
+    <p>Some elements need attributes to work at all. An image needs <code>src</code> to say which file to show. It should also have <code>alt</code>, the <span class="term">alt text</span> read aloud by screen readers and shown if the image fails to load. <code>width</code> and <code>height</code> let the browser save the right amount of space before the image arrives:</p>
+    <pre class="snippet" data-lang="html">&lt;img src="royal-arch.jpg" alt="Sandstone arch above a pine forest" width="400" height="300"&gt;</pre>
+    <h3>Boolean attributes</h3>
+    <p>Some attributes are simply on or off. Writing the name turns them on; leaving it out turns them off. <code>disabled</code> is one: it greys out a form control so nobody can use it.</p>
+    <pre class="snippet" data-lang="html">&lt;input type="text" disabled&gt;</pre>
+    <p>You might see <code>disabled="disabled"</code> or even <code>disabled="false"</code>. Both still turn it on. Only leaving the attribute out turns it off.</p>
+    <h3>Omitting quotes around attribute values</h3>
+    <p>A value with no spaces works without quotes, like <code>href=trails.html</code>. But as soon as a value has a space, the browser thinks the value has ended and treats each extra word as a new attribute. That's why you should always use quotes.</p>
+    <h3>Single or double quotes?</h3>
+    <p>Single and double quotes both work. Pick one style and stick with it. Just don't mix them in one value, like <code>title="Mesa Trail'</code>. To put a quote inside a value, wrap the value in the other kind of quote, or write the quote as <code>&amp;quot;</code>.</p>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Play</span><h2>Test an attribute</h2><p>Type the attributes for a tag and see which attributes the browser finds, and what value each one gets. Try an example first.</p></div>
+  <div class="two">
+    <div class="panel">
+      <div class="presets" id="attr-presets" role="group" aria-label="Examples">
+        <button class="btn" type="button" data-attr="quoted">Quoted</button>
+        <button class="btn" type="button" data-attr="unquoted">No quotes, with spaces</button>
+        <button class="btn" type="button" data-attr="boolean">Boolean</button>
+        <button class="btn" type="button" data-attr="nested">Quotes inside quotes</button>
+        <button class="btn" type="button" data-attr="mixed">Mixed quotes</button>
+      </div>
+      <label class="eyebrow" for="attr-in">Your opening tag</label>
+      <div class="anatomy" style="font-size:1rem;line-height:1.6;white-space:normal;display:flex;flex-wrap:wrap;align-items:center;gap:4px">
+        <span>&lt;<select id="attr-el" aria-label="Element"><option>a</option><option>img</option><option>input</option></select></span>
+        <input class="src" id="attr-in" spellcheck="false" style="flex:1 1 220px;min-width:0" aria-label="Attributes">
+        <span>&gt;</span>
+      </div>
+    </div>
+    <div class="panel"><span class="eyebrow">What the browser finds</span>
+      <table class="attr-table"><thead><tr><th>Attribute</th><th>Value</th></tr></thead><tbody id="attr-out"></tbody></table>
+      <p class="verdict" id="attr-note" aria-live="polite"></p>
+    </div>
+  </div>
+
+  <!-- ===== Anatomy of an HTML document ===== -->
+  <div class="section-title"><span class="eyebrow">Read</span><h2>Anatomy of an HTML document</h2></div>
+  <div class="prose">
+    <p>Elements on their own aren't a web page yet. A full page wraps them in a few standard pieces that every HTML file starts with:</p>
+    <pre class="snippet" data-lang="html">&lt;!doctype html&gt;
+&lt;html lang="en-US"&gt;
+  &lt;head&gt;
+    &lt;meta charset="utf-8"&gt;
+    &lt;title&gt;Boulder Trails&lt;/title&gt;
+  &lt;/head&gt;
+  &lt;body&gt;
+    &lt;p&gt;This is my page.&lt;/p&gt;
+  &lt;/body&gt;
+&lt;/html&gt;</pre>
+    <p>The first line, the <span class="term">DOCTYPE</span>, is a leftover from the early web. It used to point to a set of rules the page had to follow. Today it does one job: it tells the browser to use modern, standard behavior instead of an old compatibility mode. Write <code>&lt;!doctype html&gt;</code> and forget about it.</p>
+    <p>Everything else sits inside the <code>&lt;html&gt;</code> element. The <span class="term">head</span> holds information about the page that isn't shown on it, such as the title in the browser tab. The <code>&lt;body&gt;</code> holds everything visitors see. Click each line below to see what it does.</p>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Play</span><h2>Walk through a document</h2><p>Click a line to see what it's for.</p></div>
+  <section class="playground even">
+    <ol class="doc-lines" id="doc" aria-label="An HTML document"></ol>
+    <div class="panel explain" id="doc-explain" aria-live="polite" style="display:grid;gap:8px;align-content:start"></div>
+  </section>
+
+  <div class="section-title"><span class="eyebrow">Practice</span><h2>Mark up a trailhead page</h2><p>Turn plain text into a page body with a heading, a paragraph, links and an image.</p></div>
+  <div id="ex-page"></div>
+
+  <!-- ===== Whitespace in HTML ===== -->
+  <div class="section-title"><span class="eyebrow">Play</span><h2>Whitespace in HTML</h2><p>Type extra spaces, tabs and blank lines. The browser squashes every run of <span class="term">whitespace</span> into a single space. Then switch on <code>&lt;pre&gt;</code>, the one element that keeps it.</p></div>
+  <div class="two">
+    <div class="panel"><label class="eyebrow" for="ws">What you type in your HTML</label><textarea class="src" id="ws">Pack     water,
+snacks,
+
+        and a map.</textarea>
+      <label class="toggle"><input type="checkbox" id="ws-pre"> Put it in a <code>&lt;pre&gt;</code> element</label></div>
+    <div class="panel"><span class="eyebrow">What the browser shows</span><div class="rendered" id="ws-out"></div>
+      <p class="hint">Because spaces collapse, you're free to indent your code to show its nesting. Indent each level by two spaces. To start a new paragraph, use a new <code>&lt;p&gt;</code>, and use CSS for spacing.</p></div>
+  </div>
+
+  <!-- ===== Character references ===== -->
+  <div class="section-title"><span class="eyebrow">Play</span><h2>Character references: special characters</h2><p>Five characters mean something to HTML itself. To show them as text, write a <span class="term" data-term="Character entity">character reference</span> instead. Type below to see what needs escaping.</p></div>
+  <div class="two">
+    <div class="panel"><label class="eyebrow" for="ent">Text you want to show</label><textarea class="src" id="ent">Wrap each tip in a <p> element. Tom & Jerry's "best" hike.</textarea>
+      <span class="eyebrow">Write this in your HTML</span><pre class="snippet" id="ent-out"></pre></div>
+    <div class="panel"><span class="eyebrow">The five special characters</span>
+      <table class="ent-table"><thead><tr><th>Shows</th><th>Write</th><th>Why</th></tr></thead><tbody>
+        <tr><td>&lt;</td><td><code>&amp;lt;</code></td><td>Would start a tag</td></tr>
+        <tr><td>&gt;</td><td><code>&amp;gt;</code></td><td>Would end a tag</td></tr>
+        <tr><td>"</td><td><code>&amp;quot;</code></td><td>Would end a double-quoted value</td></tr>
+        <tr><td>'</td><td><code>&amp;apos;</code></td><td>Would end a single-quoted value</td></tr>
+        <tr><td>&amp;</td><td><code>&amp;amp;</code></td><td>Would start a reference</td></tr>
+      </tbody></table>
+      <p class="hint">In ordinary text only <code>&lt;</code> and <code>&amp;</code> really have to be escaped; quotes matter inside attribute values. Other symbols like © or é don't need references at all, as long as the page has <code>&lt;meta charset="utf-8"&gt;</code>.</p></div>
+  </div>
+
+  <!-- ===== HTML comments ===== -->
+  <div class="section-title"><span class="eyebrow">Read</span><h2>HTML comments</h2></div>
+  <div class="prose">
+    <p>A <span class="term">comment</span> is a note in your code that the browser ignores. Start it with <code>&lt;!--</code> and end it with <code>--&gt;</code>. Use comments to explain why something is there, or to switch off a piece of the page while you test:</p>
+    <pre class="snippet" data-lang="html">&lt;p&gt;Open daily, sunrise to sunset.&lt;/p&gt;
+&lt;!-- Hidden until the winter hours are confirmed:
+&lt;p&gt;Winter hours: 7am to 5pm.&lt;/p&gt;
+--&gt;</pre>
+    <div class="callout warn"><p class="callout-title">Watch out</p><p>Comments don't show on the page, but anyone can read them with View Source. Never put passwords, private notes or anything you wouldn't want public in a comment.</p></div>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Practice</span><h2>Fix the broken markup</h2><p>The browser guesses its way around each of these mistakes. Fix them so it doesn't have to.</p></div>
+  <div id="ex-fix"></div>
+
+  <section class="notes">
+    <div class="panel">
+      <h2>Key ideas</h2>
+      <ul>
+        <li>An element is an opening tag, content and a closing tag. Void elements like <code>&lt;img&gt;</code> and <code>&lt;br&gt;</code> have only the opening tag.</li>
+        <li>Nested elements close in reverse order: the inner one first.</li>
+        <li>Attributes go in the opening tag as <code>name="value"</code>. Boolean attributes are on when present, off when absent.</li>
+        <li>Every page starts with <code>&lt;!doctype html&gt;</code>, then <code>&lt;html&gt;</code> containing a <code>&lt;head&gt;</code> and a <code>&lt;body&gt;</code>.</li>
+        <li>Whitespace collapses to one space, except inside <code>&lt;pre&gt;</code>.</li>
+        <li>Write <code>&amp;lt;</code> and <code>&amp;amp;</code> to show &lt; and &amp; as text.</li>
+      </ul>
+    </div>
+    <div class="panel mistake">
+      <h2>Common mistakes</h2>
+      <ul>
+        <li>Leaving out a closing tag, so formatting leaks into everything after it.</li>
+        <li>Closing nested tags in the wrong order, like <code>&lt;p&gt;&lt;em&gt;…&lt;/p&gt;&lt;/em&gt;</code>.</li>
+        <li>Unquoted attribute values with spaces. Only the first word counts.</li>
+        <li>Writing <code>disabled="false"</code> and expecting it to switch the attribute off.</li>
+        <li>Curly “smart quotes” pasted from a word processor. Browsers don't treat them as quotes.</li>
+      </ul>
+    </div>
+  </section>
+
+  <div class="section-title"><span class="eyebrow">Check yourself</span><h2>Quick check</h2></div>
+  <div class="panel quiz" id="quiz"></div>
+
+  <footer class="page-foot" data-book-nav><a href="book-2.html">← Contents</a></footer>
+</main>
+
+<script>
+  const $ = (id) => document.getElementById(id);
+  const escHTML = (s) => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+
+  // --- Element anatomy ---
+  const PARTS = {
+    element: ["Element", "The whole thing: opening tag, content and closing tag together."],
+    open: ["Opening tag", "Starts the element: <, the element's name, any attributes, then >."],
+    name: ["Element name", "Says what kind of element this is. p means paragraph."],
+    attr: ["Attribute", "Extra information about the element. It always goes inside the opening tag."],
+    aname: ["Attribute name", "Which setting you're giving. class is a label for CSS."],
+    aval: ["Attribute value", "The setting itself, in quotes."],
+    content: ["Content", "What appears on the page. It can be text, other elements, or both."],
+    nested: ["Nested element", "An element inside another one. It opens and closes inside its parent's content."],
+    close: ["Closing tag", "Ends the element: the same name as the opening tag, with a / in front."],
+  };
+  const part = (k, inner) => `<span class="part" data-p="${k}">${inner}<\/span>`;
+  $("el").innerHTML = part("element",
+    part("open", `&lt;${part("name", '<span class="tag-name">p<\/span>')} ${part("attr", `${part("aname", '<span class="attr">class<\/span>')}=${part("aval", '<span class="str">"trail-note"<\/span>')}`)}&gt;`)
+    + part("content", `The last mile is ${part("nested", '&lt;<span class="tag-name">strong<\/span>&gt;very&lt;/<span class="tag-name">strong<\/span>&gt;')} steep.`)
+    + part("close", '&lt;/<span class="tag-name">p<\/span>&gt;'));
+  $("names").innerHTML = Object.entries(PARTS).map(([k, [n]]) => `<button class="btn" type="button" data-p="${k}" aria-pressed="false">${n}<\/button>`).join("");
+  function showPart(k) {
+    document.querySelectorAll("#el .part").forEach((el) => el.classList.toggle("on", el.dataset.p === k));
+    document.querySelectorAll("#names .btn").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.p === k)));
+    $("explain").innerHTML = `<span class="eyebrow">Selected<\/span><h3>${PARTS[k][0]}<\/h3><p>${escHTML(PARTS[k][1])}<\/p>`;
+  }
+  const pick = (e) => { const t = e.target.closest("[data-p]"); if (t) { e.stopPropagation(); showPart(t.dataset.p); } };
+  $("el").addEventListener("click", pick);
+  $("names").addEventListener("click", pick);
+  showPart("open");
+
+  // --- Nesting: parse with the browser's own parser and draw the tree it builds ---
+  const VOID = new Set(["area", "base", "br", "col", "embed", "hr", "img", "input", "link", "meta", "source", "track", "wbr"]);
+  const NEST = {
+    good: "<p>The last mile is <strong>very<\/strong> steep.<\/p>",
+    overlap: "<p>The last mile is <strong>very<\/p><\/strong> steep.",
+    unclosed: "<p>The last mile is <strong>very steep.<\/p>\n<p>Bring a jacket.<\/p>",
+    void: "<p>Mesa Trail<br>6.7 miles<\/p>\n<img src=\"mesa.jpg\" alt=\"Mesa Trail\">",
+  };
+  function treeHTML(node) {
+    return [...node.childNodes].map((n) => {
+      if (n.nodeType === 3) {
+        const t = n.textContent.replace(/\s+/g, " ");
+        return t.trim() ? `<li><span class="txt">"${escHTML(t)}"<\/span><\/li>` : "";
+      }
+      if (n.nodeType !== 1) return "";
+      const tag = n.tagName.toLowerCase();
+      const attrs = [...n.attributes].map((a) => ` <span class="attr">${escHTML(a.name)}<\/span>=<span class="str">"${escHTML(a.value)}"<\/span>`).join("");
+      const kids = treeHTML(n);
+      return `<li>&lt;<span class="tag-name">${tag}<\/span>${attrs}&gt;${VOID.has(tag) ? '<span class="void">void<\/span>' : ""}${kids ? `<ul>${kids}<\/ul>` : ""}<\/li>`;
+    }).join("");
+  }
+  // Re-serialize what the browser built and compare it with what was typed (ignoring whitespace and quote style).
+  const norm = (s) => s.replace(/\s+/g, " ").replace(/\s*\/>/g, ">").replace(/'/g, '"').trim().toLowerCase();
+  function nest() {
+    const src = $("nest").value;
+    const doc = new DOMParser().parseFromString(`<!doctype html><body>${src}`, "text/html");
+    $("nest-tree").innerHTML = treeHTML(doc.body) || '<li class="txt">Nothing yet<\/li>';
+    const same = norm(doc.body.innerHTML) === norm(src);
+    const v = $("nest-verdict");
+    v.className = "verdict " + (same ? "ok" : "bad");
+    v.textContent = same ? "✓ The browser built exactly what you wrote."
+      : "✗ The browser had to repair this. Compare the tree with your code to see where it guessed.";
+  }
+  $("nest").addEventListener("input", nest);
+  $("nest-presets").addEventListener("click", (e) => {
+    const b = e.target.closest("[data-nest]");
+    if (!b) return;
+    $("nest").value = NEST[b.dataset.nest];
+    document.querySelectorAll("#nest-presets .btn").forEach((x) => x.setAttribute("aria-pressed", String(x === b)));
+    nest();
+  });
+  $("nest").value = NEST.overlap;
+  nest();
+
+  // --- Attributes: let the browser parse the opening tag and list what it found ---
+  const ATTR = {
+    quoted: ["a", 'href="trails.html" title="Mesa Trail map"'],
+    unquoted: ["a", "href=trails.html title=Mesa Trail map"],
+    boolean: ["input", 'type="text" disabled'],
+    nested: ["img", `src="arch.jpg" alt='The "Royal Arch" at sunset'`],
+    mixed: ["a", `href="trails.html" title="Mesa Trail map'`],
+  };
+  const NOTES = {
+    quoted: "Two attributes, each with its full value.",
+    unquoted: "Without quotes, the value stops at the first space. “Trail” and “map” became attributes of their own, with no value.",
+    boolean: "disabled has no value at all. Being there is what switches it on.",
+    nested: "Single quotes around the value let you use double quotes inside it.",
+    mixed: "The value opens with a double quote but tries to close with a single one, so the browser keeps reading, looking for a closing double quote. It never finds one, so it throws away the whole tag: no link at all.",
+  };
+  function attrs() {
+    const tag = $("attr-el").value, src = $("attr-in").value;
+    const doc = new DOMParser().parseFromString(`<!doctype html><body><${tag} ${src}>`, "text/html");
+    const el = doc.body.firstElementChild;
+    const list = el && el.tagName.toLowerCase() === tag ? [...el.attributes] : [];
+    $("attr-out").innerHTML = list.length
+      ? list.map((a) => `<tr><td>${escHTML(a.name)}<\/td><td>${a.value === "" ? '<span class="empty-val">(no value)<\/span>' : escHTML(a.value)}<\/td><\/tr>`).join("")
+      : '<tr><td colspan="2" class="empty-val">No attributes found<\/td><\/tr>';
+    const preset = Object.keys(ATTR).find((k) => ATTR[k][0] === tag && ATTR[k][1] === src);
+    $("attr-note").textContent = preset ? NOTES[preset] : "";
+  }
+  $("attr-in").addEventListener("input", attrs);
+  $("attr-el").addEventListener("change", attrs);
+  $("attr-presets").addEventListener("click", (e) => {
+    const b = e.target.closest("[data-attr]");
+    if (!b) return;
+    [$("attr-el").value, $("attr-in").value] = ATTR[b.dataset.attr];
+    document.querySelectorAll("#attr-presets .btn").forEach((x) => x.setAttribute("aria-pressed", String(x === b)));
+    attrs();
+  });
+  [$("attr-el").value, $("attr-in").value] = ATTR.unquoted;
+  attrs();
+
+  // --- Document walkthrough ---
+  const DOC = [
+    ["<!doctype html>", "The doctype", "Tells the browser to use modern standards mode. Without it, browsers fall back to an old “quirks mode” that copies the bugs of 1990s browsers. It must be the very first line."],
+    ['<html lang="en-US">', "The html element", "The root element: it wraps the whole page. lang says what language the page is in, so screen readers pronounce it correctly and translation tools know where to start."],
+    ["  <head>", "The head", "Information about the page that isn't shown on it: the title, the character set, links to stylesheets, and a description for search engines."],
+    ['    <meta charset="utf-8">', "The character set", "Tells the browser how to turn the file's bytes into characters. UTF-8 covers nearly every language and symbol, so ©, é and emoji show correctly. It's a void element: no closing tag."],
+    ["    <title>Boulder Trails<\/title>", "The title", "The text in the browser tab, in bookmarks and in search results. Every page needs a short, specific title."],
+    ["  <\/head>", "End of the head", "Closes the head. Everything visitors see goes after this, in the body."],
+    ["  <body>", "The body", "Everything that appears on the page: headings, paragraphs, images, links, forms. There's only one body per page."],
+    ["    <p>This is my page.<\/p>", "Page content", "An ordinary element inside the body. Indenting it shows that it's nested inside body."],
+    ["  <\/body>", "End of the body", "Closes the body."],
+    ["<\/html>", "End of the html element", "Closes the root element. Nothing should come after it."],
+  ];
+  $("doc").innerHTML = DOC.map(([code], i) => `<li><button type="button" data-i="${i}" aria-pressed="false">${escHTML(code)}<\/button><\/li>`).join("");
+  function showLine(i) {
+    document.querySelectorAll("#doc button").forEach((b) => b.setAttribute("aria-pressed", String(+b.dataset.i === i)));
+    $("doc-explain").innerHTML = `<span class="eyebrow">Line ${i + 1}<\/span><h3>${escHTML(DOC[i][1])}<\/h3><p>${escHTML(DOC[i][2])}<\/p>`;
+  }
+  $("doc").addEventListener("click", (e) => { const b = e.target.closest("button"); if (b) showLine(+b.dataset.i); });
+  showLine(0);
+
+  // --- Whitespace ---
+  function ws() {
+    $("ws-out").textContent = $("ws").value;
+    $("ws-out").classList.toggle("pre", $("ws-pre").checked);
+  }
+  $("ws").addEventListener("input", ws);
+  $("ws-pre").addEventListener("change", ws);
+  ws();
+
+  // --- Character references ---
+  function ent() {
+    $("ent-out").textContent = $("ent").value.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&apos;");
+  }
+  $("ent").addEventListener("input", ent);
+  ent();
+</script>
+<script>
+  makeExercise(document.getElementById("ex-first"), {
+    title: "Emphasis and importance",
+    task: `<ol>
+      <li>Wrap <strong>worth the climb<\/strong> in an <code>&lt;em&gt;<\/code> element, so it's read with emphasis.<\/li>
+      <li>Wrap <strong>Royal Arch<\/strong> in a <code>&lt;strong&gt;<\/code> element.<\/li>
+      <li>Keep everything inside the one paragraph, and close each tag before the paragraph closes.<\/li>
+    <\/ol>`,
+    html: `<p>The view from Royal Arch is worth the climb.<\/p>`,
+    solution: { html: `<p>The view from <strong>Royal Arch<\/strong> is <em>worth the climb<\/em>.<\/p>` },
+    hints: [
+      "Put <em> right before “worth” and <\/em> right after “climb”.",
+      "Do the same with <strong> and <\/strong> around “Royal Arch”.",
+      "Both pairs go inside <p>…<\/p>: <p>The view from <strong>Royal Arch<\/strong> is <em>worth the climb<\/em>.<\/p>",
+    ],
+    checks: [
+      { label: "“worth the climb” is in an em", test: ({ $ }) => $("em").textContent.trim() === "worth the climb" },
+      { label: "“Royal Arch” is in a strong", test: ({ $ }) => $("strong").textContent.trim() === "Royal Arch" },
+      { label: "Both are inside a single paragraph", test: ({ $$ }) => $$("p").length === 1 && $$("p em, p strong").length === 2 },
+    ],
+  });
+
+  makeExercise(document.getElementById("ex-page"), {
+    title: "Chautauqua trailhead",
+    task: `<p>This is the body of a page, but it's all plain text. Add the markup:<\/p>
+    <ol>
+      <li>Make <strong>Chautauqua Trailhead<\/strong> an <code>&lt;h1&gt;<\/code> heading.<\/li>
+      <li>Make the two sentences about the trailhead one <code>&lt;p&gt;<\/code>, with <strong>fills up early<\/strong> in a <code>&lt;strong&gt;<\/code>.<\/li>
+      <li>Make <strong>Trail map<\/strong> a link to <code>trail-map.html<\/code>.<\/li>
+      <li>Make <strong>City of Boulder<\/strong> a link to <code>https://bouldercolorado.gov<\/code>.<\/li>
+      <li>Add an image with <code>src="flatirons.jpg"<\/code> and alt text that describes it.<\/li>
+    <\/ol>`,
+    html: `Chautauqua Trailhead
+
+The trailhead sits at the foot of the Flatirons. Parking fills up early on weekends.
+
+Trail map
+City of Boulder`,
+    solution: { html: `<h1>Chautauqua Trailhead<\/h1>
+
+<p>The trailhead sits at the foot of the Flatirons. Parking <strong>fills up early<\/strong> on weekends.<\/p>
+
+<a href="trail-map.html">Trail map<\/a>
+<a href="https://bouldercolorado.gov">City of Boulder<\/a>
+
+<img src="flatirons.jpg" alt="The Flatirons rising above a green meadow" width="400" height="260">` },
+    hints: [
+      "A link is <a href=\"…\">text<\/a>. The href attribute says where it goes.",
+      "An image is a void element: <img src=\"…\" alt=\"…\">, with no closing tag.",
+      "Alt text describes what's in the picture, like alt=\"The Flatirons above a meadow\".",
+    ],
+    checks: [
+      { label: "“Chautauqua Trailhead” is an h1", test: ({ $ }) => $("h1").textContent.trim() === "Chautauqua Trailhead" },
+      { label: "The sentences are in a paragraph, with “fills up early” strong", test: ({ $ }) => $("p").textContent.includes("foot of the Flatirons") && $("p strong").textContent.trim() === "fills up early" },
+      { label: "“Trail map” links to trail-map.html", test: ({ $ }) => $('a[href="trail-map.html"]').textContent.trim() === "Trail map" },
+      { label: "“City of Boulder” links to https://bouldercolorado.gov", test: ({ $$ }) => $$("a").some((a) => /^https:\/\/bouldercolorado\.gov\/?$/.test(a.getAttribute("href")) && a.textContent.trim() === "City of Boulder") },
+      { label: "There's an image of flatirons.jpg with alt text", test: ({ $ }) => $("img").getAttribute("src") === "flatirons.jpg" && $("img").getAttribute("alt").trim().length > 3 },
+    ],
+  });
+
+  makeExercise(document.getElementById("ex-fix"), {
+    title: "Four syntax mistakes",
+    task: `<p>This snippet has four mistakes. Fix each one:<\/p>
+    <ol>
+      <li>The heading opens as one element and closes as another.<\/li>
+      <li>Only <em>3.4 miles<\/em> should be strong, but the <code>&lt;strong&gt;<\/code> is never closed.<\/li>
+      <li>The image's alt text has spaces but no quotes, so only the first word counts.<\/li>
+      <li>The last paragraph should show the text <code>&lt;p&gt;<\/code>, but the browser reads it as a tag.<\/li>
+    <\/ol>`,
+    html: `<h1>Royal Arch Trail<\/h2>
+<p>The trail is <strong>3.4 miles<\/p>
+<img src="royal-arch.jpg" alt=Royal Arch at sunset width="300" height="200">
+<p>Tip: wrap each trail note in a <p> element.<\/p>`,
+    solution: { html: `<h1>Royal Arch Trail<\/h1>
+<p>The trail is <strong>3.4 miles<\/strong><\/p>
+<img src="royal-arch.jpg" alt="Royal Arch at sunset" width="300" height="200">
+<p>Tip: wrap each trail note in a &lt;p&gt; element.<\/p>` },
+    hints: [
+      "A closing tag repeats the opening tag's name with a slash: <h1> closes with <\/h1>.",
+      "Close the strong right after the words it should cover, before <\/p>.",
+      "Attribute values with spaces need quotes: alt=\"Royal Arch at sunset\". To show <p> as text, write &lt;p&gt;.",
+    ],
+    checks: [
+      { label: "The heading opens and closes as an h1", test: ({ code }) => /<h1>[^<]*<\/h1>/.test(code.html) && !/<\/h2>/.test(code.html) },
+      { label: "Only “3.4 miles” is strong", test: ({ $, code }) => $("strong").textContent === "3.4 miles" && /<strong>3\.4 miles<\/strong>/.test(code.html) },
+      { label: "The alt text is “Royal Arch at sunset”", test: ({ $ }) => $("img").getAttribute("alt") === "Royal Arch at sunset" },
+      { label: "The tip shows the text <p>", test: ({ $$ }) => $$("p").some((p) => p.textContent.includes("a <p> element")) },
+    ],
+  });
+
+  makeQuiz(document.getElementById("quiz"), [
+    { id: "q1", q: "In <img src=\"mesa.jpg\" alt=\"Mesa Trail\">, what are src and alt?", opts: ["Tags", "Attributes", "Elements"], a: 1, why: "They're attributes: name=\"value\" pairs inside the opening tag." },
+    { id: "q2", q: "Which nesting is correct?", opts: ["<p><em>Go<\/p><\/em>", "<p><em>Go<\/em><\/p>", "<p><em>Go<\/p>"], a: 1, why: "Close elements in the reverse order you opened them: the inner one first." },
+    { id: "q3", q: "Why does <br> have no closing tag?", opts: ["It's a void element, so it can't hold content", "Closing tags are optional in HTML", "It's an attribute, not an element"], a: 0, why: "Void elements can't contain anything, so there's nothing to close." },
+    { id: "q4", q: "How do you switch off the disabled attribute on a button?", opts: ["disabled=\"false\"", "disabled=\"off\"", "Leave the attribute out"], a: 2, why: "Boolean attributes are on whenever they're present, whatever the value. Only removing it turns it off." },
+    { id: "q5", q: "What does <a title=Mesa Trail map> give the link's title?", opts: ["Mesa Trail map", "Mesa", "Nothing: it's an error"], a: 1, why: "Without quotes, the value ends at the first space. Trail and map become separate, empty attributes." },
+    { id: "q6", q: "What is <!doctype html> for today?", opts: ["It loads the HTML language", "It makes the browser use standards mode", "It sets the page's language"], a: 1, why: "It's a leftover from older HTML. Now it just keeps the browser out of quirks mode." },
+    { id: "q7", q: "You type five spaces between two words. What does the page show?", opts: ["Five spaces", "One space", "No space"], a: 1, why: "Whitespace collapses: any run of spaces, tabs and line breaks shows as one space (except inside <pre>)." },
+    { id: "q8", q: "How do you show “Tom & Jerry” safely in HTML?", opts: ["Tom & Jerry", "Tom &amp; Jerry", "Tom \"&\" Jerry"], a: 1, why: "& starts a character reference, so write &amp; to show it as text." },
+  ]);
+</script>
+</body>
+</html>

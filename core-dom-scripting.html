@@ -1,0 +1,441 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DOM Scripting · Core Web Development</title>
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="core.css">
+<style>
+  .sel-in { display: grid; grid-template-columns: minmax(0, 1fr); gap: 6px; }
+  .sel-in input { font: 1rem var(--font-code); font-variation-settings: "MONO" 1; padding: 7px 10px; border: 1px solid var(--line); border-radius: 6px; background: var(--paper); color: var(--ink); width: 100%; }
+  .chipset { display: flex; flex-wrap: wrap; gap: 6px; }
+  .chipset .btn { font-size: 0.78rem; padding: 4px 8px; }
+  .check { display: flex; gap: 8px; align-items: center; cursor: pointer; font-size: 0.92rem; }
+  .check input { accent-color: var(--cobalt); }
+
+  /* The mini page being scripted */
+  #mini { background: #fbfaf7; color: #1d2133; border-radius: 8px; padding: 14px; font-family: var(--font-body); display: grid; gap: 10px; }
+  #mini header { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 8px; border-bottom: 2px solid #e4e0d6; padding-bottom: 8px; }
+  #mini h1 { font: 800 1.2rem var(--font-display); margin: 0; color: #0b6b5e; }
+  #mini nav { display: flex; gap: 10px; }
+  #mini nav a { color: #2340d9; font-size: 0.9rem; }
+  #mini main { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(140px, 100%), 1fr)); gap: 8px; }
+  #mini .card { background: #fff; border: 1px solid #e4e0d6; border-radius: 8px; padding: 10px; display: grid; gap: 4px; transition: background 0.2s; }
+  #mini .card h2 { font: 700 1rem var(--font-display); margin: 0; }
+  #mini .card p { margin: 0; font-size: 0.85rem; color: #5a6280; }
+  #mini .card button { justify-self: start; font: 600 0.8rem var(--font-body); border: 0; border-radius: 5px; background: #0b6b5e; color: #fff; padding: 4px 10px; }
+  #mini .featured { border: 2px solid #b4410c; }
+  #mini .highlight { background: #fff3c4 !important; }
+  #mini .hidden { display: none !important; }
+  #mini footer { font-size: 0.8rem; color: #5a6280; }
+  #mini .match { outline: 3px solid var(--cobalt); outline-offset: 2px; border-radius: 4px; }
+  #mini .match-first { outline: 3px solid var(--prop); outline-offset: 2px; border-radius: 4px; }
+
+  .dom { display: grid; grid-template-columns: minmax(0, 1fr); background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 8px 0; overflow-x: auto; max-height: 420px; overflow-y: auto; }
+  .node { font: 0.82rem/1.6 var(--font-code); font-variation-settings: "MONO" 1; white-space: pre; text-align: left; border: 0; background: none; color: var(--ink); padding: 0 12px; cursor: pointer; min-width: max-content; }
+  .node:hover { background: var(--stage); }
+  .node .tg { color: var(--cobalt); } .node .at { color: color-mix(in srgb, var(--prop) 80%, var(--ink)); } .node .tx { color: var(--muted); font-style: italic; }
+  .node.hit { background: var(--cobalt-soft); } .node.first { background: color-mix(in srgb, var(--prop) 18%, transparent); }
+  .node[aria-pressed="true"] { outline: 2px solid var(--ink); outline-offset: -2px; }
+  .rel { font-size: 0.9rem; display: grid; gap: 4px; }
+  .rel b { font-family: var(--font-code); font-variation-settings: "MONO" 1; font-weight: 600; }
+  .actions { display: flex; flex-wrap: wrap; gap: 6px; }
+  .actions .btn { font-size: 0.8rem; padding: 5px 9px; }
+
+</style>
+<script src="book-2.js"></script>
+<script src="js/progress.js"></script>
+<script src="js/chrome.js"></script>
+<script src="js/quiz.js"></script>
+</head>
+<body>
+<main class="wrap">
+  <nav class="crumbs" aria-label="Site"><a class="crumb" href="book-2.html">← Contents</a><a class="crumb" href="glossary.html">Glossary</a></nav>
+  <header class="page-head">
+    <h1>DOM Scripting</h1>
+    <p class="lede">When the browser reads your HTML, it builds a tree of objects in memory. JavaScript can find any element in that tree and change its text, its attributes, its classes and its styles, and the page updates immediately.</p>
+    <div class="objectives">
+      <p class="callout-title">You'll be able to</p>
+      <ul>
+        <li>Name the main parts of the browser JavaScript can reach: <code>window</code>, <code>navigator</code> and <code>document</code>.</li>
+        <li>Read the DOM as a tree of parents, children and siblings.</li>
+        <li>Find elements with <code>querySelector()</code> and <code>querySelectorAll()</code>, and change their text and attributes.</li>
+        <li>Create, move and remove elements, and change styles with <code>classList</code> and <code>style</code>.</li>
+      </ul>
+    </div>
+  </header>
+
+  <div class="section-title"><span class="eyebrow">Read</span><h2>The important parts of a web browser</h2></div>
+  <div class="prose">
+<p>JavaScript in a web page can reach several objects the browser provides:</p>
+    <ul>
+      <li><code>window</code> is the browser tab the page is loaded into. It knows things like the window's size (<code>window.innerWidth</code>) and can run code when it's resized.</li>
+      <li><code>navigator</code> represents the browser itself: its preferred language, the user's location (with permission), and more.</li>
+      <li><code>document</code> is the page loaded into the window. It's your way into the <span class="term">DOM</span>, the Document Object Model, and the object you'll use most.</li>
+    </ul>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Read</span><h2>The document object model</h2></div>
+  <div class="prose">
+<p>The DOM is a tree of objects, one for each element (and each piece of text) in the page. JavaScript can't change your HTML file, but it can change the DOM, and the page updates immediately.</p>
+    <p>The DOM uses the same family words as CSS. Each object in the tree is a <span class="term">node</span>. The top one, <code>&lt;html&gt;</code>, is the <em>root</em>. A <span class="term">parent</span> node directly contains its <span class="term" data-term="Child">children</span>; children of the same parent are <span class="term">siblings</span>; and anything inside a node, at any depth, is a <span class="term">descendant</span>.</p>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Read</span><h2>Basic DOM manipulation</h2></div>
+  <div class="prose">
+<p>To change an element, first find it and store a reference to it in a variable. <span class="term">querySelector()</span> takes any CSS <span class="term">selector</span> and returns the first match:</p>
+    <pre class="snippet" data-lang="js">const link = document.querySelector("a");
+link.textContent = "Mozilla Developer Network";
+link.href = "https://developer.mozilla.org";</pre>
+    <p><span class="term">textContent</span> reads or replaces an element's text, and attributes like <code>href</code> and <code>src</code> are properties you can set directly.</p>
+    <p><code>querySelectorAll()</code> returns every match as a list you can loop over. Older code uses <code>getElementById()</code> and <code>getElementsByTagName()</code>; they still work, but <code>querySelector()</code> handles any selector.</p>
+    <div class="callout warn"><p class="callout-title">Watch out</p><p>If nothing matches, <code>querySelector()</code> returns <code>null</code>, and using it gives the error "Cannot read properties of null." That almost always means a typo in your selector, or a script that ran before the element existed.</p></div>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Play</span><h2>Select elements</h2><p>Pick a method, type a selector and see what it matches.</p></div>
+  <section class="playground">
+    <div class="panel controls">
+      <div class="control"><label for="method">Method</label>
+        <select id="method"><option value="qs">querySelector()</option><option value="qsa">querySelectorAll()</option><option value="id">getElementById()</option></select>
+      </div>
+      <div class="sel-in"><label class="eyebrow" for="sel">Selector</label><input id="sel" value=".card" autocomplete="off" spellcheck="false" autocapitalize="off"></div>
+      <div class="chipset" id="chips"></div>
+      <p class="hint" id="sel-why"></p>
+    </div>
+    <div class="stage-col">
+      <pre class="snippet" id="sel-code"></pre>
+      <ol class="console" id="sel-out" aria-label="Console output"></ol>
+      <div class="stage"><div id="mini"></div></div>
+    </div>
+  </section>
+
+  <div class="section-title"><span class="eyebrow">Play</span><h2>The DOM tree</h2><p>This is the mini page above as the browser sees it. Matches from your selector are highlighted. Click any node to see how it relates to the others.</p></div>
+  <section class="playground even">
+    <div class="dom" id="dom" role="group" aria-label="DOM tree"></div>
+    <div class="panel rel" id="rel" aria-live="polite"></div>
+  </section>
+
+  <div class="section-title"><span class="eyebrow">Read</span><h2>Creating and placing new nodes</h2></div>
+  <div class="prose">
+<p><code>document.createElement()</code> makes a new element in memory. It doesn't appear anywhere until you add it to the page, usually with <code>appendChild()</code>, which places it as the last child of a parent:</p>
+  </div>
+
+  <div class="runner"><textarea aria-label="Code editor">const section = document.createElement("section");
+section.innerHTML = "&lt;p&gt;We hope you enjoyed the ride.&lt;/p&gt;";
+
+const para = document.createElement("p");
+para.textContent = "This was made in JavaScript.";
+section.appendChild(para);
+
+const text = document.createTextNode(" Plain text works too.");
+para.appendChild(text);
+
+console.log(section.outerHTML);</textarea></div>
+
+  <div class="prose">
+<p>You'll do much more of this, including a shopping list, in Creating Elements.</p>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Read</span><h2>Moving and removing elements</h2></div>
+  <div class="prose">
+<p>Appending an element that's already in the page <em>moves</em> it rather than copying it. To make a copy, use <code>cloneNode()</code>. To take an element out, call its <code>remove()</code> method (older code calls <code>parent.removeChild(child)</code>).</p>
+  </div>
+
+  <div class="runner"><textarea aria-label="Code editor">const box = document.createElement("div");
+box.innerHTML = "&lt;p id='a'&gt;A&lt;/p&gt;&lt;p id='b'&gt;B&lt;/p&gt;&lt;p id='c'&gt;C&lt;/p&gt;";
+
+const a = box.querySelector("#a");
+box.appendChild(a);            // moves A to the end
+console.log(box.innerHTML);
+
+box.querySelector("#b").remove();
+console.log(box.innerHTML);
+
+box.appendChild(a.cloneNode(true));   // a copy this time
+console.log(box.innerHTML);</textarea></div>
+
+  <div class="section-title"><span class="eyebrow">Read</span><h2>Manipulating styles</h2></div>
+  <div class="prose">
+<p>There are two ways to change how an element looks. The first sets inline styles through the <code>style</code> property. CSS properties with hyphens become camelCase, because hyphens aren't allowed in JavaScript names:</p>
+    <pre class="snippet" data-lang="js">para.style.color = "white";
+para.style.backgroundColor = "black";
+para.style.padding = "10px";</pre>
+    <p>The second, usually better, adds a class and keeps the styles in your CSS file, where they belong. <span class="term">classList</span> has <code>add()</code>, <code>remove()</code> and <code>toggle()</code>:</p>
+    <pre class="snippet" data-lang="js">para.classList.add("highlight");</pre>
+    <div class="callout tip"><p class="callout-title">Tip</p><p>Write the selector in your CSS file first and make sure it styles the right element. Then use the same selector in JavaScript.</p></div>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Play</span><h2>Change what you selected</h2><p>These act on whatever your selector matched above. Try them on <code>.featured</code>, then on <code>h2</code> with querySelectorAll.</p></div>
+  <section class="playground">
+    <div class="panel controls">
+      <div class="actions" id="actions" role="group" aria-label="Changes"></div>
+      <button class="btn" id="reset" style="justify-self:start">Reset the mini page</button>
+    </div>
+    <div class="stage-col">
+      <pre class="snippet" id="act-code"></pre>
+      <ol class="console" id="act-out" aria-label="Console output"><li class="muted">Pick a change.</li></ol>
+      <p class="hint" id="act-why"></p>
+    </div>
+  </section>
+
+  <div class="section-title"><span class="eyebrow">Practice</span><h2>Change a card with the DOM</h2><p>Write a function that finds parts of a trail card and updates them.</p></div>
+  <div id="ex-dom"></div>
+
+  <div class="section-title"><span class="eyebrow">Practice</span><h2>Fix the link</h2><p>From MDN's basic DOM manipulation: change a link, then add a paragraph after it.</p></div>
+  <div id="ex-link"></div>
+
+  <section class="notes">
+    <div class="panel">
+      <h2>Key ideas</h2>
+      <ul>
+        <li><code>window</code> is the tab, <code>navigator</code> the browser, and <code>document</code> the page and its DOM.</li>
+        <li><code>querySelector()</code> returns the <b>first</b> match, or <code>null</code>; <code>querySelectorAll()</code> returns <b>every</b> match.</li>
+        <li>Change text with <code>textContent</code> and attributes like <code>href</code> directly.</li>
+        <li><code>createElement()</code> makes an element; <code>appendChild()</code> places it (or moves it); <code>remove()</code> takes it out.</li>
+        <li>Prefer <code>classList</code> over <code>style</code>, so styles stay in CSS.</li>
+      </ul>
+    </div>
+    <div class="panel mistake">
+      <h2>Common mistakes</h2>
+      <ul>
+        <li>A script that runs before the elements exist, so <code>querySelector()</code> returns <code>null</code>. Use <code>defer</code>.</li>
+        <li>Treating the list from <code>querySelectorAll()</code> as one element: <code>cards.classList</code> is <code>undefined</code>. Loop over it.</li>
+        <li>Writing <code>el.style.background-color</code>. Use camelCase: <code>backgroundColor</code>.</li>
+        <li>Using <code>innerHTML</code> with text people typed. Use <code>textContent</code>.</li>
+      </ul>
+    </div>
+  </section>
+
+  <div class="section-title"><span class="eyebrow">Check yourself</span><h2>Quick check</h2></div>
+  <div class="panel quiz" id="quiz"></div>
+
+  <footer class="page-foot" data-book-nav><a href="book-2.html">← Contents</a></footer>
+</main>
+
+<script src="js/runner.js"></script>
+<script>
+  const $ = (id) => document.getElementById(id);
+  const MINI = `<header><h1 id="title">Boulder Trails</h1><nav><a href="#">Home</a><a href="#">Map</a></nav></header>
+<main><article class="card"><h2>Mesa Trail</h2><p>6.7 mi · Moderate</p><button type="button" tabindex="-1">Save</button></article><article class="card featured"><h2>Royal Arch</h2><p>3.4 mi · Hard</p><button type="button" tabindex="-1">Save</button></article><article class="card"><h2>Chautauqua</h2><p>1.2 mi · Easy</p><button type="button" tabindex="-1">Save</button></article></main>
+<footer><p>Updated <time id="updated">May 2026</time></p></footer>`;
+  const mini = $("mini");
+  const CHIPS = [".card", ".featured", "h2", "#title", ".card p", "nav a", "main > .card:last-child", "card", "button", "section"];
+  $("chips").innerHTML = CHIPS.map((c) => `<button class="btn" data-c="${c}">${c.replace(/>/g, "&gt;")}</button>`).join("");
+  $("chips").addEventListener("click", (e) => { const b = e.target.closest("button"); if (b) { $("sel").value = b.dataset.c; select(); } });
+  mini.addEventListener("click", (e) => { if (e.target.closest("a, button")) e.preventDefault(); });
+
+  let matches = [], picked = null, result = null;
+  const label = (el) => `<${el.tagName.toLowerCase()}${el.id ? "#" + el.id : ""}${el.classList.length ? "." + [...el.classList].filter((c) => !c.startsWith("match")).join(".") : ""}>`.replace(/\.(?=>)/, "");
+  function select() {
+    const m = $("method").value, s = $("sel").value.trim();
+    mini.querySelectorAll(".match, .match-first").forEach((el) => el.classList.remove("match", "match-first"));
+    const out = $("sel-out"); out.innerHTML = "";
+    const log = (cls, t) => { const li = document.createElement("li"); li.className = cls; li.textContent = t; out.append(li); };
+    const call = m === "qs" ? `document.querySelector("${s}")` : m === "qsa" ? `document.querySelectorAll("${s}")` : `document.getElementById("${s}")`;
+    $("sel-code").innerHTML = hlJS(`const ${m === "qsa" ? "items" : "el"} = ${call};\nconsole.log(${m === "qsa" ? "items" : "el"});`);
+    matches = []; result = null;
+    let why = "";
+    try {
+      if (m === "id") { const el = s ? mini.querySelector(`[id="${CSS.escape(s)}"]`) : null; matches = el ? [el] : []; result = el; }
+      else { matches = s ? [...mini.querySelectorAll(s)] : []; result = m === "qs" ? matches[0] || null : matches; if (m === "qs") matches = matches.slice(0, 1); }
+      if (m === "qsa") log("log", `NodeList(${matches.length}) [${matches.map(label).join(", ")}]`);
+      else log(result ? "log" : "warn", result ? label(result) : "null");
+      matches.forEach((el, i) => el.classList.add(m === "qs" || i === 0 ? "match-first" : "match"));
+      if (m === "id" && s.startsWith("#")) why = "getElementById takes the plain id, with no #. Try title.";
+      else if (m === "id") why = result ? "getElementById finds one element by its id. It's an older method; querySelector(\"#title\") does the same thing." : "No element has that id.";
+      else if (!matches.length && /^[a-z]/i.test(s) && !/^(header|main|nav|footer|article|h1|h2|p|a|button|time|section|div|span)\b/.test(s)) why = `Nothing matched. Without a . or #, "${s}" is read as an element name. Did you mean .${s}?`;
+      else if (!matches.length) why = "Nothing matched, so querySelector returns null. Any code that uses it next, like el.textContent, will throw a TypeError.";
+      else if (m === "qs") why = `querySelector stops at the first match.${mini.querySelectorAll(s).length > 1 ? ` There are ${mini.querySelectorAll(s).length} matches; use querySelectorAll to get them all.` : ""}`;
+      else why = `${matches.length} match${matches.length === 1 ? "" : "es"}, in the order they appear in the HTML. The first is outlined in orange.`;
+    } catch (err) {
+      log("err", `Uncaught SyntaxError: Failed to execute '${m === "qs" ? "querySelector" : "querySelectorAll"}' on 'Document': '${s}' is not a valid selector.`);
+      why = "That isn't a valid CSS selector.";
+    }
+    $("sel-why").textContent = why;
+    renderDom(); renderActionsCode();
+  }
+  $("sel").addEventListener("input", select);
+  $("method").addEventListener("change", () => { if ($("method").value === "id" && $("sel").value.trim().startsWith("#")) $("sel").value = $("sel").value.trim().slice(1); select(); });
+
+  // Part 2: DOM tree of the mini page
+  function renderDom() {
+    if (picked && !mini.contains(picked)) picked = null; // e.g. replaced by textContent
+    const rows = [];
+    (function walk(el, depth) {
+      const pad = "  ".repeat(depth);
+      const attrs = [el.id && `<span class="at">id</span>="${el.id}"`, [...el.classList].filter((c) => !c.startsWith("match")).length && `<span class="at">class</span>="${[...el.classList].filter((c) => !c.startsWith("match")).join(" ")}"`].filter(Boolean).join(" ");
+      const text = [...el.childNodes].filter((n) => n.nodeType === 3 && n.textContent.trim()).map((n) => n.textContent.trim()).join(" ");
+      rows.push({ el, h: `${pad}<span class="tg">${el.tagName.toLowerCase()}</span>${attrs ? " " + attrs : ""}${text ? `  <span class="tx">"${text}"</span>` : ""}` });
+      [...el.children].forEach((c) => walk(c, depth + 1));
+    })(mini, 0);
+    $("dom").innerHTML = rows.map((r, i) => `<button class="node ${matches[0] === r.el ? "first" : matches.includes(r.el) ? "hit" : ""}" data-i="${i}" aria-pressed="${picked === r.el}">${i === 0 ? '<span class="tx">(the mini page)</span> ' + r.h : r.h}</button>`).join("");
+    $("dom").rows = rows.map((r) => r.el);
+    renderRel();
+  }
+  $("dom").addEventListener("click", (e) => { const b = e.target.closest(".node"); if (b) { picked = $("dom").rows[b.dataset.i]; renderDom(); } });
+  function renderRel() {
+    const el = picked;
+    if (!el) { $("rel").innerHTML = `<span class="eyebrow">Relationships</span><p class="hint">Click a node in the tree.</p>`; return; }
+    const sib = el.parentElement ? [...el.parentElement.children].filter((c) => c !== el) : [];
+    const desc = el.querySelectorAll("*").length;
+    const l = (x) => label(x).replace(/</g, "&lt;");
+    $("rel").innerHTML = `<span class="eyebrow">Relationships</span><p><b>${l(el)}</b></p>` +
+      `<p>Parent: ${el === mini ? "the page around it" : `<b>${l(el.parentElement)}</b>`}</p>` +
+      `<p>Children (${el.children.length}): ${[...el.children].map((c) => `<b>${l(c)}</b>`).join(", ") || "none"}</p>` +
+      `<p>Siblings (${sib.length}): ${sib.map((c) => `<b>${l(c)}</b>`).join(", ") || "none"}</p>` +
+      `<p>Descendants: ${desc} element${desc === 1 ? "" : "s"} inside it at any depth</p>` +
+      `<p class="hint">In code: el.parentElement, el.children, el.nextElementSibling.</p>`;
+  }
+
+  // Part 3: actions on the selection
+  const ACTIONS = [
+    { l: "textContent", c: (v) => `${v}.textContent = "Updated!";`, run: (el) => { el.textContent = "Updated!"; }, why: "textContent replaces everything inside the element with plain text, including any child elements." },
+    { l: "classList.add", c: (v) => `${v}.classList.add("highlight");`, run: (el) => el.classList.add("highlight"), why: "Adds a class. The .highlight rule lives in the CSS, so the look stays in your stylesheet." },
+    { l: "classList.toggle", c: (v) => `${v}.classList.toggle("hidden");`, run: (el) => el.classList.toggle("hidden"), why: "toggle adds the class if it's missing and removes it if it's there. Click again to bring the element back. This is how most show/hide menus work." },
+    { l: "style.backgroundColor", c: (v) => `${v}.style.backgroundColor = "gold";`, run: (el) => { el.style.backgroundColor = "gold"; }, why: "Sets an inline style. Note the camelCase: backgroundColor, not background-color." },
+    { l: "style.background-color ✕", c: (v) => `${v}.style.background-color = "gold";`, bad: "Uncaught SyntaxError: Invalid left-hand side in assignment", why: "With a hyphen, JavaScript reads this as style.background minus color, which can't be assigned to. Use camelCase." },
+    { l: "setAttribute", c: (v) => `${v}.setAttribute("title", "Saved!");`, run: (el) => el.setAttribute("title", "Saved!"), why: "Sets any HTML attribute. Hover over the element on the mini page to see the tooltip." },
+  ];
+  let lastAction = null;
+  $("actions").innerHTML = ACTIONS.map((a, i) => `<button class="btn" data-i="${i}">${a.l}</button>`).join("");
+  function renderActionsCode(out) {
+    const m = $("method").value, s = $("sel").value.trim();
+    const call = m === "qs" ? `document.querySelector("${s}")` : m === "qsa" ? `document.querySelectorAll("${s}")` : `document.getElementById("${s}")`;
+    const a = lastAction;
+    if (!a) { $("act-code").innerHTML = hlJS(`const ${m === "qsa" ? "items" : "el"} = ${call};`); return; }
+    $("act-code").innerHTML = hlJS(m === "qsa" ? `const items = ${call};\n\nfor (const el of items) {\n  ${a.c("el")}\n}` : `const el = ${call};\n${a.c("el")}`);
+  }
+  $("actions").addEventListener("click", (e) => {
+    const b = e.target.closest("button"); if (!b) return;
+    lastAction = ACTIONS[b.dataset.i];
+    const m = $("method").value, out = $("act-out"); out.innerHTML = "";
+    const log = (cls, t) => { const li = document.createElement("li"); li.className = cls; li.textContent = t; out.append(li); };
+    renderActionsCode();
+    let why = lastAction.why;
+    const targets = m === "qsa" ? (result || []) : result ? [result] : [];
+    if (lastAction.bad) log("err", lastAction.bad);
+    else if (m !== "qsa" && !result) { log("err", `Uncaught TypeError: Cannot read properties of null (reading '${lastAction.l.split(".")[0]}')`); why = "Your selector matched nothing, so el is null. Change the selector in Part 1 first."; }
+    else if (m === "qsa" && !targets.length) { log("muted", "The loop ran 0 times: the NodeList is empty."); why = "Nothing matched, so there was nothing to loop over."; }
+    else { targets.forEach((el) => { el.classList.remove("match", "match-first"); lastAction.run(el); }); log("log", `Changed ${targets.length} element${targets.length === 1 ? "" : "s"}.`); if (m === "qsa") why += " With querySelectorAll you loop over the NodeList and change each element."; }
+    $("act-why").textContent = why;
+    renderDom();
+  });
+  $("reset").addEventListener("click", () => { mini.innerHTML = MINI; picked = null; lastAction = null; $("act-out").innerHTML = `<li class="muted">Pick a change.</li>`; $("act-why").textContent = ""; select(); });
+
+
+  mini.innerHTML = MINI;
+  select();
+</script>
+<script>
+  makeQuiz(document.getElementById("quiz"), [
+    { id: "q1", q: "The page has three .card elements. What does this give you?", pre: 'document.querySelector(".card")', opts: ["All three cards", "The first card", "null"], a: 1, why: "querySelector returns only the first match." },
+    { id: "q2", q: "This logs null. Why?", pre: 'const menu = document.querySelector("menu-button");\nconsole.log(menu);', opts: ["Missing . or #", "Wrong method", "Needs quotes"], a: 0, why: "Without a dot, it looks for a <menu-button> element, not a class." },
+    { id: "q3", q: "How do you set the font size from JavaScript?", opts: ['el.style.font-size = "2rem";', 'el.style.fontSize = "2rem";', 'el.fontSize = "2rem";'], a: 1, why: "CSS properties become camelCase on el.style." },
+    { id: "q4", q: "This throws a TypeError. Why?", pre: 'const cards = document.querySelectorAll(".card");\ncards.classList.add("open");', opts: ["cards is a NodeList, not a single element", "classList only works on buttons", "open isn't a valid class"], a: 0, why: "Loop over the NodeList and call classList.add on each element." },
+    { id: "q5", q: "In <ul><li>A</li><li>B</li></ul>, what are the two li elements to each other?", opts: ["Parent and child", "Siblings", "Ancestors"], a: 1, why: "They have the same parent, the ul, so they're siblings." },
+    { id: "q90", q: "Which object represents the page loaded in the tab?", opts: ["window", "navigator", "document"], a: 2, why: "document is the page, and your way into the DOM." },
+    { id: "q91", q: "What happens if you appendChild() an element that's already on the page?", opts: ["It's copied", "It moves", "Nothing"], a: 1, why: "An element can only be in one place; use cloneNode() for a copy." },
+  ]);
+
+  makeExercise(document.getElementById("ex-dom"), {
+    title: "Mark a trail closed",
+    task: `<p><code>markClosed(card)</code> receives one card element shaped like this:</p>
+    <pre class="snippet" data-lang="html">&lt;div class="card"&gt;
+  &lt;h2&gt;Mesa Trail&lt;/h2&gt;
+  &lt;p class="status"&gt;Open&lt;/p&gt;
+&lt;/div&gt;</pre>
+    <ol>
+      <li>Add <code>" (closed)"</code> to the end of the heading's text.</li>
+      <li>Change the status text to <code>Closed</code>.</li>
+      <li>Add the class <code>closed</code> to the card.</li>
+    </ol>
+    <p>Search inside <code>card</code>, not the whole <code>document</code>, so it works on any card.</p>`,
+    js: `function markClosed(card) {
+  // Your code here
+}
+
+// Try it on a test card:
+const test = document.createElement("div");
+test.className = "card";
+test.innerHTML = '<h2>Mesa Trail</h2><p class="status">Open</p>';
+markClosed(test);
+console.log(test.outerHTML);`,
+    solution: `function markClosed(card) {
+  const title = card.querySelector("h2");
+  title.textContent = title.textContent + " (closed)";
+  card.querySelector(".status").textContent = "Closed";
+  card.classList.add("closed");
+}
+
+// Try it on a test card:
+const test = document.createElement("div");
+test.className = "card";
+test.innerHTML = '<h2>Mesa Trail</h2><p class="status">Open</p>';
+markClosed(test);
+console.log(test.outerHTML);`,
+    expose: ["markClosed"],
+    hints: [
+      "card.querySelector(\"h2\") finds the heading inside this card.",
+      "Read and set text with textContent.",
+      "card.classList.add(\"closed\") adds a class without removing the others.",
+    ],
+    checks: (() => {
+      const make = (name) => { const c = document.createElement("div"); c.className = "card"; c.innerHTML = `<h2>${name}</h2><p class="status">Open</p>`; return c; };
+      return [
+        { label: "The heading ends with “ (closed)”", test: ({ fns }) => { const c = make("Royal Arch"); fns.markClosed(c); return c.querySelector("h2").textContent === "Royal Arch (closed)"; } },
+        { label: "The status says Closed", test: ({ fns }) => { const c = make("Mesa Trail"); fns.markClosed(c); return c.querySelector(".status").textContent === "Closed"; } },
+        { label: "The card has the class closed, and keeps card", test: ({ fns }) => { const c = make("Mesa Trail"); fns.markClosed(c); return c.classList.contains("closed") && c.classList.contains("card"); } },
+      ];
+    })(),
+  });
+
+  makeExercise(document.getElementById("ex-link"), {
+    title: "Update the link",
+    task: `<p><code>fixLink(box)</code> receives an element containing one link: <code>&lt;a href="#"&gt;link&lt;/a&gt;</code>.</p>
+    <ol>
+      <li>Set the link's text to <code>Mozilla Developer Network</code> and its <code>href</code> to <code>https://developer.mozilla.org/</code>.</li>
+      <li>Create a <code>&lt;p&gt;</code> with the text <code>We hope you enjoyed the ride.</code>, give it the class <code>note</code>, and append it to <code>box</code>.</li>
+    </ol>`,
+    js: `function fixLink(box) {
+  const link = box.querySelector("a");
+  // Your code here
+}
+
+const test = document.createElement("div");
+test.innerHTML = '<a href="#">link</a>';
+fixLink(test);
+console.log(test.innerHTML);`,
+    solution: `function fixLink(box) {
+  const link = box.querySelector("a");
+  link.textContent = "Mozilla Developer Network";
+  link.href = "https://developer.mozilla.org/";
+
+  const para = document.createElement("p");
+  para.textContent = "We hope you enjoyed the ride.";
+  para.classList.add("note");
+  box.appendChild(para);
+}
+
+const test = document.createElement("div");
+test.innerHTML = '<a href="#">link</a>';
+fixLink(test);
+console.log(test.innerHTML);`,
+    expose: ["fixLink"],
+    hints: [
+      "link.textContent = \"…\"; link.href = \"…\";",
+      "const para = document.createElement(\"p\");",
+      "para.classList.add(\"note\"); then box.appendChild(para);",
+    ],
+    checks: (() => {
+      const make = () => { const d = document.createElement("div"); d.innerHTML = '<a href="#">link</a>'; return d; };
+      return [
+        { label: "The link's text and href are updated", test: ({ fns }) => { const d = make(); fns.fixLink(d); const a = d.querySelector("a"); return a.textContent === "Mozilla Developer Network" && a.getAttribute("href") === "https://developer.mozilla.org/"; } },
+        { label: "A new paragraph is appended after the link", test: ({ fns }) => { const d = make(); fns.fixLink(d); const p = d.lastElementChild; return p && p.tagName === "P" && p.textContent === "We hope you enjoyed the ride."; } },
+        { label: "The paragraph has the class note", test: ({ fns }) => { const d = make(); fns.fixLink(d); const p = d.querySelector("p"); return !!p && p.classList.contains("note"); } },
+      ];
+    })(),
+  });
+</script>
+</body>
+</html>

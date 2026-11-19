@@ -1,0 +1,402 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Overflow · Core Web Development</title>
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="core.css">
+<style>
+  .stage.tall { min-height: 380px; padding: 24px; }
+  #box { width: 260px; border: 3px solid var(--cobalt); border-radius: 8px; background: var(--panel); padding: 12px; display: grid; gap: 8px; align-content: start; }
+  #box h3 { margin: 0; font: 700 1.05rem var(--font-display); }
+  #box h3.ell { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  #box p { margin: 0; font-size: 0.92rem; }
+  #box .url { font: 0.85rem var(--font-code); font-variation-settings: "MONO" 1; color: var(--cobalt); }
+  #box .url.wrap { overflow-wrap: anywhere; }
+  .check { display: flex; gap: 8px; align-items: center; font-size: 0.92rem; cursor: pointer; }
+  .check input { accent-color: var(--cobalt); }
+  .status { font-size: 0.93rem; padding: 8px 10px; border-radius: 6px; }
+  .status.bad { background: var(--bad-soft); color: var(--bad); } .status.good { background: var(--good-soft); color: var(--good); }
+
+  .hunt { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px; }
+  @media (max-width: 760px) { .hunt { grid-template-columns: 1fr; } }
+  .phone { width: 300px; max-width: 100%; height: 360px; border: 8px solid #2b2f3d; border-radius: 24px; overflow: auto; background: #fff; margin-inline: auto; }
+  .fake { padding: 12px; display: grid; gap: 10px; color: #1d2133; font-family: var(--font-body); }
+  .fake > * { border-radius: 6px; cursor: pointer; outline: 2px dashed transparent; outline-offset: 2px; }
+  .fake > *:hover { outline-color: #9aa2bf; }
+  .fake > *.picked { outline-color: #2340d9; }
+  .fake > *.culprit-found { outline: 3px solid #b42318; }
+  .fake .hd { background: #0b6b5e; color: #fff; padding: 10px; font-weight: 700; }
+  .fake .hero { height: 90px; background: linear-gradient(135deg, #f4a261, #7d5a7a); }
+  .fake .table { width: 380px; background: #eef1f8; padding: 8px; font-size: 0.8rem; }
+  .fake .table.fixed { width: auto; overflow-x: auto; }
+  .fake .txt { font-size: 0.9rem; }
+  .fake .btns { display: flex; gap: 6px; } .fake .btns span { background: #2340d9; color: #fff; padding: 6px 10px; border-radius: 6px; font-size: 0.85rem; }
+  .inspect { display: grid; gap: 8px; align-content: start; }
+  .inspect .w { font: 0.95rem var(--font-code); font-variation-settings: "MONO" 1; }
+
+  .ax-stage { background: var(--stage); border-radius: 8px; padding: 20px; min-height: 240px; }
+  .ax-box { width: 220px; height: 110px; border: 3px solid var(--cobalt); border-radius: 6px; background: var(--panel); padding: 8px; font-size: 0.9rem; }
+  .ax-box p { margin: 0 0 6px; }
+  .ax-box .long { font: 0.85rem var(--font-code); font-variation-settings: "MONO" 1; color: var(--cobalt); white-space: nowrap; }
+  .hc-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  @media (max-width: 640px) { .hc-grid { grid-template-columns: 1fr; } }
+  .hc-col { display: grid; gap: 8px; align-content: start; }
+  .hc-col .cap { font: 600 0.85rem var(--font-code); font-variation-settings: "MONO" 1; color: var(--prop); }
+  .hc-box { height: 110px; border: 3px solid var(--cobalt); border-radius: 6px; background: var(--panel); padding: 8px; font-size: 0.9rem; }
+  .hc-box p { margin: 0 0 6px; }
+</style>
+<script src="book-2.js"></script>
+<script src="js/progress.js"></script>
+<script src="js/chrome.js"></script>
+<script src="js/quiz.js"></script>
+</head>
+<body>
+<main class="wrap">
+  <nav class="crumbs" aria-label="Site"><a class="crumb" href="book-2.html">← Contents</a><a class="crumb" href="glossary.html">Glossary</a></nav>
+  <header class="page-head">
+    <h1>Overflow</h1>
+    <p class="lede">Overflow happens when content is bigger than its box. CSS doesn't hide it by default: it lets it spill out so you notice. Here's how to control it on each axis, and how to track down the element that makes a whole page scroll sideways.</p>
+    <div class="objectives">
+      <p class="callout-title">You'll be able to</p>
+      <ul>
+        <li>Explain why CSS shows overflowing content by default.</li>
+        <li>Choose between <code>visible</code>, <code>clip</code>, <code>hidden</code>, <code>scroll</code> and <code>auto</code>, and set each axis separately.</li>
+        <li>Shorten one-line text with an ellipsis, and let long words and links wrap.</li>
+        <li>Track down the element that makes a whole page scroll sideways.</li>
+      </ul>
+    </div>
+  </header>
+
+  <div class="section-title"><span class="eyebrow">Read</span><h2>What is overflow?</h2></div>
+  <div class="prose">
+<p><span class="term">Overflow</span> is what happens when there's too much content to fit in a box: a long paragraph in a card with a fixed height, a giant image in a narrow column, or a long URL with no spaces to break at.</p>
+    <p>It only happens when a box's size is constrained. A box with no set height just grows to fit its content, as you saw in <a href="core-sizing.html">Sizing</a>. Set <code>height: 100px</code>, though, and anything beyond 100px has to go somewhere.</p>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Read</span><h2>CSS tries to avoid "data loss"</h2></div>
+  <div class="prose">
+<p>By default, CSS lets overflowing content spill out of its box, visibly, even when it overlaps whatever comes next. That looks messy, but it's deliberate: if CSS silently hid the extra content, you might never notice that part of your page was missing. A mess is a problem you'll see and fix.</p>
+    <p>The lesson for your own CSS: be careful about fixing the height of anything that holds text. Text gets longer when it's translated, when someone sets a bigger default font, or when the screen gets narrower. Let the content decide the height wherever you can.</p>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Read</span><h2>The overflow property</h2></div>
+  <div class="prose">
+<p>When you do need to control overflow, the <code>overflow</code> property decides what happens:</p>
+    <ul>
+      <li><code>visible</code>, the default, lets it spill out.</li>
+      <li><code>clip</code> cuts off anything outside the box.</li>
+      <li><code>hidden</code> also cuts it off, but the box can still be scrolled by code.</li>
+      <li><code>scroll</code> always shows scrollbars.</li>
+      <li><code>auto</code> shows scrollbars only when they're needed. It's usually the right choice.</li>
+    </ul>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Play</span><h2>Make the content fit</h2><p>Change overflow and the box's height, then fix the long title and the long link.</p></div>
+  <section class="playground">
+    <div class="panel controls">
+      <div class="control"><label for="ov">overflow</label><select id="ov"><option>visible</option><option>hidden</option><option>scroll</option><option selected>auto</option><option>clip</option></select></div>
+      <div class="control"><label for="ht">height</label><input id="ht" type="range" min="80" max="320" step="10" value="150"><span class="readout" id="ht-out"></span></div>
+      <label class="check"><input type="checkbox" id="minh">Use min-height instead of height</label>
+      <label class="check"><input type="checkbox" id="ell">Title: one line with an ellipsis (…)</label>
+      <label class="check"><input type="checkbox" id="wrapurl">Long link: <code>overflow-wrap: anywhere</code></label>
+    </div>
+    <div class="stage-col">
+      <div class="stage tall"><div id="box">
+        <h3 id="title">Chautauqua to Royal Arch via the Bluebell Mesa Trail</h3>
+        <p>Climb through ponderosa pines to a natural sandstone arch with views across Boulder. The last half mile is steep, rocky and has over 200 stone steps.</p>
+        <p class="url" id="url">https://example.org/trails/boulder/royal-arch-via-bluebell-mesa-trail-map</p>
+        <p>Bring water: there's none on the trail.</p>
+      </div></div>
+      <p class="status" id="status" aria-live="polite"></p>
+    </div>
+  </section>
+
+  <div class="section-title"><span class="eyebrow">Read</span><h2>Hiding overflowing content</h2></div>
+  <div class="prose">
+<p><code>overflow: clip</code> cuts content off at the edge of the box (its padding edge, just inside the border). The cut-off part can't be reached at all, so only use it for things nobody needs to read, like a decorative shape that pokes out of a banner.</p>
+    <p>If clipping right at the edge looks too tight, <code>overflow-clip-margin</code> lets the content spill a little way past the edge before it's cut:</p>
+    <pre class="snippet" data-lang="css">.banner {
+  overflow: clip;
+  overflow-clip-margin: 10px;
+}</pre>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Read</span><h2>Scrolling overflowing content</h2></div>
+  <div class="prose">
+<p><code>overflow: auto</code> keeps everything reachable: if the content doesn't fit, the box gets a scrollbar; if it does, there's no scrollbar at all. It's the safe choice for a box that has to stay a fixed size, like a chat window or a long list in a sidebar.</p>
+    <pre class="snippet" data-lang="css">.trail-log {
+  height: 200px;
+  overflow: auto;
+}</pre>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Read</span><h2>Controlling overflow on each axis</h2></div>
+  <div class="prose">
+<p><code>overflow</code> is a shorthand for two properties: <code>overflow-x</code> (side to side) and <code>overflow-y</code> (up and down). You can set them separately, or give <code>overflow</code> two values, x first:</p>
+    <pre class="snippet" data-lang="css">.code-sample { overflow-x: auto; }   /* scroll sideways only */
+.strip { overflow: clip auto; }      /* clip x, scroll y */</pre>
+    <p>One combination isn't allowed: a box can't scroll in one direction and spill visibly in the other. If one axis is <code>scroll</code>, <code>auto</code> or <code>hidden</code>, a <code>visible</code> on the other axis is quietly turned into <code>auto</code>.</p>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Play</span><h2>Two axes</h2><p>This box has a long line (too wide) and several paragraphs (too tall). Set each axis and watch what the browser actually uses.</p></div>
+  <section class="playground">
+    <div class="panel controls">
+      <div class="control"><label for="ax-x">overflow-x</label><select id="ax-x"><option>visible</option><option>clip</option><option>hidden</option><option>scroll</option><option selected>auto</option></select></div>
+      <div class="control"><label for="ax-y">overflow-y</label><select id="ax-y"><option selected>visible</option><option>clip</option><option>hidden</option><option>scroll</option><option>auto</option></select></div>
+      <pre class="snippet" id="ax-code"></pre>
+    </div>
+    <div class="stage-col">
+      <div class="ax-stage"><div class="ax-box" id="ax-box">
+        <p class="long">https://example.org/trails/boulder/mesa-trail-full-map.pdf</p>
+        <p>The Mesa Trail runs 6.7 miles along the foot of the Flatirons.</p>
+        <p>It links a dozen side trails, so you can make a loop of almost any length.</p>
+      </div></div>
+      <p class="verdict" id="ax-out" aria-live="polite"></p>
+    </div>
+  </section>
+
+  <div class="prose">
+<h3>Long words and one-line titles</h3>
+    <p>Two text problems come up constantly. A long URL or word has no spaces to break at, so it pushes past its box. <code>overflow-wrap: anywhere</code> lets it break where it needs to. And a title that must stay on one line can end in an ellipsis (…) instead of spilling:</p>
+    <pre class="snippet" data-lang="css">.title {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}</pre>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Read</span><h2>Always displaying scrollbars</h2></div>
+  <div class="prose">
+<p><code>overflow: scroll</code> shows scrollbars even when there's nothing to scroll, on systems that show scrollbars all the time. That's rarely what you want, but it does stop the layout jumping sideways when content grows and a scrollbar suddenly appears.</p>
+    <p>A better way to get that stability is <code>overflow: auto</code> plus <code>scrollbar-gutter: stable</code>, which reserves room for the scrollbar without drawing an empty one.</p>
+    <pre class="snippet" data-lang="css">.panel {
+  overflow: auto;
+  scrollbar-gutter: stable;
+}</pre>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Read</span><h2>The hidden value</h2></div>
+  <div class="prose">
+<p><code>overflow: hidden</code> looks just like <code>clip</code>: extra content is cut off and there are no scrollbars. The difference is that a <code>hidden</code> box is still a <em>scroll container</em>. JavaScript can scroll it, and so can keyboard focus moving to a link inside the hidden part. That can leave the box scrolled to an odd position with no way for the user to scroll it back.</p>
+    <p>Use <code>clip</code> when you just want to cut content off, and <code>hidden</code> only when you're going to scroll the box with code (a carousel, for example).</p>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Play</span><h2>hidden vs clip</h2><p>Both boxes cut off their content. Now try scrolling each one with code.</p></div>
+  <section class="playground">
+    <div class="panel controls">
+      <button class="btn" id="hc-go">Scroll both down 40px with JavaScript</button>
+      <button class="btn" id="hc-reset">Reset</button>
+      <div class="control"><label for="hc-m">overflow-clip-margin (clip box)</label><input id="hc-m" type="range" min="0" max="20" step="2" value="0"><span class="readout" id="hc-m-out"></span></div>
+    </div>
+    <div class="stage-col">
+      <div class="hc-grid">
+        <div class="hc-col"><span class="cap">overflow: hidden</span><div class="hc-box" id="hc-h"><p>1. Chautauqua trailhead</p><p>2. Bluebell shelter</p><p>3. Royal Arch junction</p><p>4. The stone steps</p><p>5. Royal Arch</p></div></div>
+        <div class="hc-col"><span class="cap">overflow: clip</span><div class="hc-box" id="hc-c" style="overflow:clip"><p>1. Chautauqua trailhead</p><p>2. Bluebell shelter</p><p>3. Royal Arch junction</p><p>4. The stone steps</p><p>5. Royal Arch</p></div></div>
+      </div>
+      <p class="verdict" id="hc-out" aria-live="polite"></p>
+    </div>
+  </section>
+
+  <div class="section-title"><span class="eyebrow">Read</span><h2>Unwanted overflow in web design</h2></div>
+  <div class="prose">
+<p>Most overflow you meet won't be a box you chose to constrain. It'll be a bug: text spilling out of a card that looked fine with the sample text, or a whole page that scrolls sideways on a phone because one element is wider than the screen (a fixed <code>width: 400px</code>, a big image, a long link).</p>
+    <p>To catch these early, test your layouts with much more and much less content than you expect, and with a larger browser font size. When you find overflow, fix the cause instead of hiding it.</p>
+    <div class="callout warn"><p class="callout-title">Watch out</p><p><code>overflow: hidden</code> on the <code>body</code> hides the sideways scroll, but the content is still too wide and now some of it is unreachable. Find the element that's too wide and make it flexible.</p></div>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Practice</span><h2>Find what's making the page scroll sideways</h2><p>This phone-sized page scrolls left and right. Click each part of the page to inspect its width, find the one wider than the screen, then fix it.</p></div>
+  <div class="hunt">
+    <div class="phone" id="phone" data-use><div class="fake" id="fake">
+      <div class="hd" data-n="header">Trailhead</div>
+      <div class="hero" data-n="hero image"></div>
+      <div class="txt" data-n="paragraph">Fall hours: trailheads open at 6am. Parking fills by 8am on weekends.</div>
+      <div class="table" data-n="trail table">Trail · Miles · Gain · Difficulty · Dogs · Shade · Water</div>
+      <div class="btns" data-n="button row"><span>Map</span><span>Save</span></div>
+    </div></div>
+    <div class="panel inspect" id="inspect" aria-live="polite"><span class="eyebrow">Inspector</span><p>Click a part of the page on the left.</p></div>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Practice</span><h2>Tame the overflow</h2><p>Three boxes, three kinds of overflow. Pick the right fix for each.</p></div>
+  <div id="ex-overflow"></div>
+
+  <div class="section-title"><span class="eyebrow">Practice</span><h2>Clip, scroll one way, and shorten</h2><p>A decorative shape, a long line of code and a title that must stay on one line.</p></div>
+  <div id="ex-axes"></div>
+
+  <section class="notes">
+    <div class="panel">
+      <h2>Key ideas</h2>
+      <ul>
+        <li>Overflow only happens when a box's size is constrained. Let content decide the height where you can.</li>
+        <li>By default overflow is <code>visible</code>, so you notice the problem instead of losing content.</li>
+        <li><code>auto</code> adds scrollbars only when needed; <code>clip</code> cuts content off; <code>hidden</code> cuts it off but can still be scrolled by code.</li>
+        <li><code>overflow-x</code> and <code>overflow-y</code> control each axis. A scrolling axis turns <code>visible</code> on the other into <code>auto</code>.</li>
+        <li><code>overflow-wrap: anywhere</code> breaks long words; <code>text-overflow: ellipsis</code> shortens one-line text.</li>
+      </ul>
+    </div>
+    <div class="panel mistake">
+      <h2>Common mistakes</h2>
+      <ul>
+        <li>Fixed pixel widths, like <code>width: 380px</code>, wider than a phone screen.</li>
+        <li>Putting <code>overflow: hidden</code> on <code>body</code> to hide the sideways scroll instead of fixing the cause.</li>
+        <li>Fixed <code>height</code> on a text box that later gets more text, translated text, or larger font settings.</li>
+        <li>Using <code>overflow: scroll</code>, which shows scrollbars even when nothing overflows.</li>
+      </ul>
+    </div>
+  </section>
+
+  <div class="section-title"><span class="eyebrow">Check yourself</span><h2>Quick check</h2></div>
+  <div class="panel quiz" id="quiz"></div>
+
+  <footer class="page-foot" data-book-nav><a href="book-2.html">← Contents</a></footer>
+</main>
+
+<script>
+  const $ = (id) => document.getElementById(id);
+  function update() {
+    const box = $("box"), ov = $("ov").value, h = $("ht").value + "px", minh = $("minh").checked;
+    $("ht-out").textContent = $("ht").value + "px";
+    box.style.overflow = ov;
+    box.style.height = minh ? "" : h; box.style.minHeight = minh ? h : "";
+    $("title").classList.toggle("ell", $("ell").checked);
+    $("url").classList.toggle("wrap", $("wrapurl").checked);
+    const overY = box.scrollHeight > box.clientHeight + 1, overX = box.scrollWidth > box.clientWidth + 1;
+    let msg, good = false;
+    if (!overY && !overX) { good = true; msg = minh ? "min-height lets the box grow to fit its content, so nothing overflows." : "Everything fits right now. Try a smaller height."; }
+    else {
+      msg = { visible: "visible (the default): the content spills out of the box and overlaps whatever is below.", hidden: "hidden: the extra content is cut off with no way to reach it.", scroll: "scroll: scrollbars appear, even in directions with nothing to scroll.", auto: "auto: scrollbars appear only where content overflows.", clip: "clip: like hidden, but the box can't be scrolled even by code." }[ov];
+      if (overX && !$("wrapurl").checked) msg += " The long link is also too wide; turn on overflow-wrap.";
+    }
+    const s = $("status"); s.className = "status " + (good ? "good" : ["hidden", "clip", "visible"].includes(ov) ? "bad" : ""); s.textContent = msg;
+  }
+  document.querySelectorAll(".controls select, .controls input").forEach((el) => el.addEventListener("input", update));
+  update();
+
+  let fixed = false;
+  $("fake").addEventListener("click", (e) => {
+    const el = e.target.closest("[data-n]"); if (!el) return;
+    document.querySelectorAll("#fake [data-n]").forEach((x) => x.classList.remove("picked"));
+    el.classList.add("picked");
+    const screen = $("phone").clientWidth, w = Math.round(el.getBoundingClientRect().width), avail = screen - 24;
+    const culprit = el.dataset.n === "trail table";
+    let html = `<span class="eyebrow">Inspector</span><h3>${el.dataset.n}</h3><span class="w">width: ${w}px · screen: ${screen}px</span>`;
+    if (culprit && !fixed) {
+      el.classList.add("culprit-found");
+      html += `<p class="feedback wrong">Found it. It has a fixed width of 380px, which is wider than the ${avail}px of space inside the page.</p><button class="btn" id="fix">Fix it: width auto + overflow-x: auto</button>`;
+    } else if (culprit) html += `<p class="feedback right">Fixed. The table fits, and if its content is ever too wide, it scrolls inside its own box instead of moving the whole page.</p>`;
+    else html += `<p>${w <= avail ? "This fits inside the screen. Keep looking." : "This one is wide too."}</p>`;
+    $("inspect").innerHTML = html;
+    const f = $("fix"); if (f) f.addEventListener("click", () => { fixed = true; el.classList.add("fixed"); el.classList.remove("culprit-found"); $("phone").scrollLeft = 0; el.click(); });
+  });
+
+  // --- Two axes ---
+  function axUpdate() {
+    const x = $("ax-x").value, y = $("ax-y").value, box = $("ax-box");
+    box.style.overflowX = x; box.style.overflowY = y;
+    const cs = getComputedStyle(box), cx = cs.overflowX, cy = cs.overflowY;
+    $("ax-code").textContent = `.box {\n  overflow-x: ${x};\n  overflow-y: ${y};\n}`;
+    const changed = [];
+    if (cx !== x) changed.push(`overflow-x: ${x} became ${cx}`);
+    if (cy !== y) changed.push(`overflow-y: ${y} became ${cy}`);
+    $("ax-out").className = "verdict" + (changed.length ? " bad" : "");
+    $("ax-out").textContent = `The browser is using overflow-x: ${cx}; overflow-y: ${cy}.` + (changed.length ? ` ${changed.join(" and ")}, because a box can't scroll one way and spill visibly the other.` : "");
+  }
+  ["ax-x", "ax-y"].forEach((id) => $(id).addEventListener("input", axUpdate));
+  axUpdate();
+
+  // --- hidden vs clip ---
+  function hcReport() {
+    const hs = $("hc-h").scrollTop, cs = $("hc-c").scrollTop;
+    $("hc-out").textContent = `hidden box scrollTop: ${hs}px · clip box scrollTop: ${cs}px.` + (hs ? " The hidden box scrolled, though there's no scrollbar to scroll it back. The clip box can't be scrolled at all." : "");
+  }
+  $("hc-go").addEventListener("click", () => { $("hc-h").scrollTop += 40; $("hc-c").scrollTop += 40; hcReport(); });
+  $("hc-reset").addEventListener("click", () => { $("hc-h").scrollTop = 0; $("hc-c").scrollTop = 0; hcReport(); });
+  $("hc-m").addEventListener("input", () => { const m = $("hc-m").value + "px"; $("hc-c").style.overflowClipMargin = m; $("hc-m-out").textContent = m; });
+  $("hc-m-out").textContent = "0px";
+  hcReport();
+</script>
+<script>
+  makeQuiz(document.getElementById("quiz"), [
+    { id: "q1", q: "Which overflow value adds a scrollbar only when content doesn't fit?", opts: ["scroll", "auto", "visible"], a: 1, why: "auto scrolls only when needed; scroll always shows scrollbars." },
+    { id: "q2", q: "A long URL pushes a card wider than the phone screen. What lets it break?", opts: ["text-overflow: ellipsis", "white-space: nowrap", "overflow-wrap: anywhere"], a: 2, why: "overflow-wrap: anywhere lets a long word break wherever it needs to." },
+    { id: "q3", q: "What's the default value of overflow?", opts: ["visible", "auto", "hidden"], a: 0, why: "Content spills out visibly by default, so you notice it." },
+    { id: "q4", q: "Your page scrolls sideways on phones. What's the best fix?", opts: ["overflow: hidden on body", "Find the element that's too wide and make it flexible", "Make the font smaller"], a: 1, why: "Hiding the scrollbar leaves content cut off. Fix the cause instead." },
+    { id: "q5", q: "Both overflow: hidden and overflow: clip cut content off. What's the difference?", opts: ["clip is faster to type", "A hidden box can still be scrolled by code or focus; a clip box can't", "hidden keeps the scrollbars"], a: 1, why: "hidden still makes a scroll container. clip just cuts the content off." },
+    { id: "q6", q: "You set overflow-x: auto and leave overflow-y as visible. What does the browser use for overflow-y?", opts: ["visible", "auto", "hidden"], a: 1, why: "A box can't scroll one way and spill visibly the other, so visible becomes auto." },
+  ]);
+
+  makeExercise(document.getElementById("ex-overflow"), {
+    title: "Long words, wide tables, long logs",
+    task: `<ol>
+      <li>The long URL sticks out of the card. Let it break onto the next line.</li>
+      <li>The wide table pushes the whole page sideways. Make just its wrapper scroll sideways.</li>
+      <li>The trail log should stay 100px tall and scroll when it has more lines.</li>
+    </ol>`,
+    html: `<div class="card">Map: https://www.bouldercolorado.gov/trails/mesa-trail-full-map-with-elevation-profile.pdf</div>
+<div class="table-wrap">
+  <table><tr><td>Mesa</td><td>6.7 mi</td><td>Moderate</td><td>Dogs on leash</td><td>Parking at NCAR and Chautauqua</td><td>Open all year</td></tr></table>
+</div>
+<div class="log">
+  <p>7:02 Started at Chautauqua</p><p>7:30 Bluebell shelter</p><p>8:05 Royal Arch</p><p>8:40 Back at the shelter</p><p>9:00 Finished</p>
+</div>`,
+    css: `body { font-family: system-ui, sans-serif; }
+.card { width: 220px; padding: 8px; border: 2px solid #2340d9; margin-bottom: 12px; }
+table { width: 1400px; border-collapse: collapse; }
+td { border: 1px solid #c8cbd6; padding: 6px; }
+.log { height: 100px; background: #eef1fb; margin-top: 12px; }
+.log p { margin: 4px 8px; }`,
+    solution: { css: `body { font-family: system-ui, sans-serif; }
+.card { width: 220px; padding: 8px; border: 2px solid #2340d9; margin-bottom: 12px; overflow-wrap: anywhere; }
+.table-wrap { overflow-x: auto; }
+table { width: 1400px; border-collapse: collapse; }
+td { border: 1px solid #c8cbd6; padding: 6px; }
+.log { height: 100px; overflow-y: auto; background: #eef1fb; margin-top: 12px; }
+.log p { margin: 4px 8px; }` },
+    hints: [
+      "overflow-wrap: anywhere lets a long word or URL break where it needs to.",
+      "Put overflow-x: auto on the wrapper, not the table, so only the wrapper scrolls.",
+      "overflow: auto adds a scrollbar only when the content doesn't fit.",
+    ],
+    checks: [
+      { label: "The URL stays inside the card", test: ({ $ }) => $(".card").scrollWidth <= $(".card").clientWidth },
+      { label: "Only the table's wrapper scrolls sideways", test: ({ doc, style }) => ["auto", "scroll"].includes(style(".table-wrap", "overflow-x")) && doc.documentElement.scrollWidth <= doc.documentElement.clientWidth },
+      { label: "The log is 100px tall and scrolls", test: ({ $, style }) => Math.round($(".log").getBoundingClientRect().height) === 100 && ["auto", "scroll"].includes(style(".log", "overflow-y")) },
+    ],
+  });
+
+  makeExercise(document.getElementById("ex-axes"), {
+    title: "Banner, code sample and title",
+    task: `<ol>
+      <li>The sun shape pokes out of the banner. Cut it off at the banner's edge with the value that can't be scrolled.</li>
+      <li>The code sample has one very long line. Let it scroll sideways inside its own box, without the page scrolling.</li>
+      <li>Keep the trail title on one line and end it with an ellipsis (…) where it's cut off.</li>
+    </ol>`,
+    html: `<div class="banner"><div class="sun"></div>Boulder Trails</div>
+<pre class="code">fetch("https://example.org/api/trails?city=boulder&amp;difficulty=moderate&amp;dogs=true&amp;sort=distance")</pre>
+<h2 class="title">Chautauqua to Royal Arch via the Bluebell Mesa Trail and the Bluebell Road</h2>`,
+    css: `body { font-family: system-ui, sans-serif; }
+.banner { position: relative; padding: 30px 16px; background: #1d2a3a; color: white; font-size: 1.4rem; }
+.sun { position: absolute; top: -40px; right: -40px; width: 120px; height: 120px; border-radius: 50%; background: #f4a261; opacity: 0.8; }
+.code { background: #eef1fb; padding: 10px; }
+.title { width: 260px; font-size: 1.1rem; }`,
+    solution: { css: `body { font-family: system-ui, sans-serif; }
+.banner { position: relative; padding: 30px 16px; background: #1d2a3a; color: white; font-size: 1.4rem; overflow: clip; }
+.sun { position: absolute; top: -40px; right: -40px; width: 120px; height: 120px; border-radius: 50%; background: #f4a261; opacity: 0.8; }
+.code { background: #eef1fb; padding: 10px; overflow-x: auto; }
+.title { width: 260px; font-size: 1.1rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }` },
+    hints: [
+      "clip cuts content off and, unlike hidden, the box can't be scrolled at all.",
+      "overflow-x: auto on the pre gives it its own sideways scrollbar.",
+      "An ellipsis needs three things: white-space: nowrap, overflow: hidden and text-overflow: ellipsis.",
+    ],
+    checks: [
+      { label: "The banner clips with overflow: clip", test: ({ style }) => style(".banner", "overflow-x") === "clip" && style(".banner", "overflow-y") === "clip" },
+      { label: "The code sample scrolls sideways in its own box", test: ({ style }) => ["auto", "scroll"].includes(style(".code", "overflow-x")) },
+      { label: "The page itself doesn't scroll sideways", test: ({ doc }) => doc.documentElement.scrollWidth <= doc.documentElement.clientWidth },
+      { label: "The title is one line ending in an ellipsis", test: ({ $, style }) => style(".title", "white-space") === "nowrap" && style(".title", "text-overflow") === "ellipsis" && style(".title", "overflow-x") !== "visible" && $(".title").scrollWidth > $(".title").clientWidth },
+    ],
+  });
+</script>
+</body>
+</html>

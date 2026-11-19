@@ -1,0 +1,6 @@
+[
+  { "name": "Mesa Trail", "miles": 6.7, "difficulty": "moderate", "dogs": true },
+  { "name": "Royal Arch", "miles": 3.4, "difficulty": "hard", "dogs": true },
+  { "name": "Chautauqua Loop", "miles": 1.2, "difficulty": "easy", "dogs": true },
+  { "name": "Bear Peak", "miles": 7.8, "difficulty": "hard", "dogs": false }
+]

@@ -1,0 +1,439 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pseudo-classes and Link States · Core Web Development</title>
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="core.css">
+<style>
+  .lab { display: grid; gap: 16px; padding: 22px; background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); align-content: start; }
+  .lab .row { display: grid; gap: 4px; }
+  .lab .who { font: 600 0.75rem var(--font-code); font-variation-settings: "MONO" 1; color: var(--muted); }
+  .lab .row.current .who { color: var(--cobalt); }
+  /* Real state styles on the sample controls */
+  .s-btn { font: 700 1rem var(--font-body); padding: 10px 18px; border-radius: 8px; border: 2px solid var(--cobalt); background: var(--cobalt); color: var(--panel); cursor: pointer; justify-self: start; transition: transform 0.1s, background 0.15s; }
+  .s-btn:hover { background: color-mix(in srgb, var(--cobalt) 80%, var(--ink)); }
+  .s-btn:active { transform: translateY(2px); }
+  .s-btn:focus { outline: none; }
+  .s-btn:focus-visible { outline: 3px solid var(--prop); outline-offset: 3px; }
+  .s-btn:disabled { background: var(--line); border-color: var(--line); color: var(--muted); cursor: not-allowed; }
+  .s-link { color: var(--cobalt); font-weight: 700; justify-self: start; }
+  .s-link:hover { color: var(--prop); text-decoration-thickness: 3px; }
+  .s-input { font: 1rem var(--font-body); padding: 9px 10px; border: 2px solid var(--line); border-radius: 8px; background: var(--paper); color: var(--ink); max-width: 320px; }
+  .s-input:focus { outline: none; border-color: var(--cobalt); box-shadow: 0 0 0 3px var(--cobalt-soft); }
+  .s-input:not(:placeholder-shown):invalid { border-color: var(--bad); }
+  .s-input:not(:placeholder-shown):valid { border-color: var(--good); }
+  .s-check { display: flex; gap: 8px; align-items: center; cursor: pointer; justify-self: start; }
+  .s-check input { width: 18px; height: 18px; accent-color: var(--cobalt); }
+  .s-check input:checked + span { font-weight: 700; color: var(--good); }
+
+  .states { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 6px; }
+  .state { font: 600 0.85rem var(--font-code); font-variation-settings: "MONO" 1; padding: 8px 10px; border-radius: 6px; border: 1px dashed var(--line); color: var(--muted); transition: background 0.1s; }
+  .state.on { border-style: solid; border-color: var(--cobalt); background: var(--cobalt-soft); color: var(--cobalt); }
+  .state-desc { font-size: 0.9rem; color: var(--muted); }
+
+  .check3 { display: flex; gap: 8px; align-items: center; font-size: 0.93rem; cursor: pointer; }
+  .check3 input { accent-color: var(--cobalt); }
+  .navdemo { background: #fff; border: 1px solid var(--line); border-radius: var(--radius); padding: 14px; font-family: var(--font-body); }
+  .navdemo a { color: #2340d9; }
+  .navdemo a:visited { color: #2340d9; }
+  .navdemo.s1 ul { list-style: none; padding-left: 0; margin: 0; }
+  .navdemo.s2 ul { display: flex; flex-wrap: wrap; gap: 6px; }
+  .navdemo.s3 a { display: block; padding: 10px 14px; border-radius: 6px; text-decoration: none; color: #1d2133; background: #eef1f8; }
+  .navdemo.s4 a:hover { background: #2340d9; color: #fff; }
+  .navdemo.s4 a:focus-visible { outline: 3px solid #b4410c; outline-offset: 2px; }
+  .navdemo.s4 a:active { transform: translateY(1px); }
+  .navdemo.s5 a[aria-current="page"] { font-weight: 700; box-shadow: inset 0 -3px 0 #b4410c; }
+  .nth-list { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(56px, 1fr)); gap: 6px; }
+  .nth-list li { display: grid; place-items: center; height: 56px; border-radius: 6px; background: var(--stage); border: 1px solid var(--line); font: 700 1rem var(--font-code); font-variation-settings: "MONO" 1; color: var(--muted); transition: background 0.15s; }
+  .nth-list li.hit { background: var(--cobalt); color: var(--panel); border-color: var(--cobalt); }
+  .formula { display: flex; align-items: center; gap: 2px; font: 1.05rem var(--font-code); font-variation-settings: "MONO" 1; flex-wrap: wrap; }
+  .formula input { font: inherit; color: var(--val); width: 9ch; padding: 6px 8px; border: 1px solid var(--line); border-radius: 6px; background: var(--panel); }
+  .formula input.bad { border-color: var(--bad); }
+  .nvals { font: 0.88rem var(--font-code); font-variation-settings: "MONO" 1; color: var(--muted); overflow-wrap: anywhere; }
+
+  .lk-out { width: 100%; height: 170px; border: 1px solid var(--line); border-radius: 8px; background: #fff; }
+</style>
+<script src="book-2.js"></script>
+<script src="js/progress.js"></script>
+<script src="js/chrome.js"></script>
+<script src="js/quiz.js"></script>
+</head>
+<body>
+<main class="wrap">
+  <nav class="crumbs" aria-label="Site"><a class="crumb" href="book-2.html">← Contents</a><a class="crumb" href="glossary.html">Glossary</a></nav>
+  <header class="page-head">
+    <h1>Pseudo-classes and Link States</h1>
+    <p class="lede">Some styles should apply only some of the time: while a link is hovered, when a field is focused, to the first item in a list. Pseudo-classes select elements by their state or position, without adding a single class to your HTML.</p>
+    <div class="objectives">
+      <p class="callout-title">You'll be able to</p>
+      <ul>
+        <li>Select elements by position with <code>:first-child</code>, <code>:last-child</code> and <code>:nth-child()</code>.</li>
+        <li>Style user-action states: <code>:hover</code>, <code>:focus</code>, <code>:focus-visible</code> and <code>:active</code>.</li>
+        <li>Style the five link states in the right order.</li>
+        <li>Turn a list of links into a navigation menu.</li>
+      </ul>
+    </div>
+  </header>
+
+  <div class="section-title"><span class="eyebrow">Read</span><h2>What is a pseudo-class?</h2></div>
+  <div class="prose">
+<p>A <span class="term">pseudo-class</span> is a keyword after a selector, starting with one colon, that selects elements only when they're in a certain state. It acts as if you'd added a class to the element at exactly the right moment, without touching the HTML.</p>
+    <h3>Basic pseudo-class example</h3>
+    <p>To make the first paragraph of each article larger, you could add <code>class="first"</code> to it. But then if someone adds a new paragraph at the top, the class is on the wrong one. A pseudo-class always finds the right element:</p>
+    <pre class="snippet" data-lang="css">article p:first-child {
+  font-size: 120%;
+  font-weight: bold;
+}</pre>
+    <p><code>:first-child</code> and <code>:last-child</code> match an element that's the first or last child of its parent. <code>:nth-child()</code> takes a pattern: <code>odd</code>, <code>even</code>, a number, or a formula like <code>3n+1</code>.</p>
+    <div class="callout warn"><p class="callout-title">Watch out</p><p><code>p:first-child</code> means "a p that is the first child of its parent", not "the first p". If an <code>h2</code> comes first, no paragraph matches.</p></div>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Play</span><h2>Position: :nth-child()</h2><p>The formula <code>an+b</code> is calculated for n = 0, 1, 2, 3… and every result picks an item.</p></div>
+  <section class="playground">
+    <div class="panel controls">
+      <div class="formula"><span class="sel">li</span><span>:nth-child(</span><input id="f" value="3n+1" spellcheck="false" aria-label="nth-child formula"><span>)</span></div>
+      <div class="seg" id="presets"></div>
+      <p class="hint" id="f-desc"></p>
+    </div>
+    <div class="stage-col">
+      <ol class="nth-list" id="nth"></ol>
+      <p class="nvals" id="nvals"></p>
+    </div>
+  </section>
+
+  <div class="section-title"><span class="eyebrow">Read</span><h2>User-action pseudo-classes</h2></div>
+  <div class="prose">
+<p>These match only while the visitor is doing something:</p>
+    <ul>
+      <li><code>:hover</code>: while the pointer is over the element. Touch screens don't have it, so never hide anything important behind a hover.</li>
+      <li><code>:focus</code>: when the element is selected for keyboard input, by clicking a field or pressing Tab.</li>
+      <li><code>:focus-visible</code>: focus, but only when the browser thinks a visible ring helps, mainly keyboard use.</li>
+      <li><code>:active</code>: while it's being pressed.</li>
+    </ul>
+    <p>Many people use a keyboard instead of a mouse, so give every <code>:hover</code> style a matching <code>:focus-visible</code> one, in the same rule:</p>
+    <pre class="snippet" data-lang="css">.btn:hover,
+.btn:focus-visible {
+  background: #1a2fa8;
+}</pre>
+    <p>Forms add more: <code>:disabled</code>, <code>:checked</code>, <code>:required</code>, <code>:invalid</code>.</p>
+    <div class="callout warn"><p class="callout-title">Watch out</p><p>Never remove the focus outline with <code>outline: none</code> unless you add a clear <code>:focus-visible</code> style in its place. Without it, keyboard users can't see where they are.</p></div>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Play</span><h2>Interactive states</h2><p>Point at, click and tab to each control.</p></div>
+  <section class="playground even">
+    <div class="lab" id="lab">
+      <div class="row" data-name="button"><span class="who">button</span><button class="s-btn" type="button">Save trail</button></div>
+      <div class="row" data-name="disabled button"><span class="who">button disabled</span><button class="s-btn" type="button" disabled>Sold out</button></div>
+      <div class="row" data-name="link"><span class="who">a</span><a class="s-link" href="#lab">View the trail map</a></div>
+      <div class="row" data-name="email input"><span class="who">input type="email" required</span><input class="s-input" type="email" required placeholder="you@example.com" aria-label="Email"></div>
+      <div class="row" data-name="checkbox"><span class="who">input type="checkbox"</span><label class="s-check"><input type="checkbox"><span>Dogs allowed</span></label></div>
+    </div>
+    <div class="panel" style="display:grid;gap:10px;align-content:start">
+      <span class="eyebrow" id="cur-label">Point at or tab to a control</span>
+      <div class="states" id="states"></div>
+      <p class="state-desc" id="desc"></p>
+      <p class="hint">Try clicking the button with the mouse, then reaching it with the Tab key. Only the keyboard shows the <code>:focus-visible</code> ring.</p>
+    </div>
+  </section>
+
+  <div class="section-title"><span class="eyebrow">Practice</span><h2>Style the states</h2><p>Stripes, hover feedback and a first-item highlight, all without adding a single class.</p></div>
+  <div id="ex-states"></div>
+
+  <div class="section-title"><span class="eyebrow">Read</span><h2>Link states</h2></div>
+  <div class="prose">
+<p>Links are the most-styled element with states. They have five:</p>
+    <ul>
+      <li><code>:link</code>: a link with an <code>href</code> that hasn't been visited.</li>
+      <li><code>:visited</code>: one that's in the browser's history.</li>
+      <li><code>:hover</code>, <code>:focus</code> and <code>:active</code>, as above.</li>
+    </ul>
+    <h3>Default styles</h3>
+    <p>Browsers underline links, colour them blue (purple once visited, red while active), show a pointer cursor, and draw a focus outline. All of it can be changed. Keep links recognisable, though: if a link looks like normal text, nobody will click it.</p>
+    <h3>Styling links</h3>
+    <p>Write the state rules in this order, because they have the same specificity and later rules win. If <code>:hover</code> came before <code>:visited</code>, visited links would never show the hover style. Remember it as <strong>LoVe Fears HAte</strong>:</p>
+    <pre class="snippet" data-lang="css">a { }          /* every link */
+a:link { }
+a:visited { }
+a:focus { }
+a:hover { }
+a:active { }</pre>
+    <p>For privacy, <code>:visited</code> can only change colours, not size or layout.</p>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Play</span><h2>Style your own links</h2><p>Edit the CSS, then hover over, tab to and click the links in the result.</p></div>
+  <div class="two">
+    <div class="panel" style="display:grid;gap:8px">
+      <label class="eyebrow" for="lk-css">CSS</label>
+      <textarea class="src" id="lk-css" spellcheck="false" style="min-height:250px"></textarea>
+    </div>
+    <div class="panel" style="display:grid;gap:8px;align-content:start"><span class="eyebrow">Result</span><iframe class="lk-out" id="lk-out" title="Links"></iframe><p class="verdict" id="lk-note" aria-live="polite"></p></div>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Practice</span><h2>Link states in order</h2><p>Style the trail links, with the states in an order that works.</p></div>
+  <div id="ex-links"></div>
+
+  <div class="section-title"><span class="eyebrow">Read</span><h2>Including icons on links</h2></div>
+  <div class="prose">
+<p>A small icon can tell people where a link goes, like an arrow for links to other websites. Combine an attribute selector with the <code>::after</code> pseudo-element (next lesson) to add one without touching the HTML:</p>
+    <pre class="snippet" data-lang="css">a[href^="http"]::after {
+  content: " ↗";
+}</pre>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Read</span><h2>Styling links as buttons</h2></div>
+  <div class="prose">
+<p>A navigation menu is just a list of links. Remove the bullets, put the items in a row, give each link padding so the whole box is clickable, and add hover and focus styles. Mark the current page with <code>aria-current="page"</code> in the HTML, and style that attribute.</p>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Play</span><h2>Building a menu</h2><p>Turn on each step.</p></div>
+  <section class="playground">
+    <div class="panel controls">
+      <label class="check3"><input type="checkbox" id="n1"> Remove bullets and indent</label>
+      <label class="check3"><input type="checkbox" id="n2"> Put the links in a row (flex)</label>
+      <label class="check3"><input type="checkbox" id="n3"> Make each link a padded block</label>
+      <label class="check3"><input type="checkbox" id="n4"> :hover and :focus-visible styles</label>
+      <label class="check3"><input type="checkbox" id="n5"> Mark the current page with aria-current</label>
+      <button class="btn" id="n-all" style="justify-self:start">Turn everything on</button>
+    </div>
+    <div class="stage-col">
+      <nav class="navdemo" id="navdemo" aria-label="Sample menu"><ul><li><a href="#navdemo">Home</a></li><li><a href="#navdemo" aria-current="page">Trails</a></li><li><a href="#navdemo">Maps</a></li><li><a href="#navdemo">Gear</a></li></ul></nav>
+      <p class="hint" id="nav-note"></p>
+    </div>
+  </section>
+
+  <section class="notes">
+    <div class="panel">
+      <h2>Key ideas</h2>
+      <ul>
+        <li>Pseudo-classes start with one colon and select by state or position.</li>
+        <li><code>:first-child</code> means "first child of its parent", whatever its type.</li>
+        <li>Pair every <code>:hover</code> style with <code>:focus-visible</code>.</li>
+        <li>Link states in order: <code>:link</code>, <code>:visited</code>, <code>:focus</code>, <code>:hover</code>, <code>:active</code>.</li>
+        <li>A nav menu is a styled list of links; mark the current page with <code>aria-current</code>.</li>
+      </ul>
+    </div>
+    <div class="panel mistake">
+      <h2>Common mistakes</h2>
+      <ul>
+        <li>Removing the focus outline without a replacement.</li>
+        <li>Putting <code>:hover</code> before <code>:visited</code>, so visited links never react.</li>
+        <li>Expecting <code>p:first-child</code> to find the first paragraph after a heading.</li>
+        <li>Hiding information or menus behind <code>:hover</code> only.</li>
+        <li>Styling links so they look like plain text.</li>
+      </ul>
+    </div>
+  </section>
+
+  <div class="section-title"><span class="eyebrow">Check yourself</span><h2>Quick check</h2></div>
+  <div class="panel quiz" id="quiz"></div>
+
+  <footer class="page-foot" data-book-nav><a href="book-2.html">← Contents</a></footer>
+</main>
+
+<script>
+  const $ = (id) => document.getElementById(id);
+  const STATES = {
+    ":hover": "The pointer is over it.",
+    ":active": "It's being pressed right now.",
+    ":focus": "It has keyboard focus, by click or Tab.",
+    ":focus-visible": "It has focus and the browser thinks a focus ring should show, usually after keyboard use.",
+    ":disabled": "It has the disabled attribute and can't be used.",
+    ":checked": "A checkbox or radio that is ticked.",
+    ":placeholder-shown": "The input is empty, so its placeholder is showing.",
+    ":valid": "The current value passes the input's rules.",
+    ":invalid": "The current value breaks a rule, like required or type=\"email\".",
+  };
+  let current = null;
+  const rows = [...document.querySelectorAll("#lab .row")];
+  const ctrl = (row) => row.querySelector("button, a, input");
+  rows.forEach((row) => {
+    const el = ctrl(row);
+    ["pointerenter", "focus"].forEach((ev) => el.addEventListener(ev, () => (current = row)));
+    row.addEventListener("pointerenter", () => (current = row));
+  });
+  function tick() {
+    rows.forEach((r) => r.classList.toggle("current", r === current));
+    if (current) {
+      const el = ctrl(current);
+      const on = Object.keys(STATES).filter((s) => { try { return el.matches(s); } catch (e) { return false; } });
+      $("cur-label").textContent = `Watching: ${current.dataset.name}`;
+      const html = Object.keys(STATES).map((s) => `<div class="state ${on.includes(s) ? "on" : ""}">${s}</div>`).join("");
+      if ($("states").innerHTML !== html) $("states").innerHTML = html;
+      const d = on.length ? on.map((s) => `${s}: ${STATES[s]}`).join(" ") : "No states active right now.";
+      if ($("desc").textContent !== d) $("desc").textContent = d;
+    } else if (!$("states").innerHTML) {
+      $("states").innerHTML = Object.keys(STATES).map((s) => `<div class="state">${s}</div>`).join("");
+    }
+    requestAnimationFrame(tick);
+  }
+  tick();
+
+  // Menu builder
+  const NAVN = ["Plain list: bullets, indent and underlined blue links. This is how the browser styles it by default.",
+    "list-style: none and padding-left: 0 remove the bullets and the indent.",
+    "display: flex on the ul puts the items in a row, with a gap between them.",
+    "display: block and padding on each a make the whole box clickable, not just the text. Bigger targets are easier to tap.",
+    "Hover or Tab through the links: :hover and :focus-visible give the same feedback for mouse and keyboard.",
+    "aria-current=\"page\" marks the page you're on. Screen readers announce it, and CSS can target it with an attribute selector."];
+  function navb() {
+    let last = 0; const nav = $("navdemo");
+    [1, 2, 3, 4, 5].forEach((i) => { const on = $("n" + i).checked; nav.classList.toggle("s" + i, on); if (on) last = i; });
+    $("nav-note").textContent = NAVN[last];
+  }
+  [1, 2, 3, 4, 5].forEach((i) => $("n" + i).addEventListener("input", navb));
+  $("n-all").addEventListener("click", () => { [1, 2, 3, 4, 5].forEach((i) => ($("n" + i).checked = true)); navb(); });
+  $("navdemo").addEventListener("click", (e) => { if (e.target.closest("a")) e.preventDefault(); });
+  navb();
+
+  // nth-child
+  $("nth").innerHTML = Array.from({ length: 15 }, (_, i) => `<li>${i + 1}</li>`).join("");
+  const PRESETS = { "odd": "Items 1, 3, 5... Same as 2n+1.", "even": "Items 2, 4, 6... Same as 2n.", "3n": "Every third item: 3, 6, 9...", "3n+1": "Every third item, starting at 1.", "-n+3": "The first three items only.", "n+4": "Item 4 and everything after it.", "5": "Only the fifth item." };
+  $("presets").innerHTML = Object.keys(PRESETS).map((p) => `<button class="btn">${p}</button>`).join("");
+  $("presets").addEventListener("click", (e) => { const b = e.target.closest("button"); if (b) { $("f").value = b.textContent; nth(); } });
+  function nth() {
+    const f = $("f").value.trim().replace(/\s+/g, "");
+    const items = [...$("nth").children];
+    items.forEach((li) => li.classList.remove("hit"));
+    let hits;
+    try { hits = $("nth").querySelectorAll(`li:nth-child(${f})`); $("f").classList.remove("bad"); }
+    catch (e) { $("f").classList.add("bad"); $("nvals").textContent = "That formula isn't valid. Use a number, odd, even, or the form an+b like 2n+1."; $("f-desc").textContent = ""; return; }
+    hits.forEach((li) => li.classList.add("hit"));
+    $("f-desc").textContent = PRESETS[f] || "";
+    const m = f.match(/^([+-]?\d*)n([+-]\d+)?$/);
+    if (m) {
+      const a = m[1] === "" || m[1] === "+" ? 1 : m[1] === "-" ? -1 : +m[1], b = m[2] ? +m[2] : 0;
+      const vals = []; for (let n = 0; n < 6; n++) vals.push(`n=${n} → ${a * n + b}`);
+      $("nvals").textContent = vals.join(" · ") + " · …  (results below 1 are skipped)";
+    } else $("nvals").textContent = `${hits.length} item${hits.length === 1 ? "" : "s"} selected.`;
+  }
+  $("f").addEventListener("input", nth);
+  nth();
+
+  // --- Style your own links ---
+  $("lk-css").value = `body { font: 18px/1.6 Georgia, serif; padding: 8px 16px; }
+
+a {
+  color: #265301;
+  text-decoration-thickness: 2px;
+}
+
+a:visited {
+  color: #437a16;
+}
+
+a:focus {
+  outline: 3px solid #bae498;
+}
+
+a:hover {
+  background: #bae498;
+}
+
+a:active {
+  background: #265301;
+  color: #cdfeaa;
+}`;
+  function lk() {
+    $("lk-out").srcdoc = `<!doctype html><html><head><style>${$("lk-css").value}</style><\/head><body><p>Read about <a href="#mesa">the Mesa Trail</a>, <a href="#arch">Royal Arch</a> and <a href="https://example.com">the city's trail site</a>.</p><p>Press Tab to move between the links.</p>`;
+    const order = ["link", "visited", "focus", "hover", "active"].map((s) => $("lk-css").value.indexOf("a:" + s)).filter((i) => i >= 0);
+    const sorted = order.every((v, i) => i === 0 || v > order[i - 1]);
+    $("lk-note").className = "verdict " + (sorted ? "ok" : "bad");
+    $("lk-note").textContent = sorted ? "✓ The states are in a working order." : "✗ The states are out of order, so a later rule can override an earlier state. Use :link, :visited, :focus, :hover, :active.";
+  }
+  $("lk-css").addEventListener("input", lk);
+  lk();
+</script>
+<script>
+  makeExercise(document.getElementById("ex-states"), {
+    title: "A trail list with states",
+    task: `<ol>
+      <li>Give every second list item (the 2nd and 4th) the background <code>#eef1fb</code>.</li>
+      <li>In one rule, give links a <code>#2340d9</code> background and white text both on hover and when focused with the keyboard.</li>
+      <li>Make the first trail bold with a pseudo-class.</li>
+    </ol>`,
+    html: `<ul class="trails">
+  <li><a href="#">Mesa</a></li>
+  <li><a href="#">Royal Arch</a></li>
+  <li><a href="#">Flagstaff</a></li>
+  <li><a href="#">Chautauqua</a></li>
+</ul>`,
+    css: `.trails { list-style: none; padding: 0; font-family: system-ui, sans-serif; }
+.trails a { display: block; padding: 8px 12px; color: #2340d9; text-decoration: none; }`,
+    solution: { css: `.trails { list-style: none; padding: 0; font-family: system-ui, sans-serif; }
+.trails a { display: block; padding: 8px 12px; color: #2340d9; text-decoration: none; }
+
+.trails li:nth-child(even) { background: #eef1fb; }
+
+.trails a:hover,
+.trails a:focus-visible {
+  background: #2340d9;
+  color: white;
+}
+
+.trails li:first-child { font-weight: bold; }` },
+    hints: [
+      ":nth-child(even) matches the 2nd, 4th, 6th…",
+      "Two selectors separated by a comma share one rule: a:hover, a:focus-visible { … }",
+      ":first-child matches an element that's the first child of its parent.",
+    ],
+    checks: [
+      { label: "The 2nd and 4th items are striped", test: ({ $$, style }) => { const li = $$(".trails li"); return style(li[1], "background-color") === "rgb(238, 241, 251)" && style(li[3], "background-color") === "rgb(238, 241, 251)" && style(li[0], "background-color") !== "rgb(238, 241, 251)"; } },
+      { label: "One rule covers :hover and :focus-visible", test: ({ doc }) => [...doc.styleSheets[0].cssRules].some((r) => /:hover/.test(r.selectorText) && /:focus-visible/.test(r.selectorText) && r.style.color && (r.style.backgroundColor || r.style.background)) },
+      { label: "Only the first trail is bold", test: ({ $$, style }) => { const a = $$(".trails a"); return Number(style(a[0], "font-weight")) >= 700 && Number(style(a[1], "font-weight")) < 700; } },
+    ],
+  });
+
+  makeExercise(document.getElementById("ex-links"), {
+    title: "Trail links",
+    task: `<ol>
+      <li>Make all links <code>color: #265301</code>.</li>
+      <li>Add <code>a:visited</code> with <code>color: #437a16</code>.</li>
+      <li>Add one rule for <code>a:hover</code> and <code>a:focus-visible</code> that sets <code>background-color: #bae498</code>.</li>
+      <li>Add <code>a:active</code> with <code>color: white</code> and <code>background-color: #265301</code>.</li>
+    </ol>
+    <p>Keep them in that order. Then hover over and tab to the links to try them.</p>`,
+    html: `<p>This weekend: <a href="#mesa">Mesa Trail</a>, <a href="#arch">Royal Arch</a> and <a href="#bear">Bear Peak</a>.</p>`,
+    css: `body { font: 18px/1.6 Georgia, serif; }
+`,
+    solution: { css: `body { font: 18px/1.6 Georgia, serif; }
+
+a {
+  color: #265301;
+}
+
+a:visited {
+  color: #437a16;
+}
+
+a:hover,
+a:focus-visible {
+  background-color: #bae498;
+}
+
+a:active {
+  color: white;
+  background-color: #265301;
+}
+` },
+    hints: ["Separate a:hover and a:focus-visible with a comma to share one rule.", "Order: a, a:visited, a:hover/a:focus-visible, a:active."],
+    checks: [
+      { label: "Links are #265301", test: ({ style }) => style("a", "color") === "rgb(38, 83, 1)" },
+      { label: "a:visited, a:hover + a:focus-visible and a:active rules exist", test: ({ doc }) => { const s = [...doc.styleSheets[0].cssRules].map((r) => r.selectorText || ""); return s.some((x) => /a:visited/.test(x)) && s.some((x) => /a:hover/.test(x) && /a:focus-visible/.test(x)) && s.some((x) => /a:active/.test(x)); } },
+      { label: "The hover rule sets #bae498, the active rule white on #265301", test: ({ doc }) => { const r = [...doc.styleSheets[0].cssRules]; const hv = r.find((x) => /a:hover/.test(x.selectorText || "")), ac = r.find((x) => /a:active/.test(x.selectorText || "")); return hv && ac && hv.style.backgroundColor === "rgb(186, 228, 152)" && ac.style.color === "white" && ac.style.backgroundColor === "rgb(38, 83, 1)"; } },
+      { label: "The states are in order: visited, hover, active", test: ({ code }) => { const i = ["a:visited", "a:hover", "a:active"].map((s) => code.css.indexOf(s)); return i.every((v) => v >= 0) && i[0] < i[1] && i[1] < i[2]; } },
+    ],
+  });
+
+  makeQuiz(document.getElementById("quiz"), [
+    { id: "q1", q: "Why style :focus-visible along with :hover?", opts: ["To make links load faster", "Because :hover doesn't work without it", "So keyboard users get the same feedback as mouse users"], a: 2, why: "Keyboard users never hover, so they rely on focus styles to see where they are." },
+    { id: "q2", q: "Which selector stripes every other row?", opts: ["tr:nth-child(even)", "tr:even", "tr + tr"], a: 0, why: ":nth-child(even) picks the 2nd, 4th, 6th… rows." },
+    { id: "q3", q: "Does p:first-child select the first paragraph on the page?", opts: ["Yes, always", "Only if that p is the very first child of its parent", "No, it selects the p's first child"], a: 1, why: "It matches a p that is the first child of its parent, nothing else." },
+    { id: "q4", q: "What's the right order for link state rules?", opts: [":hover, :link, :active, :visited", ":active, :hover, :visited, :link", ":link, :visited, :hover, :active"], a: 2, why: "LoVe HAte: later rules win, so :hover and :active must come after :link and :visited." },
+    { id: "q5", q: "Which pseudo-class matches an input that's selected for typing?", opts: [":focus", ":active", ":checked"], a: 0, why: ":focus applies while an element has keyboard focus." },
+    { id: "q6", q: "li:nth-child(3n+1) selects which items?", opts: ["1, 4, 7, 10…", "3, 6, 9…", "Only the 4th"], a: 0, why: "n = 0, 1, 2… gives 1, 4, 7…" },
+  ]);
+</script>
+</body>
+</html>

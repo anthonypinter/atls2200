@@ -1,0 +1,425 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Numbers and Strings · Core Web Development</title>
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="core.css">
+<style>
+  .operand { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 6px; align-items: center; }
+  .operand input { font: 1rem var(--font-code); font-variation-settings: "MONO" 1; padding: 7px 10px; border: 1px solid var(--line); border-radius: 6px; background: var(--paper); color: var(--ink); width: 100%; min-width: 0; }
+  .ops { display: flex; flex-wrap: wrap; gap: 6px; }
+  .ops .btn { min-width: 42px; font-size: 1rem; }
+  .result { display: grid; grid-template-columns: minmax(0, 1fr); gap: 10px; align-content: center; justify-items: center; text-align: center; }
+  .result .expr { font: 600 1.5rem var(--font-code); font-variation-settings: "MONO" 1; overflow-wrap: anywhere; }
+  .result .ans { font: 800 2.2rem var(--font-code); font-variation-settings: "MONO" 1; overflow-wrap: anywhere; }
+  .result .ans.number { color: var(--prop); } .result .ans.string { color: var(--val); } .result .ans.nan { color: var(--bad); }
+  .result .t { font: 600 0.8rem var(--font-code); font-variation-settings: "MONO" 1; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); }
+  .result .why { max-width: 48ch; font-size: 0.95rem; }
+
+  .text-in { font: 1rem var(--font-code); font-variation-settings: "MONO" 1; padding: 7px 10px; border: 1px solid var(--line); border-radius: 6px; background: var(--paper); color: var(--ink); width: 100%; }
+  .methods { display: flex; flex-wrap: wrap; gap: 6px; }
+  .methods .btn { font-size: 0.8rem; padding: 5px 9px; }
+  .ruler { display: flex; flex-wrap: wrap; gap: 2px; }
+  .ch { display: grid; grid-template-rows: auto auto; width: 30px; text-align: center; border-radius: 4px; overflow: hidden; border: 1px solid var(--line); background: var(--panel); }
+  .ch b { font: 600 1rem/1.9 var(--font-code); font-variation-settings: "MONO" 1; white-space: pre; }
+  .ch i { font: normal 0.65rem/1.5 var(--font-code); font-variation-settings: "MONO" 1; color: var(--muted); background: var(--stage); }
+  .ch.hit { border-color: var(--cobalt); background: var(--cobalt-soft); } .ch.hit b { color: var(--cobalt); }
+  .ch.space b { color: var(--muted); }
+  .method-out { display: grid; grid-template-columns: minmax(0, 1fr); gap: 8px; }
+  .method-out .res { font: 600 1.1rem var(--font-code); font-variation-settings: "MONO" 1; padding: 10px 14px; border-radius: 8px; background: var(--panel); border: 1px solid var(--line); overflow-wrap: anywhere; }
+
+</style>
+<script src="book-2.js"></script>
+<script src="js/progress.js"></script>
+<script src="js/chrome.js"></script>
+<script src="js/quiz.js"></script>
+</head>
+<body>
+<main class="wrap">
+  <nav class="crumbs" aria-label="Site"><a class="crumb" href="book-2.html">← Contents</a><a class="crumb" href="glossary.html">Glossary</a></nav>
+  <header class="page-head">
+    <h1>Numbers and Strings</h1>
+    <p class="lede">Most of what a program does is work with numbers and text: adding up distances, building messages, checking what someone typed. Here's the math, the operators, and the most useful things you can do with strings.</p>
+    <div class="objectives">
+      <p class="callout-title">You'll be able to</p>
+      <ul>
+        <li>Do arithmetic with JavaScript's operators, and predict the order they run in.</li>
+        <li>Use increment, assignment and comparison operators.</li>
+        <li>Build strings with quotes, template literals and concatenation, and convert between strings and numbers.</li>
+        <li>Find, extract and change parts of a string with its methods.</li>
+      </ul>
+    </div>
+  </header>
+
+  <div class="section-title"><span class="eyebrow">Read</span><h2>Types of numbers</h2></div>
+  <div class="prose">
+<p>In everyday code you'll use two kinds of number, whole numbers (<em>integers</em>, like <code>42</code>) and decimals (<em>floats</em>, like <code>6.7</code>), but JavaScript has just one type for both: <code>Number</code>. (There's also <code>BigInt</code> for enormous whole numbers, which you'll rarely need.)</p>
+    <h3>Useful Number methods</h3>
+    <p><code>toFixed()</code> rounds a number to a set number of decimal places, for display. It returns a string.</p>
+    <h3>Converting to number data types</h3>
+    <p>Values that look like numbers can be strings, especially anything a visitor types into a form. <code>Number()</code> converts a string to a number; if it can't, you get <span class="term">NaN</span>, "not a number".</p>
+  </div>
+
+  <div class="runner"><textarea aria-label="Code editor">const lotsOfDecimal = 1.7665849587;
+console.log(lotsOfDecimal.toFixed(2));
+
+const typed = "74";          // like a value from a form field
+console.log(typed + 3);      // joins!
+console.log(Number(typed) + 3);
+console.log(Number("seventy"));
+console.log(typeof 6.7, typeof "6.7");</textarea></div>
+
+  <div class="section-title"><span class="eyebrow">Read</span><h2>Arithmetic operators</h2></div>
+  <div class="prose">
+<p>JavaScript has the usual operators, <code>+</code> <code>-</code> <code>*</code> <code>/</code>, plus two more: <code>%</code> (remainder) gives what's left over after dividing, so <code>7 % 2</code> is 1, and <code>**</code> (exponent) raises to a power, so <code>5 ** 2</code> is 25.</p>
+    <h3>Operator precedence</h3>
+    <p>As in math class, <code>*</code> and <code>/</code> happen before <code>+</code> and <code>-</code>. Use parentheses to change the order, or just to make it clear. Predict each line before you run it:</p>
+  </div>
+
+  <div class="runner"><textarea aria-label="Code editor">console.log(10 + 4 * 2);
+console.log((10 + 4) * 2);
+console.log(17 % 5);
+console.log(2 ** 3);
+console.log(50 + 10 / 8 + 2);
+console.log((50 + 10) / (8 + 2));</textarea></div>
+
+  <div class="section-title"><span class="eyebrow">Read</span><h2>Increment and decrement operators</h2></div>
+  <div class="prose">
+<p><code>++</code> adds one to a variable and <code>--</code> takes one away. They're common in counters and loops. You can only use them on a variable, not a plain number.</p>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Read</span><h2>Assignment operators</h2></div>
+  <div class="prose">
+<p><code>=</code> assigns a value. Shortcut versions do the math and assign in one step: <code>x += 4</code> means <code>x = x + 4</code>, and there's <code>-=</code>, <code>*=</code> and <code>/=</code> too.</p>
+  </div>
+
+  <div class="runner"><textarea aria-label="Code editor">let guessCount = 1;
+guessCount++;
+console.log(guessCount);
+
+let miles = 6.7;
+miles += 3.4;      // miles = miles + 3.4
+console.log(miles);
+miles *= 2;
+console.log(miles);</textarea></div>
+
+  <div class="section-title"><span class="eyebrow">Read</span><h2>Comparison operators</h2></div>
+  <div class="prose">
+<p>Comparisons give <code>true</code> or <code>false</code>:</p>
+    <ul>
+      <li><code>===</code> equal, and <code>!==</code> not equal. They check the type too, so <code>5 === "5"</code> is false.</li>
+      <li><code>&lt;</code>, <code>&gt;</code>, <code>&lt;=</code>, <code>&gt;=</code> for less and greater.</li>
+    </ul>
+    <p>You'll see <code>==</code> and <code>!=</code> in older code. They convert types before comparing, which gives surprises, so use the triple versions.</p>
+  </div>
+
+  <div class="runner"><textarea aria-label="Code editor">console.log(5 === 5, 5 === "5", 5 == "5");
+console.log(6.7 &gt; 5, 3 &lt;= 3);
+console.log("Mesa" !== "mesa");</textarea></div>
+
+  <div class="section-title"><span class="eyebrow">Read</span><h2>Declaring strings</h2></div>
+  <div class="prose">
+<p>A <span class="term">string</span> is text in quotes. Without the quotes, JavaScript thinks the word is a variable name and gives an error.</p>
+    <h3>Single quotes, double quotes, and backticks</h3>
+    <p>You can use <code>'single'</code>, <code>"double"</code> or <code>`backtick`</code> quotes, as long as the start and end match. Pick one style for normal strings and stick with it. Backticks are special: they make a <span class="term">template literal</span>.</p>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Read</span><h2>Embedding JavaScript</h2></div>
+  <div class="prose">
+<p>Inside a template literal, <code>${ }</code> inserts the value of any variable or expression:</p>
+    <pre class="snippet" data-lang="js">const name = "Chris";
+const greeting = `Hello, ${name}`;</pre>
+    <h3>Concatenation using "+"</h3>
+    <p>The older way is to join strings with <code>+</code>, called <span class="term">concatenation</span>: <code>"Hello, " + name</code>. It works, but long ones get hard to read, with spaces easy to forget.</p>
+    <h3>Including expressions in strings</h3>
+    <p><code>${ }</code> can hold any expression, not just a variable: <code>`You scored ${(score / highestScore) * 100}%.`</code></p>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Try it</span><h2>Template literals and Math</h2><p>Backticks let you put values right inside a string with <code>${ }</code>.</p></div>
+  <div class="runner"><textarea aria-label="Code editor">const trail = "Mesa";
+const miles = 6.7;
+
+console.log("The " + trail + " trail is " + miles + " miles.");
+console.log(`The ${trail} trail is ${miles} miles.`);
+console.log(`Round trip: ${miles * 2} miles`);
+
+console.log(0.1 + 0.2);
+console.log((0.1 + 0.2).toFixed(2));
+console.log(Math.round(6.7), Math.floor(6.7), Math.ceil(6.2));
+
+const typed = "12";          // like a value from a form field
+console.log(typed + 3);
+console.log(Number(typed) + 3);</textarea></div>
+
+  <div class="section-title"><span class="eyebrow">Read</span><h2>Multiline strings</h2></div>
+  <div class="prose">
+<p>Template literals keep line breaks just as you type them. In a normal string, write <code>\n</code> for a new line.</p>
+    <h3>Including quotes in strings</h3>
+    <p>To put a quote inside a string, use the other kind around it (<code>"It's steep"</code>), or <em>escape</em> it with a backslash: <code>'It\'s steep'</code>.</p>
+  </div>
+
+  <div class="runner"><textarea aria-label="Code editor">const poem = `Up the steps,
+past the pines,
+to the arch.`;
+console.log(poem);
+
+console.log("Line one\nLine two");
+console.log("It's steep");
+console.log('She said "go early"');
+console.log('It\'s also fine to escape');</textarea></div>
+
+  <div class="section-title"><span class="eyebrow">Read</span><h2>Numbers vs. strings</h2></div>
+  <div class="prose">
+<p><code>+</code> does two jobs. With two numbers it adds; if either side is a string, it joins them. Other operators like <code>*</code> and <code>-</code> always try to make numbers. Convert on purpose: <code>Number("74")</code> makes a number, and <code>String(74)</code> (or <code>(74).toString()</code>) makes a string.</p>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Play</span><h2>Add or join?</h2><p>Change a and b, and switch between numbers and text, to see what each operator does.</p></div>
+  <section class="playground">
+    <div class="panel controls">
+      <div class="control"><label for="a">a</label><div class="operand"><input id="a" value="5" autocomplete="off"><div class="seg" role="group" aria-label="Type of a"><button class="btn" data-for="a" data-t="number">number</button><button class="btn" data-for="a" data-t="string">"string"</button></div></div></div>
+      <div class="control"><label for="b">b</label><div class="operand"><input id="b" value="2" autocomplete="off"><div class="seg" role="group" aria-label="Type of b"><button class="btn" data-for="b" data-t="number">number</button><button class="btn" data-for="b" data-t="string">"string"</button></div></div></div>
+      <div class="control"><span class="eyebrow">Operator</span><div class="ops" id="ops" role="group" aria-label="Operator"></div></div>
+      <p class="hint">Values typed into a form field are always strings. Click "string" on one side to see what happens if you forget to convert them.</p>
+    </div>
+    <div class="stage result" id="result" aria-live="polite"></div>
+  </section>
+
+  <div class="section-title"><span class="eyebrow">Practice</span><h2>Add, don't join</h2><p>A value from a form arrives as text, so + joins instead of adding. Fix the total and tidy the output.</p></div>
+  <div id="ex-strings"></div>
+
+  <div class="section-title"><span class="eyebrow">Read</span><h2>Useful string methods</h2></div>
+  <div class="prose">
+<h3>Strings as objects</h3>
+    <p>Strings come with built-in properties and <span class="term">methods</span>, which you use with a dot: <code>text.length</code>, <code>text.toUpperCase()</code>. Methods never change the original string: they return a new one. (Strings can't be changed at all; they're <em>immutable</em>.)</p>
+    <h3>Finding the length of a string</h3>
+    <p><code>text.length</code> is the number of characters. It's a property, so no parentheses.</p>
+    <h3>Retrieving a specific string character</h3>
+    <p>Each character has an index, counted from 0: <code>text[0]</code> is the first, and <code>text[text.length - 1]</code> is the last.</p>
+    <h3>Testing if a string contains a substring</h3>
+    <p><code>includes("Arch")</code>, <code>startsWith("Royal")</code> and <code>endsWith("Trail")</code> return <code>true</code> or <code>false</code>. They're case-sensitive.</p>
+    <h3>Finding the position of a substring in a string</h3>
+    <p><code>indexOf("Arch")</code> returns where it starts, or <code>-1</code> if it isn't there.</p>
+    <h3>Extracting a substring from a string</h3>
+    <p><code>slice(start, end)</code> returns the characters from <code>start</code> up to, but not including, <code>end</code>. Leave out <code>end</code> to go to the end of the string.</p>
+    <h3>Changing case</h3>
+    <p><code>toLowerCase()</code> and <code>toUpperCase()</code>. Handy for comparing what someone typed, whatever capitals they used.</p>
+    <h3>Updating parts of a string</h3>
+    <p><code>replace("old", "new")</code> changes the first match; <code>replaceAll()</code> changes every match. Remember to store the result: <code>text = text.replace(…)</code>.</p>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Play</span><h2>Try the string methods</h2><p>Every character has an index, starting at 0. Pick a method to see what it returns.</p></div>
+  <section class="playground">
+    <div class="panel controls">
+      <div class="control"><label for="txt">const text =</label><input class="text-in" id="txt" value="  Royal Arch Trail " autocomplete="off" spellcheck="false"></div>
+      <div class="methods" id="methods" role="group" aria-label="String methods"></div>
+    </div>
+    <div class="stage-col">
+      <div class="ruler" id="ruler" aria-hidden="true"></div>
+      <div class="method-out" id="mout" aria-live="polite"></div>
+    </div>
+  </section>
+
+  <div class="section-title"><span class="eyebrow">Practice</span><h2>Learning challenges</h2><p>MDN's three string challenges: filter messages, fix capitals, and build a new string from parts.</p></div>
+  <div id="ex-methods"></div>
+
+  <section class="notes">
+    <div class="panel">
+      <h2>Key ideas</h2>
+      <ul>
+        <li>One <code>Number</code> type for whole numbers and decimals. <code>toFixed(2)</code> rounds for display.</li>
+        <li><code>*</code> and <code>/</code> before <code>+</code> and <code>-</code>; <code>%</code> is the remainder, <code>**</code> a power.</li>
+        <li><code>++</code>, <code>+=</code> and friends update a variable; <code>===</code> and <code>!==</code> compare value and type.</li>
+        <li>Template literals: <code>`${value}`</code>. <code>+</code> joins if either side is a string, so convert with <code>Number()</code>.</li>
+        <li>String methods return new strings: <code>includes</code>, <code>indexOf</code>, <code>slice</code>, <code>toLowerCase</code>, <code>replace</code>.</li>
+      </ul>
+    </div>
+    <div class="panel mistake">
+      <h2>Common mistakes</h2>
+      <ul>
+        <li>Adding a form value without <code>Number()</code>: <code>"10" + 5</code> is <code>"105"</code>.</li>
+        <li>Using <code>==</code> instead of <code>===</code>.</li>
+        <li>Forgetting that <code>slice</code>'s end index isn't included.</li>
+        <li>Calling a method and not storing the result, expecting the original string to change.</li>
+      </ul>
+    </div>
+  </section>
+
+  <div class="section-title"><span class="eyebrow">Check yourself</span><h2>Quick check</h2></div>
+  <div class="panel quiz" id="quiz"></div>
+
+  <footer class="page-foot" data-book-nav><a href="book-2.html">← Contents</a></footer>
+</main>
+
+<script src="js/runner.js"></script>
+<script>
+  const $ = (id) => document.getElementById(id);
+  const types = { a: "number", b: "number" };
+  const OPS = ["+", "-", "*", "/", "%", "**"];
+  let op = "+";
+  $("ops").innerHTML = OPS.map((o) => `<button class="btn" data-op="${o}">${o}</button>`).join("");
+  $("ops").addEventListener("click", (e) => { const b = e.target.closest("button"); if (b) { op = b.dataset.op; calc(); } });
+  document.querySelectorAll("[data-for]").forEach((b) => b.addEventListener("click", () => { types[b.dataset.for] = b.dataset.t; calc(); }));
+  $("a").addEventListener("input", calc); $("b").addEventListener("input", calc);
+
+  function lit(raw, t) { return t === "string" ? JSON.stringify(raw) : (raw.trim() === "" ? "0" : raw.trim()); }
+  function val(raw, t) { return t === "string" ? raw : Number(raw.trim() === "" ? 0 : raw); }
+  function calc() {
+    document.querySelectorAll("[data-for]").forEach((b) => b.setAttribute("aria-pressed", String(types[b.dataset.for] === b.dataset.t)));
+    document.querySelectorAll("#ops button").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.op === op)));
+    const ra = $("a").value, rb = $("b").value;
+    const a = val(ra, types.a), b = val(rb, types.b);
+    const r = { "+": a + b, "-": a - b, "*": a * b, "/": a / b, "%": a % b, "**": a ** b }[op];
+    const t = typeof r;
+    const badNum = (raw, tp) => tp === "number" && Number.isNaN(Number(raw));
+    let why;
+    if (badNum(ra, types.a) || badNum(rb, types.b)) why = "That isn't a valid number. Without quotes, JavaScript would treat it as a variable name. Switch it to string to see what Number() makes of text.";
+    else if (op === "+" && (types.a === "string" || types.b === "string")) why = "One side is a string, so + joins the two values into text (concatenation). Convert with Number() first if you meant to add.";
+    else if (Number.isNaN(r)) why = "NaN means \"Not a Number\". JavaScript tried to convert a string to a number for this math and couldn't.";
+    else if (types.a === "string" || types.b === "string") why = `Only + joins strings. ${op} converts both sides to numbers first, so this works, but it's easy to get wrong. Convert with Number() yourself.`;
+    else if (r === Infinity || r === -Infinity) why = "Dividing by zero doesn't cause an error in JavaScript. It gives Infinity.";
+    else if (op === "%") why = `% gives the remainder: ${a} ÷ ${b} leaves ${r}. Use n % 2 === 0 to check whether a number is even.`;
+    else if (op === "**") why = `** raises to a power: ${a} multiplied by itself ${b} times.`;
+    else if (op === "/" && !Number.isInteger(r)) why = "Division can give a decimal. Use Math.round(), Math.floor() or .toFixed() to tidy it up for display.";
+    else why = "Two numbers, so this is ordinary math.";
+    const shown = t === "string" ? JSON.stringify(r) : String(r);
+    $("result").innerHTML = `<div class="expr">${hlJS(`${lit(ra, types.a)} ${op} ${lit(rb, types.b)}`)}</div><div class="ans ${Number.isNaN(r) ? "nan" : t}"></div><div class="t">typeof → "${t}"</div><p class="why"></p>`;
+    $("result").querySelector(".ans").textContent = shown;
+    $("result").querySelector(".why").textContent = why;
+  }
+
+  // Part 2
+  const METHODS = [
+    { k: "length", code: "text.length", run: (s) => s.length, why: "length counts every character, including spaces. It's a property, so there are no parentheses." },
+    { k: "[0]", code: "text[0]", run: (s) => s[0], hit: () => [0], why: "Square brackets get one character by its index. The first index is 0. Here it's a space." },
+    { k: "at(-1)", code: "text.at(-1)", run: (s) => s.at(-1), hit: (s) => [s.length - 1], why: "at() also accepts negative numbers, which count back from the end. -1 is the last character." },
+    { k: "trim()", code: "text.trim()", run: (s) => s.trim(), hit: (s) => [...s].map((c, i) => (/\s/.test(c) && (i < s.length - s.trimStart().length || i >= s.trimEnd().length) ? i : -1)).filter((i) => i >= 0), why: "trim() removes spaces from both ends. Useful for cleaning up what people type into forms." },
+    { k: "toUpperCase()", code: "text.toUpperCase()", run: (s) => s.toUpperCase(), why: "Returns a new string in capitals. text itself doesn't change." },
+    { k: 'includes("Arch")', code: 'text.includes("Arch")', run: (s) => s.includes("Arch"), hit: (s) => range(s.indexOf("Arch"), 4), why: "includes() answers true or false. It's case-sensitive: \"arch\" would be false." },
+    { k: 'indexOf("Arch")', code: 'text.indexOf("Arch")', run: (s) => s.indexOf("Arch"), hit: (s) => range(s.indexOf("Arch"), 1), why: "indexOf() gives the index where the text starts, or -1 if it isn't found." },
+    { k: "slice(2, 7)", code: "text.slice(2, 7)", run: (s) => s.slice(2, 7), hit: () => range(2, 5), why: "slice(start, end) copies from start up to, but not including, end. Index 7 is left out." },
+    { k: 'replace("Trail", "Loop")', code: 'text.replace("Trail", "Loop")', run: (s) => s.replace("Trail", "Loop"), hit: (s) => range(s.indexOf("Trail"), 5), why: "replace() swaps the first match. Use replaceAll() to swap every match." },
+    { k: 'split(" ")', code: 'text.trim().split(" ")', run: (s) => s.trim().split(" "), why: "split() cuts a string into an array wherever it finds the separator. The opposite is array.join(\" \")." },
+  ];
+  const range = (start, n) => (start < 0 ? [] : Array.from({ length: n }, (_, i) => start + i));
+  let method = 3;
+  $("methods").innerHTML = METHODS.map((m, i) => `<button class="btn" data-i="${i}">${m.k.replace(/</g, "&lt;")}</button>`).join("");
+  $("methods").addEventListener("click", (e) => { const b = e.target.closest("button"); if (b) { method = +b.dataset.i; strings(); } });
+  $("txt").addEventListener("input", strings);
+  function strings() {
+    const s = $("txt").value, m = METHODS[method];
+    document.querySelectorAll("#methods button").forEach((b) => b.setAttribute("aria-pressed", String(+b.dataset.i === method)));
+    const hits = new Set(m.hit ? m.hit(s) : []);
+    $("ruler").innerHTML = [...s].map((c, i) => `<span class="ch ${hits.has(i) ? "hit" : ""} ${c === " " ? "space" : ""}"><b>${c === " " ? "·" : c.replace(/&/g, "&amp;").replace(/</g, "&lt;")}</b><i>${i}</i></span>`).join("");
+    const r = m.run(s);
+    $("mout").innerHTML = `<pre class="snippet">${hlJS(m.code)}</pre><div class="res"></div><p class="hint"></p>`;
+    $("mout").querySelector(".res").textContent = "→ " + (r === undefined ? "undefined" : fmtJS(r, 1));
+    $("mout").querySelector(".hint").textContent = m.why;
+  }
+
+
+  calc(); strings();
+</script>
+<script>
+  makeQuiz(document.getElementById("quiz"), [
+    { id: "q1", q: "What does this log?", pre: 'console.log("3" + 4);', opts: ["7", "\"34\"", "NaN"], a: 1, why: "One side is a string, so + joins them into \"34\"." },
+    { id: "q2", q: "What does this log?", pre: 'console.log("10" - 4);', opts: ["6", "\"104\"", "NaN"], a: 0, why: "Only + joins strings. - converts both sides to numbers." },
+    { id: "q3", q: "What does this log?", pre: "console.log(17 % 5);", opts: ["3.4", "2", "3"], a: 1, why: "17 ÷ 5 = 3 with 2 left over. % gives the remainder." },
+    { id: "q4", q: "What does this log?", pre: 'const name = "Ava";\nconsole.log("Hi ${name}");', opts: ["Hi Ava", "Hi ${name}", "An error"], a: 1, why: "Placeholders only work inside backticks. In normal quotes, ${name} is plain text." },
+    { id: "q5", q: "What does this log?", pre: 'const word = "Boulder";\nconsole.log(word.slice(0, 3));', opts: ["Boul", "Bou", "oul"], a: 1, why: "slice(0, 3) includes indexes 0, 1 and 2, but not 3." },
+    { id: "q90", q: "What is 10 + 4 * 2?", opts: ["28", "18", "16"], a: 1, why: "* happens before +: 4 * 2 is 8, plus 10 is 18." },
+    { id: "q91", q: "What is 17 % 5?", opts: ["3.4", "2", "3"], a: 1, why: "17 divided by 5 is 3 with 2 left over." },
+    { id: "q92", q: "\"Royal Arch\".slice(0, 5) returns…", opts: ["\"Royal\"", "\"Royal \"", "\"oyal \""], a: 0, why: "Characters 0 to 4: the end index isn't included." },
+    { id: "q93", q: "\"Mesa\".indexOf(\"x\") returns…", opts: ["0", "undefined", "-1"], a: 2, why: "-1 means not found." },
+  ]);
+
+  makeExercise(document.getElementById("ex-strings"), {
+    title: "Total distance",
+    task: `<ol>
+      <li><code>miles</code> came from a form, so it's a string. Convert it so <code>total</code> is the number <code>8.2</code>.</li>
+      <li>Log <code>Total: 8.2 miles</code> using a template literal.</li>
+      <li>Log the trail's name in capital letters, using a string method.</li>
+    </ol>`,
+    js: `const miles = "6.7";   // came from a form
+const extra = 1.5;
+const total = miles + extra;
+const name = "royal arch";
+
+console.log("Total: " + total + " miles");
+console.log(name);`,
+    solution: `const miles = "6.7";   // came from a form
+const extra = 1.5;
+const total = Number(miles) + extra;
+const name = "royal arch";
+
+console.log(\`Total: \${total} miles\`);
+console.log(name.toUpperCase());`,
+    expose: ["total"],
+    hints: [
+      "Number(\"6.7\") turns text into the number 6.7.",
+      "Template literals use backticks, with values inside ${ }.",
+      "name.toUpperCase() returns a capitalized copy.",
+    ],
+    checks: [
+      { label: "total is the number 8.2", test: ({ fns }) => fns.total === 8.2 },
+      { label: "Logs “Total: 8.2 miles” with a template literal", test: ({ logs, code }) => logs.includes("Total: 8.2 miles") && /`Total: \$\{/.test(code.js) },
+    { label: "Logs ROYAL ARCH using a method", test: ({ logs, code }) => logs.includes("ROYAL ARCH") && !/ROYAL ARCH/.test(code.js) },
+  ],
+});
+
+  makeExercise(document.getElementById("ex-methods"), {
+    title: "Greetings, cities and stations",
+    task: `<ol>
+      <li><code>isChristmas(greeting)</code> returns <code>true</code> if the greeting contains <code>"Christmas"</code>.</li>
+      <li><code>fixCity(city)</code> takes a badly capitalised name like <code>"manCHESTer"</code> and returns <code>"Manchester"</code>: all lowercase, except a capital first letter.</li>
+      <li><code>stationLabel(entry)</code> takes text like <code>"MAN675847583748sjt567654;Manchester Piccadilly"</code> and returns <code>"MAN: Manchester Piccadilly"</code>: the first three characters, then everything after the <code>;</code>.</li>
+    </ol>`,
+    js: `function isChristmas(greeting) {
+  // includes()
+}
+
+function fixCity(city) {
+  // toLowerCase(), then a capital first letter
+}
+
+function stationLabel(entry) {
+  // slice() and indexOf(";")
+}
+
+console.log(isChristmas("Happy Christmas, one and all!"));
+console.log(fixCity("manCHESTer"));
+console.log(stationLabel("MAN675847583748sjt567654;Manchester Piccadilly"));`,
+    solution: `function isChristmas(greeting) {
+  return greeting.includes("Christmas");
+}
+
+function fixCity(city) {
+  const lower = city.toLowerCase();
+  return lower[0].toUpperCase() + lower.slice(1);
+}
+
+function stationLabel(entry) {
+  const code = entry.slice(0, 3);
+  const name = entry.slice(entry.indexOf(";") + 1);
+  return \`\${code}: \${name}\`;
+}
+
+console.log(isChristmas("Happy Christmas, one and all!"));
+console.log(fixCity("manCHESTer"));
+console.log(stationLabel("MAN675847583748sjt567654;Manchester Piccadilly"));`,
+    expose: ["isChristmas", "fixCity", "stationLabel"],
+    hints: [
+      "Each function needs a return. greeting.includes(\"Christmas\") is already true or false.",
+      "lower[0].toUpperCase() is the first letter; lower.slice(1) is everything after it.",
+      "entry.indexOf(\";\") finds the semicolon; slice from one past it.",
+    ],
+    checks: [
+      { label: "isChristmas finds “Christmas”", test: ({ fns }) => fns.isChristmas("Merry Christmas to all") === true && fns.isChristmas("Happy birthday") === false },
+      { label: "fixCity fixes the capitals", test: ({ fns }) => fns.fixCity("manCHESTer") === "Manchester" && fns.fixCity("BIRMINGHAM") === "Birmingham" && fns.fixCity("lOndon") === "London" },
+      { label: "stationLabel builds “MAN: Manchester Piccadilly”", test: ({ fns }) => fns.stationLabel("MAN675847583748sjt567654;Manchester Piccadilly") === "MAN: Manchester Piccadilly" && fns.stationLabel("GNF576746573fhdg4737dh4;Greenfield") === "GNF: Greenfield" },
+    ],
+  });
+</script>
+</body>
+</html>

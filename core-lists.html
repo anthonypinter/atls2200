@@ -1,0 +1,308 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lists · Core Web Development</title>
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="core.css">
+<style>
+  .opts { display: grid; gap: 8px; }
+  .opts label { display: flex; gap: 8px; align-items: center; font-size: 0.95rem; }
+  .opts input[type="number"], .opts select { font: 0.95rem var(--font-body); padding: 4px 6px; border: 1px solid var(--line); border-radius: 6px; background: var(--paper); color: var(--ink); width: 6em; }
+  .rendered dt { font-weight: bold; } .rendered dd { margin-left: 1.5em; }
+</style>
+<script src="book-2.js"></script>
+<script src="js/progress.js"></script>
+<script src="js/chrome.js"></script>
+<script src="js/quiz.js"></script>
+</head>
+<body>
+<main class="wrap">
+  <nav class="crumbs" aria-label="Site"><a class="crumb" href="book-2.html">← Contents</a><a class="crumb" href="glossary.html">Glossary</a></nav>
+  <header class="page-head">
+    <h1>Lists</h1>
+    <p class="lede">Packing lists, directions, glossaries, navigation menus: lists are everywhere. HTML has three kinds. Learn which to use, how to nest them, and the attributes that change how they count.</p>
+    <div class="objectives">
+      <p class="callout-title">You'll be able to</p>
+      <ul>
+        <li>Choose between an unordered, an ordered and a description list.</li>
+        <li>Write each one with the right child elements.</li>
+        <li>Nest a list inside a list item, correctly.</li>
+        <li>Change how an ordered list counts with <code>start</code>, <code>reversed</code> and <code>type</code>.</li>
+      </ul>
+    </div>
+  </header>
+
+  <!-- ===== Unordered ===== -->
+  <div class="section-title"><span class="eyebrow">Read</span><h2>Unordered lists</h2></div>
+  <div class="prose">
+    <p>When the order doesn't matter, like a packing list, use an unordered list. The list is a <code>&lt;ul&gt;</code>, and each item is an <code>&lt;li&gt;</code> (list item) inside it. Browsers show a bullet before each item:</p>
+    <pre class="snippet" data-lang="html">&lt;ul&gt;
+  &lt;li&gt;Water&lt;/li&gt;
+  &lt;li&gt;Snacks&lt;/li&gt;
+  &lt;li&gt;Rain jacket&lt;/li&gt;
+&lt;/ul&gt;</pre>
+    <p>A <code>&lt;ul&gt;</code> may only contain <code>&lt;li&gt;</code>s. Text, headings and paragraphs go <em>inside</em> the list items.</p>
+  </div>
+
+  <!-- ===== Ordered ===== -->
+  <div class="section-title"><span class="eyebrow">Read</span><h2>Ordered lists</h2></div>
+  <div class="prose">
+    <p>When order matters, like directions or a ranking, use an ordered list, <code>&lt;ol&gt;</code>. The items are still <code>&lt;li&gt;</code>s, and the browser numbers them for you:</p>
+    <pre class="snippet" data-lang="html">&lt;ol&gt;
+  &lt;li&gt;Park at Chautauqua.&lt;/li&gt;
+  &lt;li&gt;Take the Bluebell Road uphill.&lt;/li&gt;
+  &lt;li&gt;Turn left at the Royal Arch sign.&lt;/li&gt;
+&lt;/ol&gt;</pre>
+    <p>Never type the numbers yourself. Add a step later and the browser renumbers everything. Three attributes change the counting: <code>start="5"</code> begins at 5, <code>reversed</code> counts down, and <code>type="a"</code>, <code>"A"</code>, <code>"i"</code> or <code>"I"</code> uses letters or Roman numerals.</p>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Play</span><h2>Build a list</h2><p>Type one item per line, pick the kind of list, and try the counting options.</p></div>
+  <div class="two">
+    <div class="panel">
+      <label class="eyebrow" for="lb-items">Items</label>
+      <textarea class="src" id="lb-items" spellcheck="false">Park at Chautauqua
+Take the Bluebell Road uphill
+Turn left at the Royal Arch sign
+Climb the last 300 feet of steps</textarea>
+      <div class="seg" id="lb-kind" role="group" aria-label="Kind of list">
+        <button class="btn" type="button" data-k="ul" aria-pressed="false">&lt;ul&gt; unordered</button>
+        <button class="btn" type="button" data-k="ol" aria-pressed="true">&lt;ol&gt; ordered</button>
+      </div>
+      <div class="opts" id="lb-opts">
+        <label><input type="number" id="lb-start" value="1" min="-99" max="999"> start</label>
+        <label><input type="checkbox" id="lb-rev"> reversed</label>
+        <label><select id="lb-type"><option value="">1, 2, 3</option><option>a</option><option>A</option><option>i</option><option>I</option></select> type</label>
+      </div>
+    </div>
+    <div class="panel"><span class="eyebrow">What the browser shows</span><div class="rendered" id="lb-out"></div><pre class="snippet" id="lb-code"></pre></div>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Practice</span><h2>Marking up our recipe page</h2><p>MDN's classic exercise, trail edition: a recipe with a heading outline, a shopping list and numbered steps.</p></div>
+  <div id="ex-recipe"></div>
+
+  <!-- ===== Nesting ===== -->
+  <div class="section-title"><span class="eyebrow">Read</span><h2>Nesting lists</h2></div>
+  <div class="prose">
+    <p>A step can have sub-steps, and a category can have items. To nest a list, put the inner list <em>inside an <code>&lt;li&gt;</code></em> of the outer one, after that item's text:</p>
+    <pre class="snippet" data-lang="html">&lt;ol&gt;
+  &lt;li&gt;Pack your bag:
+    &lt;ul&gt;
+      &lt;li&gt;Water&lt;/li&gt;
+      &lt;li&gt;Snacks&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+  &lt;li&gt;Drive to the trailhead.&lt;/li&gt;
+&lt;/ol&gt;</pre>
+    <div class="callout warn"><p class="callout-title">Watch out</p><p>Putting the inner <code>&lt;ul&gt;</code> directly inside the outer list, between two <code>&lt;li&gt;</code>s, looks almost right but is invalid. Screen readers lose track of which item the sub-list belongs to.</p></div>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Play</span><h2>Check your nesting</h2><p>Compare the two versions, or edit the code. The tree shows what's inside what.</p></div>
+  <div class="two">
+    <div class="panel">
+      <div class="presets" id="nest-presets" role="group" aria-label="Examples">
+        <button class="btn" type="button" data-n="good">Inside an li</button>
+        <button class="btn" type="button" data-n="bad">Between two lis</button>
+      </div>
+      <label class="eyebrow" for="nest">Your HTML</label>
+      <textarea class="src" id="nest" spellcheck="false" style="min-height:180px"></textarea>
+      <p class="verdict" id="nest-verdict" aria-live="polite"></p>
+    </div>
+    <div class="panel"><span class="eyebrow">The tree</span><ul class="tree" id="nest-tree"></ul></div>
+  </div>
+
+  <!-- ===== Description lists ===== -->
+  <div class="section-title"><span class="eyebrow">Read</span><h2>Description lists</h2></div>
+  <div class="prose">
+    <p>A description list pairs terms with descriptions, like a glossary. The list is a <code>&lt;dl&gt;</code>; each term is a <code>&lt;dt&gt;</code> (description term) and each description a <code>&lt;dd&gt;</code> (description details):</p>
+    <pre class="snippet" data-lang="html">&lt;dl&gt;
+  &lt;dt&gt;Switchback&lt;/dt&gt;
+  &lt;dd&gt;A zigzag in a trail that makes a steep slope easier to climb.&lt;/dd&gt;
+  &lt;dt&gt;Cairn&lt;/dt&gt;
+  &lt;dd&gt;A pile of stones that marks the route.&lt;/dd&gt;
+  &lt;dd&gt;Don't build your own: they can mislead other hikers.&lt;/dd&gt;
+&lt;/dl&gt;</pre>
+    <p>A term can have several descriptions, as <em>Cairn</em> does above, and several terms can share one description. Browsers indent the descriptions.</p>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Practice</span><h2>Marking up a set of definitions</h2><p>Turn a trail glossary into a description list.</p></div>
+  <div id="ex-dl"></div>
+
+  <section class="notes">
+    <div class="panel">
+      <h2>Key ideas</h2>
+      <ul>
+        <li><code>&lt;ul&gt;</code> when order doesn't matter, <code>&lt;ol&gt;</code> when it does. Items are <code>&lt;li&gt;</code>s.</li>
+        <li><code>&lt;dl&gt;</code> pairs <code>&lt;dt&gt;</code> terms with <code>&lt;dd&gt;</code> descriptions.</li>
+        <li>A nested list goes inside an <code>&lt;li&gt;</code>, after its text.</li>
+        <li><code>start</code>, <code>reversed</code> and <code>type</code> change an ordered list's counting.</li>
+        <li>Navigation menus are usually lists of links.</li>
+      </ul>
+    </div>
+    <div class="panel mistake">
+      <h2>Common mistakes</h2>
+      <ul>
+        <li>Typing numbers or dashes into the items instead of using <code>&lt;ol&gt;</code> or <code>&lt;ul&gt;</code>.</li>
+        <li>Text or a <code>&lt;p&gt;</code> directly inside <code>&lt;ul&gt;</code>, outside any <code>&lt;li&gt;</code>.</li>
+        <li>Nesting a list between two <code>&lt;li&gt;</code>s instead of inside one.</li>
+        <li>Choosing <code>&lt;ul&gt;</code> or <code>&lt;ol&gt;</code> for the bullet style. That's CSS's job.</li>
+      </ul>
+    </div>
+  </section>
+
+  <div class="section-title"><span class="eyebrow">Check yourself</span><h2>Quick check</h2></div>
+  <div class="panel quiz" id="quiz"></div>
+
+  <footer class="page-foot" data-book-nav><a href="book-2.html">← Contents</a></footer>
+</main>
+
+<script>
+  const $ = (id) => document.getElementById(id);
+  const esc = (s) => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+  const parse = (html) => new DOMParser().parseFromString(`<!doctype html><body>${html}`, "text/html").body;
+
+  // --- List builder ---
+  let kind = "ol";
+  function build() {
+    const items = $("lb-items").value.split("\n").map((s) => s.trim()).filter(Boolean);
+    const attrs = [];
+    if (kind === "ol") {
+      const st = parseInt($("lb-start").value, 10);
+      if (!isNaN(st) && st !== 1) attrs.push(`start="${st}"`);
+      if ($("lb-rev").checked) attrs.push("reversed");
+      if ($("lb-type").value) attrs.push(`type="${$("lb-type").value}"`);
+    }
+    const code = `<${kind}${attrs.length ? " " + attrs.join(" ") : ""}>\n${items.map((i) => `  <li>${esc(i)}</li>`).join("\n")}\n</${kind}>`;
+    $("lb-code").textContent = code;
+    $("lb-out").innerHTML = parse(code).innerHTML;
+    $("lb-opts").querySelectorAll("input, select").forEach((el) => (el.disabled = kind !== "ol"));
+  }
+  $("lb-kind").addEventListener("click", (e) => {
+    const b = e.target.closest("[data-k]");
+    if (!b) return;
+    kind = b.dataset.k;
+    document.querySelectorAll("#lb-kind .btn").forEach((x) => x.setAttribute("aria-pressed", String(x === b)));
+    build();
+  });
+  ["lb-items", "lb-start", "lb-rev", "lb-type"].forEach((id) => { $(id).addEventListener("input", build); $(id).addEventListener("change", build); });
+  build();
+
+  // --- Nesting checker ---
+  const NEST = {
+    good: "<ol>\n  <li>Pack your bag:\n    <ul>\n      <li>Water</li>\n      <li>Snacks</li>\n    </ul>\n  </li>\n  <li>Drive to the trailhead.</li>\n</ol>",
+    bad: "<ol>\n  <li>Pack your bag:</li>\n  <ul>\n    <li>Water</li>\n    <li>Snacks</li>\n  </ul>\n  <li>Drive to the trailhead.</li>\n</ol>",
+  };
+  function treeHTML(node) {
+    return [...node.childNodes].map((n) => {
+      if (n.nodeType === 3) { const t = n.textContent.replace(/\s+/g, " ").trim(); return t ? `<li><span class="txt">"${esc(t)}"</span></li>` : ""; }
+      if (n.nodeType !== 1) return "";
+      const tag = n.tagName.toLowerCase(), kids = treeHTML(n);
+      const wrong = /^(ul|ol)$/.test(n.parentElement?.tagName.toLowerCase() || "") && tag !== "li";
+      return `<li>&lt;<span class="tag-name">${tag}</span>&gt;${wrong ? '<span class="note" style="color:var(--bad)">not allowed here</span>' : ""}${kids ? `<ul>${kids}</ul>` : ""}</li>`;
+    }).join("");
+  }
+  function nest() {
+    const body = parse($("nest").value);
+    $("nest-tree").innerHTML = treeHTML(body) || '<li class="txt">Nothing yet</li>';
+    const bad = [...body.querySelectorAll("ul, ol")].flatMap((l) => [...l.children].filter((c) => c.tagName !== "LI"));
+    const loose = [...body.querySelectorAll("ul, ol")].some((l) => [...l.childNodes].some((c) => c.nodeType === 3 && c.textContent.trim()));
+    const v = $("nest-verdict");
+    v.className = "verdict " + (bad.length || loose ? "bad" : "ok");
+    v.textContent = bad.length ? `✗ A <${bad[0].tagName.toLowerCase()}> sits directly inside a list. Only <li>s may; move it inside an <li>.`
+      : loose ? "✗ There's text directly inside a list. Put it in an <li>."
+      : "✓ Every list contains only <li>s, and nested lists sit inside an <li>.";
+  }
+  $("nest").addEventListener("input", nest);
+  $("nest-presets").addEventListener("click", (e) => {
+    const b = e.target.closest("[data-n]");
+    if (!b) return;
+    $("nest").value = NEST[b.dataset.n];
+    document.querySelectorAll("#nest-presets .btn").forEach((x) => x.setAttribute("aria-pressed", String(x === b)));
+    nest();
+  });
+  $("nest").value = NEST.bad;
+  nest();
+</script>
+<script>
+  makeExercise(document.getElementById("ex-recipe"), {
+    title: "Trail mix recipe",
+    task: `<ol>
+      <li><strong>Trail Mix</strong> is the page's <code>&lt;h1&gt;</code>; <strong>Ingredients</strong> and <strong>Method</strong> are <code>&lt;h2&gt;</code>s.</li>
+      <li>The intro sentence is a paragraph.</li>
+      <li>The ingredients are an unordered list, one item each.</li>
+      <li>The method steps are an ordered list. Remove the typed numbers: the list counts for you.</li>
+    </ol>`,
+    html: `Trail Mix
+Enough for four hikers on a long day.
+Ingredients
+Peanuts
+Raisins
+Chocolate chips
+Method
+1. Mix everything in a big bowl.
+2. Split it into four bags.
+3. Eat at the summit.`,
+    solution: { html: `<h1>Trail Mix</h1>
+<p>Enough for four hikers on a long day.</p>
+<h2>Ingredients</h2>
+<ul>
+  <li>Peanuts</li>
+  <li>Raisins</li>
+  <li>Chocolate chips</li>
+</ul>
+<h2>Method</h2>
+<ol>
+  <li>Mix everything in a big bowl.</li>
+  <li>Split it into four bags.</li>
+  <li>Eat at the summit.</li>
+</ol>` },
+    hints: ["Each ingredient is an <li> inside one <ul>.", "The steps are <li>s inside an <ol>. Delete the “1.” and friends."],
+    checks: [
+      { label: "One h1 and two h2s", test: ({ $$ }) => $$("h1").length === 1 && $$("h2").map((h) => h.textContent.trim()).join("|") === "Ingredients|Method" },
+      { label: "The intro is a paragraph", test: ({ $ }) => $("p").textContent.trim() === "Enough for four hikers on a long day." },
+      { label: "The ingredients are a ul with three items", test: ({ $$ }) => $$("ul > li").map((l) => l.textContent.trim()).join("|") === "Peanuts|Raisins|Chocolate chips" },
+      { label: "The method is an ol with three items and no typed numbers", test: ({ $$ }) => $$("ol > li").length === 3 && $$("ol > li").every((l) => !/^\d/.test(l.textContent.trim())) },
+    ],
+  });
+
+  makeExercise(document.getElementById("ex-dl"), {
+    title: "Trail glossary",
+    task: `<p>Turn this text into one description list. <strong>Switchback</strong>, <strong>Cairn</strong> and <strong>Scree</strong> are the terms. Cairn has <em>two</em> descriptions: give each its own <code>&lt;dd&gt;</code>.</p>`,
+    html: `<h1>Trail words</h1>
+Switchback
+A zigzag that makes a steep slope easier to climb.
+Cairn
+A pile of stones that marks the route.
+Don't build your own: they can mislead other hikers.
+Scree
+Loose, broken rock on a slope.`,
+    solution: { html: `<h1>Trail words</h1>
+<dl>
+  <dt>Switchback</dt>
+  <dd>A zigzag that makes a steep slope easier to climb.</dd>
+  <dt>Cairn</dt>
+  <dd>A pile of stones that marks the route.</dd>
+  <dd>Don't build your own: they can mislead other hikers.</dd>
+  <dt>Scree</dt>
+  <dd>Loose, broken rock on a slope.</dd>
+</dl>` },
+    hints: ["The whole thing goes in one <dl>.", "Terms are <dt>s, descriptions are <dd>s. Cairn is followed by two <dd>s."],
+    checks: [
+      { label: "There's one dl with three terms", test: ({ $$ }) => $$("dl").length === 1 && $$("dl > dt").map((d) => d.textContent.trim()).join("|") === "Switchback|Cairn|Scree" },
+      { label: "There are four descriptions", test: ({ $$ }) => $$("dl > dd").length === 4 },
+      { label: "Cairn has two descriptions", test: ({ $$ }) => { const kids = $$("dl > *"); const i = kids.findIndex((k) => k.textContent.trim() === "Cairn"); return kids[i + 1]?.tagName === "DD" && kids[i + 2]?.tagName === "DD"; } },
+    ],
+  });
+
+  makeQuiz(document.getElementById("quiz"), [
+    { id: "q1", q: "Which list fits driving directions?", opts: ["<ol>", "<ul>", "<dl>"], a: 0, why: "The steps have to happen in order, so they're an ordered list." },
+    { id: "q2", q: "What can go directly inside a <ul>?", opts: ["Only <li> elements", "Any text", "<p> and <li> elements"], a: 0, why: "Lists contain list items. Everything else goes inside an li." },
+    { id: "q3", q: "Where does a nested list go?", opts: ["Inside an <li> of the outer list", "Between two <li>s", "After the outer list ends"], a: 0, why: "The sub-list belongs to one item, so it goes inside that item." },
+    { id: "q4", q: "Which ordered list counts 3, 2, 1?", opts: ["<ol start=\"3\" reversed>", "<ol reversed>", "<ol type=\"3\">"], a: 0, why: "reversed counts down; start sets the first number. Without start, a reversed list starts at its number of items." },
+    { id: "q5", q: "In a description list, what goes in <dt>?", opts: ["The term", "The description", "A title for the whole list"], a: 0, why: "dt is the term; dd holds its description." },
+    { id: "q6", q: "You want squares instead of round bullets. What do you change?", opts: ["The CSS", "ul to ol", "Add type=\"square\" to every li"], a: 0, why: "Bullet style is presentation. The list-style-type property in CSS sets it." },
+  ]);
+</script>
+</body>
+</html>

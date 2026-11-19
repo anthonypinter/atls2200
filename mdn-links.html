@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>MDN Reading List · ATLS 2200</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="style.css">
+<style>
+  .hero { display: grid; gap: 16px; padding-block: 24px 32px; border-bottom: 1px solid var(--line); }
+  .hero .lede { font-size: 1.2rem; color: var(--muted); }
+  .hero-meta { display: flex; flex-wrap: wrap; gap: 10px 20px; align-items: center; font-size: 0.95rem; color: var(--muted); }
+
+  .toolbar { display: flex; flex-wrap: wrap; gap: 12px 20px; align-items: center; justify-content: space-between; padding-block: 24px 4px; }
+  .search { display: flex; align-items: center; gap: 8px; background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 6px 12px; flex: 1 1 260px; max-width: 380px; }
+  .search input { border: 0; background: transparent; color: var(--ink); font: 1rem var(--font-body); width: 100%; outline: none; }
+  .search:focus-within { outline: 3px solid var(--cobalt); outline-offset: 2px; }
+  .toggle { display: inline-flex; align-items: center; gap: 8px; font-size: 0.95rem; color: var(--muted); cursor: pointer; }
+
+  .module { display: grid; grid-template-columns: 220px 1fr; gap: 20px; padding-block: 28px; border-bottom: 1px solid var(--line); }
+  @media (max-width: 800px) { .module { grid-template-columns: 1fr; gap: 14px; } }
+  .module-head { display: grid; gap: 8px; align-content: start; }
+  .module-head p { font-size: 0.95rem; color: var(--muted); }
+  .module-head .src { font-size: 0.9rem; }
+  .units { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 14px; align-items: start; }
+  @media (max-width: 400px) { .units { grid-template-columns: 1fr; } }
+
+  .unit { display: grid; gap: 12px; padding: 16px; border-radius: var(--radius); border: 1px solid var(--line); background: var(--panel); min-width: 0; }
+  .unit.complete { border-color: var(--good); }
+  .unit-top { display: flex; justify-content: space-between; align-items: start; gap: 8px; }
+  .unit-goal { font-size: 0.95rem; color: var(--muted); }
+  .status { font: 600 0.7rem/1 var(--font-code); font-variation-settings: "MONO" 1; letter-spacing: 0.06em; text-transform: uppercase; padding: 4px 7px; border-radius: 4px; white-space: nowrap; background: var(--cobalt-soft); color: var(--cobalt); }
+  .unit.complete .status { background: var(--good-soft); color: var(--good); }
+  .optional-tag { border: 1px dashed var(--line); color: var(--muted); background: transparent; }
+
+  .items { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+  .mi { display: grid; grid-template-columns: auto auto 1fr; gap: 8px; align-items: baseline; font-size: 0.95rem; }
+  .mi input { margin: 0; accent-color: var(--good); width: 16px; height: 16px; align-self: center; }
+  .mi .kind { font: 600 0.66rem/1 var(--font-code); font-variation-settings: "MONO" 1; letter-spacing: 0.05em; text-transform: uppercase; color: var(--muted); min-width: 6.6em; }
+  .mi.k-test .kind { color: var(--prop); } .mi.k-make .kind { color: var(--val); } .mi.k-extra .kind { color: var(--muted); }
+  .mi a { overflow-wrap: anywhere; }
+  .mi.done a { color: var(--muted); text-decoration-color: var(--line); }
+  .ext::after { content: " ↗"; font-size: 0.8em; color: var(--muted); }
+
+  .guide { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; padding-top: 10px; border-top: 1px dashed var(--line); }
+  .guide .eyebrow { margin-right: 4px; }
+  .guide a { font: 600 0.78rem var(--font-code); font-variation-settings: "MONO" 1; color: var(--ink); text-decoration: none; border: 1px solid var(--line); border-radius: 4px; padding: 3px 7px; }
+  .guide a:hover { border-color: var(--cobalt); color: var(--cobalt); }
+  .guide a.done { border-color: var(--good); color: var(--good); }
+
+  .module-progress { display: grid; gap: 6px; margin-top: 6px; font: 600 0.8rem var(--font-code); font-variation-settings: "MONO" 1; color: var(--muted); }
+  .empty { padding-block: 28px; color: var(--muted); }
+  .credit { font-size: 0.85rem; color: var(--muted); }
+</style>
+<script src="book.js"></script>
+<script src="js/progress.js"></script>
+<script src="js/chrome.js"></script>
+<script src="js/quiz.js"></script>
+<script src="mdn-links.js"></script>
+</head>
+<body>
+<main class="wrap">
+  <nav class="crumbs" aria-label="Site"><a class="crumb" href="index.html">← Course home</a><a class="crumb" href="book.html">Field Guide</a></nav>
+  <header class="hero">
+    <span class="eyebrow">ATLS 2200 · Reading plan</span>
+    <h1>MDN <span class="sel">Reading List</span></h1>
+    <p class="lede">A path through MDN's core web development modules, grouped into units you can finish in one sitting. Each unit has MDN tutorials to read, quick skill tests, and challenges to build, plus the Field Guide lessons where you can practice the same ideas.</p>
+    <p class="hero-meta"><span id="overall"></span><a href="https://developer.mozilla.org/en-US/docs/Learn_web_development/Core">MDN Core modules ↗</a></p>
+  </header>
+
+  <div class="toolbar">
+    <label class="search" for="filter">
+      <span class="mono" aria-hidden="true" style="color:var(--muted)">/</span>
+      <input id="filter" type="search" placeholder="Find a topic, e.g. flexbox or forms">
+    </label>
+    <label class="toggle"><input type="checkbox" id="show-optional" checked> Show optional modules</label>
+  </div>
+
+  <div id="modules"></div>
+  <p class="empty" id="empty" hidden>No units match that search.</p>
+
+  <footer class="page-foot">
+    <span class="credit">Tutorials, tests and challenges are on <a href="https://developer.mozilla.org/en-US/docs/Learn_web_development/Core">MDN Web Docs</a>, by Mozilla Contributors, licensed <a href="https://creativecommons.org/licenses/by-sa/2.5/">CC-BY-SA 2.5</a>. Version control guides are from GitHub Docs.</span>
+    <span>© 2026 Anthony T. Pinter</span>
+  </footer>
+</main>
+
+<script>
+  // The plan lives in mdn-links.js. Check marks are saved in this browser only (book2:done), so they work without an account.
+  const C = window.CURRICULUM;
+  const esc = (s) => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/"/g, "&quot;");
+  const href = (p) => (/^https?:/.test(p) ? p : C.core + p);
+  const KEY = "book2:done";
+  let done = new Set();
+  try { done = new Set(JSON.parse(localStorage.getItem(KEY) || "[]")); } catch {}
+  const save = () => { try { localStorage.setItem(KEY, JSON.stringify([...done])); } catch {} };
+  const lessons = new Map((BOOK.lessons || []).map((l) => [l.slug, l]));
+  const lessonDone = (slug) => !!(window.Progress && Progress.isComplete(slug));
+  const KINDS = [["read", "Read"], ["test", "Test"], ["make", "Challenge"], ["extra", "Optional"]];
+  const itemsOf = (u) => KINDS.flatMap(([k, label]) => (u[k] || []).map(([title, path]) => ({ k, label, title, url: href(path) })));
+  // Optional reading doesn't count toward finishing a unit.
+  const required = (u) => itemsOf(u).filter((i) => i.k !== "extra");
+
+  function unitHTML(u, id) {
+    const req = required(u), n = req.filter((i) => done.has(i.url)).length;
+    const complete = req.length && n === req.length;
+    const items = itemsOf(u).map((i) => {
+      const on = done.has(i.url);
+      return `<li class="mi k-${i.k}${on ? " done" : ""}"><input type="checkbox" data-url="${esc(i.url)}" aria-label="Done: ${esc(i.title)}"${on ? " checked" : ""}><span class="kind">${i.label}</span><a class="ext" href="${esc(i.url)}" target="_blank" rel="noopener">${esc(i.title.replace(/^(Test|Challenge): /, ""))}</a></li>`;
+    }).join("");
+    const guide = (u.guide || []).map((s) => lessons.get(s)).filter(Boolean)
+      .map((l) => `<a href="${l.href}"${lessonDone(l.slug) ? ' class="done" title="Completed"' : ""}>${lessonDone(l.slug) ? "✓ " : ""}${l.num} ${esc(l.title)}</a>`).join("");
+    return `<article class="unit${complete ? " complete" : ""}" id="unit-${id}">
+      <div class="unit-top"><h3>${esc(u.title)}</h3><span class="status">${complete ? "✓ " : ""}${id}</span></div>
+      <p class="unit-goal">${esc(u.goal)}</p>
+      <ul class="items">${items}</ul>
+      ${guide ? `<div class="guide"><span class="eyebrow">Practice</span>${guide}</div>` : ""}
+    </article>`;
+  }
+
+  function render() {
+    const q = document.getElementById("filter").value.trim().toLowerCase();
+    const showOptional = document.getElementById("show-optional").checked;
+    let shown = 0, total = 0, finished = 0;
+    document.getElementById("modules").innerHTML = C.modules.map((m, mi) => {
+      const num = mi + 1;
+      const units = m.units.map((u, ui) => ({ u, id: `${num}.${ui + 1}` }));
+      units.forEach(({ u }) => { const r = required(u); total += r.length; finished += r.filter((i) => done.has(i.url)).length; });
+      if (m.optional && !showOptional) return "";
+      const match = units.filter(({ u }) => !q || [m.title, u.title, u.goal, ...itemsOf(u).map((i) => i.title), ...(u.guide || [])].join(" ").toLowerCase().includes(q));
+      if (!match.length) return "";
+      shown += match.length;
+      const req = m.units.flatMap(required), n = req.filter((i) => done.has(i.url)).length;
+      const bar = n ? `<div class="module-progress"><span>${n} of ${req.length} done</span><div class="progress-bar" aria-hidden="true"><i style="width:${(100 * n) / req.length}%"></i></div></div>` : "";
+      return `<section class="module" id="module-${num}">
+        <div class="module-head"><span class="eyebrow">Module ${num} · ${m.units.length} units${m.optional ? " · Optional" : ""}</span><h2>${esc(m.title)}</h2><p>${esc(m.blurb)}</p>
+        <p class="src"><a class="ext" href="${esc(href(m.url))}" target="_blank" rel="noopener">This module on MDN</a></p>${bar}</div>
+        <div class="units">${match.map(({ u, id }) => unitHTML(u, id)).join("")}</div>
+      </section>`;
+    }).join("");
+    document.getElementById("empty").hidden = shown > 0;
+    document.getElementById("overall").textContent = `${finished} of ${total} readings, tests and challenges done`;
+  }
+
+  document.getElementById("modules").addEventListener("change", (e) => {
+    const url = e.target.dataset?.url;
+    if (!url) return;
+    if (e.target.checked) done.add(url); else done.delete(url);
+    save();
+    render();
+    document.querySelector(`input[data-url="${CSS.escape(url)}"]`)?.focus();
+  });
+  const filter = document.getElementById("filter");
+  filter.addEventListener("input", render);
+  document.getElementById("show-optional").addEventListener("change", render);
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "/" && document.activeElement !== filter && !/^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement.tagName)) { e.preventDefault(); filter.focus(); }
+  });
+  render();
+</script>
+</body>
+</html>

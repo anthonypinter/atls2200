@@ -25,15 +25,19 @@ With the backend:
 5. **Allow the sign-in links.** Go to Authentication → URL Configuration:
    - Site URL: `https://anthonypinter.com/atls2200/`
    - Redirect URLs: `https://anthonypinter.com/atls2200/**` and, for testing, `http://localhost:8765/**`
-6. **Add the code to the email.** Go to Authentication → Email Templates → Magic Link and add a line such as `Or enter this code: {{ .Token }}`. With the code, a student can open the email on a phone and still sign in on a lab computer.
-7. **Set up email sending (needed for a class).** Supabase's built-in email sends only a handful of messages an hour, which isn't enough when 30 students sign in at once. Under Authentication → Emails → SMTP Settings, connect a provider such as Resend, Postmark, SendGrid or Amazon SES, or a university relay if OIT provides one.
-8. **Connect the book.** In Project Settings → API (or Data API), copy the Project URL and the `anon` `public` key into `book.js`:
+6. **Set up email sending (needed for a class).** Supabase's built-in email sends only a handful of messages an hour, and only to members of your Supabase team, which isn't enough when 30 students sign in at once. Under Authentication → Emails → SMTP Settings, connect a provider such as Resend, Postmark, SendGrid or Amazon SES, or a university relay if OIT provides one. Supabase won't let you edit the email templates in the next step until this is done.
+7. **Add the code to the email.** Go to Authentication → Email Templates → Magic Link and add a line such as `Or enter this code: {{ .Token }}`. With the code, a student can open the email on a phone and still sign in on a lab computer.
+8. **Connect the book.** In Project Settings → API (or Data API), copy the Project URL and the `anon` `public` key into `book.js` **and** `book-2.js` (the same values in both: the two books share accounts, and the dashboard signs in through `book.js`):
    ```js
-   backend: { url: "https://xxxx.supabase.co", anonKey: "eyJ…", emailDomain: "colorado.edu" },
+   backend: { url: "https://ptbpvlpgkeexeravimyb.supabase.co", anonKey: "sb_publishable_XIPvbndBK5H6lbaNd5sDNg_66iyiHGy", emailDomain: "colorado.edu" },
    ```
    Commit and push. The anon key is designed to be public, because the database's row-level security decides what each person can see. **Never put the `service_role` key in the repo or any page.** It bypasses every rule.
 
 To test locally, run `python3 -m http.server 8765` in the repo, open `http://localhost:8765/`, and sign in.
+
+## Completion in Core Web Development (Book 2)
+
+Book 2 has no Mark complete button. Each lesson shows the student a meter: how many of its items are done, where an item is a section read (and, for Play, Try it, Practice and Check yourself sections, used), a quiz finished (any score) or an exercise passed. At 100% the lesson completes itself and is ticked in the sidebar. The dashboard (`instructor.html`, which opens on Book 2; `?book=1` shows the Field Guide) counts the same items from `search-index-2.js`, so its percentages match what students see. Its CSV has one row per student per lesson, with the week and the percent.
 
 ## Who can see what
 
@@ -46,7 +50,7 @@ To test locally, run `python3 -m http.server 8765` in the repo, open `http://loc
 | Roster | — | read and write | — |
 | Instructor notes | — | read and write | — |
 
-Roles come from the roster. If an email is on it as `instructor`, that person becomes an instructor right away, or as soon as they first sign in. Everyone else with a university email is a student, and other addresses can't create an account. To use a different email domain, change it in both the migration (`check_email_domain`) and `book.js`.
+Roles come from the roster. If an email is on it as `instructor`, that person becomes an instructor right away, or as soon as they first sign in. Everyone else with a university email is a student, and other addresses can't create an account. To use a different email domain, change it in the migration (`check_email_domain`), `book.js` and `book-2.js`.
 
 ## What is tracked
 

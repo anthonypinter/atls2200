@@ -1,13 +1,15 @@
 /* Book chrome: reads window.BOOK (book.js) and adds the textbook's reading layout to every page.
    - Theme: applies the saved light/dark choice right away (this file loads in <head>, so there's no flash),
      then (on the home page only) adds a toggle that cycles System → Light → Dark.
-   - Top bar: Contents button, breadcrumbs (Home › Part › Lesson), Search and a glossary link. Replaces the static
+   - Top bar: Contents button, breadcrumbs (Course home › Contents › Part › Lesson), Search and a glossary link. Replaces the static
      .crumbs nav. Search (js/search.js) also opens with Ctrl/⌘ + K, or / on pages without their own filter box.
    - Components: loadScript() loads js/runner.js, js/sandbox.js and the glossary pop-ups only on pages that use them,
      and queues makeExercise() calls until js/exercise.js arrives.
    - Sidebar: the table of contents with the current lesson highlighted and its sections listed under it.
      Docked beside the page on wide screens (open/closed is remembered), a drawer on narrow ones.
-   - Footer: fills <footer data-book-nav> with a Mark complete button and previous/next links in reading order.
+   - Footer: fills <footer data-book-nav> with previous/next links in reading order, plus a Mark complete button, or,
+     in a book with autoComplete (Book 2), a meter of how much of the lesson is done (lessonTally). There a lesson
+     is complete when every section, quiz and exercise on it is done, and the sidebar ticks it off by itself.
    - Progress (js/progress.js): records the visit, then shows checkmarks and per-part counts in the sidebar.
      Each section's active reading time is recorded, and whether the student did what it asks (see trackSections);
      "On this page" ticks off finished sections.
@@ -16,6 +18,11 @@
    Without JavaScript the static crumbs and footer still link back to the contents. */
 (function () {
   const book = window.BOOK;
+  // A book's contents page: book.html for the Field Guide; other books set home in their manifest (e.g. book-2.js).
+  const HOME = book?.home || "book.html";
+  const homeSlug = HOME.replace(/\.html$/, "");
+  // What a book calls its parts: "Part" in the Field Guide, "Week" in Book 2 (partLabel in its manifest).
+  const PART = book?.partLabel || "Part";
   const root = document.documentElement;
   const store = {
     get: (k) => { try { return localStorage.getItem(k); } catch { return null; } },
@@ -47,6 +54,7 @@
   // Pages call makeExercise() inline, before js/exercise.js has loaded. Exercises sit below the fold, so each call
   // waits until its exercise is nearly on screen; then js/exercise.js (and the editor it needs) loads and runs the
   // queued calls. exercise.js replaces window.makeExercise with the real one, which has no .queue.
+  const exerciseIds = [];   // the page's exercises in order, for the lesson meter (lessonTally)
   if (!window.makeExercise) {
     const queue = [];
     const start = (args) => {
@@ -60,7 +68,7 @@
       for (const e of entries) if (e.isIntersecting) go(e.target);
     }, { rootMargin: "600px 0px" });
     window.makeExercise = (...args) => {
-      if (args[0]) args[0].exerciseDef = args[1];   // print.html reads the task, starter code and solution from here
+      if (args[0]) { args[0].exerciseDef = args[1]; if (args[0].id) exerciseIds.push(args[0].id); }   // print.html reads the task, starter code and solution from exerciseDef
       if (near && args[0]) { waiting.set(args[0], args); near.observe(args[0]); } else start(args);
     };
     window.makeExercise.queue = queue;
@@ -73,10 +81,15 @@
 
   // Number every lesson <part>.<position> and keep a flat list in reading order (index.html uses both).
   const lessons = [];
+  // A book can list lessons it hasn't written yet (planned: true, as Book 2 does). They keep their place in the
+  // numbering, so a lesson's number never changes, but they stay out of the sidebar and prev/next. part.all keeps them.
   book.parts.forEach((part, p) => {
     part.num = p + 1;
-    part.lessons.forEach((l, i) => {
-      Object.assign(l, { num: `${p + 1}.${i + 1}`, part, href: l.slug + ".html" });
+    part.all = part.lessons;
+    part.all.forEach((l, i) => Object.assign(l, { num: `${p + 1}.${i + 1}`, part }));
+    part.lessons = part.all.filter((l) => !l.planned);
+    part.lessons.forEach((l) => {
+      l.href = l.slug + ".html";
       lessons.push(l);
     });
   });
@@ -138,7 +151,7 @@
     if (P) {
       // print.html loads lessons in a hidden frame with ?print; that isn't a visit.
       if (current && !printing) { P.visit(slug); trackSections(wrap, sections); }
-      const paint = () => paintProgress(toc);
+      const paint = () => paintProgress(toc, sections);
       P.subscribe(paint);
       paint();
     }
@@ -178,9 +191,9 @@
     if (here && !toc.hidden) toc.scrollTop = here.offsetTop - toc.clientHeight / 3;
 
     // Search loads its index the first time it's opened.
-    const openSearch = () => loadScript("search-index.js").then(() => loadScript("js/search.js")).then(() => Search.open());
-    bar.querySelector(".book-search").addEventListener("click", openSearch);
-    document.addEventListener("keydown", (e) => {
+    const openSearch = () => loadScript(book.index || "search-index.js").then(() => loadScript("js/search.js")).then(() => Search.open());
+    bar.querySelector(".book-search")?.addEventListener("click", openSearch);
+    if (book.search !== false) document.addEventListener("keydown", (e) => {
       const typing = e.target.closest?.("input, textarea, select, [contenteditable]");
       if ((e.key === "k" && (e.metaKey || e.ctrlKey)) || (e.key === "/" && !typing && !document.getElementById("filter") && !document.getElementById("q"))) {
         e.preventDefault();
@@ -205,13 +218,14 @@
   function buildBar() {
     const bar = document.createElement("div");
     bar.className = "book-bar";
-    const trail = [`<li><a href="index.html">Home</a></li>`];
-    if (current) trail.push(`<li><a href="index.html#part-${current.part.num}">Part ${current.part.num} · ${esc(current.part.title)}</a></li>`, `<li aria-current="page">${current.num} ${esc(current.title)}</li>`);
+    const contents = book.short || "Contents";
+    const trail = [`<li><a href="index.html">Course home</a></li>`, slug === homeSlug ? `<li aria-current="page">${esc(contents)}</li>` : slug === "mdn-links" ? `<li aria-current="page">MDN reading list</li>` : `<li><a href="${HOME}">${esc(contents)}</a></li>`];
+    if (current) trail.push(`<li><a href="${HOME}#part-${current.part.num}">${PART} ${current.part.num} · ${esc(current.part.title)}</a></li>`, `<li aria-current="page">${current.num} ${esc(current.title)}</li>`);
     else if (slug === "glossary") trail.push(`<li aria-current="page">Glossary</li>`);
     else if (slug === "instructor") trail.push(`<li aria-current="page">Instructor dashboard</li>`);
     bar.innerHTML = `<button class="btn book-menu" type="button" aria-controls="book-toc" aria-expanded="false"><span aria-hidden="true">☰</span> Contents</button>`
-      + (slug === "index" ? "" : `<nav class="book-crumbs" aria-label="Breadcrumb"><ol>${trail.join("")}</ol></nav>`)
-      + `<div class="book-tools"><button class="btn book-search" type="button" aria-haspopup="dialog" aria-keyshortcuts="Control+K Meta+K"><span aria-hidden="true">⌕</span> Search</button>${current ? `<a class="crumb" href="print.html?lesson=${current.slug}">Print</a>` : ""}${slug === "glossary" ? "" : `<a class="crumb" href="glossary.html">Glossary</a>`}${slug === "index" ? `<button class="btn book-theme" type="button"></button>` : ""}</div>`;
+      + (`<nav class="book-crumbs" aria-label="Breadcrumb"><ol>${trail.join("")}</ol></nav>`)
+      + `<div class="book-tools">${book.search === false ? "" : `<button class="btn book-search" type="button" aria-haspopup="dialog" aria-keyshortcuts="Control+K Meta+K"><span aria-hidden="true">⌕</span> Search</button>`}${current ? `<a class="crumb" href="print.html?lesson=${current.slug}">Print</a>` : ""}${slug === "glossary" ? "" : `<a class="crumb" href="glossary.html">Glossary</a>`}${slug === homeSlug || slug === "mdn-links" ? `<button class="btn book-theme" type="button"></button>` : ""}</div>`;
     return bar;
   }
 
@@ -247,10 +261,10 @@
         : "";
       return `<li><a href="${l.href}" data-slug="${l.slug}"${here ? ' aria-current="page"' : ""}><span class="book-num">${l.num}</span><span>${esc(l.title)}<span class="sr-only book-done-label"></span></span><span class="book-check" aria-hidden="true">✓</span></a>${subs}</li>`;
     };
-    aside.innerHTML = `<div class="book-toc-head"><a class="book-toc-title" href="index.html">${esc(book.title)}</a><button class="btn book-close" type="button" aria-label="Close contents">✕</button></div>
-      <nav aria-label="Table of contents">${book.parts.map((part) => `
+    aside.innerHTML = `<div class="book-toc-head"><a class="book-toc-title" href="${HOME}">${esc(book.title)}</a><button class="btn book-close" type="button" aria-label="Close contents">✕</button></div>
+      <nav aria-label="Table of contents">${book.parts.filter((part) => part.lessons.length).map((part) => `
         <details class="book-part"${current && current.part === part ? " open" : ""}>
-          <summary><span class="book-num">Part ${part.num}</span> ${esc(part.title)} <span class="book-count" data-part="${part.num}"></span></summary>
+          <summary><span class="book-num">${PART} ${part.num}</span> ${esc(part.title)} <span class="book-count" data-part="${part.num}"></span></summary>
           <ol>${part.lessons.map(lessonLink).join("")}</ol>
         </details>`).join("")}
         <a class="book-back" href="glossary.html"${slug === "glossary" ? ' aria-current="page"' : ""}>Glossary</a>
@@ -266,9 +280,11 @@
   //   sections that ask the student to do something, since those are judged by what they do.
   // - Used: the components report what happened (Progress.used): Run with edited code, typing in a live editor,
   //   pressing Check, answering a whole quiz. Playground controls count once the student has changed two different
-  //   ones (or the only one there is). Glossary terms, links and copy buttons don't count.
+  //   ones (or the only one there is). Glossary terms, links and copy buttons don't count. A demo that's used by
+  //   clicking things that aren't controls (links in a mini page, table cells) marks its container data-use, and
+  //   the whole container then counts as one control.
   const IDLE_MS = 60000, FLUSH_MS = 15000, MIN_BAR = 5000, MAX_BAR = 90000, MS_PER_WORD = 90;
-  const CONTROL = 'button, input, select, textarea, [role="button"], [role="tab"], [role="slider"], [contenteditable="true"]';
+  const CONTROL = 'button, input, select, textarea, [role="button"], [role="tab"], [role="slider"], [contenteditable="true"], [data-use]';
   const OWN_SIGNALS = ".runner, .sandbox, .exercise, .quiz, .term, .term-btn, .term-tip, .copy";
   function trackSections(wrap, sections) {
     if (!sections.length) return;
@@ -357,11 +373,13 @@
     if (!foot || !current) return;
     const prev = lessons[at - 1], next = lessons[at + 1];
     const step = (l, dir) => {
-      if (!l) return `<a class="book-step ${dir}" href="index.html"><span class="eyebrow">${dir === "prev" ? "← Back to" : "Finished! →"}</span><span>Contents</span></a>`;
-      const newPart = l.part !== current.part && dir === "next" ? `Part ${l.part.num} · ${esc(l.part.title)} →` : "";
+      if (!l) return `<a class="book-step ${dir}" href="${HOME}"><span class="eyebrow">${dir === "prev" ? "← Back to" : "Finished! →"}</span><span>Contents</span></a>`;
+      const newPart = l.part !== current.part && dir === "next" ? `${PART} ${l.part.num} · ${esc(l.part.title)} →` : "";
       return `<a class="book-step ${dir}" href="${l.href}"><span class="eyebrow">${dir === "prev" ? "← Previous" : newPart || "Next →"}</span><span>${l.num} ${esc(l.title)}</span></a>`;
     };
-    const done = P ? `<div class="book-done"><span>Finished this lesson?</span><button class="btn" type="button" aria-pressed="false">Mark lesson complete</button></div>` : "";
+    const done = !P ? "" : book.autoComplete
+      ? `<div class="book-done book-meter"><label for="book-meter">Your progress on this lesson</label><progress id="book-meter" max="1" value="0"></progress><span class="book-meter-text" aria-live="polite"></span></div>`
+      : `<div class="book-done"><span>Finished this lesson?</span><button class="btn" type="button" aria-pressed="false">Mark lesson complete</button></div>`;
     foot.innerHTML = done + step(prev, "prev") + step(next, "next");
     const rel = lessons.filter((l) => related.get(slug).has(l.slug));
     if (rel.length) foot.insertAdjacentHTML("beforebegin", `<nav class="book-related" aria-label="Related lessons"><h2>Related lessons</h2><ul>${rel.map((l) => `<li><a href="${l.href}"><span class="book-num">${l.num}</span>${esc(l.title)}</a></li>`).join("")}</ul></nav>`);
@@ -370,8 +388,35 @@
     if (btn) btn.addEventListener("click", () => P.setComplete(slug, btn.getAttribute("aria-pressed") !== "true"));
   }
 
-  // Checkmarks, per-part counts and the Mark complete button, redrawn whenever progress changes (in any tab).
-  function paintProgress(toc) {
+  // How much of this lesson is done, counted the way the instructor dashboard counts it: each section seen (and,
+  // for Play, Try it, Practice and Check yourself, used), each quiz finished and each exercise passed is one item.
+  function lessonTally(sections) {
+    const d = P.data();
+    const items = [
+      ...sections.map((s) => P.sectionDone(d.sections[`${slug}/${s.id}`], s.kind)),
+      ...[...document.querySelectorAll(".wrap .quiz[id]")].map((q) => Number.isFinite(d.quizzes[`${slug}/${q.id}`]?.best?.total)),
+      ...exerciseIds.map((id) => !!d.exercises[`${slug}/${id}`]?.passed),
+    ];
+    return { done: items.filter(Boolean).length, total: items.length };
+  }
+
+  // Checkmarks, per-part counts and the Mark complete button (or lesson meter), redrawn whenever progress changes (in any tab).
+  let completing = false;
+  function paintProgress(toc, sections) {
+    const meter = document.getElementById("book-meter");
+    if (meter && current) {
+      const { done, total } = lessonTally(sections);
+      meter.max = total || 1;
+      meter.value = done;
+      const pct = total ? Math.round((done / total) * 100) : 0;
+      document.querySelector(".book-meter-text").textContent = `${done} of ${total} done (${pct}%)`;
+      // Finishing everything completes the lesson; it stays complete even if the page later gains a section.
+      // setComplete logs an event first, which repaints before the lesson is saved as complete, hence the guard.
+      if (total && done === total && !completing && !P.isComplete(slug)) {
+        completing = true;
+        try { P.setComplete(slug, true); } finally { completing = false; }
+      }
+    }
     const data = P.data().lessons;
     const isDone = (s) => !!data[s]?.completed;
     toc.querySelectorAll("a[data-slug]").forEach((a) => {
@@ -382,6 +427,7 @@
     book.parts.forEach((part) => {
       const n = part.lessons.filter((l) => isDone(l.slug)).length;
       const el = toc.querySelector(`.book-count[data-part="${part.num}"]`);
+      if (!el) return;   // weeks with no written lessons aren't in the sidebar
       el.innerHTML = `<span aria-hidden="true">${n}/${part.lessons.length}</span><span class="sr-only">, ${n} of ${part.lessons.length} complete</span>`;
       el.classList.toggle("all", n === part.lessons.length);
     });

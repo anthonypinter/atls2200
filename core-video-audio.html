@@ -1,0 +1,318 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Video and Audio · Core Web Development</title>
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="core.css">
+<style>
+  .player { position: relative; aspect-ratio: 16 / 9; max-width: 100%; border-radius: 10px; overflow: hidden; background: #0d1018; color: #fff; }
+  .scene { position: absolute; inset: 0; background: linear-gradient(#5b9be0, #cfe4f7 70%); }
+  .scene .sun { position: absolute; width: 11%; aspect-ratio: 1; border-radius: 50%; background: #fff3d6; top: 14%; }
+  .scene .mtn { position: absolute; inset: auto 0 0 0; height: 60%; background: #4d5b73; clip-path: polygon(0 100%, 0 55%, 20% 25%, 38% 60%, 55% 5%, 75% 50%, 100% 30%, 100% 100%); }
+  .scene .hill { position: absolute; inset: auto 0 0 0; height: 25%; background: #2f5d3a; clip-path: polygon(0 100%, 0 40%, 30% 0, 60% 50%, 100% 20%, 100% 100%); }
+  .poster { position: absolute; inset: 0; display: grid; place-items: center; background: linear-gradient(135deg, #0b6b5e, #2340d9); font: 800 clamp(1.1rem, 4vw, 2rem) var(--font-display); text-align: center; padding: 20px; }
+  .first-frame { position: absolute; inset: 0; background: #0d1018; display: grid; place-items: center; color: #7a8099; font-size: 0.9rem; }
+  .bigplay { position: absolute; inset: 0; margin: auto; width: 64px; height: 64px; border-radius: 50%; background: rgba(0,0,0,0.55); border: 2px solid #fff; color: #fff; font-size: 1.4rem; cursor: pointer; }
+  .bar { position: absolute; inset: auto 0 0 0; display: flex; gap: 10px; align-items: center; padding: 8px 10px; background: linear-gradient(transparent, rgba(0,0,0,0.75)); font: 600 0.8rem var(--font-code); font-variation-settings: "MONO" 1; }
+  .bar button { background: none; border: 0; color: #fff; font: inherit; cursor: pointer; padding: 4px 6px; border-radius: 4px; }
+  .bar button[aria-pressed="true"] { background: rgba(255,255,255,0.25); }
+  .bar .track { flex: 1; height: 4px; background: rgba(255,255,255,0.35); border-radius: 2px; position: relative; }
+  .bar .track i { position: absolute; inset: 0 auto 0 0; background: #fff; border-radius: 2px; }
+  .cap { position: absolute; left: 50%; bottom: 48px; transform: translateX(-50%); background: rgba(0,0,0,0.8); padding: 4px 10px; border-radius: 4px; font-size: clamp(0.8rem, 2.4vw, 1rem); white-space: nowrap; max-width: 92%; overflow: hidden; text-overflow: ellipsis; }
+  .badge { position: absolute; top: 10px; left: 10px; background: #b42318; color: #fff; padding: 4px 10px; border-radius: 4px; font-size: 0.8rem; font-weight: 700; max-width: calc(100% - 20px); }
+  .badge.ok { background: #1a7f37; }
+  .mute { position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.6); padding: 4px 8px; border-radius: 4px; font-size: 0.8rem; }
+  .check { display: flex; gap: 8px; align-items: center; font-size: 0.92rem; cursor: pointer; }
+  .check input { accent-color: var(--cobalt); }
+  .check code { font-size: 0.85rem; }
+  .status { font-size: 0.93rem; padding: 8px 10px; border-radius: 6px; background: var(--stage); }
+  .vtt { font: 0.85rem/1.5 var(--font-code); font-variation-settings: "MONO" 1; display: grid; gap: 2px; }
+  .vtt div { padding: 3px 8px; border-radius: 4px; }
+  .vtt div.now { background: var(--cobalt-soft); color: var(--cobalt); }
+  .vtt .t { color: var(--muted); }
+  .fmt { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+  .fmt li { display: grid; grid-template-columns: 1fr auto; gap: 8px; padding: 8px 10px; border-radius: 6px; background: var(--stage); font: 0.88rem var(--font-code); font-variation-settings: "MONO" 1; }
+  .fmt li.pick { background: var(--good-soft); color: var(--good); font-weight: 700; }
+  .fmt li.skip { color: var(--muted); text-decoration: line-through; }
+  .layers { display: grid; gap: 6px; }
+  .layers div { border-radius: 8px; padding: 8px 12px; font-size: 0.92rem; }
+  .layers .box { border: 2px solid var(--cobalt); display: grid; gap: 6px; }
+  .layers .trk { background: var(--stage); }
+</style>
+<script src="book-2.js"></script>
+<script src="js/progress.js"></script>
+<script src="js/chrome.js"></script>
+<script src="js/quiz.js"></script>
+</head>
+<body>
+<main class="wrap">
+  <nav class="crumbs" aria-label="Site"><a class="crumb" href="book-2.html">← Contents</a><a class="crumb" href="glossary.html">Glossary</a></nav>
+  <header class="page-head">
+    <h1>Video and Audio</h1>
+    <p class="lede">The <code>&lt;video&gt;</code> and <code>&lt;audio&gt;</code> elements play media without any plugins. Their attributes decide what visitors see, what plays by itself, and which file the browser picks.</p>
+    <div class="objectives">
+      <p class="callout-title">You'll be able to</p>
+      <ul>
+        <li>Add video and audio with controls and fallback content.</li>
+        <li>Offer more than one file format with <code>&lt;source&gt;</code>.</li>
+        <li>Use <code>poster</code>, <code>muted</code>, <code>autoplay</code>, <code>loop</code> and <code>preload</code> well, and explain why browsers block autoplay with sound.</li>
+        <li>Add captions with a WebVTT file and <code>&lt;track&gt;</code>.</li>
+      </ul>
+    </div>
+  </header>
+
+  <div class="section-title"><span class="eyebrow">Read</span><h2>Video and audio on the web</h2></div>
+  <div class="prose">
+    <p>Early websites needed plugins like Flash to play video, and they were slow, insecure and didn't work on phones. Today the browser plays media itself, through two elements that work almost identically: <code>&lt;video&gt;</code> and <code>&lt;audio&gt;</code>.</p>
+    <p>Video files are big. For long videos, hosting on YouTube or Vimeo and <a href="core-svg-embeds.html">embedding</a> them is often easier. For short clips, backgrounds and audio you own, these elements are the way.</p>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Read</span><h2>The &lt;video&gt; element</h2></div>
+  <div class="prose">
+    <pre class="snippet" data-lang="html">&lt;video src="mesa.webm" controls&gt;
+  &lt;p&gt;Your browser can't play this video. &lt;a href="mesa.webm"&gt;Download it&lt;/a&gt; instead.&lt;/p&gt;
+&lt;/video&gt;</pre>
+    <ul>
+      <li><code>src</code> is the path to the file, just like an image.</li>
+      <li><code>controls</code> adds the browser's play button, timeline and volume. Leave it out and visitors can't pause or mute, so always include it unless you build your own.</li>
+      <li>Anything between the tags is <strong>fallback content</strong>, shown only by browsers that can't play video at all.</li>
+    </ul>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Read</span><h2>Using multiple source formats to improve compatibility</h2></div>
+  <div class="prose">
+    <h3>Contents of a media file</h3>
+    <p>A video file is a <strong>container</strong> (MP4, WebM, Ogg) holding <strong>tracks</strong>: usually one video track and one audio track. Each track is compressed with a <strong>codec</strong>, like H.264 or AV1 for video and AAC or Opus for audio. The extension tells you the container, not the codecs inside.</p>
+    <div class="layers" aria-label="A media file">
+      <div class="box"><strong>mesa.mp4 (container)</strong><div class="trk">Video track · H.264</div><div class="trk">Audio track · AAC</div></div>
+    </div>
+    <h3>Media file support in browsers</h3>
+    <p>Not every browser can decode every codec, partly because some are patented. The fix: drop <code>src</code> from the <code>&lt;video&gt;</code> and list several <code>&lt;source&gt;</code> elements instead. The browser tries them in order and plays the first one it can:</p>
+    <pre class="snippet" data-lang="html">&lt;video controls&gt;
+  &lt;source src="mesa.webm" type="video/webm"&gt;
+  &lt;source src="mesa.mp4" type="video/mp4"&gt;
+  &lt;p&gt;Your browser can't play this video.&lt;/p&gt;
+&lt;/video&gt;</pre>
+    <p>The <code>type</code> lets the browser skip files it can't play without downloading them. MP4 with H.264 plays almost everywhere, so it makes a good last option.</p>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Play</span><h2>Which source plays?</h2><p>This list is checked against your actual browser with <code>canPlayType()</code>. Reorder the sources, or pretend to be an older browser.</p></div>
+  <section class="playground even">
+    <div class="panel controls" style="display:grid;gap:10px;align-content:start">
+      <div class="seg" id="src-order" role="group" aria-label="Order of sources">
+        <button class="btn" type="button" data-o="0" aria-pressed="true">AV1 first</button>
+        <button class="btn" type="button" data-o="1" aria-pressed="false">MP4 first</button>
+      </div>
+      <label class="check"><input type="checkbox" id="old-browser"> <span>Pretend this is an old browser (MP4 only)</span></label>
+      <label class="check"><input type="checkbox" id="bad-type"> <span>Typo in the MP4 <code>type</code></span></label>
+    </div>
+    <div class="stage-col"><ul class="fmt" id="fmt"></ul><p class="verdict" id="fmt-note" aria-live="polite"></p></div>
+  </section>
+
+  <div class="section-title"><span class="eyebrow">Read</span><h2>Other &lt;video&gt; features</h2></div>
+  <div class="prose">
+    <ul>
+      <li><code>width</code> and <code>height</code> reserve space, like on an image.</li>
+      <li><code>poster</code> shows an image until the video starts, instead of a black box.</li>
+      <li><code>autoplay</code> starts playing straight away. Browsers block <em>autoplay with sound</em>, so it only works together with <code>muted</code>. Use it sparingly.</li>
+      <li><code>muted</code> starts with the sound off.</li>
+      <li><code>loop</code> starts again at the end.</li>
+      <li><code>preload</code> hints how much to download before anyone presses play: <code>none</code>, <code>metadata</code> (just the length and size) or <code>auto</code>.</li>
+    </ul>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Play</span><h2>Try each attribute</h2><p>Turn attributes on and off and watch how the player behaves. It follows the same rules as a real browser.</p></div>
+  <section class="playground">
+    <div class="panel controls">
+      <span class="eyebrow">&lt;video&gt; attributes</span>
+      <label class="check"><input type="checkbox" id="a-controls" checked><code>controls</code></label>
+      <label class="check"><input type="checkbox" id="a-poster" checked><code>poster="cover.jpg"</code></label>
+      <label class="check"><input type="checkbox" id="a-autoplay"><code>autoplay</code></label>
+      <label class="check"><input type="checkbox" id="a-muted"><code>muted</code></label>
+      <label class="check"><input type="checkbox" id="a-loop"><code>loop</code></label>
+      <span class="eyebrow" style="margin-top:6px">Child elements</span>
+      <label class="check"><input type="checkbox" id="a-track" checked><code>&lt;track kind="captions"&gt;</code></label>
+      <button class="btn" id="restart" style="justify-self:start;margin-top:6px">Reload the page</button>
+    </div>
+    <div class="stage-col">
+      <div class="player" id="player" aria-label="Simulated video player"></div>
+      <p class="status" id="status" aria-live="polite"></p>
+    </div>
+  </section>
+
+
+  <div class="section-title"><span class="eyebrow">Read</span><h2>The &lt;audio&gt; element</h2></div>
+  <div class="prose">
+    <p><code>&lt;audio&gt;</code> works the same way as <code>&lt;video&gt;</code>, with <code>controls</code>, <code>&lt;source&gt;</code>s and fallback content. Since there's no picture, it doesn't take <code>width</code>, <code>height</code> or <code>poster</code>.</p>
+    <pre class="snippet" data-lang="html">&lt;audio controls&gt;
+  &lt;source src="ranger-talk.mp3" type="audio/mpeg"&gt;
+  &lt;source src="ranger-talk.ogg" type="audio/ogg"&gt;
+  &lt;p&gt;&lt;a href="ranger-talk.mp3"&gt;Download the talk&lt;/a&gt;&lt;/p&gt;
+&lt;/audio&gt;</pre>
+    <p>For audio-only content, like a podcast, provide a written transcript on the page as well.</p>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Read</span><h2>Displaying video text tracks</h2></div>
+  <div class="prose">
+    <p>People who are deaf or hard of hearing, people watching on mute, and people who don't speak the video's language all need its words as text. Those words live in a separate <strong>WebVTT</strong> file (<code>.vtt</code>), linked with <code>&lt;track&gt;</code> inside the video:</p>
+    <pre class="snippet" data-lang="html">&lt;track kind="captions" src="mesa.vtt" srclang="en" label="English"&gt;</pre>
+    <p><code>kind</code> can be <code>subtitles</code> (a translation), <code>captions</code> (the dialogue plus important sounds, like "[thunder]") or <code>descriptions</code> (what's happening on screen, for people who can't see it).</p>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Look</span><h2>The captions file</h2><p>Each cue has a start time, an end time and the text. The current cue is highlighted as the simulated video plays.</p></div>
+  <div class="panel vtt" id="vtt"></div>
+
+  <div class="section-title"><span class="eyebrow">Practice</span><h2>Embedding your own audio and video</h2><p>This video starts blaring on its own and can't be paused. Make it polite and accessible.</p></div>
+  <div id="ex-media"></div>
+
+  <section class="notes">
+    <div class="panel">
+      <h2>Key ideas</h2>
+      <ul>
+        <li>Always include <code>controls</code> unless you build your own play button. Without it, people can't pause or adjust volume.</li>
+        <li>Browsers block autoplay with sound. Autoplay only works with <code>muted</code>, and should be rare.</li>
+        <li>List more than one <code>&lt;source&gt;</code> (like MP4 and WebM) and the browser plays the first one it supports.</li>
+        <li>Add captions for videos and a transcript for audio, for people who can't hear it and everyone watching on mute.</li>
+        <li><code>&lt;audio controls&gt;</code> works the same way, without the picture.</li>
+      </ul>
+    </div>
+    <div class="panel mistake">
+      <h2>Common mistakes</h2>
+      <ul>
+        <li>Uploading a huge video file straight from a phone. Compress it, or host it on YouTube or Vimeo and <a href="core-svg-embeds.html">embed</a> it.</li>
+        <li>Expecting <code>autoplay</code> to work without <code>muted</code>.</li>
+        <li>No <code>poster</code>, so the player shows a black box until it loads.</li>
+        <li>Background videos that loop forever with no way to pause them.</li>
+        <li>Getting the <code>type</code> wrong on a <code>&lt;source&gt;</code>, so the browser skips a file it could have played.</li>
+      </ul>
+    </div>
+  </section>
+
+  <div class="section-title"><span class="eyebrow">Check yourself</span><h2>Quick check</h2></div>
+  <div class="panel quiz" id="quiz"></div>
+
+  <footer class="page-foot" data-book-nav><a href="book-2.html">← Contents</a></footer>
+</main>
+
+<script>
+  const $ = (id) => document.getElementById(id);
+  const DUR = 16;
+  const CUES = [[0, 3, "[wind blowing]"], [3, 7, "Welcome to the Longs Peak trailhead."], [7, 11, "The summit is 14,259 feet above sea level."], [11, 16, "Start before sunrise to beat the storms."]];
+  const fmt = (s) => `00:${String(Math.floor(s)).padStart(2, "0")}.000`;
+  $("vtt").innerHTML = '<div>WEBVTT</div><div>&nbsp;</div>' + CUES.map((c, i) => `<div data-i="${i}"><span class="t">${fmt(c[0])} --> ${fmt(c[1])}</span><br>${c[2]}</div>`).join("");
+  let t = 0, playing = false, started = false, timer = null, ccOn = true, muted = false, blocked = false;
+  const A = (id) => $("a-" + id).checked;
+
+  function tick() {
+    t += 0.1;
+    if (t >= DUR) { if (A("loop")) t = 0; else { t = DUR; stop(); } }
+    draw();
+  }
+  function play() { if (playing) return; if (t >= DUR) t = 0; playing = true; started = true; blocked = false; timer = setInterval(tick, 100); draw(); }
+  function stop() { playing = false; clearInterval(timer); draw(); }
+  function reload() {
+    stop(); t = 0; started = false; blocked = false; muted = A("muted");
+    if (A("autoplay")) { if (A("muted")) play(); else blocked = true; }
+    draw();
+  }
+  function draw() {
+    const p = $("player"), cue = CUES.find((c) => t >= c[0] && t < c[1]);
+    let html = `<div class="scene"><div class="sun" style="left:${8 + (t / DUR) * 78}%"></div><div class="mtn"></div><div class="hill"></div></div>`;
+    if (!started) html += A("poster") ? '<div class="poster">Longs Peak: Trail Briefing</div>' : '<div class="first-frame">(black until the video loads its first frame)</div>';
+    if (started && A("track") && ccOn && cue) html += `<div class="cap">${cue[2]}</div>`;
+    if (blocked) html += '<div class="badge">Autoplay blocked: this video has sound</div>';
+    else if (A("autoplay") && A("muted") && playing && t < 3) html += '<div class="badge ok">Autoplaying, muted</div>';
+    if (started && muted) html += '<div class="mute">🔇 muted</div>';
+    if (A("controls")) {
+      html += `<div class="bar"><button id="pp" aria-label="${playing ? "Pause" : "Play"}">${playing ? "❚❚" : "▶"}</button><span>0:${String(Math.floor(t)).padStart(2, "0")} / 0:${DUR}</span><div class="track"><i style="width:${(t / DUR) * 100}%"></i></div><button id="mu" aria-label="Mute">${muted ? "🔇" : "🔊"}</button>${A("track") ? `<button id="cc" aria-pressed="${ccOn}" aria-label="Captions">CC</button>` : ""}<button aria-label="Full screen" tabindex="-1">⛶</button></div>`;
+      if (!playing && !started) html += '<button class="bigplay" id="bp" aria-label="Play">▶</button>';
+    }
+    const focused = p.contains(document.activeElement) ? document.activeElement.id : null;
+    p.innerHTML = html;
+    if (focused && $(focused)) $(focused).focus();
+    const on = (id, fn) => { const el = $(id); if (el) el.addEventListener("click", fn); };
+    on("pp", () => (playing ? stop() : play())); on("bp", play); on("mu", () => { muted = !muted; draw(); }); on("cc", () => { ccOn = !ccOn; draw(); });
+    document.querySelectorAll("#vtt [data-i]").forEach((d) => d.classList.toggle("now", started && cue === CUES[+d.dataset.i]));
+    status();
+  }
+  function status() {
+    const s = [];
+    if (!A("controls")) s.push(A("autoplay") && A("muted") ? "No controls: it plays by itself, but nobody can pause it." : "No controls and no autoplay: there's no way to start this video at all.");
+    if (blocked) s.push("autoplay without muted is blocked by browsers. Add muted, or let people press play.");
+    if (!A("poster") && !started) s.push("Without a poster, visitors see a black box until playback starts.");
+    if (!A("track")) s.push("No captions track: deaf viewers and anyone watching with the sound off miss what's said.");
+    if (A("loop") && playing) s.push("loop: it will start over when it reaches the end.");
+    $("status").textContent = s.join(" ") || "A good setup: controls, a poster image and captions. Press play.";
+  }
+  document.querySelectorAll(".controls input").forEach((el) => el.addEventListener("input", reload));
+  $("restart").addEventListener("click", reload);
+  reload();
+
+  // --- Which source plays? ---
+  const SRCS = [["mesa-av1.mp4", 'video/mp4; codecs="av01.0.05M.08"'], ["mesa.webm", 'video/webm; codecs="vp9"'], ["mesa.mp4", 'video/mp4; codecs="avc1.42E01E"']];
+  let order = 0;
+  function sourcePick() {
+    const old = document.getElementById("old-browser").checked, typo = document.getElementById("bad-type").checked;
+    const list = order === 0 ? SRCS : [SRCS[2], SRCS[0], SRCS[1]];
+    const probe = document.createElement("video");
+    let picked = -1;
+    const rows = list.map(([file, type], i) => {
+      const t = typo && file === "mesa.mp4" ? "video/mp5" : type;
+      const can = old ? (t.startsWith("video/mp4; codecs=\"avc1")) : probe.canPlayType(t) !== "";
+      if (can && picked < 0) picked = i;
+      return [file, t, can];
+    });
+    document.getElementById("fmt").innerHTML = rows.map(([file, t, can], i) => `<li class="${i === picked ? "pick" : can ? "" : "skip"}"><span>&lt;source src="${file}" type='${t.replace(/</g, "&lt;")}'&gt;</span><span>${i === picked ? "▶ plays" : can ? "not needed" : "skipped"}</span></li>`).join("");
+    const note = document.getElementById("fmt-note");
+    note.className = "verdict " + (picked < 0 ? "bad" : "ok");
+    note.textContent = picked < 0 ? "✗ Nothing this browser can play. It shows the fallback content." : picked === 0 && order === 1 ? "✓ It plays MP4 straight away, but browsers that support AV1 never get the smaller file. Put the most efficient format first." : `✓ The browser plays ${rows[picked][0]}, the first source it supports, and never downloads the others.`;
+    document.querySelectorAll("#src-order .btn").forEach((b) => b.setAttribute("aria-pressed", String(+b.dataset.o === order)));
+  }
+  document.getElementById("src-order").addEventListener("click", (e) => { const b = e.target.closest("[data-o]"); if (b) { order = +b.dataset.o; sourcePick(); } });
+  ["old-browser", "bad-type"].forEach((id) => document.getElementById(id).addEventListener("change", sourcePick));
+  sourcePick();
+</script>
+<script>
+  makeQuiz(document.getElementById("quiz"), [
+    { id: "q1", q: "Your video has autoplay but doesn't start. What's most likely missing?", opts: ["muted", "controls", "poster"], a: 0, why: "Browsers block autoplay with sound. Add muted and it can start on its own." },
+    { id: "q2", q: "What does the poster attribute do?", opts: ["Adds a title over the video", "Shows an image before the video plays", "Sets the video's thumbnail on YouTube"], a: 1, why: "Without a poster, the player is often a black box until it loads." },
+    { id: "q3", q: "Why list both an MP4 and a WebM <source>?", opts: ["The browser plays both", "It makes the video load faster", "The browser plays the first one it supports"], a: 2, why: "Sources are tried in order, so each browser gets a format it can play." },
+    { id: "q4", q: "How do you add captions to a <video>?", opts: ["A <track kind=\"captions\"> pointing at a .vtt file", "Type the captions inside the <video> tags", "Add an alt attribute"], a: 0, why: "Captions are a separate WebVTT file, linked with track." },
+    { id: "q5", q: "What does preload=\"none\" do?", opts: ["Tells the browser not to download anything until play is pressed", "Stops the video from ever playing", "Hides the controls"], a: 0, why: "preload is a hint about how much to fetch in advance." },
+    { id: "q6", q: "What's shown by content placed between <video> and </video> (other than source and track)?", opts: ["Nothing, unless the browser can't play video at all", "A caption under the video", "A title over the poster"], a: 0, why: "It's fallback content for browsers without video support." },
+  ]);
+</script>
+<script>
+  makeExercise(document.getElementById("ex-media"), {
+    title: "A video and a sound clip",
+    task: `<ol>
+      <li>Give the video controls and stop it autoplaying.</li>
+      <li>Replace its <code>src</code> with two <code>&lt;source&gt;</code> elements: <code>royal-arch.mp4</code> and <code>royal-arch.webm</code>.</li>
+      <li>Add English captions from <code>royal-arch.vtt</code> with a <code>&lt;track&gt;</code>.</li>
+      <li>Give the audio controls.</li>
+    </ol>`,
+    html: `<video src="royal-arch.mp4" autoplay width="480" height="270"></video>
+<audio src="trail-sounds.mp3"></audio>`,
+    solution: { html: `<video controls width="480" height="270">
+  <source src="royal-arch.mp4" type="video/mp4">
+  <source src="royal-arch.webm" type="video/webm">
+  <track kind="captions" src="royal-arch.vtt" srclang="en" label="English">
+</video>
+<audio controls src="trail-sounds.mp3"></audio>` },
+    hints: [
+      "controls is an attribute with no value: <video controls>.",
+      "<source> elements go between <video> and </video>. Take src off the video itself.",
+      "<track kind=\"captions\" src=\"royal-arch.vtt\" srclang=\"en\" label=\"English\">",
+    ],
+    checks: [
+      { label: "The video has controls and doesn't autoplay with sound", test: ({ $ }) => { const v = $("video"); return v.hasAttribute("controls") && (!v.hasAttribute("autoplay") || v.hasAttribute("muted")); } },
+      { label: "The video lists MP4 and WebM sources", test: ({ $, $$ }) => !$("video").hasAttribute("src") && $$("video source").some((s) => /\.mp4$/.test(s.getAttribute("src"))) && $$("video source").some((s) => /\.webm$/.test(s.getAttribute("src"))) },
+      { label: "English captions are attached", test: ({ $ }) => { const t = $('video track[kind="captions"]'); return t.getAttribute("src") === "royal-arch.vtt" && t.getAttribute("srclang") === "en"; } },
+      { label: "The audio has controls", test: ({ $ }) => $("audio").hasAttribute("controls") },
+    ],
+  });
+</script>
+</body>
+</html>

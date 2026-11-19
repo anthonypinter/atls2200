@@ -21,7 +21,8 @@ Opening `index.html` straight from the file system also works. Use a local serve
 | `js/progress.js` | Saved progress (visited and completed lessons, quiz answers, best scores) in `localStorage`. The only code that touches saved data, so a backend can sync it later via `Progress.merge()` |
 | `js/chrome.js` | Adds the reading layout to every page: top bar, sidebar contents with "On this page" links and checkmarks, Mark complete, previous/next footer, search, theme toggle and print tweaks. Also loads the components below only on pages that use them |
 | `js/quiz.js` | `makeQuiz(el, items)`: multiple-choice quizzes whose answers are saved and restored, with Retry |
-| `index.html` | The cover and contents page, rendered from `book.js` (the small card diagrams live in its `minis` map) |
+| `index.html` | The course landing page: links to the Field Guide and a "Class is Live" button (inactive for now) |
+| `book.html` | The book's cover and contents page, rendered from `book.js` (the small card diagrams live in its `minis` map) |
 | `style.css` | Shared design tokens (light and dark), playground widgets, book chrome and print styles |
 | `fonts/` | The two typefaces (Atkinson Hyperlegible and Recursive), served from the site itself so pages load nothing from Google and work offline once cached |
 | `js/runner.js` | The runnable JavaScript editor with a console, plus `hlJS()` and the shared editor behavior. Student code runs with a loop guard: a loop that runs for 1.5 seconds without stopping is stopped with an error instead of freezing the tab |
@@ -50,10 +51,10 @@ Opening `index.html` straight from the file system also works. Use a local serve
    ```
    and leave the footer empty for the script to fill:
    ```html
-   <footer class="page-foot" data-book-nav><a href="index.html">← Contents</a></footer>
+   <footer class="page-foot" data-book-nav><a href="book.html">← Contents</a></footer>
    ```
 2. Add one line to `book.js` where it belongs in the reading order. Numbering, the sidebar and previous/next update everywhere.
-3. Add a card diagram to `minis` in `index.html` under the lesson's `mini` key.
+3. Add a card diagram to `minis` in `book.html` under the lesson's `mini` key.
 4. For a quiz, add `<div class="panel quiz" id="quiz"></div>` and call `makeQuiz($("quiz"), [{ id: "q1", q, opts, a, why }, …])`. Give each question an `id` that never changes, even if you edit or reorder questions, so saved answers stay attached to the right question.
 5. Run the checker if you have Node, or push and let GitHub run it. You don't need to rebuild the search index: GitHub does that when it publishes.
 

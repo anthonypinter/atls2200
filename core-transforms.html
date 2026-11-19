@@ -1,0 +1,346 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Transforms · Core Web Development</title>
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="core.css">
+<style>
+  .t-stage { display: flex; gap: 14px; align-items: center; justify-content: center; min-height: 320px; overflow: hidden; }
+  .slot { position: relative; width: 120px; height: 120px; flex: none; }
+  .ghost { position: absolute; inset: 0; border: 2px dashed var(--muted); border-radius: 8px; }
+  .slot .item { position: absolute; inset: 0; padding: 0; font-size: 1rem; transition: transform 0.25s ease; }
+  .sib { width: 90px; height: 120px; flex: none; font-size: 0.85rem; padding: 0; }
+  .origin-dot { position: absolute; width: 12px; height: 12px; margin: -6px 0 0 -6px; border-radius: 50%; background: var(--ink); border: 2px solid var(--panel); z-index: 2; pointer-events: none; }
+  .slot .item { font-variation-settings: "MONO" 1; }
+
+  .order { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px; }
+  @media (max-width: 760px) { .order { grid-template-columns: 1fr; } }
+  .order .panel { display: grid; gap: 10px; }
+  .o-stage { position: relative; height: 230px; background: var(--stage); border-radius: 8px; overflow: hidden; }
+  .o-stage .ghost, .o-stage .item { position: absolute; left: 30px; top: 40px; width: 60px; height: 60px; padding: 0; }
+  .o-stage .item { transition: transform 0.6s ease; }
+
+  .uses { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 14px; }
+  .uses .panel { display: grid; gap: 10px; align-content: start; }
+  .demo { background: var(--stage); border-radius: 8px; min-height: 130px; position: relative; display: grid; place-items: center; padding: 12px; }
+  .center-box { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: var(--item-3); color: #fff; padding: 8px 12px; border-radius: 6px; font: 600 0.85rem var(--font-code); font-variation-settings: "MONO" 1; }
+  .lift { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 14px 18px; transition: transform 0.2s, box-shadow 0.2s; cursor: pointer; font-weight: 700; }
+  .lift:hover, .lift:focus-visible { transform: translateY(-6px); box-shadow: 0 10px 20px rgb(0 0 0 / 15%); }
+  .demo details summary { cursor: pointer; list-style: none; display: flex; gap: 8px; align-items: center; font-weight: 700; }
+  .demo details summary::-webkit-details-marker { display: none; }
+  .demo details summary::before { content: "›"; display: inline-block; font-size: 1.4rem; line-height: 1; transition: transform 0.2s; }
+  .demo details[open] summary::before { transform: rotate(90deg); }
+  .demo details p { font-size: 0.9rem; margin-top: 6px; }
+  .flip { display: flex; gap: 16px; font-size: 2rem; }
+  .flip span:last-child { transform: scaleX(-1); display: inline-block; }
+
+  .ip-stage { display: flex; gap: 24px; justify-content: center; align-items: center; padding: 30px; background: var(--stage); border-radius: 8px; min-height: 170px; }
+  .ip-card { width: 110px; height: 80px; border-radius: 8px; background: #0b6b5e; color: #fff; display: grid; place-items: center; font: 700 0.9rem system-ui, sans-serif; transition: 0.3s; }
+  .p3-scene { height: 230px; display: grid; place-items: center; background: var(--stage); border-radius: 8px; }
+  .p3-card { width: 150px; height: 110px; border-radius: 10px; background: linear-gradient(135deg, #2340d9, #0b6b5e); color: #fff; display: grid; place-items: center; font: 800 1.1rem system-ui, sans-serif; box-shadow: 0 6px 18px rgb(0 0 0 / 25%); }
+</style>
+<script src="book-2.js"></script>
+<script src="js/progress.js"></script>
+<script src="js/chrome.js"></script>
+<script src="js/quiz.js"></script>
+</head>
+<body>
+<main class="wrap">
+  <nav class="crumbs" aria-label="Site"><a class="crumb" href="book-2.html">← Contents</a><a class="crumb" href="glossary.html">Glossary</a></nav>
+  <header class="page-head">
+    <h1>Transforms</h1>
+    <p class="lede">Transforms move, turn, resize and slant an element after the page is laid out, without nudging anything around it. That makes them ideal for hover effects, icons and small bits of motion.</p>
+    <div class="objectives">
+      <p class="callout-title">You'll be able to</p>
+      <ul>
+        <li>Use <code>translate</code>, <code>rotate</code>, <code>scale</code> and <code>skew</code>, as functions and as individual properties.</li>
+        <li>Explain why transforms don't affect layout, and why the order of functions matters.</li>
+        <li>Move the pivot point with <code>transform-origin</code>.</li>
+        <li>Add depth to a 3D transform with <code>perspective</code>.</li>
+      </ul>
+    </div>
+  </header>
+
+  <div class="section-title"><span class="eyebrow">Read</span><h2>CSS transforms properties</h2></div>
+  <div class="prose">
+<p>The <code>transform</code> property takes one or more functions, separated by spaces:</p>
+    <pre class="snippet" data-lang="css">.badge {
+  transform: translateY(-4px) rotate(-3deg) scale(1.1);
+}</pre>
+    <ul>
+      <li><code>translate()</code> moves it (<code>translateX()</code>, <code>translateY()</code>).</li>
+      <li><code>rotate()</code> turns it, in <code>deg</code> or <code>turn</code>. A number with no unit does nothing.</li>
+      <li><code>scale()</code> resizes it: 1 is normal size, 2 double, 0.5 half.</li>
+      <li><code>skew()</code> slants it (<code>skewX()</code>, <code>skewY()</code>).</li>
+    </ul>
+    <p>Transforms are drawn after layout, so the browser keeps the element's original space and <strong>nothing around it moves</strong>. A card can grow on hover without shoving its neighbours.</p>
+    <p><code>transform-origin</code> sets the point the element turns and scales around. The default is the centre; <code>transform-origin: top left</code> makes it pivot from the corner, like a door on a hinge.</p>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Play</span><h2>Transform a card</h2><p>Drag the sliders and watch the dashed outline: that's the space the card still takes up in the layout.</p></div>
+  <section class="playground">
+    <div class="panel controls" aria-label="Transform settings">
+      <span class="eyebrow">#box { transform }</span>
+      <div class="control"><label for="tx">translateX</label><input id="tx" type="range" min="-120" max="120" step="5" value="0"><span class="readout" id="tx-out"></span></div>
+      <div class="control"><label for="ty">translateY</label><input id="ty" type="range" min="-120" max="120" step="5" value="0"><span class="readout" id="ty-out"></span></div>
+      <div class="control"><label for="rot">rotate</label><input id="rot" type="range" min="-180" max="180" step="5" value="15"><span class="readout" id="rot-out"></span></div>
+      <div class="control"><label for="sc">scale</label><input id="sc" type="range" min="0.25" max="2" step="0.05" value="1"><span class="readout" id="sc-out"></span></div>
+      <div class="control"><label for="sk">skewX</label><input id="sk" type="range" min="-45" max="45" step="5" value="0"><span class="readout" id="sk-out"></span></div>
+      <div class="control"><label for="origin">transform-origin</label>
+        <select id="origin"><option>center</option><option>top left</option><option>top right</option><option>bottom left</option><option>bottom center</option></select></div>
+      <button class="btn" id="reset" style="justify-self:start">Reset</button>
+    </div>
+    <div class="stage-col">
+      <div class="stage t-stage" id="stage" aria-label="Live transform example">
+        <div class="item sib">sibling</div>
+        <div class="slot"><div class="ghost" aria-hidden="true"></div><div class="item" id="box">#box</div><span class="origin-dot" id="dot" aria-hidden="true"></span></div>
+        <div class="item sib">sibling</div>
+      </div>
+      <div class="code-box"><pre id="code"></pre><button class="copy" id="copy">Copy</button></div>
+    </div>
+  </section>
+
+  <div class="prose">
+<h3>Individual transform properties</h3>
+    <p>There are also separate <code>translate</code>, <code>rotate</code> and <code>scale</code> <em>properties</em>. They're easier to read, and they don't replace each other. With the <code>transform</code> property, a hover rule that sets <code>transform: scale(1.1)</code> wipes out an earlier <code>rotate(-3deg)</code>. With separate properties, <code>scale: 1.1</code> just adds to <code>rotate: -3deg</code>.</p>
+    <pre class="snippet" data-lang="css">.stamp { rotate: -3deg; }
+.stamp:hover { scale: 1.1; }   /* still rotated */</pre>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Play</span><h2>transform vs individual properties</h2><p>Both cards start tilted. Turn on the hover state.</p></div>
+  <section class="playground even">
+    <div class="panel" style="display:grid;gap:10px;align-content:start">
+      <label class="toggle"><input type="checkbox" id="ip-hover"> apply the <code>:hover</code> rule</label>
+      <pre class="snippet" id="ip-code"></pre>
+    </div>
+    <div class="ip-stage"><div><div class="ip-card" id="ip-a">transform</div></div><div><div class="ip-card" id="ip-b">rotate + scale</div></div></div>
+  </section>
+
+  <div class="section-title"><span class="eyebrow">Read</span><h2>Examples</h2></div>
+  <div class="prose">
+<h3>Rotating</h3>
+    <p><code>rotate: 90deg; transform-origin: bottom left;</code> swings an element a quarter-turn around its bottom-left corner instead of its centre.</p>
+    <h3>Skewing and translating</h3>
+    <p>When you combine functions, order matters. Each function works in the space left by the ones before it: rotate first, and "right" now points diagonally, so a following <code>translateX()</code> moves the element diagonally too.</p>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Play</span><h2>Same functions, different order</h2><p>Transform functions apply from right to left, and each one changes the direction the next one uses.</p></div>
+  <section class="order">
+    <div class="panel"><code>transform: translateX(140px) rotate(45deg);</code><div class="o-stage"><div class="ghost"></div><div class="item" id="o1">A</div></div><p class="hint">Turn in place, then slide 140px right along the page.</p></div>
+    <div class="panel"><code>transform: rotate(45deg) translateX(140px);</code><div class="o-stage"><div class="ghost"></div><div class="item" id="o2">B</div></div><p class="hint">Turn first, so "right" is now tilted 45° downward, and it slides along that tilted line.</p></div>
+  </section>
+  <button class="btn" id="play" style="margin-top:12px">Play both</button>
+
+
+  <div class="section-title"><span class="eyebrow">Look</span><h2>Four everyday uses</h2></div>
+  <section class="uses">
+    <div class="panel"><h3>Center anything</h3><div class="demo"><span class="center-box">centered</span></div><pre class="snippet"><span class="sel">.badge</span> {
+  <span class="prop">position</span>: <span class="val">absolute</span>;
+  <span class="prop">top</span>: <span class="val">50%</span>; <span class="prop">left</span>: <span class="val">50%</span>;
+  <span class="prop">transform</span>: <span class="val">translate(-50%, -50%)</span>;
+}</pre><p class="hint"><code>top</code>/<code>left: 50%</code> puts the corner in the middle. The translate pulls it back by half its own size.</p></div>
+    <div class="panel"><h3>Lift on hover</h3><div class="demo"><div class="lift" tabindex="0">Hover or Tab to me</div></div><pre class="snippet"><span class="sel">.card</span> { <span class="prop">transition</span>: <span class="val">transform 0.2s</span>; }
+<span class="sel">.card:hover</span> {
+  <span class="prop">transform</span>: <span class="val">translateY(-6px)</span>;
+}</pre></div>
+    <div class="panel"><h3>Turn an arrow</h3><div class="demo"><details><summary>Trail conditions</summary><p>Icy above 7,000 feet.</p></details></div><pre class="snippet"><span class="sel">details[open] summary::before</span> {
+  <span class="prop">transform</span>: <span class="val">rotate(90deg)</span>;
+}</pre></div>
+    <div class="panel"><h3>Mirror an icon</h3><div class="demo"><div class="flip" aria-hidden="true"><span>➜</span><span>➜</span></div></div><pre class="snippet"><span class="sel">.icon-back</span> {
+  <span class="prop">transform</span>: <span class="val">scaleX(-1)</span>;
+}</pre><p class="hint">One arrow icon serves as both "next" and "back."</p></div>
+  </section>
+
+  <div class="section-title"><span class="eyebrow">Practice</span><h2>Transform without moving the layout</h2><p>Tilt a stamp, lift a card on hover, and swing a door from its edge.</p></div>
+  <div id="ex-transform"></div>
+
+  <div class="section-title"><span class="eyebrow">Read</span><h2>3D specific CSS properties</h2></div>
+  <div class="prose">
+<p>Transforms also work in three dimensions: <code>rotateX()</code> and <code>rotateY()</code> tip an element towards or away from you, and <code>translateZ()</code> moves it nearer. Without perspective, though, 3D looks flat.</p>
+    <h3>Perspective</h3>
+    <p>Set <code>perspective</code> on the <strong>parent</strong>: the distance between the viewer and the page. A small value (250px) is like holding your face close, with dramatic distortion; a large one (1000px) is subtle. <code>perspective-origin</code> moves the viewer's eye: <code>left</code>, <code>top right</code> and so on.</p>
+    <pre class="snippet" data-lang="css">.scene { perspective: 600px; }
+.card  { transform: rotateY(40deg); }</pre>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Play</span><h2>Perspective</h2><p>Turn the card in 3D, then change how close the viewer is.</p></div>
+  <section class="playground even">
+    <div class="panel" style="display:grid;gap:10px;align-content:start">
+      <div class="control"><label for="p3-rot">rotateY</label><input id="p3-rot" type="range" min="-80" max="80" step="5" value="40"><span class="readout" id="p3-rot-out"></span></div>
+      <div class="control"><label for="p3-per">perspective (on the parent)</label><input id="p3-per" type="range" min="150" max="1500" step="50" value="600"><span class="readout" id="p3-per-out"></span></div>
+      <div class="control"><label for="p3-org">perspective-origin</label><select id="p3-org"><option>center</option><option>left</option><option>right</option><option>top</option><option>bottom right</option></select></div>
+      <label class="toggle"><input type="checkbox" id="p3-none"> remove perspective</label>
+      <pre class="snippet" id="p3-code"></pre>
+    </div>
+    <div class="p3-scene" id="p3-scene"><div class="p3-card" id="p3-card">Trail pass</div></div>
+  </section>
+
+  <div class="section-title"><span class="eyebrow">Practice</span><h2>Individual properties and 3D</h2><p>A tilted badge that grows, and a card turned in 3D.</p></div>
+  <div id="ex-3d"></div>
+
+  <section class="notes">
+    <div class="panel">
+      <h2>Key ideas</h2>
+      <ul>
+        <li>Transforms change how an element is drawn, not the space it takes.</li>
+        <li>Functions in one <code>transform</code> apply right to left, and order changes the result.</li>
+        <li>A second <code>transform</code> replaces the first; the individual <code>rotate</code>, <code>scale</code> and <code>translate</code> properties combine.</li>
+        <li><code>transform-origin</code> moves the pivot point.</li>
+        <li>3D needs <code>perspective</code> on the parent.</li>
+      </ul>
+    </div>
+    <div class="panel mistake">
+      <h2>Common mistakes</h2>
+      <ul>
+        <li><code>rotate(45)</code> with no unit.</li>
+        <li>Overriding a rotation by setting <code>transform: scale()</code> on hover.</li>
+        <li>Using transforms to build layout: the space doesn't move with the element.</li>
+        <li>Putting <code>perspective</code> on the element being rotated instead of its parent.</li>
+      </ul>
+    </div>
+  </section>
+
+  <div class="section-title"><span class="eyebrow">Check yourself</span><h2>Quick check</h2></div>
+  <div class="panel quiz" id="quiz"></div>
+
+  <footer class="page-foot" data-book-nav><a href="book-2.html">← Contents</a></footer>
+</main>
+
+<script>
+  const $ = (id) => document.getElementById(id);
+  const DEF = { tx: 0, ty: 0, rot: 15, sc: 1, sk: 0, origin: "center" };
+  const ORIGINS = { "center": [50, 50], "top left": [0, 0], "top right": [100, 0], "bottom left": [0, 100], "bottom center": [50, 100] };
+
+  function update() {
+    const v = { tx: +$("tx").value, ty: +$("ty").value, rot: +$("rot").value, sc: +$("sc").value, sk: +$("sk").value, origin: $("origin").value };
+    $("tx-out").textContent = v.tx + "px"; $("ty-out").textContent = v.ty + "px"; $("rot-out").textContent = v.rot + "deg";
+    $("sc-out").textContent = v.sc; $("sk-out").textContent = v.sk + "deg";
+    const parts = [];
+    if (v.tx || v.ty) parts.push(`translate(${v.tx}px, ${v.ty}px)`);
+    if (v.rot) parts.push(`rotate(${v.rot}deg)`);
+    if (v.sc !== 1) parts.push(`scale(${v.sc})`);
+    if (v.sk) parts.push(`skewX(${v.sk}deg)`);
+    const tf = parts.join(" ") || "none";
+    Object.assign($("box").style, { transform: tf, transformOrigin: v.origin });
+    const [ox, oy] = ORIGINS[v.origin];
+    Object.assign($("dot").style, { left: ox + "%", top: oy + "%" });
+    let code = `<span class="sel">#box</span> {\n  <span class="prop">transform</span>: <span class="val">${tf}</span>;`;
+    if (v.origin !== "center") code += `\n  <span class="prop">transform-origin</span>: <span class="val">${v.origin}</span>;`;
+    $("code").innerHTML = code + "\n}";
+  }
+  document.querySelectorAll(".controls select, .controls input").forEach((el) => el.addEventListener("input", update));
+  $("reset").addEventListener("click", () => { Object.entries(DEF).forEach(([k, val]) => ($(k).value = val)); update(); });
+  $("copy").addEventListener("click", () => {
+    navigator.clipboard.writeText($("code").textContent).then(() => { $("copy").textContent = "Copied"; setTimeout(() => ($("copy").textContent = "Copy"), 1200); }).catch(() => {});
+  });
+  update();
+
+  // Order demo: snap back, then animate to the final transform. Set inline with !important so it plays even with reduced motion,
+  // matching how the Transitions page handles its demos.
+  let on = false;
+  $("play").addEventListener("click", () => {
+    on = !on;
+    const set = (el, tf) => { el.style.setProperty("transition", "transform 0.6s ease", "important"); el.style.transform = tf; };
+    set($("o1"), on ? "translateX(140px) rotate(45deg)" : "none");
+    set($("o2"), on ? "rotate(45deg) translateX(140px)" : "none");
+    $("play").textContent = on ? "Reset both" : "Play both";
+  });
+
+  // --- transform vs individual properties ---
+  function ip() {
+    const on = $("ip-hover").checked;
+    $("ip-a").style.transform = on ? "scale(1.25)" : "rotate(-8deg)";
+    $("ip-b").style.rotate = "-8deg"; $("ip-b").style.scale = on ? "1.25" : "1";
+    $("ip-code").textContent = `.a { transform: rotate(-8deg); }\n.a:hover { transform: scale(1.25); }  /* rotation lost */\n\n.b { rotate: -8deg; }\n.b:hover { scale: 1.25; }  /* still tilted */`;
+  }
+  $("ip-hover").addEventListener("change", ip);
+  ip();
+
+  // --- Perspective ---
+  function p3() {
+    const r = $("p3-rot").value, p = $("p3-per").value, o = $("p3-org").value, none = $("p3-none").checked;
+    $("p3-card").style.transform = `rotateY(${r}deg)`;
+    $("p3-scene").style.perspective = none ? "none" : p + "px";
+    $("p3-scene").style.perspectiveOrigin = o;
+    $("p3-rot-out").textContent = r + "deg"; $("p3-per-out").textContent = p + "px";
+    $("p3-code").textContent = `.scene {\n  perspective: ${none ? "none" : p + "px"};\n  perspective-origin: ${o};\n}\n.card {\n  transform: rotateY(${r}deg);\n}`;
+  }
+  ["p3-rot", "p3-per", "p3-org", "p3-none"].forEach((id) => $(id).addEventListener("input", p3));
+  p3();
+</script>
+<script>
+  makeExercise(document.getElementById("ex-transform"), {
+    title: "Rotate, lift and pivot",
+    task: `<ol>
+      <li>Rotate the stamp -8 degrees.</li>
+      <li>Write a <code>.card:hover</code> rule that moves the card up 4px and scales it to 1.03, in one <code>transform</code>.</li>
+      <li>Make the door rotate around its left edge instead of its center.</li>
+    </ol>`,
+    html: `<div class="card">
+  <span class="stamp">Done!</span>
+  <h3>Royal Arch</h3>
+</div>
+<div class="door">Door</div>`,
+    css: `body { font-family: system-ui, sans-serif; padding: 16px; }
+.card { max-width: 260px; padding: 16px; background: #eef1fb; transition: transform 200ms ease; }
+.stamp { display: inline-block; border: 2px solid crimson; color: crimson; padding: 2px 8px; }
+.door { width: 120px; height: 60px; margin-top: 24px; background: #b9c4ef; display: grid; place-items: center; transform: rotate(-20deg); }`,
+    solution: { css: `body { font-family: system-ui, sans-serif; padding: 16px; }
+.card { max-width: 260px; padding: 16px; background: #eef1fb; transition: transform 200ms ease; }
+.card:hover { transform: translateY(-4px) scale(1.03); }
+.stamp { display: inline-block; border: 2px solid crimson; color: crimson; padding: 2px 8px; transform: rotate(-8deg); }
+.door { width: 120px; height: 60px; margin-top: 24px; background: #b9c4ef; display: grid; place-items: center; transform: rotate(-20deg); transform-origin: left; }` },
+    hints: [
+      "transform: rotate(-8deg). Angles need the deg unit.",
+      "List both functions in one transform: translateY(-4px) scale(1.03).",
+      "transform-origin: left (or left center) moves the pivot point.",
+    ],
+    checks: [
+      { label: "The stamp is rotated -8deg", test: ({ style }) => { const m = style(".stamp", "transform").match(/matrix\(([^)]+)\)/); if (!m) return false; const [a, b] = m[1].split(",").map(Number); return Math.abs(Math.atan2(b, a) * 180 / Math.PI + 8) < 0.5; } },
+      { label: ".card:hover lifts 4px and scales to 1.03", test: ({ doc }) => [...doc.styleSheets[0].cssRules].some((r) => r.selectorText === ".card:hover" && /translateY\(-4px\)/.test(r.style.transform) && /scale\(1\.03\)/.test(r.style.transform)) },
+      { label: "The door pivots on its left edge", test: ({ style }) => style(".door", "transform-origin").startsWith("0px") },
+    ],
+  });
+
+  makeExercise(document.getElementById("ex-3d"), {
+    title: "Badge and pass",
+    task: `<ol>
+      <li>Tilt <code>.badge</code> with the <code>rotate</code> property: <code>-6deg</code>.</li>
+      <li>Make <code>.badge.big</code> larger with the <code>scale</code> property: <code>1.4</code>. It should stay tilted.</li>
+      <li>Give <code>.scene</code> <code>perspective: 600px</code>, and turn <code>.pass</code> with <code>transform: rotateY(35deg)</code>.</li>
+    </ol>`,
+    html: `<p><span class="badge">New</span> <span class="badge big">Hot</span></p>
+<div class="scene"><div class="pass">Trail pass</div></div>`,
+    css: `body { font-family: system-ui, sans-serif; padding: 20px; }
+.badge { display: inline-block; background: #b4410c; color: white; padding: 4px 10px; border-radius: 4px; }
+.scene { padding: 20px; }
+.pass { width: 160px; height: 100px; display: grid; place-items: center; background: #2340d9; color: white; border-radius: 10px; }
+`,
+    solution: { css: `body { font-family: system-ui, sans-serif; padding: 20px; }
+.badge { display: inline-block; background: #b4410c; color: white; padding: 4px 10px; border-radius: 4px; rotate: -6deg; }
+.badge.big { scale: 1.4; }
+.scene { padding: 20px; perspective: 600px; }
+.pass { width: 160px; height: 100px; display: grid; place-items: center; background: #2340d9; color: white; border-radius: 10px; transform: rotateY(35deg); }
+` },
+    hints: ["rotate and scale here are properties, not functions: rotate: -6deg;", "perspective goes on the parent (.scene)."],
+    checks: [
+      { label: "Both badges are rotated -6deg", test: ({ $$, style }) => $$(".badge").every((b) => style(b, "rotate") === "-6deg") },
+      { label: "The big badge is scaled 1.4", test: ({ style }) => style(".badge.big", "scale") === "1.4" },
+      { label: ".scene has perspective: 600px", test: ({ style }) => style(".scene", "perspective") === "600px" },
+      { label: ".pass is turned with rotateY(35deg)", test: ({ style }) => { const m = style(".pass", "transform").match(/matrix3d\(([^)]+)\)/); return !!m && Math.abs(parseFloat(m[1].split(",")[0]) - Math.cos(35 * Math.PI / 180)) < 0.01; } },
+    ],
+  });
+
+  makeQuiz(document.getElementById("quiz"), [
+    { id: "q1", q: "You scale a card to 1.2 on hover. What happens to the cards next to it?", opts: ["They get pushed aside", "Nothing; the card overlaps them", "They shrink"], a: 1, why: "Transforms don't affect layout, so neighbors stay put." },
+    { id: "q2", q: "transform: rotate(5deg); then on hover, transform: scale(1.1);. What happens on hover?", opts: ["Scaled, and the rotation is lost", "Rotated and scaled", "Nothing"], a: 0, why: "The second transform replaces the first. Write rotate(5deg) scale(1.1)." },
+    { id: "q3", q: "Why does rotate(45) do nothing?", opts: ["Rotations max out at 30", "It needs a unit: 45deg", "rotate only works on images"], a: 1, why: "Angles need a unit like deg or turn." },
+    { id: "q4", q: "What does transform-origin control?", opts: ["Which transform runs first", "Where the element starts in the layout", "The point the element rotates and scales around"], a: 2, why: "The default is the center; change it to pivot from a corner or edge." },
+    { id: "q5", q: ".stamp { rotate: -3deg } .stamp:hover { scale: 1.1 }. On hover, the stamp is…", opts: ["Rotated and scaled", "Only scaled", "Only rotated"], a: 0, why: "The individual properties combine instead of replacing each other." },
+    { id: "q6", q: "Where do you put perspective for a 3D-rotated card?", opts: ["On its parent", "On the card", "On the body only"], a: 0, why: "perspective sets the viewer's distance for the parent's children." },
+  ]);
+</script>
+</body>
+</html>

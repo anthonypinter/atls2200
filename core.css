@@ -1,0 +1,64 @@
+/* Shared playground pieces for Book 2 (Core Web Development) lessons. Load after style.css.
+   Lesson-specific styles stay in each lesson's own <style>. */
+
+/* Two panels side by side: what you write | what the browser does */
+.two { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+@media (max-width: 700px) { .two { grid-template-columns: 1fr; } }
+.two .panel { display: grid; gap: 10px; align-content: start; min-width: 0; }
+
+/* Text inputs and code editors */
+textarea.src, input.src { font: 0.95rem/1.5 var(--font-code); font-variation-settings: "MONO" 1; width: 100%; padding: 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--paper); color: var(--ink); }
+textarea.src { min-height: 130px; resize: vertical; }
+.text-in { font: 0.95rem var(--font-body); width: 100%; padding: 7px 9px; border: 1px solid var(--line); border-radius: 6px; background: var(--paper); color: var(--ink); }
+
+/* A white "browser" area showing rendered HTML */
+.rendered { padding: 12px 14px; border-radius: 8px; background: #fff; color: #1d2133; border: 1px solid var(--line); font-family: Georgia, serif; font-size: 1.05rem; overflow-wrap: anywhere; min-height: 60px; }
+.rendered :where(h1, h2, h3, h4) { font-family: Georgia, serif; margin: 0.4em 0 0.2em; line-height: 1.2; }
+.rendered :where(p, ul, ol, dl, blockquote, pre, table, figure) { margin: 0.5em 0; }
+.rendered a { color: #1a0dab; }
+.rendered table { border-collapse: collapse; }
+.rendered :where(th, td) { border: 1px solid #b8bdcc; padding: 4px 8px; text-align: left; }
+.rendered caption { font-style: italic; padding: 4px; }
+iframe.preview { width: 100%; min-height: 220px; border: 1px solid var(--line); border-radius: 8px; background: #fff; }
+
+/* Rows of example / option buttons */
+.presets, .seg { display: flex; flex-wrap: wrap; gap: 6px; }
+.toggle { display: inline-flex; align-items: center; gap: 8px; font-size: 0.95rem; }
+
+/* Pass / fail lines */
+.verdict { font-size: 0.95rem; }
+.verdict.ok { color: var(--good); } .verdict.bad { color: var(--bad); }
+
+/* An element tree, as the browser builds it */
+.tree { margin: 0; padding: 12px 14px; list-style: none; background: var(--stage); border-radius: 8px; font: 0.9rem/1.7 var(--font-code); font-variation-settings: "MONO" 1; overflow-x: auto; min-height: 60px; }
+.tree ul { list-style: none; margin: 0 0 0 6px; padding-left: 18px; border-left: 1px dashed var(--line); }
+.tree .txt { color: var(--muted); font-style: italic; }
+.tree .note { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--val); margin-left: 6px; }
+
+/* Numbered steps that light up */
+.timeline { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; font-size: 0.95rem; }
+.timeline li { display: grid; grid-template-columns: 1.6em 1fr; gap: 8px; align-items: baseline; padding: 6px 10px; border-radius: 6px; background: var(--stage); }
+.timeline li.run { background: var(--cobalt-soft); }
+.timeline li.bad { background: var(--bad-soft); color: var(--bad); }
+.timeline li.good { background: var(--good-soft); color: var(--good); }
+
+/* Click-to-explain code lines */
+.code-lines { margin: 0; padding: 12px 0; list-style: none; background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); font: 0.92rem/1.5 var(--font-code); font-variation-settings: "MONO" 1; overflow-x: auto; }
+.code-lines button { all: unset; box-sizing: border-box; display: block; width: 100%; padding: 3px 16px; white-space: pre; cursor: pointer; }
+.code-lines button:hover { background: var(--stage); }
+.code-lines button[aria-pressed="true"] { background: var(--cobalt-soft); box-shadow: inset 4px 0 0 var(--cobalt); }
+.code-lines button:focus-visible { outline: 3px solid var(--cobalt); outline-offset: -3px; }
+.explain h3 { font-family: var(--font-code); font-variation-settings: "MONO" 1; color: var(--cobalt); }
+
+/* Small data tables inside panels */
+.mini-table { width: 100%; border-collapse: collapse; font-size: 0.92rem; }
+.mini-table :where(th, td) { border-bottom: 1px solid var(--line); padding: 6px 8px; text-align: left; vertical-align: top; }
+.mini-table th { color: var(--muted); font-weight: 700; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.05em; }
+.mini-table td code { overflow-wrap: anywhere; }
+
+/* Cards in a responsive grid */
+.card-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px; }
+.card-grid .panel { display: grid; gap: 8px; align-content: start; }
+
+/* A reading block that follows a playground directly (no section title in between) needs breathing room. */
+:not(.section-title) + .prose { margin-top: 28px; }

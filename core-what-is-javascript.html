@@ -1,0 +1,460 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>What is JavaScript? · Core Web Development</title>
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="core.css">
+<style>
+  .layers { display: grid; gap: 8px; }
+  .layer { display: grid; grid-template-columns: auto 1fr; gap: 10px; align-items: start; padding: 10px 12px; border: 1px solid var(--line); border-radius: 8px; cursor: pointer; }
+  .layer input { accent-color: var(--cobalt); margin-top: 5px; }
+  .layer b { font: 700 0.95rem var(--font-code); font-variation-settings: "MONO" 1; }
+  .layer span { display: block; font-size: 0.88rem; color: var(--muted); }
+  .demo { display: grid; place-items: center; gap: 12px; min-height: 200px; }
+  .demo .note { font-size: 0.9rem; color: var(--muted); text-align: center; max-width: 40ch; }
+  .player.styled { font: 700 1.1rem "Recursive", sans-serif; letter-spacing: 0.04em; text-transform: uppercase; text-align: center; color: #0a0130; background: #ffc4a2; border: 2px solid #ce4e03; border-radius: 10px; padding: 10px 18px; cursor: pointer; box-shadow: 0 3px 0 #ce4e03; }
+  .player.plain { font: 16px "Times New Roman", serif; }
+  .rename { display: flex; gap: 6px; flex-wrap: wrap; justify-content: center; }
+  .rename input { font: 1rem var(--font-body); padding: 6px 10px; border: 1px solid var(--line); border-radius: 6px; background: var(--panel); color: var(--ink); }
+  .codes { display: grid; grid-template-columns: minmax(0, 1fr); gap: 10px; }
+  .codes .snippet { transition: opacity 0.2s; }
+  .codes .off { opacity: 0.35; }
+  .codes .label { font: 600 0.72rem var(--font-code); font-variation-settings: "MONO" 1; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); display: block; margin-bottom: 4px; }
+
+  .timeline { display: grid; grid-template-columns: minmax(0, 1fr); gap: 6px; }
+  .track { display: grid; grid-template-columns: 90px minmax(0, 1fr); gap: 10px; align-items: center; font: 0.8rem var(--font-code); font-variation-settings: "MONO" 1; color: var(--muted); }
+  .bar { position: relative; height: 22px; background: var(--panel); border: 1px solid var(--line); border-radius: 4px; overflow: hidden; }
+  .bar i { position: absolute; top: 0; bottom: 0; border-radius: 3px; transition: left 0.3s, width 0.3s; }
+  .bar i.parse { background: var(--item-1); } .bar i.load { background: var(--item-3); } .bar i.exec { background: var(--item-2); } .bar i.blocked { background: repeating-linear-gradient(45deg, var(--bad-soft) 0 6px, transparent 6px 12px); }
+  .key { display: flex; flex-wrap: wrap; gap: 12px; font-size: 0.82rem; color: var(--muted); }
+  .key span::before { content: ""; display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 5px; vertical-align: -1px; background: var(--c); }
+  .verdict { padding: 10px 14px; border-radius: 8px; font-size: 0.95rem; }
+  .verdict.good { background: var(--good-soft); color: var(--good); } .verdict.bad { background: var(--bad-soft); color: var(--bad); }
+
+  .gg { display: grid; gap: 10px; justify-items: start; background: #fff; color: #1d2133; border: 1px solid var(--line); border-radius: 8px; padding: 16px; font-family: var(--font-body); }
+  .gg h4 { margin: 0; font: 800 1.2rem var(--font-display); }
+  .gg form { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+  .gg input { font: inherit; padding: 6px 8px; width: 6em; border: 1.5px solid #c9cedb; border-radius: 6px; }
+  .gg .guesses, .gg .last, .gg .hilo { margin: 0; }
+  .gg .last.right { background: #0b6b5e; color: #fff; padding: 2px 8px; border-radius: 4px; }
+  .gg .last.wrong { background: #b42318; color: #fff; padding: 2px 8px; border-radius: 4px; }
+</style>
+<script src="book-2.js"></script>
+<script src="js/progress.js"></script>
+<script src="js/chrome.js"></script>
+<script src="js/quiz.js"></script>
+</head>
+<body>
+<main class="wrap">
+  <nav class="crumbs" aria-label="Site"><a class="crumb" href="book-2.html">← Contents</a><a class="crumb" href="glossary.html">Glossary</a></nav>
+  <header class="page-head">
+    <h1>What is JavaScript?</h1>
+    <p class="lede">HTML gives a page its structure, CSS gives it style, and JavaScript gives it behavior. Here's what JavaScript can do, how it runs in the browser, how to add it to a page, and a first look at a small program.</p>
+    <div class="objectives">
+      <p class="callout-title">You'll be able to</p>
+      <ul>
+        <li>Describe what HTML, CSS and JavaScript each add to a page.</li>
+        <li>Explain how the browser runs JavaScript: in its own tab, top to bottom.</li>
+        <li>Add JavaScript to a page with a script tag, and choose a loading strategy.</li>
+        <li>Break a small program into steps, the way a programmer does.</li>
+      </ul>
+    </div>
+  </header>
+
+  <div class="section-title"><span class="eyebrow">Read</span><h2>A high-level definition</h2></div>
+  <div class="prose">
+<p>JavaScript is a programming language that lets you make web pages do things: update content as you watch, show a map you can drag around, animate graphics, check a form before it's sent. It's the third layer of the web's layer cake:</p>
+    <ul>
+      <li><span class="term">HTML</span> gives the page structure and meaning: a heading, a paragraph, a button.</li>
+      <li><span class="term">CSS</span> styles it: colors, fonts, layout.</li>
+      <li><span class="term">JavaScript</span> adds behavior: what happens when someone clicks the button.</li>
+    </ul>
+    <pre class="snippet" data-lang="js">const button = document.querySelector("button");
+
+button.addEventListener("click", updateName);
+
+function updateName() {
+  const name = prompt("Enter a new name");
+  button.textContent = `Player 1: ${name}`;
+}</pre>
+    <p>Each layer builds on the one before. JavaScript can't add behavior to a button that doesn't exist.</p>
+    <div class="callout tip"><p class="callout-title">Tip</p><p>JavaScript has nothing to do with Java. The similar name was a marketing decision in 1995, and it has confused people ever since.</p></div>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Play</span><h2>Peel back the layers</h2><p>Turn each layer off and on to see what it adds.</p></div>
+  <section class="playground">
+    <div class="panel controls">
+      <span class="eyebrow">Layers</span>
+      <div class="layers">
+        <label class="layer"><input type="checkbox" id="l-html" checked><div><b>HTML</b><span>Structure: there is a button, and it says something.</span></div></label>
+        <label class="layer"><input type="checkbox" id="l-css" checked><div><b>CSS</b><span>Presentation: colors, font, border, shape.</span></div></label>
+        <label class="layer"><input type="checkbox" id="l-js" checked><div><b>JavaScript</b><span>Behavior: clicking the button lets you change the name.</span></div></label>
+      </div>
+      <p class="hint">Each layer builds on the one before it. JavaScript can't add behavior to a button that doesn't exist.</p>
+    </div>
+    <div class="stage-col">
+      <div class="stage demo" id="demo"></div>
+      <div class="codes" id="codes"></div>
+    </div>
+  </section>
+
+  <div class="section-title"><span class="eyebrow">Read</span><h2>So what can it really do?</h2></div>
+  <div class="prose">
+<p>The core language gives you the basics of programming: store values in <strong>variables</strong>, do math and work with text, and run code when something happens (an <strong>event</strong>, like a click).</p>
+    <p>On top of that, browsers provide <strong>APIs</strong>, ready-made toolkits you can use from JavaScript:</p>
+    <ul>
+      <li>The <strong>DOM API</strong> lets you change the HTML and CSS of the page, which is how pop-ups, menus and live updates work.</li>
+      <li>The <strong>Geolocation API</strong> finds where the user is (with permission).</li>
+      <li>The <strong>Canvas</strong> and <strong>WebGL</strong> APIs draw 2D and 3D graphics.</li>
+      <li>Audio and video APIs play and record media.</li>
+    </ul>
+    <p>There are also third-party APIs from companies like map and payment services. This course stays with the core language and the DOM.</p>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Read</span><h2>What is JavaScript doing on your page?</h2></div>
+  <div class="prose">
+<p>When a page loads, the browser reads the HTML, applies the CSS, and runs the JavaScript. The script can then keep changing the page while it's open.</p>
+    <h3>Browser security</h3>
+    <p>Each browser tab runs its code in its own separate environment. Code in one tab can't see or change another tab or another site, which stops a malicious site from reaching into your bank's tab.</p>
+    <h3>JavaScript running order</h3>
+    <p>The browser runs your code from top to bottom, one line at a time. So order matters: you can't use something before the line that creates it. Run this and read the error:</p>
+  </div>
+
+  <div class="runner"><textarea aria-label="Code editor">console.log("Starting the trail list");
+console.log(trail);       // used before it's created
+const trail = "Mesa Trail";</textarea></div>
+
+  <div class="prose">
+<p>Swap the last two lines and run it again. Reading errors like this one is a skill you'll practise in <a href="core-troubleshooting-js.html">Troubleshooting JavaScript</a>.</p>
+    <h3>Interpreted versus compiled code</h3>
+    <p>Some languages are <em>compiled</em> into a program before they run. JavaScript is <em>interpreted</em>: the browser takes your code as text and runs it. (Modern browsers compile it on the fly behind the scenes to make it fast, but you never have to.)</p>
+    <h3>Server-side versus client-side code</h3>
+    <p>JavaScript in a web page is <strong>client-side</strong>: it runs in the visitor's browser. <strong>Server-side</strong> code runs on the web server before the page is sent. JavaScript can run on servers too, with Node.js, but this course is all client-side.</p>
+    <h3>Dynamic versus static code</h3>
+    <p>A <strong>static</strong> page shows the same content every time. A <strong>dynamic</strong> page can change what it shows, for example by building a list from data or updating a score. JavaScript is what makes a page dynamic in the browser.</p>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Read</span><h2>How do you add JavaScript to your page?</h2></div>
+  <div class="prose">
+<p>JavaScript goes in a <code>&lt;script&gt;</code> element.</p>
+    <h3>Internal JavaScript</h3>
+    <p>You can write the code inside the element, usually just before <code>&lt;/body&gt;</code>, so the elements above it already exist when it runs.</p>
+    <h3>External JavaScript</h3>
+    <p>Usually, it's better to keep JavaScript in its own file, just as CSS has its own stylesheet, and link it from the <code>&lt;head&gt;</code>:</p>
+    <pre class="snippet" data-lang="html">&lt;script defer src="script.js"&gt;&lt;/script&gt;</pre>
+    <p>MDN's examples use <code>type="module"</code> instead of <code>defer</code>. Modules wait in the same way, but they only work when the page is served by a web server (GitHub Pages, or a local one like VS Code's Live Server), not when you double-click the file.</p>
+    <h3>Inline JavaScript handlers</h3>
+    <p>You'll see old code like <code>&lt;button onclick="createParagraph()"&gt;</code>. Don't do this: it mixes behavior into your HTML, and you'd have to add the attribute to every button by hand.</p>
+    <h3>Using addEventListener instead</h3>
+    <p>Keep the behavior in your script, and attach it from there. This finds every button and gives each one the same behavior:</p>
+    <pre class="snippet" data-lang="js">const buttons = document.querySelectorAll("button");
+
+for (const button of buttons) {
+  button.addEventListener("click", createParagraph);
+}</pre>
+    <h3>Script loading strategies</h3>
+    <p>The browser reads HTML from top to bottom. A plain <code>&lt;script src&gt;</code> in the head makes it stop, download and run the script <em>before</em> the body exists, so the script can't find the elements it needs. <span class="term">defer</span> (or <code>type="module"</code>) says: download now, but run after the whole page has been read. (<code>async</code> runs as soon as it's downloaded, in any order, which suits independent scripts like analytics.)</p>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Play</span><h2>Where does the script tag go?</h2><p>Pick a placement and see what happens as the page loads.</p></div>
+  <section class="playground">
+    <div class="panel controls">
+      <div class="control"><label for="place">Placement</label>
+        <select id="place">
+          <option value="head">&lt;script src&gt; in &lt;head&gt;</option>
+          <option value="defer" selected>&lt;script defer src&gt; in &lt;head&gt;</option>
+          <option value="bottom">&lt;script&gt; at the end of &lt;body&gt;</option>
+          <option value="module-file">type="module", opened from your computer</option>
+          <option value="module-server">type="module", on a web server</option>
+        </select>
+      </div>
+      <p class="hint" id="place-why"></p>
+    </div>
+    <div class="stage-col">
+      <pre class="snippet" id="place-code"></pre>
+      <div class="panel timeline" id="timeline"></div>
+      <div class="verdict" id="verdict" role="status"></div>
+      <ol class="console" id="place-console" aria-label="Console output"></ol>
+    </div>
+  </section>
+
+  <div class="section-title"><span class="eyebrow">Read</span><h2>Comments</h2></div>
+  <div class="prose">
+<p>Comments are notes the browser ignores. Use them to explain <em>why</em> code does something:</p>
+  </div>
+
+  <div class="runner"><textarea aria-label="Code editor">// A single-line comment: the browser skips this line
+
+/*
+  A multi-line comment.
+  Good for a longer explanation.
+*/
+
+console.log("Comments don't run, but this does."); // a comment can go at the end of a line too</textarea></div>
+
+  <div class="section-title"><span class="eyebrow">Practice</span><h2>Your first lines of JavaScript</h2><p>Make the console say something. Press Run to see the output, then Check my work.</p></div>
+  <div id="ex-first"></div>
+
+  <div class="section-title"><span class="eyebrow">Read</span><h2>A first splash: thinking like a programmer</h2></div>
+  <div class="prose">
+<p>MDN's first project is a number guessing game. Before writing any code, a programmer breaks the idea into small steps:</p>
+    <ol>
+      <li>Pick a random number between 1 and 100.</li>
+      <li>Let the player guess, and record each guess.</li>
+      <li>Say whether the guess was right, too high or too low.</li>
+      <li>After 10 wrong guesses, or a right one, end the game and offer to start again.</li>
+    </ol>
+    <p>Each step becomes a few lines of code using things you'll learn in the next few weeks: <strong>variables</strong> to store the number and the guesses, <strong>conditionals</strong> to compare them, a <strong>function</strong> to check each guess, and an <strong>event</strong> to run it when the button is clicked.</p>
+    <pre class="snippet" data-lang="js">let randomNumber = Math.floor(Math.random() * 100) + 1;
+let guessCount = 1;
+
+function checkGuess() {
+  const userGuess = Number(guessField.value);
+  if (userGuess === randomNumber) {
+    lastResult.textContent = "Congratulations! You got it right!";
+  } else if (guessCount === 10) {
+    lastResult.textContent = "!!!GAME OVER!!!";
+  } else {
+    lastResult.textContent = "Wrong!";
+    lowOrHi.textContent = userGuess &lt; randomNumber ? "Last guess was too low!" : "Last guess was too high!";
+  }
+  guessCount++;
+}
+
+guessSubmit.addEventListener("click", checkGuess);</pre>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Play</span><h2>Play the game</h2><p>This is that program, running. You don't need to understand every line yet.</p></div>
+  <div class="gg" id="gg">
+    <h4>Number guessing game</h4>
+    <p>I've picked a number between 1 and 100. You have 10 turns.</p>
+    <form id="gg-form"><label for="gg-in">Enter a guess:</label><input id="gg-in" type="number" min="1" max="100" required><button class="btn run" id="gg-go">Submit guess</button></form>
+    <p class="guesses" id="gg-guesses"></p>
+    <p class="last" id="gg-last" aria-live="polite"></p>
+    <p class="hilo" id="gg-hilo"></p>
+    <button class="btn" type="button" id="gg-new" hidden>Start new game</button>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Practice</span><h2>Check a guess</h2><p>Write the heart of the game: the function that compares a guess with the secret number.</p></div>
+  <div id="ex-guess"></div>
+
+  <section class="notes">
+    <div class="panel">
+      <h2>Key ideas</h2>
+      <ul>
+        <li>HTML is structure, CSS is presentation, JavaScript is behavior.</li>
+        <li>Browser APIs (like the DOM) let JavaScript change the page, draw graphics and more.</li>
+        <li>Each tab runs its code separately, from top to bottom; you can't use something before it's created.</li>
+        <li>Link scripts with <code>&lt;script defer src="script.js"&gt;</code>, or <code>type="module"</code> on a server.</li>
+        <li>Attach behavior with <code>addEventListener</code>, not <code>onclick</code> attributes.</li>
+      </ul>
+    </div>
+    <div class="panel mistake">
+      <h2>Common mistakes</h2>
+      <ul>
+        <li>A plain <code>&lt;script src&gt;</code> in the head with no <code>defer</code>: the elements don't exist yet, so you get <code>null</code> errors.</li>
+        <li>Writing <code>&lt;script src="script.js" /&gt;</code>. A script tag always needs a closing <code>&lt;/script&gt;</code>.</li>
+        <li>Expecting <code>type="module"</code> to work from a double-clicked file.</li>
+        <li>A wrong path in <code>src</code>: nothing happens, and the console shows a 404 for the file.</li>
+      </ul>
+    </div>
+  </section>
+
+  <div class="section-title"><span class="eyebrow">Check yourself</span><h2>Quick check</h2></div>
+  <div class="panel quiz" id="quiz"></div>
+
+  <footer class="page-foot" data-book-nav><a href="book-2.html">← Contents</a></footer>
+</main>
+
+<script src="js/runner.js"></script>
+<script>
+  const $ = (id) => document.getElementById(id);
+  let name = "Chris";
+  let renaming = false;
+
+  function renderLayers() {
+    const html = $("l-html").checked, css = $("l-css").checked, js = $("l-js").checked;
+    const demo = $("demo");
+    if (!html) {
+      demo.innerHTML = `<p class="note">No HTML, so there is nothing on the page. CSS has nothing to style and JavaScript has nothing to work with.</p>`;
+    } else if (renaming && js) {
+      demo.innerHTML = `<form class="rename" id="rename"><label for="nm" class="hint" style="width:100%;text-align:center">Enter a new name</label><input id="nm" value="${name.replace(/"/g, "&quot;")}" maxlength="20" autocomplete="off"><button class="btn run">OK</button></form>`;
+      $("nm").focus(); $("nm").select();
+      $("rename").addEventListener("submit", (e) => { e.preventDefault(); name = $("nm").value.trim() || name; renaming = false; renderLayers(); });
+    } else {
+      demo.innerHTML = `<button type="button" class="player ${css ? "styled" : "plain"}" id="player">Player 1: ${name.replace(/</g, "&lt;")}</button>` +
+        `<p class="note">${js ? "Click the button to change the name." : "Without JavaScript the button looks clickable, but clicking it does nothing."}</p>`;
+      if (js) $("player").addEventListener("click", () => { renaming = true; renderLayers(); });
+    }
+    const block = (label, on, html) => `<div class="${on ? "" : "off"}"><span class="label">${label}${on ? "" : " (off)"}</span><pre class="snippet">${html}</pre></div>`;
+    $("codes").innerHTML =
+      block("index.html", html, `<span class="tag-name">&lt;button</span> <span class="attr">class</span>=<span class="str">"player"</span><span class="tag-name">&gt;</span>Player 1: Chris<span class="tag-name">&lt;/button&gt;</span>`) +
+      block("style.css", css, `<span class="sel">.player</span> {\n  <span class="prop">font-family</span>: <span class="val">"Recursive", sans-serif</span>;\n  <span class="prop">background</span>: <span class="val">#ffc4a2</span>;\n  <span class="prop">border</span>: <span class="val">2px solid #ce4e03</span>;\n  <span class="prop">border-radius</span>: <span class="val">10px</span>;\n}`) +
+      block("script.js", js, hlJS(`const button = document.querySelector(".player");\n\nbutton.addEventListener("click", () => {\n  const name = prompt("Enter a new name");\n  button.textContent = \`Player 1: \${name}\`;\n});`));
+  }
+  ["l-html", "l-css", "l-js"].forEach((id) => $(id).addEventListener("change", () => { renaming = false; renderLayers(); }));
+
+  // Part 2: script placement. Times are illustrative: the page's HTML takes 10 units to read, the script 4 to download.
+  const PLACES = {
+    head: {
+      code: `&lt;head&gt;\n  <b>&lt;script src="script.js"&gt;&lt;/script&gt;</b>\n&lt;/head&gt;\n&lt;body&gt;\n  &lt;button class="player"&gt;…&lt;/button&gt;\n&lt;/body&gt;`,
+      parse: [[0, 1], [6, 9]], load: [1, 4], exec: [5, 1], blocked: [1, 5],
+      ok: false, verdict: "Broken. The script ran before the button existed.",
+      log: ["err", "Uncaught TypeError: Cannot read properties of null (reading 'addEventListener')\n    at script.js:3:8"],
+      why: "The browser stops reading HTML, downloads and runs the script, then carries on. When the script looks for .player, the button hasn't been read yet, so querySelector returns null.",
+    },
+    defer: {
+      code: `&lt;head&gt;\n  <b>&lt;script defer src="script.js"&gt;&lt;/script&gt;</b>\n&lt;/head&gt;\n&lt;body&gt;\n  &lt;button class="player"&gt;…&lt;/button&gt;\n&lt;/body&gt;`,
+      parse: [[0, 10]], load: [1, 4], exec: [10, 1],
+      ok: true, verdict: "Works. The script downloads early and runs after the HTML is read.",
+      log: ["log", "Button found: <button.player>"],
+      why: "defer downloads the script in the background while the HTML keeps loading, then runs it after the whole page has been read. This is the best choice when you open your files directly from your computer.",
+    },
+    bottom: {
+      code: `&lt;body&gt;\n  &lt;button class="player"&gt;…&lt;/button&gt;\n  <b>&lt;script src="script.js"&gt;&lt;/script&gt;</b>\n&lt;/body&gt;`,
+      parse: [[0, 10]], load: [10, 4], exec: [14, 1],
+      ok: true, verdict: "Works, but later. The download only starts after all the HTML is read.",
+      log: ["log", "Button found: <button.player>"],
+      why: "By the time the browser reaches the script, every element above it exists. The drawback: the browser doesn't discover the script until the end, so it starts downloading late.",
+    },
+    "module-file": {
+      code: `<span class="cmt">&lt;!-- file:///Users/you/site/index.html --&gt;</span>\n&lt;head&gt;\n  <b>&lt;script type="module" src="script.js"&gt;&lt;/script&gt;</b>\n&lt;/head&gt;`,
+      parse: [[0, 10]], load: [], exec: null,
+      ok: false, verdict: "Blocked. Modules won't load from a file you double-clicked.",
+      log: ["err", "Access to script at 'file:///Users/you/site/script.js' from origin 'null' has been blocked by CORS policy: Cross origin requests are only supported for protocol schemes: http, https, …"],
+      why: "For security, browsers only load modules over http:// or https://. Use defer while you're working from files, or run a local server, such as VS Code's Live Server extension.",
+    },
+    "module-server": {
+      code: `<span class="cmt">&lt;!-- https://you.github.io/site/ --&gt;</span>\n&lt;head&gt;\n  <b>&lt;script type="module" src="script.js"&gt;&lt;/script&gt;</b>\n&lt;/head&gt;`,
+      parse: [[0, 10]], load: [1, 4], exec: [10, 1],
+      ok: true, verdict: "Works. Modules behave like defer automatically.",
+      log: ["log", "Button found: <button.player>"],
+      why: "Module scripts are deferred by default, so the timing is the same as defer. MDN recommends type=\"module\" for new code. Once your site is on GitHub Pages or a local server, it just works.",
+    },
+  };
+  function renderPlace() {
+    const p = PLACES[$("place").value];
+    $("place-code").innerHTML = p.code.replace(/<b>/g, '<b style="color:var(--prop)">');
+    const pct = (n) => (n / 16) * 100 + "%";
+    const seg = (cls, [s, w]) => `<i class="${cls}" style="left:${pct(s)};width:${pct(w)}"></i>`;
+    $("timeline").innerHTML =
+      `<div class="track"><span>Read HTML</span><div class="bar">${p.parse.map((x) => seg("parse", x)).join("")}${p.blocked ? seg("blocked", p.blocked) : ""}</div></div>` +
+      `<div class="track"><span>Download JS</span><div class="bar">${p.load.length ? seg("load", p.load) : ""}</div></div>` +
+      `<div class="track"><span>Run JS</span><div class="bar">${p.exec ? seg("exec", p.exec) : ""}</div></div>` +
+      `<div class="key"><span style="--c:var(--item-1)">reading HTML</span><span style="--c:var(--item-3)">downloading</span><span style="--c:var(--item-2)">running</span>${p.blocked ? '<span style="--c:var(--bad)">HTML paused</span>' : ""}</div>`;
+    $("verdict").className = "verdict " + (p.ok ? "good" : "bad");
+    $("verdict").textContent = p.verdict;
+    $("place-console").innerHTML = `<li class="${p.log[0]}"></li>`;
+    $("place-console").firstChild.textContent = p.log[1];
+    $("place-why").textContent = p.why;
+  }
+  $("place").addEventListener("change", renderPlace);
+
+
+  renderLayers(); renderPlace();
+
+  // --- Number guessing game ---
+  let ggNum, ggCount;
+  function ggReset() {
+    ggNum = Math.floor(Math.random() * 100) + 1; ggCount = 1;
+    $("gg-guesses").textContent = ""; $("gg-last").textContent = ""; $("gg-last").className = "last"; $("gg-hilo").textContent = "";
+    $("gg-in").disabled = false; $("gg-go").disabled = false; $("gg-new").hidden = true; $("gg-in").value = "";
+  }
+  function ggEnd() { $("gg-in").disabled = true; $("gg-go").disabled = true; $("gg-new").hidden = false; $("gg-new").focus(); }
+  $("gg-form").addEventListener("submit", (e) => {
+    e.preventDefault();
+    const g = Number($("gg-in").value);
+    if (!g) return;
+    if (ggCount === 1) $("gg-guesses").textContent = "Previous guesses:";
+    $("gg-guesses").textContent += " " + g;
+    if (g === ggNum) { $("gg-last").textContent = "Congratulations! You got it right!"; $("gg-last").className = "last right"; $("gg-hilo").textContent = ""; ggEnd(); }
+    else if (ggCount === 10) { $("gg-last").textContent = `!!!GAME OVER!!! It was ${ggNum}.`; $("gg-last").className = "last wrong"; $("gg-hilo").textContent = ""; ggEnd(); }
+    else { $("gg-last").textContent = "Wrong!"; $("gg-last").className = "last wrong"; $("gg-hilo").textContent = g < ggNum ? "Last guess was too low!" : "Last guess was too high!"; }
+    ggCount++; $("gg-in").value = ""; $("gg-in").focus();
+  });
+  $("gg-new").addEventListener("click", ggReset);
+  ggReset();
+</script>
+<script>
+  makeQuiz(document.getElementById("quiz"), [
+    { id: "q1", q: "Which layer makes a menu open when you click the hamburger icon?", opts: ["HTML", "CSS", "JavaScript"], a: 2, why: "Responding to a click is behavior, which is JavaScript's job." },
+    { id: "q2", q: "Your script is in the head with no attributes and logs null for every element. The quickest fix?", opts: ["Add defer", "Add async", "Move the CSS link"], a: 0, why: "defer waits until the HTML has been read before running the script." },
+    { id: "q3", q: "You open index.html by double-clicking it, and your type=\"module\" script is blocked. Why?", opts: ["Modules need a server", "The file is too big", "Modules need the .mjs extension"], a: 0, why: "Browsers only load modules over http(s). Use defer locally, or run a local server." },
+    { id: "q4", q: "Which is the recommended way to run code when a button is clicked?", opts: ['onclick="go()" in the HTML', "addEventListener in script.js"], a: 1, why: "MDN advises against inline handlers. Keep behavior in your JavaScript file." },
+    { id: "q5", q: "This code logs an error: console.log(trail); const trail = \"Mesa\"; Why?", opts: ["Strings can't be logged", "JavaScript runs top to bottom, so trail doesn't exist yet", "const can't hold text"], a: 1, why: "You can't use a variable before the line that creates it." },
+    { id: "q6", q: "Where does client-side JavaScript run?", opts: ["On the web server", "In the visitor's browser", "In the code editor"], a: 1, why: "Client-side code runs in the browser; server-side code runs before the page is sent." },
+  ]);
+
+  makeExercise(document.getElementById("ex-first"), {
+    title: "Hello, Boulder",
+    task: `<ol>
+      <li>Log the text <code>Hello, Boulder!</code></li>
+      <li>Log the result of <code>6.7 + 3.4</code>, letting JavaScript do the math.</li>
+      <li>Add a one-line comment above your code that says what it does.</li>
+    </ol>`,
+    js: `// Your code goes here
+`,
+    solution: `// Say hello, then add up two trail lengths
+console.log("Hello, Boulder!");
+console.log(6.7 + 3.4);`,
+    hints: [
+      "console.log(\"Hello, Boulder!\"); Text goes in quotes.",
+      "Numbers don't need quotes: console.log(6.7 + 3.4);",
+      "A comment starts with //. Replace the placeholder comment with your own.",
+    ],
+    checks: [
+      { label: "Logs “Hello, Boulder!”", test: ({ logs }) => logs.includes("Hello, Boulder!") },
+      { label: "Logs the sum of 6.7 and 3.4", test: ({ logs, code }) => logs.includes(String(6.7 + 3.4)) && /6\.7\s*\+\s*3\.4/.test(code.js) },
+      { label: "Has a comment of your own", test: ({ code }) => /\/\/\s*\S/.test(code.js) && !/\/\/ Your code goes here/.test(code.js) },
+    ],
+  });
+
+  makeExercise(document.getElementById("ex-guess"), {
+    title: "Too high, too low or correct",
+    task: `<p><code>checkGuess(guess, target)</code> should return one of three messages. The first case is done for you.</p>
+    <ol>
+      <li>If the guess is bigger than the target, return <code>"Too high!"</code>.</li>
+      <li>Otherwise, return <code>"Too low!"</code>.</li>
+    </ol>`,
+    js: `function checkGuess(guess, target) {
+  if (guess === target) {
+    return "Correct!";
+  }
+  // If guess is bigger than target, return "Too high!"
+
+  // Otherwise, return "Too low!"
+
+}
+
+console.log(checkGuess(50, 50));
+console.log(checkGuess(70, 50));
+console.log(checkGuess(20, 50));`,
+    solution: `function checkGuess(guess, target) {
+  if (guess === target) {
+    return "Correct!";
+  }
+  if (guess > target) {
+    return "Too high!";
+  }
+  return "Too low!";
+}
+
+console.log(checkGuess(50, 50));
+console.log(checkGuess(70, 50));
+console.log(checkGuess(20, 50));`,
+    expose: ["checkGuess"],
+    hints: [
+      "Copy the shape of the first if: if (guess > target) { return \"Too high!\"; }",
+      "Once a return runs, the function stops, so the last line can just be return \"Too low!\";",
+    ],
+    checks: [
+      { label: "A right guess returns “Correct!”", test: ({ fns }) => fns.checkGuess(42, 42) === "Correct!" },
+      { label: "A guess that's too big returns “Too high!”", test: ({ fns }) => fns.checkGuess(90, 42) === "Too high!" && fns.checkGuess(43, 42) === "Too high!" },
+      { label: "A guess that's too small returns “Too low!”", test: ({ fns }) => fns.checkGuess(1, 42) === "Too low!" && fns.checkGuess(41, 42) === "Too low!" },
+    ],
+  });
+</script>
+</body>
+</html>

@@ -1,0 +1,485 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Functions · Core Web Development</title>
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="core.css">
+<style>
+  .check { display: flex; gap: 8px; align-items: center; cursor: pointer; font-size: 0.95rem; }
+  .check input { accent-color: var(--cobalt); }
+  .num-in { font: 1rem var(--font-code); font-variation-settings: "MONO" 1; padding: 7px 10px; border: 1px solid var(--line); border-radius: 6px; background: var(--paper); color: var(--ink); width: 100%; }
+  .machine { display: grid; grid-template-columns: minmax(0, 1fr); gap: 10px; }
+  .stagebox { display: grid; gap: 4px; padding: 10px 14px; border-radius: 8px; background: var(--panel); border: 1px solid var(--line); }
+  .stagebox .eyebrow { font-size: 0.68rem; }
+  .stagebox .v { font: 600 0.95rem var(--font-code); font-variation-settings: "MONO" 1; overflow-wrap: anywhere; }
+  .stagebox.bad { border-color: var(--bad); background: var(--bad-soft); } .stagebox.bad .v { color: var(--bad); }
+  .stagebox.good { border-color: var(--good); } .stagebox.good .v { color: var(--good); }
+  .down { text-align: center; color: var(--muted); font: 600 0.8rem var(--font-code); font-variation-settings: "MONO" 1; }
+  .ways { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(400px, 100%), 1fr)); gap: 12px; }
+  .ways .panel { display: grid; gap: 8px; align-content: start; }
+  .ways h3 { font-size: 1rem; }
+  .ways p { font-size: 0.9rem; color: var(--muted); }
+  .scope-grid { display: grid; grid-template-columns: minmax(90px, auto) repeat(3, minmax(0, 1fr)); gap: 6px; align-items: stretch; }
+  .scope-grid .h { font: 600 0.8rem var(--font-code); font-variation-settings: "MONO" 1; color: var(--muted); display: flex; align-items: center; justify-content: center; text-align: center; }
+  .scope-grid .h.row { justify-content: flex-start; }
+  .scope-grid .btn { font-size: 0.8rem; padding: 8px 4px; }
+  .scope-grid .btn.ok { background: var(--good-soft); border-color: var(--good); color: var(--good); }
+  .scope-grid .btn.no { background: var(--bad-soft); border-color: var(--bad); color: var(--bad); }
+  .scope-out { font-size: 0.95rem; min-height: 1.5em; }
+
+  #dm-code { white-space: pre-wrap; }
+  .msg-stage { position: relative; min-height: 160px; padding: 14px; border: 1px dashed var(--line); border-radius: 8px; display: grid; place-items: center; }
+  .msg-box { width: min(100%, 320px); border-radius: 8px; color: #fff; background: #3a5a7a; padding: 12px 14px 12px 44px; position: relative; box-shadow: 0 4px 14px rgb(0 0 0 / 20%); }
+  .msg-box.warning { background: #b5651d; }
+  .msg-box.chat { background: #2e7d4f; }
+  .msg-box::before { position: absolute; left: 14px; top: 11px; font-size: 1.2em; content: "i"; font-weight: 700; font-style: italic; font-family: Georgia, serif; }
+  .msg-box.warning::before { content: "!"; font-style: normal; font-family: inherit; }
+  .msg-box.chat::before { content: "…"; font-style: normal; }
+  .msg-box p { margin: 0; padding-right: 20px; }
+  .msg-box button { position: absolute; right: 8px; top: 6px; background: none; border: 0; color: inherit; font-size: 1.1em; cursor: pointer; }
+</style>
+<script src="book-2.js"></script>
+<script src="js/progress.js"></script>
+<script src="js/chrome.js"></script>
+<script src="js/quiz.js"></script>
+</head>
+<body>
+<main class="wrap">
+  <nav class="crumbs" aria-label="Site"><a class="crumb" href="book-2.html">← Contents</a><a class="crumb" href="glossary.html">Glossary</a></nav>
+  <header class="page-head">
+    <h1>Functions</h1>
+    <p class="lede">A function is a named block of code you can run whenever you need it. You'll use the browser's built-in functions, write your own, pass values in and get values back.</p>
+    <div class="objectives">
+      <p class="callout-title">You'll be able to</p>
+      <ul>
+        <li>Tell built-in functions, methods and your own functions apart, and call them.</li>
+        <li>Use parameters, arguments and default parameters.</li>
+        <li>Write anonymous and arrow functions, and pass functions to other functions.</li>
+        <li>Return a value from a function and use it, and explain function scope.</li>
+      </ul>
+    </div>
+  </header>
+
+  <div class="section-title"><span class="eyebrow">Read</span><h2>Functions: reusable blocks of code</h2></div>
+  <div class="prose">
+    <p>A <span class="term">function</span> is a named block of code that you can run whenever you need it, as many times as you like. You pass values in, it does some work, and it can hand a value back.</p>
+    <pre class="snippet" data-lang="js">function hikeTime(miles, pace = 2) {
+  return miles / pace;
+}
+const hours = hikeTime(6, 3);   // 2</pre>
+    <p>The names in the definition, <code>miles</code> and <code>pace</code>, are <span class="term">parameters</span>: placeholders waiting for values. The values you pass when you call it, <code>6</code> and <code>3</code>, are <span class="term">arguments</span>. <code>pace = 2</code> is a default, used when no second argument is given.</p>
+    <p>To run a function, you call it with parentheses: <code>hikeTime(6, 3)</code>. Without the parentheses, <code>hikeTime</code> just refers to the function itself without running it, which is exactly what you want when you pass it to an event listener, but a bug everywhere else.</p>
+    <p><code>return</code> sends a value back to wherever the function was called, and ends the function right there. Forget the <code>return</code> and the function still runs, but its <span class="term">return value</span> is <code>undefined</code>.</p>
+    <p>You'll see functions written several ways. The <span class="term">arrow function</span> is the short version: <code>const hikeTime = (miles, pace = 2) =&gt; miles / pace;</code>. It does the same thing.</p>
+    <p>Variables declared inside a function only exist inside it. That's called <span class="term">scope</span>, and it's a good thing: two functions can each have their own <code>total</code> without interfering with each other.</p>
+    <div class="callout tip"><p class="callout-title">Tip</p><p>A good function does one job and is named with a verb that says what: <code>hikeTime()</code>, <code>showError()</code>, <code>addTrail()</code>.</p></div>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Read</span><h2>Built-in browser functions</h2></div>
+  <div class="prose">
+<p>You've been using functions since your first line of JavaScript. Every time you write something with parentheses after it, you're calling one:</p>
+    <pre class="snippet" data-lang="js">const myText = "I am a string";
+const newString = myText.replace("string", "sausage");   // "I am a sausage"
+
+const myArray = ["I", "love", "chocolate", "frogs"];
+const madeAString = myArray.join(" ");                   // "I love chocolate frogs"
+
+const myNumber = Math.random();                          // between 0 and 1</pre>
+    <p>These are built into the language or the browser. Someone wrote them once so you don't have to.</p>
+    <h3>Functions versus methods</h3>
+    <p>A function that belongs to an object is called a <span class="term">method</span>. <code>replace()</code> belongs to strings, <code>join()</code> to arrays, <code>random()</code> to the <code>Math</code> object. You'll learn more about objects in the next lesson. For now, a method is just a function you call with a dot in front of it.</p>
+    <h3>Custom functions</h3>
+    <p>The functions you write yourself, with the <code>function</code> keyword and a name of your choosing, are <b>custom functions</b>. <code>hikeTime()</code> above is one.</p>
+    <h3>Invoking functions</h3>
+    <p>Defining a function doesn't run it. You run it (call or <em>invoke</em> it) by writing its name followed by parentheses. You can call it as many times as you like.</p>
+  </div>
+
+  <div class="runner"><textarea aria-label="Code editor">function myFunction() {
+  console.log("hello");
+}
+
+myFunction();   // runs it
+myFunction();   // and again
+console.log(myFunction);   // no () — just refers to the function</textarea></div>
+
+  <div class="section-title"><span class="eyebrow">Read</span><h2>Function parameters</h2></div>
+  <div class="prose">
+<p>Some functions need information to do their job. <code>Math.random()</code> needs nothing; <code>myText.replace("string", "sausage")</code> needs two things: what to find and what to put in its place. Those values are <span class="term">arguments</span>; the names that receive them inside the definition are <span class="term">parameters</span>.</p>
+    <h3>Optional parameters</h3>
+    <p>Some built-in parameters are optional. <code>join()</code> without an argument uses a comma: <code>["a", "b"].join()</code> gives <code>"a,b"</code>.</p>
+    <h3>Default parameters</h3>
+    <p>In your own functions, you make a parameter optional by giving it a <span class="term" data-term="Parameter">default</span> with <code>=</code>:</p>
+  </div>
+
+  <div class="runner"><textarea aria-label="Code editor">function hello(name = "Chris") {
+  console.log(`Hello ${name}!`);
+}
+
+hello("Ari");   // Hello Ari!
+hello();        // Hello Chris!</textarea></div>
+
+  <div class="section-title"><span class="eyebrow">Play</span><h2>Follow the values</h2><p>Change the arguments and follow each value through the function. Then try the two common mistakes.</p></div>
+  <section class="playground">
+    <div class="panel controls">
+      <span class="eyebrow">Arguments</span>
+      <div class="control"><label for="miles">miles</label><input class="num-in" id="miles" type="number" step="0.1" value="6.7"></div>
+      <div class="control"><label for="pace">pace (leave empty to use the default)</label><input class="num-in" id="pace" type="number" step="0.5" value="2.5"></div>
+      <span class="eyebrow" style="margin-top:6px">Common mistakes</span>
+      <label class="check"><input type="checkbox" id="no-return">Forget the return</label>
+      <label class="check"><input type="checkbox" id="no-parens">Call it without ()</label>
+    </div>
+    <div class="stage-col">
+      <pre class="snippet" id="fn-code"></pre>
+      <div class="machine" id="machine" aria-live="polite"></div>
+    </div>
+  </section>
+
+  <div class="section-title"><span class="eyebrow">Read</span><h2>Anonymous functions and arrow functions</h2></div>
+  <div class="prose">
+<p>A function doesn't need a name. An <span class="term">anonymous function</span> is usually passed straight into another function that will call it later. Here, <code>addEventListener()</code> calls it whenever a key is pressed:</p>
+    <pre class="snippet" data-lang="js">textBox.addEventListener("keydown", function (event) {
+  console.log(`You pressed "${event.key}".`);
+});</pre>
+    <p>An <span class="term">arrow function</span> is a shorter way to write the same thing: drop <code>function</code> and put <code>=&gt;</code> after the parameters:</p>
+    <pre class="snippet" data-lang="js">textBox.addEventListener("keydown", (event) =&gt; {
+  console.log(`You pressed "${event.key}".`);
+});</pre>
+    <p>With exactly one parameter, the parentheses are optional. If the body is a single <code>return</code> line, the braces and the word <code>return</code> can go too:</p>
+  </div>
+
+  <div class="runner"><textarea aria-label="Code editor">const originals = [1, 2, 3];
+
+const doubled = originals.map(function (item) {
+  return item * 2;
+});
+const doubledArrow = originals.map((item) =&gt; item * 2);
+
+console.log(doubled);
+console.log(doubledArrow);</textarea></div>
+
+  <div class="section-title"><span class="eyebrow">Look</span><h2>Three ways to write a function</h2><p>All three do the same thing. You'll see all of them in code online. MDN recommends arrow functions for short functions, especially ones you pass to another function.</p></div>
+  <div class="ways" id="ways"></div>
+
+  <div class="section-title"><span class="eyebrow">Read</span><h2>Function scope and conflicts</h2></div>
+  <div class="prose">
+<p>Variables created inside a function only exist inside it: that's the function's <span class="term">scope</span>. Code outside can't see them. Variables declared outside every function are in the <span class="term" data-term="Scope">global scope</span> and can be seen everywhere.</p>
+    <p>That's useful. If two scripts on the same page both had a global <code>name</code>, one would overwrite the other. Inside functions, each can have its own <code>total</code> or <code>name</code> without clashing.</p>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Play</span><h2>Scope: where can a variable be seen?</h2><p>Click a cell to try using that variable from that place.</p></div>
+  <section class="playground even">
+    <pre class="snippet" id="scope-code"></pre>
+    <div class="stage-col">
+      <div class="panel scope-grid" id="scope-grid"></div>
+      <ol class="console" id="scope-out" aria-label="Console output"><li class="muted">Click a cell.</li></ol>
+      <p class="scope-out hint" id="scope-why"></p>
+    </div>
+  </section>
+
+  <div class="section-title"><span class="eyebrow">Read</span><h2>Build your own function</h2></div>
+  <div class="prose">
+<p>MDN's walkthrough builds a <code>displayMessage()</code> function that pops up a message box. It starts with no parameters, always showing the same text, then gains a <code>msgText</code> parameter for the message and a <code>msgType</code> parameter for the style. That's the general pattern: get it working for one case, then turn whatever changes into a parameter.</p>
+    <pre class="snippet" data-lang="js">function displayMessage(msgText, msgType) {
+  const panel = document.createElement("div");
+  panel.setAttribute("class", "msg-box");
+  html.appendChild(panel);
+
+  const msg = document.createElement("p");
+  msg.textContent = msgText;
+  panel.appendChild(msg);
+  // … a close button, and a class for msgType
+}
+
+btn.addEventListener("click", () =&gt; displayMessage("Brr, it's cold!", "warning"));</pre>
+    <p>Notice the last line: <code>addEventListener</code> needs a function to call later, so you wrap the call in an arrow function. Writing <code>displayMessage(…)</code> directly would run it immediately.</p>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Play</span><h2>displayMessage()</h2><p>Fill in the two arguments and call the function.</p></div>
+  <section class="playground">
+    <div class="panel controls">
+      <div class="control"><label for="dm-text">msgText</label><input class="text-in" id="dm-text" type="text" value="Your inbox is almost full"></div>
+      <div class="control"><label for="dm-type">msgType</label><select id="dm-type"><option value="">(none)</option><option value="warning" selected>warning</option><option value="chat">chat</option></select></div>
+      <button class="btn run" type="button" id="dm-go">Call displayMessage()</button>
+    </div>
+    <div class="stage-col">
+      <pre class="snippet" id="dm-code" data-lang="js"></pre>
+      <div class="msg-stage" id="dm-stage"><p class="hint">Nothing shown yet.</p></div>
+    </div>
+  </section>
+
+  <div class="section-title"><span class="eyebrow">Try it</span><h2>Write your own</h2><p>Change the arguments, add a default, or write a new function that calls these.</p></div>
+  <div class="runner"><textarea aria-label="Code editor">function greet(name = "friend") {
+  return `Hi, ${name}!`;
+}
+
+const shout = (text) => text.toUpperCase() + "!";
+
+function warn(trail, isClosed) {
+  if (isClosed) {
+    return shout(`${trail} is closed`);
+  }
+  return `${trail} is open`;
+}
+
+console.log(greet("Ava"));
+console.log(greet());
+console.log(warn("Royal Arch", true));
+console.log(warn("Mesa", false));</textarea></div>
+
+  <div class="section-title"><span class="eyebrow">Read</span><h2>Function return values</h2></div>
+  <div class="prose">
+<h3>What are return values?</h3>
+    <p>Some functions hand a value back when they finish: <code>myText.replace("string", "sausage")</code> returns the new string, which you can store in a variable. Others, like <code>displayMessage()</code>, just do something and return nothing (strictly, they return <code>undefined</code>).</p>
+    <h3>Using return values in your own functions</h3>
+    <p>Use the <code>return</code> keyword. It sends a value back to the place the function was called, and ends the function there. That value can be stored, printed or passed straight into another function:</p>
+  </div>
+
+  <div class="runner"><textarea aria-label="Code editor">function squared(num) {
+  return num * num;
+}
+
+function cubed(num) {
+  return num * num * num;
+}
+
+function factorial(num) {
+  if (num &lt; 0) return undefined;
+  if (num === 0) return 1;
+  let x = num - 1;
+  while (x &gt; 1) {
+    num *= x;
+    x--;
+  }
+  return num;
+}
+
+const input = "5";
+if (isNaN(input)) {
+  console.log("Please enter a number.");
+} else {
+  console.log(`${input} squared is ${squared(input)}.`);
+  console.log(`${input} cubed is ${cubed(input)}.`);
+  console.log(`${input} factorial is ${factorial(input)}.`);
+}</textarea></div>
+
+  <div class="prose">
+<p><code>isNaN()</code> ("is Not a Number") is another built-in: it returns <code>true</code> if its argument can't be turned into a number. Try changing <code>input</code> to <code>"hello"</code>.</p>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Practice</span><h2>Write functions that return</h2><p>Fix a function that forgets to return, give it a default, and write a second one as an arrow function.</p></div>
+  <div id="ex-func"></div>
+
+  <div class="section-title"><span class="eyebrow">Practice</span><h2>Functions that use functions</h2><p>Write small functions that each do one job, then combine them.</p></div>
+  <div id="ex-math"></div>
+
+  <section class="notes">
+    <div class="panel">
+      <h2>Key ideas</h2>
+      <ul>
+        <li>A function is a named, reusable block of code. A method is a function that belongs to an object.</li>
+        <li><b>Parameters</b> are the names in the definition; <b>arguments</b> are the values you pass in.</li>
+        <li>Default parameters fill in missing arguments: <code>function greet(name = "friend")</code>.</li>
+        <li>Anonymous and arrow functions are often passed to other functions, like <code>map()</code> or <code>addEventListener()</code>.</li>
+        <li><code>return</code> sends a value back and ends the function. Variables declared inside a function stay inside it.</li>
+      </ul>
+    </div>
+    <div class="panel mistake">
+      <h2>Common mistakes</h2>
+      <ul>
+        <li>Using <code>console.log()</code> where you meant <code>return</code>. The value is printed, but the caller gets <code>undefined</code>.</li>
+        <li>Passing a call instead of a function: <code>btn.addEventListener("click", go())</code> runs <code>go</code> right away.</li>
+        <li>Using a variable declared inside a function from outside it: <code>ReferenceError</code>.</li>
+        <li>Putting code after <code>return</code> and expecting it to run.</li>
+      </ul>
+    </div>
+  </section>
+
+  <div class="section-title"><span class="eyebrow">Check yourself</span><h2>Quick check</h2></div>
+  <div class="panel quiz" id="quiz"></div>
+
+  <footer class="page-foot" data-book-nav><a href="book-2.html">← Contents</a></footer>
+</main>
+
+<script src="js/runner.js"></script>
+<script>
+  const $ = (id) => document.getElementById(id);
+  function machine() {
+    const noRet = $("no-return").checked, noParens = $("no-parens").checked;
+    const milesRaw = $("miles").value.trim(), paceRaw = $("pace").value.trim();
+    const miles = milesRaw === "" ? undefined : Number(milesRaw);
+    const pace = paceRaw === "" ? 2 : Number(paceRaw);
+    const args = [milesRaw || undefined, paceRaw || null].filter((a) => a !== null).map((a) => a === undefined ? "undefined" : a);
+    const call = noParens ? "hikeTime" : `hikeTime(${args.join(", ")})`;
+    $("fn-code").innerHTML = hlJS(`function hikeTime(miles, pace = 2) {\n  const hours = miles / pace;\n  ${noRet ? "console.log(hours);" : "return hours;"}\n}\n\nconst time = ${call};\nconsole.log(time);`);
+    const hours = miles / pace;
+    const box = (label, value, cls = "") => `<div class="stagebox ${cls}"><span class="eyebrow">${label}</span><span class="v">${value}</span></div>`;
+    const arrow = (t) => `<div class="down">↓ ${t}</div>`;
+    let html;
+    if (noParens) {
+      html = box("1. The call", "hikeTime  (no parentheses)") + arrow("nothing runs") +
+        box("time", "ƒ hikeTime(miles, pace = 2)", "bad") +
+        `<p class="hint">Without (), the function never runs. time just holds the function itself, so the console shows the function. Add () to call it.</p>`;
+    } else {
+      const fmt = (n) => (Number.isFinite(n) ? +n.toFixed(4) : String(n));
+      html = box("1. Arguments go in", call) + arrow("matched to parameters by position") +
+        box("2. Parameters", `miles = ${miles === undefined ? "undefined" : miles},  pace = ${pace}${paceRaw === "" ? "  (default)" : ""}`) + arrow("the body runs") +
+        box("3. Inside the function", `hours = ${miles === undefined ? "undefined" : miles} / ${pace} = ${fmt(hours)}`, Number.isNaN(hours) ? "bad" : "") + arrow(noRet ? "no return statement" : "return sends hours back") +
+        box("4. const time =", noRet ? "undefined" : fmt(hours), noRet || Number.isNaN(hours) ? "bad" : "good") +
+        `<p class="hint">${noRet ? `console.log printed ${fmt(hours)} inside the function, but nothing was returned, so time is undefined. Anything you want to use later must be returned.` : Number.isNaN(hours) ? "miles is missing, and undefined / pace is NaN. Arguments without a default are undefined when you leave them out." : `It takes about ${fmt(hours)} hours. The same function works for any trail. Just call it with different arguments.`}</p>`;
+    }
+    $("machine").innerHTML = html;
+  }
+  ["miles", "pace"].forEach((id) => $(id).addEventListener("input", machine));
+  ["no-return", "no-parens"].forEach((id) => $(id).addEventListener("change", machine));
+
+  const WAYS = [
+    { h: "Function declaration", c: "function double(n) {\n  return n * 2;\n}", p: "The classic form. It's hoisted: you can call it from code above where it's written." },
+    { h: "Function expression", c: "const double = function (n) {\n  return n * 2;\n};", p: "An anonymous function stored in a variable. Not hoisted, so define it before you use it." },
+    { h: "Arrow function", c: "const double = (n) => n * 2;", p: "Short form. With a single expression and no braces, the value is returned automatically. With braces, you need return." },
+  ];
+  $("ways").innerHTML = WAYS.map((w) => `<div class="panel"><h3>${w.h}</h3><pre class="snippet">${hlJS(w.c)}</pre><p>${w.p}</p></div>`).join("") +
+    `<div class="panel"><h3>Passed to another function</h3><pre class="snippet">${hlJS('btn.addEventListener("click", () => {\n  count++;\n});')}</pre><p>The most common use for an arrow function: a small function handed to a method, which calls it later.</p></div>`;
+
+  // Part 3: MDN's scope example
+  $("scope-code").innerHTML = hlJS(`const x = 1;          // global\n\nfunction a() {\n  const y = 2;        // only inside a()\n  output(/* ? */);\n}\n\nfunction b() {\n  const z = 3;        // only inside b()\n  output(/* ? */);\n}\n\noutput(/* ? */);      // from the global scope`);
+  const PLACES = [["global", "global scope"], ["a", "inside a()"], ["b", "inside b()"]];
+  const VARS = { x: { v: 1, home: "global" }, y: { v: 2, home: "a" }, z: { v: 3, home: "b" } };
+  $("scope-grid").innerHTML = `<span class="h">Call from</span>` + Object.keys(VARS).map((k) => `<span class="h">output(${k})</span>`).join("") +
+    PLACES.map(([p, label]) => `<span class="h row">${label}</span>` + Object.keys(VARS).map((k) => `<button class="btn" data-p="${p}" data-k="${k}" aria-label="output(${k}) from ${label}">?</button>`).join("")).join("");
+  $("scope-grid").addEventListener("click", (e) => {
+    const b = e.target.closest("button"); if (!b) return;
+    const { p, k } = b.dataset, v = VARS[k];
+    const ok = v.home === "global" || v.home === p;
+    b.textContent = ok ? String(v.v) : "Error"; b.classList.add(ok ? "ok" : "no");
+    const out = $("scope-out"); out.innerHTML = `<li class="${ok ? "log" : "err"}"></li>`;
+    out.firstChild.textContent = ok ? String(v.v) : `Uncaught ReferenceError: ${k} is not defined`;
+    $("scope-why").textContent = ok
+      ? (v.home === "global" ? `${k} is global, so it can be used anywhere.` : `${k} was declared inside ${p}(), and this call is inside ${p}() too.`)
+      : `${k} only exists inside ${v.home}(). From ${p === "global" ? "the global scope" : p + "()"}, it's invisible.`;
+  });
+
+
+  machine();
+
+  // --- displayMessage ---
+  function dmCall() {
+    const text = $("dm-text").value, type = $("dm-type").value;
+    $("dm-code").textContent = type ? `displayMessage("${text}", "${type}");` : `displayMessage("${text}");`;
+    const stage = $("dm-stage");
+    stage.innerHTML = "";
+    const panel = document.createElement("div");
+    panel.setAttribute("class", "msg-box" + (type ? " " + type : ""));
+    stage.appendChild(panel);
+    const msg = document.createElement("p");
+    msg.textContent = text;
+    panel.appendChild(msg);
+    const closeBtn = document.createElement("button");
+    closeBtn.type = "button";
+    closeBtn.textContent = "×";
+    closeBtn.setAttribute("aria-label", "Close message");
+    panel.appendChild(closeBtn);
+    closeBtn.addEventListener("click", () => { stage.innerHTML = '<p class="hint">Closed. Call it again.</p>'; });
+  }
+  $("dm-go").addEventListener("click", dmCall);
+  ["dm-text", "dm-type"].forEach((id) => $(id).addEventListener("input", () => {
+    const text = $("dm-text").value, type = $("dm-type").value;
+    $("dm-code").textContent = type ? `displayMessage("${text}", "${type}");` : `displayMessage("${text}");`;
+  }));
+  $("dm-type").dispatchEvent(new Event("input"));
+</script>
+<script>
+  makeQuiz(document.getElementById("quiz"), [
+    { id: "q1", q: "What does this log?", pre: "function add(a, b) {\n  console.log(a + b);\n}\nconst sum = add(2, 3);\nconsole.log(sum);", opts: ["5 then 5", "5 then undefined", "undefined"], a: 1, why: "add() logs 5 itself but returns nothing, so sum is undefined." },
+    { id: "q2", q: "What does this log?", pre: "const square = (n) => n * n;\nconsole.log(square(4));", opts: ["16", "undefined", "8"], a: 0, why: "A one-line arrow function without braces returns its value automatically." },
+    { id: "q3", q: "What does this log?", pre: 'function hi(name = "there") {\n  return "Hi " + name;\n}\nconsole.log(hi());', opts: ["Hi undefined", "Hi there", "Hi"], a: 1, why: "No argument was passed, so the default value is used." },
+    { id: "q4", q: "Which runs go() only when the button is clicked?", opts: ['btn.addEventListener("click", go());', 'btn.addEventListener("click", go);'], a: 1, why: "go() calls it right away. Pass go itself and the browser calls it on each click." },
+    { id: "q5", q: "What does this log?", pre: "function check(n) {\n  return n > 0;\n  console.log(\"checked\");\n}\nconsole.log(check(5));", opts: ["checked, then true", "true", "checked"], a: 1, why: "return ends the function, so the line after it never runs." },
+    { id: "q90", q: "Which of these is a method?", opts: ["alert()", "myArray.join()", "function go() {}"], a: 1, why: "join() belongs to arrays, so it's called with a dot: a method." },
+    { id: "q91", q: "What does a function with no return statement return?", opts: ["0", "null", "undefined"], a: 2, why: "Without return, the caller gets undefined." },
+  ]);
+
+  makeExercise(document.getElementById("ex-func"), {
+    title: "Hike time and round trips",
+    task: `<ol>
+      <li><code>hikeTime(miles, pace)</code> logs <code>undefined</code>. Make it return the hours: miles divided by pace.</li>
+      <li>Give <code>pace</code> a default of 2, so <code>hikeTime(6)</code> returns 3.</li>
+      <li>Write an arrow function <code>roundTrip(miles)</code> that returns twice the distance.</li>
+    </ol>`,
+    js: `function hikeTime(miles, pace) {
+  miles / pace;
+}
+
+console.log(hikeTime(6, 3));`,
+    solution: `function hikeTime(miles, pace = 2) {
+  return miles / pace;
+}
+
+const roundTrip = (miles) => miles * 2;
+
+console.log(hikeTime(6, 3));
+console.log(roundTrip(3.4));`,
+    expose: ["hikeTime", "roundTrip"],
+    hints: [
+      "Without return, a function hands back undefined.",
+      "A default goes in the parameter list: function hikeTime(miles, pace = 2).",
+      "const roundTrip = (miles) => miles * 2;",
+    ],
+    checks: [
+      { label: "hikeTime(6, 3) returns 2", test: ({ fns }) => fns.hikeTime(6, 3) === 2 },
+      { label: "hikeTime(6) returns 3", test: ({ fns }) => fns.hikeTime(6) === 3 },
+      { label: "roundTrip is an arrow function returning double", test: ({ fns, code }) => fns.roundTrip(3.4) === 6.8 && fns.roundTrip(0) === 0 && /roundTrip\s*=\s*(\([^)]*\)|\w+)\s*=>/.test(code.js) },
+    ],
+  });
+
+  makeExercise(document.getElementById("ex-math"), {
+    title: "Squares, cubes and a label",
+    task: `<ol>
+      <li>Write <code>squared(num)</code> and <code>cubed(num)</code>, each returning the result.</li>
+      <li>Write <code>describe(num, power = "squared")</code>. It returns <code>"3 squared is 9"</code>, or <code>"3 cubed is 27"</code> when <code>power</code> is <code>"cubed"</code>. Call your other two functions to get the numbers.</li>
+      <li>If <code>num</code> isn't a number (use <code>isNaN()</code>), <code>describe</code> returns <code>"Please enter a number"</code>.</li>
+    </ol>`,
+    js: `function squared(num) {
+  console.log(num * num);
+}
+
+// cubed
+
+// describe
+
+console.log(squared(3));`,
+    solution: `function squared(num) {
+  return num * num;
+}
+
+function cubed(num) {
+  return num * num * num;
+}
+
+function describe(num, power = "squared") {
+  if (isNaN(num)) {
+    return "Please enter a number";
+  }
+  const result = power === "cubed" ? cubed(num) : squared(num);
+  return \`\${num} \${power} is \${result}\`;
+}
+
+console.log(describe(3));
+console.log(describe(3, "cubed"));`,
+    expose: ["squared", "cubed", "describe"],
+    hints: [
+      "squared logs its answer but doesn't return it. Swap console.log for return.",
+      "The default goes in the parameter list: function describe(num, power = \"squared\").",
+      "Return early: if (isNaN(num)) { return \"Please enter a number\"; }",
+    ],
+    checks: [
+      { label: "squared(4) returns 16 and cubed(2) returns 8", test: ({ fns }) => fns.squared(4) === 16 && typeof fns.cubed === "function" && fns.cubed(2) === 8 },
+      { label: "describe(3) returns “3 squared is 9”", test: ({ fns }) => typeof fns.describe === "function" && fns.describe(3) === "3 squared is 9" },
+      { label: "describe(3, \"cubed\") returns “3 cubed is 27”", test: ({ fns }) => typeof fns.describe === "function" && fns.describe(3, "cubed") === "3 cubed is 27" },
+      { label: "describe(\"hello\") asks for a number", test: ({ fns }) => typeof fns.describe === "function" && fns.describe("hello") === "Please enter a number" },
+    ],
+  });
+</script>
+</body>
+</html>
