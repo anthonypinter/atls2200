@@ -111,16 +111,16 @@
     <section class="dash" aria-labelledby="roster">
       <h2 id="roster">Roster</h2>
       <h3>Recitations</h3>
-      <p class="dash-legend">Students pick their recitation from this list the first time they sign in, and can't save progress until they have. With no recitations listed, students give only their name.</p>
+      <p class="dash-legend">The recitations you assign students on the roster. <code>tools/enroll.mjs</code> adds any it finds in your CSV.</p>
       <form class="panel dash-form" id="rec-form">
         <div class="dash-opts"><label>Recitation number <input id="rec-code" required maxlength="12" pattern="[A-Za-z0-9 _\-]{1,12}" placeholder="101"></label><label>Description (optional) <input id="rec-label" maxlength="80" placeholder="Tue 9:00, ATLS 104"></label><button class="btn run" type="submit">Add recitation</button></div>
         <p class="dash-msg" id="rec-msg" role="status"></p>
       </form>
       <div class="dash-scroll" tabindex="0"><table class="dash-table" id="rec-table"></table></div>
       <h3>People</h3>
-      <p class="dash-legend">Anyone with a university email can sign in as a student; the roster adds course sections and shows who hasn't signed in yet. Instructors must be on it.</p>
+      <p class="dash-legend">Student accounts are created with <code>tools/enroll.mjs</code> (see <code>supabase/README.md</code>), which also fills this list. Adding someone here sets their course section and recitation but doesn't create an account. Instructors must be on it. “Set up” means they've chosen their own password and given their name.</p>
       <form class="panel dash-form" id="r-form">
-        <label>Emails, one per line (add a course section after a comma: <code>ab1234@colorado.edu, 001</code>) <textarea id="r-emails" required></textarea></label>
+        <label>Emails, one per line, optionally followed by course section and recitation: <code>ab1234@colorado.edu, 001, 101</code> <textarea id="r-emails" required></textarea></label>
         <div class="dash-row"><label>Role <select id="r-role"><option value="student">Student</option><option value="instructor">Instructor</option></select></label><button class="btn run" type="submit">Add to roster</button></div>
         <p class="dash-msg" id="r-msg" role="status"></p>
       </form>
@@ -211,9 +211,9 @@
   async function load() {
     gate("<p>Loading the class…</p>");
     const [a, b, c, d, e, f] = await Promise.all([
-      all(() => db.from("profiles").select("id, email, display_name, role, course_section, first_name, last_name, recitation").order("email")),
+      all(() => db.from("profiles").select("id, email, display_name, role, course_section, first_name, last_name, recitation, must_change_password").order("email")),
       all(() => db.from("progress").select("user_id, data, updated_at").order("user_id")),
-      all(() => db.from("roster").select("email, role, course_section, added_at").order("email")),
+      all(() => db.from("roster").select("email, role, course_section, recitation, added_at").order("email")),
       db.from("instructor_notes").select("id, lesson, section, body, updated_at").order("id"),
       all(() => db.from("exercise_attempts").select("email, exercise, checks, checks_before_pass, first_pass").order("email")),
       db.from("recitations").select("code, label, sort").order("sort").order("code"),
@@ -467,23 +467,29 @@
     const signed = new Map(profiles.map((p) => [p.email, p]));
     const extra = profiles.filter((p) => !roster.some((r) => r.email === p.email));
     const rows = [
-      ...roster.map((r) => ({ email: r.email, role: r.role, section: r.course_section, on: true, signed: signed.has(r.email) })),
-      ...extra.map((p) => ({ email: p.email, role: p.role, section: p.course_section, on: false, signed: true })),
+      ...roster.map((r) => ({ email: r.email, role: r.role, section: r.course_section, rec: r.recitation, on: true, p: signed.get(r.email) })),
+      ...extra.map((p) => ({ email: p.email, role: p.role, section: p.course_section, rec: p.recitation, on: false, p })),
     ];
-    $("r-table").innerHTML = `<caption class="sr-only">Roster</caption><thead><tr><th scope="col">Email</th><th scope="col">Role</th><th scope="col">Course section</th><th scope="col">Signed in</th><th scope="col"><span class="sr-only">Actions</span></th></tr></thead><tbody>`
-      + (rows.map((r) => `<tr><th scope="row">${esc(r.email)}</th><td>${esc(r.role)}</td><td>${esc(r.section || "")}</td><td>${r.signed ? '<span class="yes">yes</span>' : '<span class="no">not yet</span>'}</td><td>${r.on ? `<button class="btn" type="button" data-remove="${esc(r.email)}">Remove</button>` : '<span class="no">not on roster</span>'}</td></tr>`).join("")
-      || `<tr><td colspan="5">Nobody yet.</td></tr>`) + "</tbody>";
+    const setup = (p) => !p ? '<span class="no">no account</span>'
+      : p.must_change_password ? '<span class="no">not yet</span>'
+      : p.role !== "instructor" && !p.last_name ? '<span class="no">password only</span>' : '<span class="yes">yes</span>';
+    $("r-table").innerHTML = `<caption class="sr-only">Roster</caption><thead><tr><th scope="col">Email</th><th scope="col">Role</th><th scope="col">Course section</th><th scope="col">Recitation</th><th scope="col">Set up</th><th scope="col"><span class="sr-only">Actions</span></th></tr></thead><tbody>`
+      + (rows.map((r) => `<tr><th scope="row">${esc(r.email)}</th><td>${esc(r.role)}</td><td>${esc(r.section || "")}</td><td>${esc(r.rec || "")}</td><td>${setup(r.p)}</td><td>${r.on ? `<button class="btn" type="button" data-remove="${esc(r.email)}">Remove</button>` : '<span class="no">not on roster</span>'}</td></tr>`).join("")
+      || `<tr><td colspan="6">Nobody yet.</td></tr>`) + "</tbody>";
   }
   async function addRoster(e) {
     e.preventDefault();
     const domain = (window.BOOK.backend.emailDomain || "").toLowerCase();
     const rows = [], bad = [];
     for (const line of $("r-emails").value.split("\n").map((x) => x.trim()).filter(Boolean)) {
-      const [email, section] = line.split(",").map((x) => x.trim());
-      if (/^[^@\s]+@[^@\s]+$/.test(email) && (!domain || email.toLowerCase().endsWith("@" + domain))) rows.push({ email: email.toLowerCase(), role: $("r-role").value, course_section: section || null });
+      const [email, section, recitation] = line.split(",").map((x) => x.trim());
+      if (/^[^@\s]+@[^@\s]+$/.test(email) && (!domain || email.toLowerCase().endsWith("@" + domain))) rows.push({ email: email.toLowerCase(), role: $("r-role").value, course_section: section || null, recitation: recitation || null });
       else bad.push(email);
     }
-    const { error } = rows.length ? await db.from("roster").upsert(rows) : { error: null };
+    // A recitation that isn't listed yet is added, so the roster row can refer to it.
+    const newRecs = [...new Set(rows.map((r) => r.recitation).filter((c) => c && !recitations.some((x) => x.code === c)))];
+    const recErr = newRecs.length ? (await db.from("recitations").upsert(newRecs.map((code, i) => ({ code, sort: recitations.length + i + 1 })))).error : null;
+    const { error } = recErr ? { error: recErr } : rows.length ? await db.from("roster").upsert(rows) : { error: null };
     $("r-msg").className = "dash-msg" + (error || bad.length ? " bad" : "");
     $("r-msg").textContent = error ? `Couldn't save: ${error.message}` : `Added ${rows.length}.` + (bad.length ? ` Skipped (not a @${domain} address): ${bad.join(", ")}` : "");
     if (!error) { $("r-emails").value = ""; load(); }
@@ -493,7 +499,7 @@
     const count = (code) => people.filter((p) => p.recitation === code).length;
     $("rec-table").innerHTML = `<caption class="sr-only">Recitations</caption><thead><tr><th scope="col">Recitation</th><th scope="col">Description</th><th scope="col">Students</th><th scope="col"><span class="sr-only">Actions</span></th></tr></thead><tbody>`
       + (recitations.map((r) => `<tr><th scope="row">${esc(r.code)}</th><td>${esc(r.label || "")}</td><td>${count(r.code)}</td><td><button class="btn" type="button" data-rec="${esc(r.code)}">Remove</button></td></tr>`).join("")
-      || `<tr><td colspan="4">No recitations yet, so students give only their name.</td></tr>`) + "</tbody>";
+      || `<tr><td colspan="4">No recitations yet.</td></tr>`) + "</tbody>";
   }
   async function addRecitation(e) {
     e.preventDefault();
@@ -509,7 +515,7 @@
     if (btn.dataset.sure !== "1") { btn.dataset.sure = "1"; btn.textContent = "Press again to remove"; return; }
     const { error } = await db.from("recitations").delete().eq("code", btn.dataset.rec);
     $("rec-msg").className = "dash-msg" + (error ? " bad" : "");
-    $("rec-msg").textContent = error ? `Couldn't remove: ${error.message}` : `Removed ${btn.dataset.rec}. Students who picked it will be asked to choose again.`;
+    $("rec-msg").textContent = error ? `Couldn't remove: ${error.message}` : `Removed ${btn.dataset.rec}. Students who had it now have no recitation.`;
     if (!error) load();
   }
   async function rosterAction(e) {

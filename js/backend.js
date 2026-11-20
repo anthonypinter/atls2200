@@ -2,11 +2,13 @@
    js/chrome.js loads this file only when a backend is configured. The book never depends on it: signed out (or
    offline, or if Supabase is down) everything still works and progress stays in this browser, as before.
 
-   - Sign in: an Account button in the top bar opens a dialog. Students enter their university email and get a
-     one-time link (and a 6-digit code, for opening the email on another device). No passwords.
-   - Details: the first time a student signs in (and until it's done), the dialog asks for their first and last
-     name and their recitation, picked from the list instructors keep. The database won't store a student's progress
-     or activity before that (supabase/migrations/0003), so nothing syncs until then; work stays in the browser.
+   - Sign in: an Account button in the top bar opens a dialog. Students sign in with their university email and a
+     password. Instructors create the accounts (tools/enroll.mjs) with a temporary password and the student's
+     recitation; there's no self sign-up. "Forgot your password?" emails a reset link that opens a new-password step.
+   - First sign-in: the dialog makes the student choose their own password (profiles.must_change_password, cleared by
+     the database when the password really changes), then give their first and last name. The database won't store
+     a student's progress or activity before both are done (supabase/migrations/0003, 0004), so nothing syncs until
+     then; work stays in the browser.
    - Sync: once signed in, this browser's progress (js/progress.js) is merged with the account's copy using
      Progress.merge, saved back to both, and kept in step after every change. The queued activity log is uploaded to
      the events table and removed from the browser once stored. The attempts list isn't uploaded (the log has every
@@ -33,6 +35,7 @@
   const EVENT_BATCH = 200;
   const KINDS = new Set(["visit", "seen", "time", "used", "run", "answer", "quiz-done", "check", "complete", "uncomplete"]);
   const domain = (cfg.emailDomain || "").toLowerCase();
+  const PROFILE_COLS = "email, display_name, role, course_section, first_name, last_name, recitation, must_change_password";
   const ref = new URL(cfg.url).hostname.split(".")[0];
   const store = {
     get: (k) => { try { return localStorage.getItem(k); } catch { return null; } },
@@ -48,7 +51,7 @@
   B.onChange = (fn) => { listeners.add(fn); return () => listeners.delete(fn); };
   const changed = () => { paintButton(); paintDialog(false); listeners.forEach((fn) => fn(B)); };
 
-  // Only load the library when it's needed: a saved session, a sign-in link just opened, or a click on Account.
+  // Only load the library when it's needed: a saved session, a confirmation or reset link just opened, or a click on Account.
   const hasSession = () => !!store.get(`sb-${ref}-auth-token`);
   const fromLink = () => /[#&](access_token|error_description)=/.test(location.hash);
   let starting = null;
@@ -59,6 +62,7 @@
       });
       return new Promise((resolve) => {
         db.auth.onAuthStateChange((event, session) => {
+          if (event === "PASSWORD_RECOVERY") { recovering = true; setTimeout(openDialog); }
           // Supabase holds a lock during this callback, so database calls wait for the next tick.
           setTimeout(async () => {
             if (session?.user && session.user.id !== B.user?.id) await signedIn(session.user);
@@ -75,18 +79,14 @@
     B.user = user;
     B.status = "syncing";
     changed();
-    const [{ data }, { data: recs }] = await Promise.all([
-      B.client.from("profiles").select("email, display_name, role, course_section, first_name, last_name, recitation").eq("id", user.id).maybeSingle(),
-      B.client.from("recitations").select("code, label").order("sort").order("code"),
-    ]);
+    const { data } = await B.client.from("profiles").select(PROFILE_COLS).eq("id", user.id).maybeSingle();
     B.profile = data || { email: user.email, role: "student" };
-    B.recitations = recs || [];
     // Progress from a different account (say a session that expired without signing out) stays out of this one.
     const owner = store.get(OWNER);
     if (owner && owner !== user.id) P.replace(null);
     store.set(OWNER, user.id);
     if (fromLink()) history.replaceState(null, "", location.pathname + location.search);
-    if (needsDetails()) { B.status = "details"; changed(); openDialog(); return; }
+    if (needsSetup()) { B.status = "details"; changed(); openDialog(); return; }
     await sync();
     if (B.profile.role === "instructor") showNotes();
   }
@@ -102,18 +102,18 @@
 
   // Sync: read the account's copy, merge, write whichever side is behind. Every change schedules one; they never overlap.
   let timer = null, running = null, again = false, applying = false;
-  // Students must give their name (and recitation, once instructors have listed them) before anything is saved.
+  // Before anything is saved: their own password in place of the temporary one, then (students) their name.
+  const needsPassword = () => !!B.profile?.must_change_password;
   function needsDetails() {
     const p = B.profile;
-    return !!p && p.role !== "instructor" && (!p.first_name || !p.last_name || (B.recitations?.length > 0 && !p.recitation));
+    return !!p && p.role !== "instructor" && (!p.first_name || !p.last_name);
   }
+  const needsSetup = () => needsPassword() || needsDetails();
   async function saveDetails(form) {
     const val = (n) => form.elements[n]?.value.trim().replace(/\s+/g, " ") || null;
     const row = { first_name: val("first"), last_name: val("last") };
-    if (B.recitations.length) row.recitation = val("recitation");
     if (!row.first_name || !row.last_name) throw new Error("Please enter your first and last name.");
-    if (B.recitations.length && !row.recitation) throw new Error("Please choose your recitation.");
-    const { data, error } = await B.client.from("profiles").update(row).eq("id", B.user.id).select("email, display_name, role, course_section, first_name, last_name, recitation").single();
+    const { data, error } = await B.client.from("profiles").update(row).eq("id", B.user.id).select(PROFILE_COLS).single();
     if (error) throw error;
     B.profile = data;
     editing = false;
@@ -123,7 +123,7 @@
   }
 
   async function sync() {
-    if (!B.user || needsDetails()) return;
+    if (!B.user || needsSetup()) return;
     if (running) { again = true; return running; }
     running = (async () => {
       try {
@@ -175,19 +175,31 @@
   addEventListener("visibilitychange", () => { if (document.visibilityState === "hidden" && timer) { clearTimeout(timer); timer = null; sync(); } });
   addEventListener("online", schedule);
 
-  async function sendLink(email) {
+  const here = () => location.origin + location.pathname;
+  async function client() {
     const db = await start();
     if (!db) throw new Error("Couldn't reach the sign-in service. Check your connection and try again.");
-    const { error } = await db.auth.signInWithOtp({ email, options: { emailRedirectTo: location.origin + location.pathname, shouldCreateUser: true } });
+    return db;
+  }
+  async function signInPassword(email, password) {
+    const { error } = await (await client()).auth.signInWithPassword({ email, password });
     if (error) throw error;
   }
-  async function verifyCode(email, token) {
-    const { error } = await B.client.auth.verifyOtp({ email, token, type: "email" });
+  async function sendReset(email) {
+    const { error } = await (await client()).auth.resetPasswordForEmail(email, { redirectTo: here() });
     if (error) throw error;
+  }
+  async function setPassword(password) {
+    const { error } = await B.client.auth.updateUser({ password });
+    if (error) throw error;
+    // The database clears must_change_password itself when the password changes; read it back rather than assume.
+    const { data } = await B.client.from("profiles").select(PROFILE_COLS).eq("id", B.user.id).maybeSingle();
+    if (data) B.profile = data;
+    if (!needsSetup()) { B.status = "syncing"; changed(); sync(); }
   }
   async function signOut() {
-    // A student who signs out before giving their details keeps their work in this browser: none of it is saved yet.
-    const keep = needsDetails();
+    // Someone who signs out before finishing the first-sign-in steps keeps their work here: none of it is saved yet.
+    const keep = needsSetup();
     clearTimeout(timer);
     timer = null;
     await sync();
@@ -222,7 +234,9 @@
   B.showNotes = showNotes;
 
   // The Account button and dialog.
-  let button = null, dialog = null, sentTo = "", message = "", editing = false;
+  // step (signed out): "signin", "forgot" or "reset-sent". recovering: opened a reset link. changingPw: chose to.
+  let button = null, dialog = null, step = "signin", sentTo = "", message = "", editing = false, recovering = false, changingPw = false;
+  const MIN_PW = 8;
   function paintButton() {
     if (!button) return;
     const label = !B.user ? "Sign in" : B.status === "details" ? "Account · finish signing in" : B.status === "error" ? "Account · not synced" : "Account";
@@ -236,7 +250,7 @@
   function paintDialog(force) {
     if (!dialog) return;
     const body = dialog.querySelector(".acct-body");
-    const mode = B.user ? (needsDetails() || editing ? "details" : "account") : sentTo ? "code" : "email";
+    const mode = !B.user ? step : recovering || changingPw || needsPassword() ? "new-password" : needsDetails() || editing ? "details" : "account";
     const state = { syncing: "Saving your progress…", synced: `Progress saved to your account at ${when(B.lastSync)}.`, error: "Couldn't reach your account just now. Your progress is safe in this browser and will be saved when the connection is back." }[B.status] || "";
     if (!force && body.dataset.mode === mode) {
       const status = body.querySelector(".acct-status");
@@ -244,14 +258,24 @@
       return;
     }
     body.dataset.mode = mode;
+    const msg = `<p class="acct-msg" role="alert">${esc(message)}</p>`;
+    const pw = (id, label, auto) => `<label for="${id}">${label}</label><input id="${id}" name="${id}" type="password" autocomplete="${auto}" minlength="${auto === "current-password" ? 1 : MIN_PW}" required>`;
+    const emailField = `<label for="acct-email">University email</label><input id="acct-email" name="email" type="email" autocomplete="username" required placeholder="you@${esc(domain)}" value="${esc(sentTo)}">`;
+    if (mode === "new-password") {
+      const first = needsPassword() && !recovering;
+      body.innerHTML = `<p>${first ? `Welcome! First, replace the temporary password you were given with one of your own for <strong>${esc(B.user.email)}</strong>. Only you will know it.` : `Choose a new password for <strong>${esc(B.user.email)}</strong>.`}</p>
+        <form class="acct-form acct-details" data-act="new-password">${pw("acct-pw", `New password (at least ${MIN_PW} characters)`, "new-password")}${pw("acct-pw2", "Type it again", "new-password")}
+        <div class="acct-actions"><button class="btn run" type="submit">Save password</button>${first || recovering ? "" : `<button class="btn" type="button" data-act="cancel-pw">Cancel</button>`}</div></form>
+        ${msg}${needsSetup() && !changingPw ? `<p class="acct-fine">Until you finish signing in, your work stays in this browser only.</p><div class="acct-actions"><button class="btn" type="button" data-act="out">Sign out</button></div>` : ""}`;
+      return;
+    }
     if (mode === "details") {
       const p = B.profile || {}, first = needsDetails();
-      const recs = B.recitations || [];
-      body.innerHTML = `<p>${first ? "One more step before your progress can be saved: tell us who you are. Your instructors see this next to your progress." : "Update your details."}</p>
+      body.innerHTML = `<p>${first ? "One more step before your progress can be saved: tell us your name. Your instructors see it next to your progress." : "Update your name."}</p>
         <form class="acct-form acct-details" data-act="details">
           <label for="acct-first">First name</label><input id="acct-first" name="first" autocomplete="given-name" maxlength="60" required value="${esc(p.first_name || "")}">
           <label for="acct-last">Last name</label><input id="acct-last" name="last" autocomplete="family-name" maxlength="60" required value="${esc(p.last_name || "")}">
-          ${recs.length ? `<label for="acct-rec">Recitation</label><select id="acct-rec" name="recitation" required><option value="">Choose your recitation</option>${recs.map((r) => `<option value="${esc(r.code)}"${r.code === p.recitation ? " selected" : ""}>${esc(r.code)}${r.label ? ` · ${esc(r.label)}` : ""}</option>`).join("")}</select>` : ""}
+          ${p.recitation ? `<p class="acct-fine">Recitation ${esc(p.recitation)}. If that's wrong, tell your instructor.</p>` : ""}
           <div class="acct-actions"><button class="btn run" type="submit">Save</button>${first ? "" : `<button class="btn" type="button" data-act="cancel-edit">Cancel</button>`}</div>
         </form>
         <p class="acct-msg" role="alert">${esc(message)}</p>
@@ -261,28 +285,31 @@
     if (B.user) {
       const p = B.profile || {};
       const rec = p.recitation ? ` · Recitation ${esc(p.recitation)}` : "";
-      body.innerHTML = `<p>Signed in as <strong>${esc(p.email || B.user.email)}</strong>${p.role === "instructor" ? " (instructor)" : ""}.</p>
-        ${p.role === "instructor" ? "" : `<p>${esc([p.first_name, p.last_name].filter(Boolean).join(" "))}${rec} <button class="btn" type="button" data-act="edit">Edit your details</button></p>`}
+      body.innerHTML = `${message ? `<p role="status"><strong>${esc(message)}</strong></p>` : ""}<p>Signed in as <strong>${esc(p.email || B.user.email)}</strong>${p.role === "instructor" ? " (instructor)" : ""}.</p>
+        ${p.role === "instructor" ? "" : `<p>${esc([p.first_name, p.last_name].filter(Boolean).join(" "))}${rec} <button class="btn" type="button" data-act="edit">Edit your name</button></p>`}
         <p class="acct-status" role="status">${esc(state)}</p>
         ${p.role === "instructor" ? `<p><a class="btn" href="instructor.html">Open the instructor dashboard</a></p>` : ""}
         <p class="acct-fine">Signing out removes your progress from this browser. It stays in your account for next time.</p>
         <p class="acct-fine">${TRACKED}</p>
-        <div class="acct-actions"><button class="btn" type="button" data-act="sync">Save now</button><button class="btn" type="button" data-act="out">Sign out</button></div>`;
+        <div class="acct-actions"><button class="btn" type="button" data-act="sync">Save now</button><button class="btn" type="button" data-act="change-pw">Change password</button><button class="btn" type="button" data-act="out">Sign out</button></div>`;
       return;
     }
-    if (sentTo) {
-      body.innerHTML = `<p>We sent a sign-in link to <strong>${esc(sentTo)}</strong>. Open it on this device, or type the 6-digit code from the email here.</p>
-        <form class="acct-form" data-act="code"><label for="acct-code">Code from the email</label>
-        <div class="acct-row"><input id="acct-code" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{6}" maxlength="6" required><button class="btn run" type="submit">Sign in</button></div></form>
-        <p class="acct-msg" role="alert">${esc(message)}</p>
-        <p><button class="btn" type="button" data-act="back">Use a different email</button></p>`;
+    if (mode === "reset-sent") {
+      body.innerHTML = `<p>If there's an account for <strong>${esc(sentTo)}</strong>, we've emailed it a link to choose a new password. Open it on this device.</p>
+        ${msg}<p><button class="btn" type="button" data-act="to-signin">Back to sign in</button></p>`;
+      return;
+    }
+    if (mode === "forgot") {
+      body.innerHTML = `<p>Enter your email and we'll send you a link to choose a new password.</p>
+        <form class="acct-form acct-details" data-act="forgot">${emailField}<div class="acct-actions"><button class="btn run" type="submit">Email me a reset link</button></div></form>
+        ${msg}<p><button class="btn" type="button" data-act="to-signin">Back to sign in</button></p>`;
       return;
     }
     body.innerHTML = `<p>Sign in to save your progress to your account and pick up where you left off on any computer. Reading works without an account.</p>
       <p class="acct-fine">${TRACKED}</p>
-      <form class="acct-form" data-act="send"><label for="acct-email">University email</label>
-      <div class="acct-row"><input id="acct-email" type="email" autocomplete="email" required placeholder="you@${esc(domain)}"><button class="btn run" type="submit">Email me a link</button></div></form>
-      <p class="acct-msg" role="alert">${esc(message)}</p>`;
+      <form class="acct-form acct-details" data-act="signin">${emailField}${pw("acct-pw", "Password", "current-password")}
+      <div class="acct-actions"><button class="btn run" type="submit">Sign in</button><button class="btn" type="button" data-act="to-forgot">Forgot your password?</button></div></form>
+      ${msg}<p class="acct-fine">No account yet? Your instructor sets them up and gives you a temporary password.</p>`;
   }
   function openDialog() {
     if (!dialog) {
@@ -303,8 +330,13 @@
   async function onClick(e) {
     const act = e.target.closest("[data-act]")?.dataset.act;
     if (e.target === dialog || act === "close") dialog.close();
-    if (act === "back") { sentTo = message = ""; paintDialog(true); dialog.querySelector("input")?.focus(); }
+    if (act?.startsWith("to-")) {
+      const typed = dialog.querySelector("#acct-email")?.value.trim();
+      if (typed) sentTo = typed.toLowerCase();
+      step = act.slice(3); message = ""; paintDialog(true); dialog.querySelector("input")?.focus();
+    }
     if (act === "sync") sync();
+    if (act === "change-pw" || act === "cancel-pw") { changingPw = act === "change-pw"; message = ""; paintDialog(true); dialog.querySelector("input, button")?.focus(); }
     if (act === "edit" || act === "cancel-edit") { editing = act === "edit"; message = ""; paintDialog(true); dialog.querySelector("input, button")?.focus(); }
     if (act === "out") { await signOut(); dialog.close(); }
   }
@@ -314,20 +346,32 @@
     btn.disabled = true;
     message = "";
     try {
-      if (form.dataset.act === "details") {
+      const act = form.dataset.act, f = form.elements;
+      const email = f.email?.value.trim().toLowerCase();
+      if (email && domain && !email.endsWith("@" + domain)) throw new Error(`Use your @${domain} address.`);
+      if (f["acct-pw2"] && f["acct-pw"].value !== f["acct-pw2"].value) throw new Error("The two passwords don't match.");
+      if (act === "details") {
         await saveDetails(form);
-      } else if (form.dataset.act === "send") {
-        const email = form.querySelector("input").value.trim().toLowerCase();
-        if (domain && !email.endsWith("@" + domain)) throw new Error(`Use your @${domain} address.`);
-        await sendLink(email);
+      } else if (act === "signin") {
         sentTo = email;
-      } else {
-        await verifyCode(sentTo, form.querySelector("input").value.trim());
-        sentTo = "";
+        await signInPassword(email, f["acct-pw"].value);
+        step = "signin";
+      } else if (act === "forgot") {
+        sentTo = email;
+        await sendReset(email);
+        step = "reset-sent";
+      } else if (act === "new-password") {
+        await setPassword(f["acct-pw"].value);
+        const wasChanging = changingPw;
+        recovering = changingPw = false;
+        message = wasChanging ? "Password changed." : "";
       }
     } catch (err) {
-      message = /rate limit/i.test(err.message) ? "Too many emails just now. Wait a minute and try again."
-        : /check constraint/i.test(err.message) ? "Names can be up to 60 characters." : err.message;
+      const m = err.message || "";
+      message = /rate limit/i.test(m) ? "Too many attempts just now. Wait a minute and try again."
+        : /invalid login credentials/i.test(m) ? "That email and password don't match. Try again, or use “Forgot your password?”."
+        : /should be different/i.test(m) ? "Choose a new password, not the one you were given."
+        : /check constraint/i.test(m) ? "Names can be up to 60 characters." : m;
     }
     btn.disabled = false;
     paintDialog(true);

@@ -4,34 +4,36 @@ The book works without any of this. Until `book.js` has a backend `url`, nobody 
 
 With the backend:
 
-- **Students** sign in with their @colorado.edu email. They get a one-time link and a 6-digit code, and there are no passwords. Their progress syncs to their account: lessons visited and completed, every section seen and used, quiz answers and best scores, exercise drafts and passes. Signed out, the book works as before, and that work is added to their account the first time they sign in.
+- **Students** sign in with their @colorado.edu email and a password. Instructors create the accounts with `tools/enroll.mjs`, which gives each student a temporary password and their recitation; there's no self sign-up. On first sign-in a student must choose their own password and give their first and last name. "Forgot your password?" emails a reset link (if email sending is set up). Their progress syncs to their account: lessons visited and completed, every section seen and used, quiz answers and best scores, exercise drafts and passes. Signed out, the book works as before, and that work is added to their account the first time they sign in.
 - **Instructors** see notes inside the lessons and use the dashboard at `instructor.html`. The dashboard has class progress by part and lesson, one student's progress section by section, CSV export, a notes editor and the roster.
 - **Instructor content stays private.** The notes live only in the database, and the database refuses them to anyone who isn't an instructor. The public pages and `instructor.html` contain no data.
 
 ## One-time setup
 
 1. **Create a project** at [supabase.com](https://supabase.com) (the free tier is enough for a course). Pick a US region.
-2. **Run the schema.** Open SQL Editor → New query, paste all of `migrations/0001_accounts_progress_notes.sql`, and press Run. Then do the same with `migrations/0002_events_and_time.sql` and `migrations/0003_student_details.sql`, in that order. You can also run `supabase db push` if you use the Supabase CLI.
+2. **Run the schema.** Open SQL Editor → New query, paste all of `migrations/0001_accounts_progress_notes.sql`, and press Run. Then do the same with `migrations/0002_events_and_time.sql`, `migrations/0003_student_details.sql` and `migrations/0004_enrollment.sql`, in that order. You can also run `supabase db push` if you use the Supabase CLI.
 3. **Make yourself an instructor.** In the SQL editor:
    ```sql
    insert into public.roster (email, role) values ('you@colorado.edu', 'instructor');
    ```
    You can add other instructors and TAs the same way, or later from the dashboard's Roster section.
-4. **Add your recitations** before students sign in, either on the dashboard (Roster → Recitations) or here:
+4. **Recitations** are assigned by you, on the roster. `tools/enroll.mjs` adds any it finds in your CSV; add descriptions on the dashboard (Roster → Recitations) or here:
    ```sql
    insert into public.recitations (code, label, sort) values ('101', 'Tue 9:00', 1), ('102', 'Wed 14:00', 2);
    ```
-   The first time a student signs in, they must give their first and last name and pick their recitation from this list. Until they do, nothing they do is saved to the server; it stays in their browser and uploads once they've finished. Students can change their details later in the Account dialog. If the list is empty, students give only their name.
-5. **Allow the sign-in links.** Go to Authentication → URL Configuration:
+   Students see their recitation but can't change it.
+5. **Allow the password-reset links.** Go to Authentication → URL Configuration:
    - Site URL: `https://anthonypinter.com/atls2200/`
    - Redirect URLs: `https://anthonypinter.com/atls2200/**` and, for testing, `http://localhost:8765/**`
-6. **Set up email sending (needed for a class).** Supabase's built-in email sends only a handful of messages an hour, and only to members of your Supabase team, which isn't enough when 30 students sign in at once. Under Authentication → Emails → SMTP Settings, connect a provider such as Resend, Postmark, SendGrid or Amazon SES, or a university relay if OIT provides one. Supabase won't let you edit the email templates in the next step until this is done.
-7. **Add the code to the email.** Go to Authentication → Email Templates → Magic Link and add a line such as `Or enter this code: {{ .Token }}`. With the code, a student can open the email on a phone and still sign in on a lab computer.
+6. **Set up email sending (optional).** The only email is the "Forgot your password?" link. Supabase's built-in email reaches only members of your Supabase team, so without a provider (Authentication → Emails → SMTP Settings: Resend, Postmark, SendGrid, Amazon SES or a university relay), reset passwords yourself with `node tools/enroll.mjs --reset <email>`.
+7. **Close sign-up.** In Authentication → Sign In / Providers, turn off "Allow new users to sign up" (keep the Email provider enabled) and set the minimum password length to 8. Create your own account under Authentication → Users → Add user → Create new user, with **Auto Confirm User** ticked.
 8. **Connect the book.** In Project Settings → API (or Data API), copy the Project URL and the `anon` `public` key into `book.js` **and** `book-2.js` (the same values in both: the two books share accounts, and the dashboard signs in through `book.js`):
    ```js
    backend: { url: "https://ptbpvlpgkeexeravimyb.supabase.co", anonKey: "sb_publishable_XIPvbndBK5H6lbaNd5sDNg_66iyiHGy", emailDomain: "colorado.edu" },
    ```
    Commit and push. The anon key is designed to be public, because the database's row-level security decides what each person can see. **Never put the `service_role` key in the repo or any page.** It bypasses every rule.
+
+9. **Enroll the students.** With a CSV whose header is `email,recitation,section` (section optional), run `SUPABASE_SECRET_KEY='…' node tools/enroll.mjs students.csv` with the secret (`service_role`) key from Project Settings → API Keys. It creates the accounts, fills the roster, and writes the temporary passwords to `students-passwords-<date>.csv` next to your file (gitignored). Hand them out privately and delete the file. Re-running it is safe, and `--reset <email>` gives one student a new temporary password. Keep the secret key in your shell only.
 
 To test locally, run `python3 -m http.server 8765` in the repo, open `http://localhost:8765/`, and sign in.
 
@@ -45,12 +47,12 @@ Book 2 has no Mark complete button. Each lesson shows the student a meter: how m
 |---|---|---|---|
 | Own progress | read and write | read and write | — |
 | Everyone's progress | — | read | — |
-| Own profile | read; change own first name, last name and recitation only | read | — |
+| Own profile | read; change own first name and last name only | read | — |
 | Recitations list | read | read and write | — |
 | Roster | — | read and write | — |
 | Instructor notes | — | read and write | — |
 
-Roles come from the roster. If an email is on it as `instructor`, that person becomes an instructor right away, or as soon as they first sign in. Everyone else with a university email is a student, and other addresses can't create an account. To use a different email domain, change it in the migration (`check_email_domain`), `book.js` and `book-2.js`.
+Roles come from the roster. If an email is on it as `instructor`, that person becomes an instructor right away, or as soon as they first sign in. Everyone else is a student. Only you create accounts, and only for university addresses. To use a different email domain, change it in the migration (`check_email_domain`), `book.js` and `book-2.js`.
 
 ## What is tracked
 

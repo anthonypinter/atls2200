@@ -145,6 +145,11 @@ points and late work themselves. Built 2026-11-16:
   60 lessons were checked: each one's meter total matches the index, and a fully done lesson completes itself.
 - **Backend:** still not connected. Step-by-step checklist and setup log: `BACKEND-SETUP.md`. `book.js` and `book-2.js` must both get the same Supabase `url`/`anonKey`
   (steps in `supabase/README.md`). The dashboard signs in through `book.js`.
+- **Sign-in uses passwords, and you enroll students** (changed 2026-11-19 from magic links, which you found tedious).
+  `tools/enroll.mjs` (needs the secret key in your shell) creates accounts from a CSV with a temporary password and the
+  recitation you assign; `--reset <email>` re-issues one. Self sign-up is off in Supabase. First sign-in forces a new
+  password (`profiles.must_change_password`, cleared by a trigger on `auth.users` when the password changes, migration
+  0004), then first and last name. Students can't change their recitation. "Forgot your password?" needs SMTP.
 - Gotcha: `Progress.setComplete()` logs an event before it saves, and logging repaints. `paintProgress` has a
   `completing` guard against the resulting infinite loop.
 
