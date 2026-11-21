@@ -149,7 +149,7 @@ points and late work themselves. Built 2026-11-16:
   `tools/enroll.mjs` (needs the secret key in your shell) creates accounts from a CSV with a temporary password and the
   recitation you assign; `--reset <email>` re-issues one. Self sign-up is off in Supabase. First sign-in forces a new
   password (`profiles.must_change_password`, cleared by a trigger on `auth.users` when the password changes, migration
-  0004), then first and last name. Students can't change their recitation. "Forgot your password?" needs SMTP.
+  0004), then first and last name, unless the enrollment CSV gave it (`first_name`/`last_name` columns on the roster, copied to the profile, migration 0005; added 2026-11-20). Students can't change their recitation. Any email address can have an account (0006 dropped the @colorado.edu trigger; `emailDomain` removed from both manifests, 2026-11-21). "Forgot your password?" needs SMTP.
 - Gotcha: `Progress.setComplete()` logs an event before it saves, and logging repaints. `paintProgress` has a
   `completing` guard against the resulting infinite loop.
 

@@ -20,6 +20,8 @@ In **SQL Editor → New query**, paste each file's entire contents and press **R
 - [ ] `supabase/migrations/0002_events_and_time.sql`
 - [ ] `supabase/migrations/0003_student_details.sql`
 - [ ] `supabase/migrations/0004_enrollment.sql`
+- [ ] `supabase/migrations/0005_roster_names.sql`
+- [ ] `supabase/migrations/0006_any_email.sql`
 
 ### 3. Make yourself an instructor
 - [ ] In the SQL Editor, run:
@@ -58,7 +60,7 @@ You create every account yourself (step 9), so nobody else should be able to mak
 - [ ] In **Project Settings → API**, copy the **Project URL** and the **`anon` `public` key**.
 - [ ] Put the same values in **both** `book.js` and `book-2.js`. The two books share accounts, and the dashboard signs in through `book.js`:
   ```js
-  backend: { url: "https://xxxx.supabase.co", anonKey: "eyJ…", emailDomain: "colorado.edu" },
+  backend: { url: "https://xxxx.supabase.co", anonKey: "eyJ…" },
   ```
   Or paste the two values into a Claude session and ask it to do this step and the local test.
 
@@ -100,7 +102,7 @@ On first sign-in, each student must choose their own password, then give their f
 - **Week percentages** on the dashboard are the share of all that week's items, so a lesson with more items counts for more. A straight average of the lesson percentages is a small change if you'd prefer it.
 - **CSV:** one row per student per lesson, with `week` and `percent` columns.
 - **Data comes from students' browsers**, so treat it as a strong signal, not proof. Reading time can be gamed, but the hands-on items are hard to fake. The dashboard flags suspicious patterns: an exercise passed very quickly, or many Checks without a pass.
-- **Changing the email domain** means changing it in the migration (`check_email_domain`), `book.js` and `book-2.js`.
+- **Any email address** can have an account (migration 0006). To limit sign-in to one domain again, add `emailDomain: "colorado.edu"` to the backend settings in `book.js` and `book-2.js`; the sign-in form and dashboard then enforce it (the database no longer does).
 
 ## Log
 

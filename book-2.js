@@ -24,7 +24,7 @@
     search: false,          // search-index.js only covers the Field Guide so far
     index: "search-index-2.js",   // built by scripts/check.mjs --write; the instructor dashboard reads it to know what each lesson holds
     autoComplete: true,     // no Mark complete button: each lesson shows how much is done, and is complete at 100% (js/chrome.js)
-    backend: { url: "https://ptbpvlpgkeexeravimyb.supabase.co", anonKey: "sb_publishable_XIPvbndBK5H6lbaNd5sDNg_66iyiHGy", emailDomain: "colorado.edu" },
+    backend: { url: "https://ptbpvlpgkeexeravimyb.supabase.co", anonKey: "sb_publishable_XIPvbndBK5H6lbaNd5sDNg_66iyiHGy" },
     parts: [
       { title: "How the web works + HTML basics", deliverable: "A one-page site live on GitHub Pages",
         blurb: "What happens when a page loads, the grammar of HTML, and the elements for text, lists and links. Then put a page online.",

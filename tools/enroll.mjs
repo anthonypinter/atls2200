@@ -1,13 +1,14 @@
 #!/usr/bin/env node
 // Enroll students: create their accounts with a temporary password and set their recitation (and course section).
-// Each student must choose their own password, then give their name, the first time they sign in.
+// Each student must choose their own password the first time they sign in, and give their name if the CSV didn't.
 //
 //   SUPABASE_SECRET_KEY=… node tools/enroll.mjs students.csv          create accounts for everyone in the file
 //   SUPABASE_SECRET_KEY=… node tools/enroll.mjs --reset ab1234@colorado.edu   new temporary password for one student
 //
-// students.csv has a header row with: email, recitation, and optionally section. Extra columns are ignored.
-//   email,recitation,section
-//   ab1234@colorado.edu,101,001
+// students.csv has a header row with: email, recitation, and optionally section, first_name and last_name. Extra
+// columns are ignored. A name given here goes on the student's profile, so they aren't asked for it at first sign-in.
+//   email,first_name,last_name,recitation,section
+//   ab1234@colorado.edu,Ada,Byron,101,001
 //
 // The temporary passwords are written to a new file next to the input, e.g. students-passwords-2026-11-19.csv
 // (or printed, for --reset). Hand each one out privately, then delete the file. It's gitignored, but don't commit it.
@@ -23,7 +24,6 @@ import { basename, dirname, extname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
-const DOMAIN = "colorado.edu";
 const KEY = process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY;
 const URL_ = (process.env.SUPABASE_URL || readFileSync(join(ROOT, "book.js"), "utf8").match(/backend:\s*\{[^}]*url:\s*"([^"]*)"/)?.[1] || "").replace(/\/$/, "");
 
@@ -71,8 +71,13 @@ function parseCsv(text) {
   const head = rows.shift()?.map((h) => h.toLowerCase().replace(/[^a-z]/g, "")) || [];
   const col = (...names) => head.findIndex((h) => names.includes(h));
   const e = col("email"), r = col("recitation", "rec"), s = col("section", "coursesection");
-  if (e < 0) die("The CSV needs a header row with an \"email\" column (and \"recitation\", optionally \"section\").");
-  return rows.map((c) => ({ email: (c[e] || "").toLowerCase(), recitation: r >= 0 ? c[r] || null : null, course_section: s >= 0 ? c[s] || null : null }));
+  const f = col("firstname", "first", "givenname", "preferredname"), l = col("lastname", "last", "surname", "familyname");
+  if (e < 0) die("The CSV needs a header row with an \"email\" column (and \"recitation\", optionally \"section\", \"first_name\" and \"last_name\").");
+  // Name keys only when the CSV has those columns, so a CSV without them leaves names already on the roster alone.
+  return rows.map((c) => ({
+    email: (c[e] || "").toLowerCase(), recitation: r >= 0 ? c[r] || null : null, course_section: s >= 0 ? c[s] || null : null,
+    ...(f >= 0 ? { first_name: c[f] || null } : {}), ...(l >= 0 ? { last_name: c[l] || null } : {}),
+  }));
 }
 
 async function reset(email) {
@@ -87,10 +92,12 @@ async function reset(email) {
 
 async function enroll(file) {
   const people = parseCsv(readFileSync(file, "utf8"));
-  const bad = people.filter((p) => !/^[^@\s]+@[^@\s]+$/.test(p.email) || !p.email.endsWith("@" + DOMAIN));
-  if (bad.length) die(`Not @${DOMAIN} addresses, fix these first:\n  ${bad.map((p) => p.email || "(blank)").join("\n  ")}`);
+  const bad = people.filter((p) => !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(p.email));
+  if (bad.length) die(`Not email addresses, fix these first:\n  ${bad.map((p) => p.email || "(blank)").join("\n  ")}`);
   const badRec = people.filter((p) => p.recitation && !/^[A-Za-z0-9 _-]{1,12}$/.test(p.recitation));
   if (badRec.length) die(`Recitations must be 1–12 letters, numbers, spaces, - or _:\n  ${badRec.map((p) => `${p.email}: ${p.recitation}`).join("\n  ")}`);
+  const badName = people.filter((p) => [p.first_name, p.last_name].some((n) => n && n.length > 60));
+  if (badName.length) die(`Names can be at most 60 characters:\n  ${badName.map((p) => p.email).join("\n  ")}`);
 
   // Recitations first (the roster refers to them), then the roster, so a new account picks up its row. No role is
   // sent: new rows default to student, and an instructor or TA already on the roster keeps their role.
@@ -98,13 +105,13 @@ async function enroll(file) {
   if (recs.length) await api("POST", "/rest/v1/recitations?on_conflict=code", recs.map((code) => ({ code })), { Prefer: "resolution=ignore-duplicates,return=minimal" });
   await api("POST", "/rest/v1/roster?on_conflict=email", people, { Prefer: "resolution=merge-duplicates,return=minimal" });
 
-  const out = [["email", "recitation", "temporary_password"]], existing = [], failed = [];
+  const out = [["email", "first_name", "last_name", "recitation", "temporary_password"]], existing = [], failed = [];
   for (const p of people) {
     const pw = password();
     try {
       const u = await api("POST", "/auth/v1/admin/users", { email: p.email, password: pw, email_confirm: true, app_metadata: { must_change_password: true } });
       await flag(u.id);   // the new profile has it already; this makes sure, whatever order Supabase writes the account in
-      out.push([p.email, p.recitation || "", pw]);
+      out.push([p.email, p.first_name || "", p.last_name || "", p.recitation || "", pw]);
     } catch (err) {
       if (err.status === 422 || /already/i.test(err.message)) existing.push(p.email);
       else failed.push(`${p.email}: ${err.message}`);
@@ -117,7 +124,7 @@ async function enroll(file) {
     writeFileSync(dest, out.map((r) => r.join(",")).join("\n") + "\n", { mode: 0o600 });
     console.log(`Created ${out.length - 1} account(s). Temporary passwords: ${dest}\nHand them out privately, then delete the file.`);
   } else console.log("No new accounts.");
-  if (existing.length) console.log(`Already had an account (roster and recitation updated, password unchanged): ${existing.length}\n  ${existing.join("\n  ")}\n  Use --reset <email> for a new temporary password.`);
+  if (existing.length) console.log(`Already had an account (roster updated, password unchanged): ${existing.length}\n  ${existing.join("\n  ")}\n  Use --reset <email> for a new temporary password.`);
   if (failed.length) { console.error(`Failed:\n  ${failed.join("\n  ")}`); process.exitCode = 1; }
 }
 

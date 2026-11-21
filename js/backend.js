@@ -260,7 +260,7 @@
     body.dataset.mode = mode;
     const msg = `<p class="acct-msg" role="alert">${esc(message)}</p>`;
     const pw = (id, label, auto) => `<label for="${id}">${label}</label><input id="${id}" name="${id}" type="password" autocomplete="${auto}" minlength="${auto === "current-password" ? 1 : MIN_PW}" required>`;
-    const emailField = `<label for="acct-email">University email</label><input id="acct-email" name="email" type="email" autocomplete="username" required placeholder="you@${esc(domain)}" value="${esc(sentTo)}">`;
+    const emailField = `<label for="acct-email">${domain ? "University email" : "Email"}</label><input id="acct-email" name="email" type="email" autocomplete="username" required placeholder="you@${esc(domain || "example.com")}" value="${esc(sentTo)}">`;
     if (mode === "new-password") {
       const first = needsPassword() && !recovering;
       body.innerHTML = `<p>${first ? `Welcome! First, replace the temporary password you were given with one of your own for <strong>${esc(B.user.email)}</strong>. Only you will know it.` : `Choose a new password for <strong>${esc(B.user.email)}</strong>.`}</p>

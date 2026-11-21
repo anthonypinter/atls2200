@@ -62,7 +62,7 @@ as $$ begin new.updated_at = now(); return new; end $$;
 create trigger progress_touch before update on public.progress for each row execute function public.touch_updated_at();
 create trigger notes_touch before update on public.instructor_notes for each row execute function public.touch_updated_at();
 
--- Only university addresses may create (or move) an account. Change the domain here and in book.js together.
+-- Only university addresses may create (or move) an account. (0006 removes this: any address can have an account.)
 create function public.check_email_domain() returns trigger
 language plpgsql security definer set search_path = ''
 as $$
