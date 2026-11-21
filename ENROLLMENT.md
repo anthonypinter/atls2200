@@ -101,6 +101,14 @@ The student's profile follows the roster automatically.
 
 Note: a CSV with no `section` column clears the section for everyone in it. Include the column if you use sections. (A CSV with no name columns leaves names alone.)
 
+### A student can't sign in
+
+```sh
+SUPABASE_SECRET_KEY='…' node tools/enroll.mjs --check ab1234@colorado.edu
+```
+
+This shows whether the account exists (and similar addresses if it doesn't), whether it's confirmed, when they last signed in, and whether they've already replaced the temporary password. It then asks for a password to test. Type the one you gave them: it tells you whether it works. Passwords are stored scrambled, so testing one is the only way to check it.
+
 ### Locked-out students
 
 ```sh

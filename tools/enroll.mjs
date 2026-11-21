@@ -4,6 +4,7 @@
 //
 //   SUPABASE_SECRET_KEY=… node tools/enroll.mjs students.csv          create accounts for everyone in the file
 //   SUPABASE_SECRET_KEY=… node tools/enroll.mjs --reset ab1234@colorado.edu   new temporary password for one student
+//   SUPABASE_SECRET_KEY=… node tools/enroll.mjs --check ab1234@colorado.edu   is the account set up? does a password work?
 //
 // students.csv has a header row with: email, recitation, and optionally section, first_name and last_name. Extra
 // columns are ignored. A name given here goes on the student's profile, so they aren't asked for it at first sign-in.
@@ -90,6 +91,42 @@ async function reset(email) {
   console.log(`${email}  ${pw}\nThey'll be asked to choose a new password when they sign in.`);
 }
 
+// Why can't someone sign in? Shows the account's state and, if you type one, tests a password (a real sign-in, so it
+// counts as their last sign-in). Passwords are stored hashed, so testing is the only way to know if one is right.
+async function check(email) {
+  email = email.trim().toLowerCase();
+  const u = await findUser(email);
+  if (!u) {
+    const local = email.split("@")[0];
+    const { users } = await api("GET", "/auth/v1/admin/users?page=1&per_page=1000");
+    const near = users.map((x) => x.email || "").filter((e) => e.includes(local) || local.includes(e.split("@")[0]));
+    die(`No account for ${email}.` + (near.length ? `\nSimilar accounts:\n  ${near.join("\n  ")}` : "")
+      + "\nIf the script listed it under \"Failed\" when you enrolled, run the enrollment again (non-CU addresses need migration 0006 first).");
+  }
+  const [prof] = await api("GET", `/rest/v1/profiles?id=eq.${u.id}&select=role,first_name,last_name,recitation,must_change_password`);
+  const [rost] = await api("GET", `/rest/v1/roster?email=eq.${encodeURIComponent(email)}&select=role,recitation`);
+  const when = (t) => (t ? new Date(t).toLocaleString() : "never");
+  console.log([
+    `Account:        ${u.email} (created ${when(u.created_at)})`,
+    `Confirmed:      ${u.email_confirmed_at ? "yes" : "NO: they can't sign in until it is (Authentication → Users → Confirm)"}`,
+    `Blocked:        ${u.banned_until && new Date(u.banned_until) > new Date() ? `YES, until ${when(u.banned_until)}` : "no"}`,
+    `Last sign-in:   ${when(u.last_sign_in_at)}`,
+    `Password:       ${!prof ? "(no profile)" : prof.must_change_password ? "still the temporary one" : "they've chosen their own, so the temporary one no longer works"}`,
+    `Name:           ${prof && prof.first_name ? `${prof.first_name} ${prof.last_name || ""}` : "not given yet"}`,
+    `Roster:         ${rost ? `${rost.role}, recitation ${rost.recitation || "none"}` : "NOT on the roster"}`,
+  ].join("\n"));
+
+  const { createInterface } = await import("node:readline");
+  const rl = createInterface({ input: process.stdin, output: process.stdout });
+  const pw = await new Promise((r) => rl.question("\nPassword to test (Enter to skip): ", (a) => { rl.close(); r(a.trim()); }));
+  if (!pw) return;
+  const anon = readFileSync(join(ROOT, "book.js"), "utf8").match(/anonKey:\s*"([^"]*)"/)?.[1];
+  if (!anon) die("No anonKey in book.js, so the password can't be tested.");
+  const res = await request(`${URL_}/auth/v1/token?grant_type=password`, { method: "POST", headers: { apikey: anon, "Content-Type": "application/json" }, body: JSON.stringify({ email, password: pw }) });
+  if (res.ok) console.log("That password WORKS. Check what they're typing: the email, capitals, the dashes, and that it's on the site's Sign in button.");
+  else console.log(`That password does NOT work (${JSON.parse(res.text || "{}").msg || JSON.parse(res.text || "{}").error_description || res.status}).\nGive them a new one with: --reset ${email}`);
+}
+
 async function enroll(file) {
   const people = parseCsv(readFileSync(file, "utf8"));
   const bad = people.filter((p) => !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(p.email));
@@ -131,6 +168,7 @@ async function enroll(file) {
 const args = process.argv.slice(2);
 try {
   if (args[0] === "--reset" && args[1]) await reset(args[1]);
+  else if (args[0] === "--check" && args[1]) await check(args[1]);
   else if (args[0] && !args[0].startsWith("-")) await enroll(args[0]);
-  else die("Usage: node tools/enroll.mjs students.csv   or   node tools/enroll.mjs --reset ab1234@colorado.edu");
+  else die("Usage: node tools/enroll.mjs students.csv   or   --reset ab1234@colorado.edu   or   --check ab1234@colorado.edu");
 } catch (err) { die(`Stopped: ${err.message}`); }
