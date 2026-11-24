@@ -184,6 +184,10 @@ code, pre, .mono { font-family: var(--font-code); font-variation-settings: "MONO
 .quiz .opts { display: flex; flex-wrap: wrap; gap: 8px; }
 .quiz .opts button.right { background: var(--good-soft); border-color: var(--good); color: var(--good); }
 .quiz .opts button.wrong { background: var(--bad-soft); border-color: var(--bad); color: var(--bad); }
+/* Scored quizzes (makeQuiz(…, { once: true })): a pick before submitting, and answers locked after. */
+.quiz .opts button.picked { background: var(--cobalt-soft); border-color: var(--cobalt); color: var(--cobalt); font-weight: 700; }
+.quiz .opts[data-done] button:disabled { opacity: 1; cursor: default; }
+.quiz-submit { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; padding-top: 6px; }
 .feedback { font-size: 0.95rem; min-height: 1.5em; }
 .feedback.right { color: var(--good); } .feedback.wrong { color: var(--bad); }
 .score { font: 700 0.95rem var(--font-code); font-variation-settings: "MONO" 1; color: var(--cobalt); }
@@ -320,6 +324,7 @@ a.btn { display: inline-flex; align-items: center; gap: 6px; text-decoration: no
 .ex-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 12px; }
 .ex-head .eyebrow { flex-basis: 100%; }
 .ex-status { font: 700 0.8rem var(--font-code); font-variation-settings: "MONO" 1; color: var(--good); background: var(--good-soft); border-radius: 4px; padding: 3px 8px; }
+.ex-points { margin-left: auto; font: 700 0.8rem var(--font-code); font-variation-settings: "MONO" 1; color: var(--cobalt); background: var(--cobalt-soft); border-radius: 4px; padding: 3px 8px; }
 .ex-task { display: grid; gap: 8px; }
 .ex-js { width: 100%; resize: vertical; font: 0.92rem/1.55 var(--font-code); font-variation-settings: "MONO" 1; tab-size: 2; color: var(--ink); background: var(--paper); border: 1px solid var(--line); border-radius: var(--radius); padding: 14px 16px; white-space: pre; overflow-x: auto; }
 .ex-js:focus-visible { outline: 3px solid var(--cobalt); outline-offset: 2px; }

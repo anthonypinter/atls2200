@@ -5,8 +5,10 @@
    {
      v: 1,                                   schema version; bump it and migrate in load() if the shape changes
      lessons:  { [slug]: { visited, completed, updatedAt } },          completed is a timestamp or null
-     quizzes:  { [quizId]: { answers: { [questionId]: { choice, correct } }, best: { score, total }, updatedAt } },
-     exercises: { [exerciseId]: { code: { html, css } | { js }, passed, updatedAt } },   passed is a timestamp or null
+     quizzes:  { [quizId]: { answers: { [questionId]: { choice, correct } }, best: { score, total }, first: { score, total, at }, updatedAt } },
+                 first is the first finished attempt, which scored practice pages count; it never changes
+     exercises: { [exerciseId]: { code: { html, css } | { js }, passed, best: { score, total }, updatedAt } },
+                 passed is a timestamp or null; best is the most checks one press of Check has passed
      sections: { [sectionId]: { seen, interacted, ms, updatedAt } },
                  ms: active reading time; seen: when ms first reached the section's bar (js/chrome.js sets it from the
                  section's length); interacted: the first time the student did what the section asks (see used())
@@ -32,6 +34,7 @@
   const now = () => new Date().toISOString();
   const EVENTS = "book:events";
   const MAX_EVENTS = 1000;
+  const EXERCISE_POINTS = 5;   // what one exercise is worth on a scored practice page (see score())
   const empty = () => ({ v: VERSION, lessons: {}, quizzes: {}, exercises: {}, sections: {}, attempts: [], last: null });
 
   function load() {
@@ -67,10 +70,17 @@
       const best = [a.quizzes?.[id]?.best, b.quizzes?.[id]?.best].filter(Boolean).sort((x, y) => y.score / y.total - x.score / x.total)[0];
       if (best) out.quizzes[id] = { ...out.quizzes[id], best };
     }
-    // Likewise a pass on either side survives a newer draft saved on the other.
+    // The first finished attempt is what a scored quiz counts (practice pages), so keep the earliest from either side.
+    for (const id of Object.keys(out.quizzes)) {
+      const first = [a.quizzes?.[id]?.first, b.quizzes?.[id]?.first].filter((f) => f?.at).sort((x, y) => (x.at < y.at ? -1 : 1))[0];
+      if (first) out.quizzes[id] = { ...out.quizzes[id], first };
+    }
+    // Likewise a pass on either side survives a newer draft saved on the other, and so does the best Check.
     for (const id of Object.keys(out.exercises)) {
       const passed = [a.exercises?.[id]?.passed, b.exercises?.[id]?.passed].filter(Boolean).sort()[0];
       if (passed) out.exercises[id] = { ...out.exercises[id], passed };
+      const best = [a.exercises?.[id]?.best, b.exercises?.[id]?.best].filter((x) => x?.total).sort((x, y) => y.score / y.total - x.score / x.total)[0];
+      if (best) out.exercises[id] = { ...out.exercises[id], best };
     }
     // Sections only ever gain a time, so keep the earliest of each.
     const first = (x, y) => [x, y].filter(Boolean).sort()[0] || null;
@@ -131,14 +141,15 @@
       change((d) => {
         const rec = d.quizzes[quiz] || { answers: {}, best: null };
         const answers = { ...rec.answers, [q]: { choice, correct } };
-        let best = rec.best;
+        let best = rec.best, first = rec.first;
         const done = Object.values(answers);
         if (done.length === total) {
           const score = done.filter((x) => x.correct).length;
           if (!best || score / total > best.score / best.total) best = { score, total };
+          if (!first) first = { score, total, at: now() };
           log("quiz-done", quiz, { score, total });
         }
-        d.quizzes[quiz] = { answers, best, updatedAt: now() };
+        d.quizzes[quiz] = { ...rec, answers, best, ...(first ? { first } : {}), updatedAt: now() };
         d.attempts.push({ quiz, q, choice, correct, at: now() });
         if (d.attempts.length > MAX_ATTEMPTS) d.attempts.splice(0, d.attempts.length - MAX_ATTEMPTS);
       });
@@ -166,7 +177,8 @@
       log("check", id, { score, total, passed, ...(kept ? { code: kept } : {}) });
       change((d) => {
         const rec = d.exercises[id] || { code: null, passed: null };
-        d.exercises[id] = { ...rec, passed: rec.passed || (passed ? now() : null), updatedAt: now() };
+        const best = rec.best && rec.best.score / rec.best.total >= score / total ? rec.best : { score, total };
+        d.exercises[id] = { ...rec, passed: rec.passed || (passed ? now() : null), best, updatedAt: now() };
         d.attempts.push({ exercise: id, passed, score, total, at: now() });
         if (d.attempts.length > MAX_ATTEMPTS) d.attempts.splice(0, d.attempts.length - MAX_ATTEMPTS);
       });
@@ -214,6 +226,25 @@
     },
     /** Sections that ask the student to do something; the rest are read. */
     needsUse: (kind) => /^(play|try it|practice|check yourself)$/i.test(kind || ""),
+
+    /** Points on a scored practice page (practice.js): the quiz is worth 1 point a question, counting the first
+        finished attempt, and each exercise EXERCISE_POINTS, in proportion to the most checks it has ever passed.
+        page is { slug, questions, exercises: [element ids] } (the instructor dashboard reads these from the
+        practice index). Returns { points, max, quiz: { points, max, done }, exercises: [{ id, points, max, tried }] }. */
+    score(data, page) {
+      const q = data?.quizzes?.[`${page.slug}/quiz`];
+      const firstTry = q?.first?.total ? q.first : q?.best?.total ? q.best : null;
+      const quiz = { points: firstTry ? firstTry.score : 0, max: page.questions || firstTry?.total || 0, done: !!firstTry };
+      const round = (n) => Math.round(n * 10) / 10;
+      const exercises = (page.exercises || []).map((id) => {
+        const rec = data?.exercises?.[`${page.slug}/${id}`] || {};
+        const best = rec.passed ? { score: 1, total: 1 } : rec.best?.total ? rec.best : null;
+        return { id, points: best ? round((EXERCISE_POINTS * best.score) / best.total) : 0, max: EXERCISE_POINTS, tried: !!best, passed: !!rec.passed };
+      });
+      const points = round(quiz.points + exercises.reduce((n, e) => n + e.points, 0));
+      return { points, max: quiz.max + exercises.length * EXERCISE_POINTS, quiz, exercises };
+    },
+    EXERCISE_POINTS,
 
     merge,
     /** Swap in a whole progress object (js/backend.js uses this after merging with the server). null clears it. */

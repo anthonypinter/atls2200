@@ -20,7 +20,10 @@
      ]});
      A check's test gets { logs (text of each console.log), fns (the names listed in expose), error, code }.
 
-   Give every exercise element a stable id: saved work is stored under "<page>/<id>". */
+   Give every exercise element a stable id: saved work is stored under "<page>/<id>".
+
+   On a scored page (BOOK.scored, the practice pages in practice.js) there's no Show solution, and the head shows the
+   best Check so far as points (Progress.score: EXERCISE_POINTS for all checks passing, partial credit otherwise). */
 (function () {
   const esc = (s) => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
   const P = window.Progress;
@@ -35,9 +38,11 @@
     const saved = P ? P.exercise(id) : { code: null, passed: null };
     const starter = isJS ? { js: def.js } : { html: def.html, css: def.css };
     const hints = def.hints || [];
+    const scored = !!window.BOOK?.scored;
+    if (scored) delete def.solution;
 
     el.classList.add("panel", "exercise");
-    el.innerHTML = `<div class="ex-head"><span class="eyebrow">Exercise</span><h3>${esc(def.title)}</h3><span class="ex-status" hidden>✓ Passed</span></div>
+    el.innerHTML = `<div class="ex-head"><span class="eyebrow">Exercise</span><h3>${esc(def.title)}</h3><span class="ex-status" hidden>✓ Passed</span>${scored ? `<span class="ex-points"></span>` : ""}</div>
       <div class="ex-task">${def.task || ""}</div>
       <p class="hint ex-restored" hidden>Your saved work was restored. Reset brings back the starting code.</p>
       <div class="ex-work"></div>
@@ -98,7 +103,12 @@
     }
 
     function paintStatus() {
-      $(".ex-status").hidden = !(P && P.exercise(id).passed);
+      const rec = P ? P.exercise(id) : {};
+      $(".ex-status").hidden = !rec.passed;
+      if (scored && P) {
+        const pts = P.EXERCISE_POINTS, best = rec.passed ? { score: 1, total: 1 } : rec.best;
+        $(".ex-points").textContent = best?.total ? `${Math.round((pts * best.score / best.total) * 10) / 10} / ${pts} points` : `${pts} points`;
+      }
     }
 
     async function check() {
@@ -119,9 +129,10 @@
           code: get(),
         };
       }
-      const results = def.checks.map((c) => {
-        try { return !!c.test(ctx); } catch { return false; }
-      });
+      // A check may be async (say, one that fetches a file); a check that throws or rejects fails.
+      const results = await Promise.all(def.checks.map(async (c) => {
+        try { return !!(await c.test(ctx)); } catch { return false; }
+      }));
       const score = results.filter(Boolean).length, total = results.length;
       if (P) { P.checked(id, score, total, get()); P.used(el, "check"); }
       const all = score === total;

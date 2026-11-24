@@ -2,7 +2,7 @@
 
 Read this first when you pick up work on the site or on Book 2 (Core Web Development). It records what's been built, the decisions behind it, and how to keep building without starting from scratch.
 
-Last updated: 2026-11-13. All 9 weeks written (60 lessons). No `plan()` entries remain.
+Last updated: 2026-11-23 (Exercises & Quizzes added). All 9 weeks written (60 lessons). No `plan()` entries remain.
 
 ---
 
@@ -12,7 +12,7 @@ A plain HTML/CSS/JS course site (ATLS 2200). It has no build step. GitHub Action
 
 | Page | What it is |
 |---|---|
-| `index.html` | Landing page with three main buttons: **Field Guide** (→ `book.html`), **Exercises & Quizzes** (inactive, "Coming soon"; it will be separate from the textbook exercises) and **Class is Live** (inactive). A secondary **Log in** button stays disabled until `BOOK.backend.url` is set. |
+| `index.html` | Landing page with three main buttons: **Field Guide** (→ `book.html`), **Exercises & Quizzes** (→ `practice.html`, the scored weekly sets, see below) and **Class is Live** (inactive). A secondary **Log in** button stays disabled until `BOOK.backend.url` is set. |
 | `book.html` | The original textbook, the **Field Guide**, formerly `index.html`. Its manifest is `book.js`. |
 | `book-2.html` | Book 2, **Core Web Development**. Its manifest is `book-2.js`. A 9-week course that follows MDN's *Learn web development: Core* module, with lessons built in the Field Guide's style. |
 | `mdn-links.html` / `mdn-links.js` | The earlier "links out to MDN" reading list, kept as a separate page. |
@@ -43,7 +43,7 @@ A plain HTML/CSS/JS course site (ATLS 2200). It has no build step. GitHub Action
 - **`scripts/check.mjs`** validates both manifests.
   - A Book 2 page must load `book-2.js` in place of `book.js`.
   - `DEMO_LINKS` allowlists intentionally missing demo files, such as `trail-map.pdf` in the Selectors playground.
-  - **Baseline: 9 errors that were there before this work**, in `ica12.html`, `ica13.html` and `week11.html`. A clean run is still "9 error(s)".
+  - A clean run is now **0 errors, 0 warnings** (the old 9-error baseline files are gone). It also checks `practice.js`.
 
 ## Lesson page anatomy
 
@@ -152,6 +152,32 @@ points and late work themselves. Built 2026-11-16:
   0004), then first and last name, unless the enrollment CSV gave it (`first_name`/`last_name` columns on the roster, copied to the profile, migration 0005; added 2026-11-20). Students can't change their recitation. Any email address can have an account (0006 dropped the @colorado.edu trigger; `emailDomain` removed from both manifests, 2026-11-21). "Forgot your password?" needs SMTP.
 - Gotcha: `Progress.setComplete()` logs an event before it saves, and logging repaints. `paintProgress` has a
   `completing` guard against the resulting infinite loop.
+
+## Exercises & Quizzes (scored weekly sets), built 2026-11-23
+
+Separate from the practice inside lessons. The instructor chose: one set per week, **scored** (not just completion),
+all open at once.
+
+- **`practice.js`** is a third manifest (`window.BOOK`, `scored: true`, `home: "practice.html"`, one "lesson" per week,
+  slugs `practice-week-N`, `covers` = the Book 2 lessons it draws on). Its `backend` must equal book.js's (check.mjs enforces).
+- **Each set: 4 exercises × 5 points + a 10-question quiz × 1 point = 30 points.** Scoring lives in `Progress.score()`
+  (js/progress.js), used by the page footer, `practice.html` and the dashboard alike.
+  - Exercises: no Show solution on scored pages; partial credit = best Check's passed/total (`exercises[id].best`, new).
+    Hints stay. `js/exercise.js` now awaits async checks (Week 9's fetch exercise makes real requests to `data/`).
+  - Quiz: `makeQuiz(el, items, { once: true })`: pick, change, Submit (press twice), then locked, no Retry. Counts the
+    first finished attempt (`quizzes[id].first`, new; merge keeps the earliest). Unsubmitted picks: `book:quizdraft:*`.
+  - The footer shows "X of 30 points · N of 5 parts tried"; the set auto-completes once every part is tried.
+    Signed-out students see a "Sign in" nudge.
+- **Solutions are never in the published page.** Pages are generated: `python3 tools/practice/build.py [weeks]` from
+  `tools/practice/sets/week-N.js` (the page script); solutions in `week-N.solutions.js`. The publish workflow now
+  excludes `tools/`. check.mjs errors if a practice page contains `solution:`.
+- **Test:** `tools/practice/test.sh [weeks]` builds a temporary copy with solutions merged and runs testlesson.sh.
+  As of 2026-11-23 all 36 exercises: starter scores 0 on every check, solution passes all.
+- **Dashboard:** `instructor.html?book=3` shows points per week (cells "22.5 / 30"), per-exercise points and the
+  quiz's first attempt per student; CSV gained `points`/`max_points`. It reads `search-index-practice.js`
+  (built by `check.mjs --write`; index entries now carry `questions`).
+- Not yet done: an end-to-end click-through in a real browser (quiz submit → footer score → dashboard with real
+  accounts). The automated harness covers exercises and quiz rendering only.
 
 ## Open offers / loose ends
 

@@ -1,0 +1,173 @@
+  // Every style rule in the preview, including those inside @media, with the condition they sit in (spaces removed,
+  // and range syntax like (width >= 700px) read as (min-width:700px)).
+  const rules = (doc) => {
+    const out = [];
+    const norm = (c) => c.toLowerCase().replace(/\s+/g, "").replace(/\(width>=([^)]+)\)/g, "(min-width:$1)").replace(/\(width<=([^)]+)\)/g, "(max-width:$1)");
+    const walk = (list, media) => { for (const r of list) { if (r.cssRules && r.conditionText !== undefined) walk(r.cssRules, norm(r.conditionText)); else if (r.selectorText) out.push({ sel: r.selectorText, style: r.style, media }); } };
+    for (const sheet of doc.styleSheets) walk(sheet.cssRules, null);
+    return out;
+  };
+  // WCAG contrast ratio between two rgb() colours.
+  const contrast = (a, b) => {
+    const lum = (c) => { const [r, g, bl] = c.match(/[\d.]+/g).slice(0, 3).map((v) => { v /= 255; return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4; }); return 0.2126 * r + 0.7152 * g + 0.0722 * bl; };
+    const [x, y] = [lum(a), lum(b)].sort((m, n) => n - m);
+    return (x + 0.05) / (y + 0.05);
+  };
+
+  makeExercise(document.getElementById("ex-mf"), {
+    title: "Turn it mobile first",
+    task: `<p>This CSS is desktop first: the columns are a row by default, and a <code>max-width</code> query stacks them on small screens. Rewrite it mobile first:</p>
+    <ol>
+      <li>The rule <em>outside</em> any media query stacks the columns (<code>flex-direction: column</code>).</li>
+      <li>A <code>min-width: 700px</code> query (or <code>width &gt;= 700px</code>) puts them in a row.</li>
+      <li>Remove the <code>max-width</code> query.</li>
+    </ol>`,
+    html: `<div class="cols">
+  <section>Trails</section>
+  <section>Events</section>
+  <section>Join</section>
+</div>
+`,
+    css: `.cols {
+  display: flex;
+  flex-direction: row;
+  gap: 16px;
+}
+
+.cols > section {
+  flex: 1;
+  padding: 16px;
+  background: #eef4fb;
+}
+
+@media (max-width: 699px) {
+  .cols {
+    flex-direction: column;
+  }
+}
+`,
+    hints: [
+      "Small screens get the base styles; wider screens get additions inside @media (min-width: …).",
+      "Change the base rule to flex-direction: column;",
+      "@media (min-width: 700px) { .cols { flex-direction: row; } }",
+    ],
+    checks: [
+      { label: "Outside any query, .cols is a column", test: ({ doc }) => rules(doc).some((r) => !r.media && r.sel.trim() === ".cols" && r.style.flexDirection === "column") && !rules(doc).some((r) => !r.media && r.sel.trim() === ".cols" && r.style.flexDirection === "row") },
+      { label: "A min-width: 700px query makes it a row", test: ({ doc }) => rules(doc).some((r) => r.media && r.media.includes("(min-width:700px)") && r.sel.trim() === ".cols" && r.style.flexDirection === "row") },
+      { label: "No max-width query left", test: ({ doc, code }) => rules(doc).some((r) => r.media && r.media.includes("min-width")) && !/max-width|width\s*<=?/.test(code.css) },
+    ],
+  });
+
+  makeExercise(document.getElementById("ex-fluid"), {
+    title: "A heading that scales",
+    task: `<p>Make the <code>h1</code> grow with the screen, with no media queries:</p>
+    <ul>
+      <li>Never smaller than <code>2rem</code> or bigger than <code>3.5rem</code>.</li>
+      <li>In between, a size that mixes <code>vw</code> with <code>rem</code>, like <code>1rem + 4vw</code>, so it still grows when someone zooms in. (Pure <code>vw</code> ignores zoom.)</li>
+    </ul>`,
+    html: `<h1>Find your next trail</h1>
+<p>Over 150 miles of trails, all within half an hour of downtown Boulder.</p>
+`,
+    css: `h1 {
+  font-size: 2rem;
+  line-height: 1.1;
+}
+`,
+    hints: [
+      "clamp(minimum, preferred, maximum) keeps the preferred size between the other two.",
+      "The preferred value can be a sum without calc(): 1rem + 4vw.",
+      "font-size: clamp(2rem, 1rem + 4vw, 3.5rem);",
+    ],
+    checks: (() => {
+      const parts = (css) => /font-size\s*:\s*clamp\(\s*([^,]+),\s*([^,]+),\s*([^)]+\)?)\s*\)/.exec(css);
+      return [
+        { label: "font-size uses clamp() with 2rem and 3.5rem as the limits", test: ({ code }) => { const m = parts(code.css); return m && m[1].trim() === "2rem" && m[3].trim() === "3.5rem"; } },
+        { label: "The middle value mixes vw and rem", test: ({ code }) => { const m = parts(code.css); return m && /vw/.test(m[2]) && /rem/.test(m[2]); } },
+        { label: "The heading is between 32px and 56px, with no media query", test: ({ style, code }) => { const px = parseFloat(style("h1", "font-size")); return px >= 32 && px <= 56 && /clamp\(/.test(code.css) && !/@media/.test(code.css); } },
+      ];
+    })(),
+  });
+
+  makeExercise(document.getElementById("ex-rimg"), {
+    title: "A responsive image",
+    task: `<p>The photo comes in three widths: <code>images/flatirons-400.jpg</code>, <code>images/flatirons-800.jpg</code> and <code>images/flatirons-1600.jpg</code>. Let the browser pick:</p>
+    <ol>
+      <li>List all three in <code>srcset</code> with <code>w</code> descriptors (<code>400w</code> and so on).</li>
+      <li>Add <code>sizes</code>: the image is half the viewport wide on screens of at least <code>900px</code>, and the full width otherwise.</li>
+      <li>Keep <code>src</code> as the 800 version for old browsers, give it real alt text, set <code>width="1600"</code> and <code>height="1067"</code>, and load it lazily.</li>
+    </ol>`,
+    html: `<img src="images/flatirons-800.jpg">
+`,
+    css: `img { max-width: 100%; height: auto; }
+`,
+    hints: [
+      "srcset=\"images/flatirons-400.jpg 400w, images/flatirons-800.jpg 800w, images/flatirons-1600.jpg 1600w\"",
+      "sizes=\"(min-width: 900px) 50vw, 100vw\": the first matching condition wins, and the last value has none.",
+      "loading=\"lazy\" waits to download the image until it's near the screen.",
+    ],
+    checks: [
+      { label: "srcset lists the three files with w descriptors", test: ({ $ }) => { const c = ($("img").getAttribute("srcset") || "").split(",").map((s) => s.trim().split(/\s+/)); const want = { 400: "flatirons-400.jpg", 800: "flatirons-800.jpg", 1600: "flatirons-1600.jpg" }; return c.length === 3 && c.every(([url, d]) => want[parseInt(d)] && url.endsWith(want[parseInt(d)]) && /^\d+w$/.test(d)); } },
+      { label: "sizes: 50vw from 900px up, 100vw otherwise", test: ({ $ }) => /^\(\s*(min-width\s*:\s*900px|width\s*>=\s*900px)\s*\)\s*50vw\s*,\s*100vw$/.test(($("img").getAttribute("sizes") || "").trim()) },
+      { label: "src is the 800 version, with descriptive alt text", test: ({ $ }) => { const alt = ($("img").getAttribute("alt") || "").trim(); return $("img").getAttribute("src") === "images/flatirons-800.jpg" && alt.length >= 10 && !/\.jpe?g|^(image|picture|photo) of/i.test(alt); } },
+      { label: "width, height and loading=\"lazy\"", test: ({ $ }) => $("img").getAttribute("width") === "1600" && $("img").getAttribute("height") === "1067" && $("img").getAttribute("loading") === "lazy" },
+    ],
+  });
+
+  makeExercise(document.getElementById("ex-a11y"), {
+    title: "Accessibility repair",
+    task: `<p>This bit of a page has four accessibility problems. Fix each one:</p>
+    <ol>
+      <li>The logo image has no alt text. It's the club's name as a picture: <em>Boulder Trail Club</em>.</li>
+      <li>The grey note fails the contrast minimum. Darken it to at least <strong>4.5 : 1</strong> against the white page.</li>
+      <li>The label isn't tied to the search box.</li>
+      <li>The Search “button” is a <code>&lt;div&gt;</code>, so a keyboard can't reach it. Make it a real button.</li>
+    </ol>`,
+    html: `<div class="brand"><img src="images/logo.svg" width="160" height="40"></div>
+
+<p class="faint">Trail reports are updated every Friday.</p>
+
+<label>Search trails</label>
+<input type="search" id="q">
+<div class="go">Search</div>
+`,
+    css: `body {
+  background: white;
+}
+
+.faint {
+  color: #aaaaaa;
+}
+
+.go {
+  display: inline-block;
+  padding: 6px 12px;
+  background: #1a5fb4;
+  color: white;
+}
+`,
+    hints: [
+      "A logo's alt text is the name it shows: alt=\"Boulder Trail Club\".",
+      "#767676 is the lightest grey that passes 4.5 : 1 on white; anything darker works too.",
+      "<label for=\"q\">: for matches the input's id.",
+      "<button type=\"button\" class=\"go\">Search</button> is focusable and works with Enter and Space.",
+    ],
+    checks: [
+      { label: "The logo's alt text is the club's name", test: ({ $ }) => /boulder trail club/i.test($("img").getAttribute("alt") || "") },
+      { label: "The note has at least 4.5 : 1 contrast", test: ({ style }) => contrast(style(".faint", "color"), "rgb(255, 255, 255)") >= 4.5 },
+      { label: "The label is tied to the search box", test: ({ $ }) => $("input[type=search]").labels.length === 1 },
+      { label: "Search is a real <button>", test: ({ $, $$ }) => $$("button").some((b) => b.textContent.trim() === "Search") && !$("div.go") },
+    ],
+  });
+
+  makeQuiz(document.getElementById("quiz"), [
+    { id: "q1", q: "What does <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"> do?", opts: ["Makes images responsive", "Tells phones to lay the page out at the device's width instead of a zoomed-out desktop width", "Blocks zooming", "Loads a mobile stylesheet"], a: 1, why: "Without it, mobile browsers pretend to be about 980px wide and shrink the page, so your media queries don't match." },
+    { id: "q2", q: "In mobile-first CSS, which kind of media query do you mostly write?", opts: ["max-width", "min-width", "orientation", "print"], a: 1, why: "The base styles are for small screens, and min-width queries add to them as the screen gets wider." },
+    { id: "q3", q: "How should you choose breakpoints?", opts: ["Use the widths of popular phones", "Always 768px and 1024px", "Where your content starts to look wrong as you widen the window", "One for every 100px"], a: 2, why: "Devices change every year. Content-led breakpoints keep working on screens you haven't seen." },
+    { id: "q4", q: "Why can font-size: 5vw be an accessibility problem?", opts: ["vw isn't supported", "It ignores the user's zoom and text size settings", "It's too small on desktops", "Screen readers skip it"], a: 1, why: "vw follows the window, not the user's zoom. Mixing in rem, e.g. clamp(2rem, 1rem + 4vw, 3.5rem), fixes that." },
+    { id: "q5", q: "What does the sizes attribute tell the browser?", opts: ["The image file sizes in KB", "How wide the image will be shown, so it can pick a srcset file before the CSS loads", "The image's height", "Which image to load first"], a: 1, why: "The browser picks a file before it has done the layout, so sizes tells it the display width ahead of time." },
+    { id: "q6", q: "When do you need <picture> rather than srcset on an <img>?", opts: ["For any responsive image", "When you want different crops or compositions at different sizes (art direction), or a choice of formats", "Only for SVG", "When the image is lazy-loaded"], a: 1, why: "srcset offers the same image at several sizes. <picture> with <source> can change what the image shows, or its format." },
+    { id: "q7", q: "Which text needs at least 4.5 : 1 contrast under WCAG AA?", opts: ["Only headings", "Normal-size body text", "Only links", "Text in images only"], a: 1, why: "Body text needs 4.5 : 1. Large text (about 24px, or 19px bold) needs 3 : 1." },
+    { id: "q8", q: "You want text that screen readers announce but that isn't visible. Which approach works?", opts: ["display: none", "visibility: hidden", "A visually-hidden class (clipped to 1px, position: absolute)", "color: white"], a: 2, why: "display: none and visibility: hidden hide it from screen readers too. A visually-hidden utility keeps it in the accessibility tree." },
+    { id: "q9", q: "In BEM, what does .card__title--featured name?", opts: ["A block called card__title", "The title element of the card block, in its featured modifier", "Two separate classes", "An id"], a: 1, why: "Block (card), element (__title), modifier (--featured). The names make relationships clear without nesting selectors." },
+    { id: "q10", q: "Why keep specificity low in a large stylesheet?", opts: ["Low-specificity selectors load faster", "So rules are easy to override later without !important or longer and longer selectors", "Browsers ignore deep selectors", "It's required by the validator"], a: 1, why: "High specificity starts an arms race. Single-class selectors keep the cascade predictable." },
+  ], { once: true });

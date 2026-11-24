@@ -1,0 +1,157 @@
+  // Every style rule in the preview, including those inside @media, with the condition they sit in.
+  const rules = (doc) => {
+    const out = [];
+    const walk = (list, media) => { for (const r of list) { if (r.cssRules && r.conditionText !== undefined) walk(r.cssRules, r.conditionText); else if (r.selectorText) out.push({ sel: r.selectorText, style: r.style, media }); } };
+    for (const sheet of doc.styleSheets) walk(sheet.cssRules, null);
+    return out;
+  };
+
+  makeExercise(document.getElementById("ex-states"), {
+    title: "States and stripes",
+    task: `<ol>
+      <li>Give the nav links a <code>:hover</code> style <em>and</em> a <code>:focus-visible</code> style, so mouse and keyboard users both see which link they're on. Anything visible will do, such as a background colour.</li>
+      <li>Give every <em>even</em> item in the log a background of <code>#eef4fb</code>, using a pseudo-class, not classes.</li>
+      <li>Make the <em>first</em> item bold (<code>font-weight: 700</code>), again with a pseudo-class.</li>
+    </ol>`,
+    html: `<nav>
+  <a href="#">Trails</a>
+  <a href="#">Events</a>
+  <a href="#">Join</a>
+</nav>
+
+<ul class="log">
+  <li>Mesa · 6.7 mi</li>
+  <li>Royal Arch · 3.4 mi</li>
+  <li>Flagstaff · 4.1 mi</li>
+  <li>Green Mountain · 5.6 mi</li>
+</ul>
+`,
+    css: `nav a {
+  padding: 4px 8px;
+}
+`,
+    hints: [
+      "nav a:hover, nav a:focus-visible { background: #fde68a; } covers both in one rule.",
+      ":nth-child(even) matches the 2nd, 4th, … items.",
+      ":first-child matches an element that's the first child of its parent.",
+    ],
+    checks: [
+      { label: "Nav links have a :hover style", test: ({ doc }) => rules(doc).some((r) => /\ba:hover\b/.test(r.sel) && r.style.length > 0) },
+      { label: "Nav links have a :focus-visible style", test: ({ doc }) => rules(doc).some((r) => /\ba:focus-visible\b/.test(r.sel) && r.style.length > 0) },
+      { label: "Even items are #eef4fb; odd ones aren't", test: ({ $$, style, code }) => { const li = $$(".log li"); return style(li[1], "background-color") === "rgb(238, 244, 251)" && style(li[3], "background-color") === "rgb(238, 244, 251)" && style(li[2], "background-color") !== "rgb(238, 244, 251)" && /:nth-child\(\s*(even|2n)\s*\)/.test(code.css); } },
+      { label: "The first item is bold, using :first-child", test: ({ $$, style, code }) => { const li = $$(".log li"); return style(li[0], "font-weight") === "700" && style(li[1], "font-weight") === "400" && /:first-child|:nth-child\(\s*1\s*\)/.test(code.css); } },
+    ],
+  });
+
+  makeExercise(document.getElementById("ex-vars"), {
+    title: "One colour, set once",
+    task: `<p>The accent colour <code>#c0392b</code> is typed in two places, and the winter section needs blue (<code>#2471a3</code>) instead.</p>
+    <ol>
+      <li>Store the accent in a custom property, <code>--accent</code>, on <code>:root</code>.</li>
+      <li>Use <code>var(--accent)</code> everywhere the colour was typed.</li>
+      <li>In <code>.winter</code>, set <code>--accent</code> to <code>#2471a3</code>. Its heading and button should turn blue without any new rules for <code>h2</code> or <code>button</code>.</li>
+    </ol>
+    <p>When you're done, each hex colour should appear exactly once in your CSS.</p>`,
+    html: `<header class="site">
+  <h1>Trail Club</h1>
+  <button>Join</button>
+</header>
+
+<section class="winter">
+  <h2>Winter hikes</h2>
+  <button>Sign up</button>
+</section>
+`,
+    css: `h1, h2 {
+  color: #c0392b;
+}
+
+button {
+  background: #c0392b;
+  color: white;
+  border: 0;
+  padding: 8px 14px;
+}
+`,
+    hints: [
+      ":root { --accent: #c0392b; }",
+      "color: var(--accent); and background: var(--accent);",
+      "Custom properties inherit, so .winter { --accent: #2471a3; } changes it for everything inside .winter.",
+    ],
+    checks: [
+      { label: "--accent is #c0392b on :root", test: ({ doc }) => doc.defaultView.getComputedStyle(doc.documentElement).getPropertyValue("--accent").trim().toLowerCase() === "#c0392b" },
+      { label: "The header's h1 and button use var(--accent), which is red there", test: ({ style, code }) => style("h1", "color") === "rgb(192, 57, 43)" && style(".site button", "background-color") === "rgb(192, 57, 43)" && /var\(\s*--accent\s*\)/.test(code.css) },
+      { label: "The winter heading and button are blue", test: ({ style }) => style(".winter h2", "color") === "rgb(36, 113, 163)" && style(".winter button", "background-color") === "rgb(36, 113, 163)" },
+      { label: "Each colour is typed once, and var(--accent) is used", test: ({ code }) => (code.css.match(/#c0392b/gi) || []).length === 1 && (code.css.match(/#2471a3/gi) || []).length === 1 && (code.css.match(/var\(\s*--accent\s*\)/g) || []).length >= 2 },
+    ],
+  });
+
+  makeExercise(document.getElementById("ex-card"), {
+    title: "Decorate the card",
+    task: `<ol>
+      <li>Give <code>.card</code> a background made with <code>linear-gradient()</code>.</li>
+      <li>Round its corners to <code>12px</code>.</li>
+      <li>Give it a box shadow.</li>
+      <li>Add the label <code>★ Featured</code> before its content with <code>::before</code>. Don't add it to the HTML.</li>
+    </ol>`,
+    html: `<div class="card">
+  <h2>Flagstaff Summit</h2>
+  <p>4.1 miles · sunset views</p>
+</div>
+`,
+    css: `.card {
+  max-width: 300px;
+  padding: 16px;
+}
+`,
+    hints: [
+      "background: linear-gradient(135deg, #fde68a, #f97316);",
+      "box-shadow: 0 4px 12px rgb(0 0 0 / 0.2); is x offset, y offset, blur, colour.",
+      ".card::before { content: \"★ Featured\"; } Without content, ::before doesn't appear at all.",
+    ],
+    checks: [
+      { label: "A linear-gradient background", test: ({ style }) => /linear-gradient\(/.test(style(".card", "background-image")) },
+      { label: "12px rounded corners", test: ({ style }) => style(".card", "border-top-left-radius") === "12px" && style(".card", "border-bottom-right-radius") === "12px" },
+      { label: "A box shadow", test: ({ style }) => style(".card", "box-shadow") !== "none" },
+      { label: "::before adds “★ Featured”", test: ({ doc, $ }) => doc.defaultView.getComputedStyle($(".card"), "::before").content === '"★ Featured"' && !/Featured/.test($(".card").textContent) },
+    ],
+  });
+
+  makeExercise(document.getElementById("ex-motion"), {
+    title: "Motion with manners",
+    task: `<ol>
+      <li>Make <code>.lift</code> animate changes to <code>transform</code> over <code>0.2s</code>.</li>
+      <li>On hover, move it up <code>3px</code> with <code>transform: translateY(-3px)</code>.</li>
+      <li>Add a <code>prefers-reduced-motion: reduce</code> media query that turns the transition off for people who ask for less motion.</li>
+    </ol>`,
+    html: `<button class="lift">Start hike</button>
+`,
+    css: `.lift {
+  padding: 10px 18px;
+  font: inherit;
+}
+`,
+    hints: [
+      "transition: transform 0.2s ease-out;",
+      ".lift:hover { transform: translateY(-3px); }",
+      "@media (prefers-reduced-motion: reduce) { .lift { transition: none; } }",
+    ],
+    checks: [
+      { label: ".lift transitions transform over 0.2s", test: ({ style }) => { const props = style(".lift", "transition-property").split(",").map((s) => s.trim()), times = style(".lift", "transition-duration").split(",").map((s) => s.trim()); const i = props.findIndex((p) => p === "transform" || p === "all"); return i >= 0 && (times[i] || times[0]) === "0.2s"; } },
+      { label: "Hovering moves it up 3px", test: ({ doc }) => rules(doc).some((r) => /\.lift:hover\b/.test(r.sel) && /translateY\(\s*-3px\s*\)/.test(r.style.transform)) },
+      { label: "Reduced motion turns the transition off", test: ({ doc }) => rules(doc).some((r) => /prefers-reduced-motion:\s*reduce/.test(r.media || "") && /\.lift\b/.test(r.sel) && /^(none|all 0s.*|0s)$/.test(r.style.transition || r.style.transitionDuration || "")) },
+    ],
+  });
+
+  makeQuiz(document.getElementById("quiz"), [
+    { id: "q1", q: "Why do link styles usually go in the order :link, :visited, :hover, :active?", opts: ["Browsers ignore them in any other order", "They have the same specificity, so later rules win, and :hover and :active must come after the rest to show", "Alphabetical order is required", "It makes the CSS load faster"], a: 1, why: "Each state is one pseudo-class, so they tie on specificity and the last matching rule wins." },
+    { id: "q2", q: "Why use :focus-visible rather than removing the focus outline?", opts: ["It's faster", "Keyboard users need to see where focus is; :focus-visible shows it for them without showing it on every mouse click", "Outlines are deprecated", "It only works on buttons"], a: 1, why: "Never remove focus styles. :focus-visible lets the browser show them when they help, which is when someone is using a keyboard." },
+    { id: "q3", q: "A ::before rule sets color and padding but nothing appears. What's missing?", opts: ["display: block", "A content property", "position: absolute", "The HTML element"], a: 1, why: "::before and ::after are created only when content is set, even to an empty string." },
+    { id: "q4", q: "What does color: var(--brand, teal) do if --brand isn't defined?", opts: ["Uses teal", "Makes the text black", "Breaks the whole rule", "Uses the parent's --brand"], a: 0, why: "The second argument to var() is the fallback, used when the custom property isn't set." },
+    { id: "q5", q: "A background photo should cover the whole box without stretching. Which declaration?", opts: ["background-size: 100% 100%", "background-repeat: no-repeat", "background-size: cover", "background-size: contain"], a: 2, why: "cover scales the image to fill the box, keeping its proportions and cropping the overflow. contain fits it inside, which can leave gaps." },
+    { id: "q6", q: "What does the inset keyword do in box-shadow?", opts: ["Draws the shadow inside the box", "Makes the shadow blurrier", "Moves the box down", "Hides the border"], a: 0, why: "inset puts the shadow inside the border, so the box looks pressed in." },
+    { id: "q7", q: "You scale a card to 1.2 with transform. What happens to the elements around it?", opts: ["They move out of the way", "Nothing: transforms don't change the layout, so the card may overlap them", "They scale too", "The page reflows"], a: 1, why: "Transforms happen after layout. The card's space stays the same, which is why transforms animate smoothly." },
+    { id: "q8", q: "By default, which point does rotate() spin an element around?", opts: ["The top-left corner", "The page's center", "The element's center", "The mouse pointer"], a: 2, why: "transform-origin defaults to 50% 50%, the middle of the element. Change it to spin around a corner." },
+    { id: "q9", q: "You write .card { transition: height 0.3s; } and change height from 0 to auto. What happens?", opts: ["It animates smoothly", "It jumps with no animation, because auto isn't a number to animate between", "It animates twice", "The card disappears"], a: 1, why: "Transitions need two values they can calculate between. Use max-height, grid rows or interpolate-size instead." },
+    { id: "q10", q: "Form controls don't pick up the page's font by default. What fixes that?", opts: ["input, button, select, textarea { font: inherit; }", "body { font-size: 100%; }", "* { font-family: sans-serif !important; }", "It can't be fixed"], a: 0, why: "Controls use the system font unless told otherwise. font: inherit makes them match their surroundings." },
+  ], { once: true });

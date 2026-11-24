@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Exercises &amp; Quizzes</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="style.css">
+<style>
+  .hero { display: grid; gap: 16px; padding-block: 24px 32px; border-bottom: 1px solid var(--line); }
+  .hero .lede { font-size: 1.2rem; color: var(--muted); max-width: 46em; }
+  .rules { display: grid; gap: 8px; max-width: 46em; }
+  .rules ul { margin: 0; padding-left: 1.2em; display: grid; gap: 4px; }
+  .sets { display: grid; gap: 14px; padding-block: 28px; margin: 0; list-style: none; }
+  .set { display: grid; grid-template-columns: 7.5rem minmax(0, 1fr) auto; gap: 8px 20px; align-items: center; padding: 18px 20px; border-radius: var(--radius); border: 1px solid var(--line); background: var(--panel); color: var(--ink); text-decoration: none; transition: border-color 0.15s, transform 0.15s; }
+  .set:hover { border-color: var(--cobalt); transform: translateY(-2px); }
+  .set:hover h2 { color: var(--cobalt); }
+  .set h2 { font-size: 1.25rem; margin: 0; }
+  .set p { margin: 0; font-size: 0.95rem; color: var(--muted); }
+  .set-body { display: grid; gap: 6px; min-width: 0; }
+  .set-week { font: 600 0.75rem var(--font-code); font-variation-settings: "MONO" 1; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
+  .set-score { display: grid; gap: 6px; justify-items: end; min-width: 8.5rem; font: 700 1rem var(--font-code); font-variation-settings: "MONO" 1; }
+  .set-score progress { width: 8.5rem; }
+  .set-score small { font: 0.78rem var(--font-body); color: var(--muted); }
+  .set-score.none { color: var(--muted); font-weight: 600; }
+  @media (max-width: 700px) {
+    .set { grid-template-columns: minmax(0, 1fr); }
+    .set-score { justify-items: start; }
+  }
+  @media (prefers-reduced-motion: reduce) { .set { transition: none; } .set:hover { transform: none; } }
+</style>
+<script src="practice.js"></script>
+<script src="js/progress.js"></script>
+<script src="js/chrome.js"></script>
+<script src="js/quiz.js"></script>
+</head>
+<body>
+<main class="wrap">
+  <nav class="crumbs" aria-label="Site"><a class="crumb" href="index.html">← Course home</a></nav>
+  <header class="hero">
+    <span class="eyebrow">Scored practice</span>
+    <h1>Exercises &amp; <span class="sel">Quizzes</span></h1>
+    <p class="lede">One set a week, on that week's Core Web Development lessons. These are new problems, not the ones from the lessons, and they're scored.</p>
+    <div class="panel rules">
+      <p class="callout-title">How the sets are scored</p>
+      <ul>
+        <li><strong>Exercises: 5 points each.</strong> Check your work as often as you like. Your best Check counts, with partial credit for each check that passes. Hints are free; there are no solutions.</li>
+        <li><strong>Quiz: 1 point a question, one attempt.</strong> Pick every answer, then Submit.</li>
+        <li>Sign in (top right) so your scores reach your instructor. Work saves as you go.</li>
+      </ul>
+    </div>
+  </header>
+
+  <ol class="sets" id="sets" aria-label="Weekly sets"></ol>
+
+  <footer class="page-foot"><a href="book-2.html">Core Web Development textbook →</a><span>© 2026 Anthony T. Pinter</span></footer>
+</main>
+
+<script>
+  // Sets come from practice.js (numbered by js/chrome.js). Scores use the practice index (search-index-practice.js,
+  // built by scripts/check.mjs --write), which says how many questions and which exercises each set has.
+  const esc = (s) => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;");
+  let index = null;
+
+  function scoreHTML(slug) {
+    const page = index?.get(slug);
+    if (!page || !window.Progress) return "";
+    const sc = Progress.score(Progress.data(), { slug, questions: page.questions, exercises: page.exercises.map((id) => id.split("/")[1]) });
+    const tried = [sc.quiz.done, ...sc.exercises.map((e) => e.tried)].filter(Boolean).length;
+    if (!tried) return `<div class="set-score none">${sc.max} points<small>Not started</small></div>`;
+    return `<div class="set-score"><span>${sc.points} / ${sc.max}</span><progress max="${sc.max}" value="${sc.points}" aria-label="Score">${sc.points} of ${sc.max}</progress><small>${tried} of ${sc.exercises.length + 1} parts tried${sc.quiz.done ? "" : " · quiz not submitted"}</small></div>`;
+  }
+  function draw() {
+    document.getElementById("sets").innerHTML = BOOK.lessons.map((s) => `<li><a class="set" href="${s.href}">
+      <div class="set-week">Week ${s.part.num}</div>
+      <div class="set-body"><h2>${esc(s.title)}</h2><p>${esc(s.desc)}</p></div>
+      ${scoreHTML(s.slug)}</a></li>`).join("");
+  }
+  draw();
+  loadScript(BOOK.index).then(() => {
+    index = new Map(window.SEARCH_INDEX.lessons.map((l) => [l.slug, l]));
+    draw();
+    Progress.subscribe(draw);
+  }, () => {});
+</script>
+</body>
+</html>

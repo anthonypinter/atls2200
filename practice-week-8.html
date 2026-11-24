@@ -1,0 +1,208 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Week 8: JavaScript Fundamentals II and the DOM · Exercises &amp; Quizzes</title>
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="core.css">
+<style>
+  .practice-rules { display: grid; gap: 8px; }
+  .practice-rules ul { margin: 0; padding-left: 1.2em; display: grid; gap: 4px; }
+  .practice-covers { font-size: 0.95rem; color: var(--muted); }
+  .practice-signin { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; border-color: var(--cobalt); }
+</style>
+<script src="practice.js"></script>
+<script src="js/progress.js"></script>
+<script src="js/chrome.js"></script>
+<script src="js/quiz.js"></script>
+</head>
+<body>
+<main class="wrap">
+  <nav class="crumbs" aria-label="Site"><a class="crumb" href="practice.html">← Exercises &amp; Quizzes</a></nav>
+
+  <header class="page-head">
+    <span class="eyebrow">Week 8 · 30 points</span>
+    <h1>JavaScript Fundamentals II and the DOM</h1>
+    <p class="lede">Loops, functions with defaults and return values, objects and JSON, and changing a page with the DOM. Quiz: loops, scope, objects and the DOM.</p>
+    <p class="practice-covers">Covers: <a href="core-loops.html">Loops</a> · <a href="core-functions.html">Functions</a> · <a href="core-objects-json.html">Objects and JSON</a> · <a href="core-dom-scripting.html">DOM Scripting</a></p>
+  </header>
+
+  <div class="panel practice-signin" hidden><span>You're not signed in, so your score stays in this browser and your instructor won't see it.</span><button class="btn run" type="button" data-signin>Sign in</button></div>
+
+  <div class="panel practice-rules">
+    <p class="callout-title">How this is scored</p>
+    <ul>
+      <li><strong>Exercises: 5 points each.</strong> Press Check my work as often as you like. Your best Check counts, with partial credit for each check that passes. Hints are free. There's no Show solution here.</li>
+      <li><strong>Quiz: 1 point a question.</strong> You get one attempt. Pick every answer, then press Submit. Your answers lock and you'll see the explanations.</li>
+      <li>Your work saves as you go, so you can leave and come back.</li>
+    </ul>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Practice</span><h2>Exercise 1: Count the miles</h2></div>
+  <div id="ex-loops"></div>
+
+  <div class="section-title"><span class="eyebrow">Practice</span><h2>Exercise 2: Functions that return</h2></div>
+  <div id="ex-functions"></div>
+
+  <div class="section-title"><span class="eyebrow">Practice</span><h2>Exercise 3: From JSON and back</h2></div>
+  <div id="ex-json"></div>
+
+  <div class="section-title"><span class="eyebrow">Practice</span><h2>Exercise 4: Mark the closed trails</h2></div>
+  <div id="ex-dom"></div>
+
+  <div class="section-title"><span class="eyebrow">Check yourself</span><h2>Quiz</h2><p>10 questions, one attempt.</p></div>
+  <div class="quiz" id="quiz"></div>
+
+  <footer class="page-foot" data-book-nav><a href="practice.html">← Exercises &amp; Quizzes</a></footer>
+</main>
+
+<script>
+  const same = (a, b) => JSON.stringify(a) === JSON.stringify(b);
+  const list = (html) => { const ul = document.createElement("ul"); ul.innerHTML = html; return ul; };
+
+  makeExercise(document.getElementById("ex-loops"), {
+    title: "Count the miles",
+    task: `<ol>
+      <li><code>totalMiles(distances)</code> adds up an array of distances with a <code>for...of</code> loop and returns the sum. An empty array gives <code>0</code>.</li>
+      <li><code>evensUpTo(max)</code> returns an array of the even numbers from <code>2</code> up to and including <code>max</code>, using a standard <code>for</code> loop.</li>
+      <li><code>firstOver(distances, limit)</code> returns the first distance greater than <code>limit</code>, stopping the loop with <code>break</code> as soon as it finds one. If there isn't one, it returns <code>null</code>.</li>
+    </ol>`,
+    js: `function totalMiles(distances) {
+  // Your code here
+}
+
+function evensUpTo(max) {
+  // Your code here
+}
+
+function firstOver(distances, limit) {
+  // Your code here
+}
+
+console.log(totalMiles([6.7, 3.4, 4.1]));
+console.log(evensUpTo(10));
+console.log(firstOver([2, 7, 9], 5));
+`,
+    expose: ["totalMiles", "evensUpTo", "firstOver"],
+    hints: [
+      "Start with let total = 0; then for (const d of distances) { total += d; }",
+      "for (let i = 2; i <= max; i += 2) { evens.push(i); }",
+      "Store the answer in a variable that starts as null, set it inside an if, then break.",
+    ],
+    checks: [
+      { label: "totalMiles adds them up with for...of", test: ({ fns, code }) => fns.totalMiles([1, 2, 3.5]) === 6.5 && fns.totalMiles([]) === 0 && /for\s*\(\s*(const|let)\s+\w+\s+of\b/.test(code.js) },
+      { label: "evensUpTo(10) is [2, 4, 6, 8, 10]; evensUpTo(7) ends at 6", test: ({ fns }) => same(fns.evensUpTo(10), [2, 4, 6, 8, 10]) && same(fns.evensUpTo(7), [2, 4, 6]) && same(fns.evensUpTo(1), []) },
+      { label: "evensUpTo uses a standard for loop", test: ({ fns, code }) => same(fns.evensUpTo(4), [2, 4]) && /for\s*\(\s*let\s+\w+\s*=[^;]*;[^;]*;[^)]*\)/.test(code.js) },
+      { label: "firstOver finds the first match, or null, using break", test: ({ fns, code }) => fns.firstOver([2, 7, 9], 5) === 7 && fns.firstOver([1, 2], 5) === null && /\bbreak\b/.test(code.js) },
+    ],
+  });
+
+  makeExercise(document.getElementById("ex-functions"), {
+    title: "Functions that return",
+    task: `<ol>
+      <li><code>pace(miles, minutes)</code> returns minutes per mile, rounded to one decimal place. <code>pace(4, 50)</code> returns <code>12.5</code>; <code>pace(3, 40)</code> returns <code>13.3</code>.</li>
+      <li><code>greet(name)</code> returns <code>"Hello, Ada!"</code> for <code>"Ada"</code>. Give <code>name</code> a <em>default</em> of <code>"hiker"</code>, so <code>greet()</code> returns <code>"Hello, hiker!"</code>.</li>
+      <li><code>toKm</code> is an <em>arrow function</em> stored in a <code>const</code>. It converts miles to kilometres (× 1.609), rounded to one decimal. <code>toKm(10)</code> returns <code>16.1</code>.</li>
+    </ol>`,
+    js: `function pace(miles, minutes) {
+  // Your code here
+}
+
+// greet goes here
+
+// toKm goes here
+
+console.log(pace(4, 50));
+`,
+    expose: ["pace", "greet", "toKm"],
+    hints: [
+      "Math.round(x * 10) / 10 rounds x to one decimal place.",
+      "A default parameter: function greet(name = \"hiker\") { … }",
+      "const toKm = (miles) => Math.round(miles * 1.609 * 10) / 10;",
+      "Remember to return the value: a function without return gives undefined.",
+    ],
+    checks: [
+      { label: "pace(4, 50) is 12.5 and pace(3, 40) is 13.3", test: ({ fns }) => fns.pace(4, 50) === 12.5 && fns.pace(3, 40) === 13.3 },
+      { label: "greet(\"Ada\") is \"Hello, Ada!\"", test: ({ fns }) => fns.greet("Ada") === "Hello, Ada!" },
+      { label: "greet() uses a default parameter", test: ({ fns, code }) => fns.greet() === "Hello, hiker!" && /greet\s*\(\s*name\s*=|greet\s*=\s*\(\s*name\s*=/.test(code.js) },
+      { label: "toKm is an arrow function: toKm(10) is 16.1", test: ({ fns, code }) => fns.toKm(10) === 16.1 && fns.toKm(1) === 1.6 && /const\s+toKm\s*=\s*(\(\s*\w+\s*\)|\w+)\s*=>/.test(code.js) },
+    ],
+  });
+
+  makeExercise(document.getElementById("ex-json"), {
+    title: "From JSON and back",
+    task: `<p><code>data</code> is a JSON string, like a server would send.</p>
+    <ol>
+      <li>Parse it into an object called <code>trail</code>.</li>
+      <li>Add a property <code>visited</code> set to <code>true</code>.</li>
+      <li>Add a method <code>summary()</code> that uses <code>this</code> to return <code>"Mesa (6.7 mi)"</code> (the trail's own name and miles).</li>
+      <li>Turn the object back into a JSON string and store it in <code>saved</code>.</li>
+    </ol>`,
+    js: `const data = '{"name":"Mesa","miles":6.7,"tags":["loop","views"]}';
+
+// Your code here
+`,
+    expose: ["trail", "saved"],
+    hints: [
+      "JSON.parse(text) turns JSON into an object; JSON.stringify(object) goes the other way.",
+      "Set a property with dot notation: trail.visited = true;",
+      "trail.summary = function () { return this.name + \" (\" + this.miles + \" mi)\"; };",
+    ],
+    checks: [
+      { label: "trail is the parsed object", test: ({ fns, code }) => fns.trail.name === "Mesa" && same(fns.trail.tags, ["loop", "views"]) && /JSON\.parse\(/.test(code.js) },
+      { label: "trail.visited is true", test: ({ fns }) => fns.trail.visited === true },
+      { label: "trail.summary() uses this", test: ({ fns, code }) => { const t = fns.trail; if (t.summary() !== "Mesa (6.7 mi)") return false; const other = { name: "Bear Peak", miles: 7.8, summary: t.summary }; return other.summary() === "Bear Peak (7.8 mi)" && /\bthis\./.test(code.js); } },
+      { label: "saved is the JSON string, with visited in it", test: ({ fns }) => typeof fns.saved === "string" && JSON.parse(fns.saved).visited === true && JSON.parse(fns.saved).name === "Mesa" },
+    ],
+  });
+
+  makeExercise(document.getElementById("ex-dom"), {
+    title: "Mark the closed trails",
+    task: `<p><code>markClosed(list)</code> gets a <code>&lt;ul&gt;</code> of trails. Each <code>&lt;li&gt;</code> has a <code>data-status</code> attribute, <code>"open"</code> or <code>"closed"</code>. For each closed one:</p>
+    <ol>
+      <li>add the class <code>closed</code> with <code>classList</code>;</li>
+      <li>add <code>" (closed)"</code> to the end of its text with <code>textContent</code>.</li>
+    </ol>
+    <p>Then return how many were closed. Leave the open ones alone.</p>
+    <p class="hint">The checks build their own lists and pass them in. Run shows the example list below the code.</p>`,
+    js: `function markClosed(list) {
+  // Your code here
+}
+
+const example = document.createElement("ul");
+example.innerHTML = '<li data-status="open">Mesa</li><li data-status="closed">Royal Arch</li>';
+console.log(markClosed(example), example.innerHTML);
+`,
+    expose: ["markClosed"],
+    hints: [
+      "list.querySelectorAll('[data-status=\"closed\"]') finds the closed items.",
+      "for (const li of closed) { li.classList.add(\"closed\"); li.textContent += \" (closed)\"; }",
+      "querySelectorAll returns a NodeList, which has a length.",
+    ],
+    checks: (() => {
+      const make = () => list('<li data-status="open">Mesa</li><li data-status="closed">Royal Arch</li><li data-status="closed">Bear Peak</li><li data-status="open">Flagstaff</li>');
+      return [
+        { label: "Closed items get the class closed", test: ({ fns }) => { const ul = make(); fns.markClosed(ul); const li = ul.children; return li[1].classList.contains("closed") && li[2].classList.contains("closed"); } },
+        { label: "Closed items end with “ (closed)”", test: ({ fns }) => { const ul = make(); fns.markClosed(ul); return ul.children[1].textContent === "Royal Arch (closed)" && ul.children[2].textContent === "Bear Peak (closed)"; } },
+        { label: "Open items are unchanged", test: ({ fns }) => { const ul = make(); fns.markClosed(ul); return ul.children[1].classList.contains("closed") && ul.children[0].textContent === "Mesa" && !ul.children[0].classList.contains("closed") && ul.children[3].className === ""; } },
+        { label: "Returns how many were closed", test: ({ fns }) => fns.markClosed(make()) === 2 && fns.markClosed(list('<li data-status="open">Mesa</li>')) === 0 },
+      ];
+    })(),
+  });
+
+  makeQuiz(document.getElementById("quiz"), [
+    { id: "q1", q: "In for (let i = 0; i < 3; i++), how many times does the body run?", opts: ["2", "3", "4", "Forever"], a: 1, why: "i is 0, 1 and 2. When i reaches 3, i < 3 is false and the loop stops." },
+    { id: "q2", q: "What does continue do inside a loop?", opts: ["Ends the loop", "Skips the rest of this pass and goes on to the next one", "Restarts the loop from the beginning", "Pauses the loop"], a: 1, why: "break leaves the loop; continue only skips to the next pass." },
+    { id: "q3", q: "A while loop never ends. What's the most likely cause?", opts: ["while loops can't end", "Nothing in the body changes the condition", "It needs a semicolon", "It's missing break"], a: 1, why: "If nothing changes the condition, it stays true forever. Update the variable it tests inside the loop." },
+    { id: "q4", q: "What does [1, 2, 3].map((n) => n * 2) return?", opts: ["[2, 4, 6], a new array", "Nothing: it changes the original array", "12", "[1, 2, 3, 2, 4, 6]"], a: 0, why: "map() builds a new array from what the function returns for each item, and leaves the original alone." },
+    { id: "q5", q: "A variable declared with let inside a function is…", opts: ["Visible everywhere on the page", "Visible only inside that function (and blocks within it)", "Shared with every other function", "Deleted before the function runs"], a: 1, why: "Variables are scoped to the function or block where they're declared." },
+    { id: "q6", q: "A function has no return statement. What does calling it give you?", opts: ["0", "null", "undefined", "An error"], a: 2, why: "Without return, a function's value is undefined, a common cause of \"undefined\" showing up in a page." },
+    { id: "q7", q: "An object has a key with a space in it: { \"trail name\": \"Mesa\" }. How do you read it?", opts: ["obj.trail name", "obj[\"trail name\"]", "obj.trail_name", "obj(\"trail name\")"], a: 1, why: "Bracket notation takes any string, including ones that aren't valid names. Dot notation can't." },
+    { id: "q8", q: "Which is valid JSON?", opts: ["{ name: \"Mesa\" }", "{ 'name': 'Mesa' }", "{ \"name\": \"Mesa\" }", "{ \"name\": \"Mesa\", }"], a: 2, why: "JSON needs double-quoted keys and strings, and doesn't allow a trailing comma." },
+    { id: "q9", q: "What does document.querySelector(\".trail\") return when several elements have that class?", opts: ["All of them", "The first one", "The last one", "null"], a: 1, why: "querySelector returns the first match. Use querySelectorAll for every match." },
+    { id: "q10", q: "Why use textContent rather than innerHTML to show text a user typed?", opts: ["textContent is shorter", "innerHTML would run any HTML in it, which can inject markup or scripts", "innerHTML doesn't work on paragraphs", "textContent is the only one that updates the page"], a: 1, why: "textContent treats everything as plain text. innerHTML parses it as HTML, so it's unsafe for user input." },
+  ], { once: true });
+</script>
+</body>
+</html>

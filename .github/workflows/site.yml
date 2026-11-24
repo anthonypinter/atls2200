@@ -42,8 +42,8 @@ jobs:
           node-version: 22
       # Rebuild the search index from the lessons being published, so nobody has to remember to.
       - run: node scripts/check.mjs --write
-      # Publish only the site itself, not the repo tooling.
-      - run: rsync -a --exclude '.*' --exclude scripts --exclude templates --exclude supabase --exclude '*.md' ./ _site/
+      # Publish only the site itself, not the repo tooling (tools/ also holds the practice pages' solutions).
+      - run: rsync -a --exclude '.*' --exclude scripts --exclude tools --exclude templates --exclude supabase --exclude '*.md' ./ _site/
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:

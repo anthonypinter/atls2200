@@ -1,0 +1,209 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Week 1: HTML Basics · Exercises &amp; Quizzes</title>
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="core.css">
+<style>
+  .practice-rules { display: grid; gap: 8px; }
+  .practice-rules ul { margin: 0; padding-left: 1.2em; display: grid; gap: 4px; }
+  .practice-covers { font-size: 0.95rem; color: var(--muted); }
+  .practice-signin { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; border-color: var(--cobalt); }
+</style>
+<script src="practice.js"></script>
+<script src="js/progress.js"></script>
+<script src="js/chrome.js"></script>
+<script src="js/quiz.js"></script>
+</head>
+<body>
+<main class="wrap">
+  <nav class="crumbs" aria-label="Site"><a class="crumb" href="practice.html">← Exercises &amp; Quizzes</a></nav>
+
+  <header class="page-head">
+    <span class="eyebrow">Week 1 · 30 points</span>
+    <h1>HTML Basics</h1>
+    <p class="lede">Mark up a trail page: headings, emphasis and dates, lists and links. Quiz: requests, syntax, the head, publishing and debugging.</p>
+    <p class="practice-covers">Covers: <a href="core-how-the-web-works.html">How the Web Works</a> · <a href="core-basic-html-syntax.html">Basic HTML Syntax</a> · <a href="core-webpage-metadata.html">What&#x27;s in the Head?</a> · <a href="core-headings-paragraphs.html">Headings and Paragraphs</a> · <a href="core-emphasis-advanced-text.html">Emphasis and Advanced Text</a> · <a href="core-lists.html">Lists</a> · <a href="core-creating-links.html">Creating Links</a> · <a href="core-publishing.html">Publishing Your Website</a> · <a href="core-debugging-html.html">Debugging HTML</a></p>
+  </header>
+
+  <div class="panel practice-signin" hidden><span>You're not signed in, so your score stays in this browser and your instructor won't see it.</span><button class="btn run" type="button" data-signin>Sign in</button></div>
+
+  <div class="panel practice-rules">
+    <p class="callout-title">How this is scored</p>
+    <ul>
+      <li><strong>Exercises: 5 points each.</strong> Press Check my work as often as you like. Your best Check counts, with partial credit for each check that passes. Hints are free. There's no Show solution here.</li>
+      <li><strong>Quiz: 1 point a question.</strong> You get one attempt. Pick every answer, then press Submit. Your answers lock and you'll see the explanations.</li>
+      <li>Your work saves as you go, so you can leave and come back.</li>
+    </ul>
+  </div>
+
+  <div class="section-title"><span class="eyebrow">Practice</span><h2>Exercise 1: Outline a trail page</h2></div>
+  <div id="ex-outline"></div>
+
+  <div class="section-title"><span class="eyebrow">Practice</span><h2>Exercise 2: The right element for the words</h2></div>
+  <div id="ex-text"></div>
+
+  <div class="section-title"><span class="eyebrow">Practice</span><h2>Exercise 3: Steps, gear and trail words</h2></div>
+  <div id="ex-lists"></div>
+
+  <div class="section-title"><span class="eyebrow">Practice</span><h2>Exercise 4: Links that go somewhere</h2></div>
+  <div id="ex-links"></div>
+
+  <div class="section-title"><span class="eyebrow">Check yourself</span><h2>Quiz</h2><p>10 questions, one attempt.</p></div>
+  <div class="quiz" id="quiz"></div>
+
+  <footer class="page-foot" data-book-nav><a href="practice.html">← Exercises &amp; Quizzes</a></footer>
+</main>
+
+<script>
+  const text = (el) => (el ? el.textContent.replace(/\s+/g, " ").trim() : "");
+
+  makeExercise(document.getElementById("ex-outline"), {
+    title: "Outline a trail page",
+    task: `<p>This page is just lines of text, with no elements around them. Mark it up:</p>
+    <ol>
+      <li>Make <strong>Mesa Trail Guide</strong> the page's one main heading.</li>
+      <li>Make the three section names (<em>Getting there</em>, <em>What to bring</em>, <em>Trail conditions</em>) headings one level down.</li>
+      <li>Make every other line a paragraph.</li>
+    </ol>`,
+    html: `Mesa Trail Guide
+
+A 6.7-mile trail along the foot of the Flatirons.
+
+Getting there
+
+Park at the South Mesa trailhead off Eldorado Springs Drive.
+
+What to bring
+
+Water, sun protection and layers.
+
+Trail conditions
+
+Muddy after rain. Check before you go.
+`,
+    css: "",
+    hints: [
+      "The main heading is <h1>. Headings one level down are <h2>.",
+      "Every line that isn't a heading goes inside <p> … </p>.",
+      "There are four paragraphs.",
+    ],
+    checks: [
+      { label: "One <h1>: Mesa Trail Guide", test: ({ $$ }) => $$("h1").length === 1 && text($$("h1")[0]) === "Mesa Trail Guide" },
+      { label: "Three <h2> section headings, in order", test: ({ $$ }) => $$("h2").map(text).join("|") === "Getting there|What to bring|Trail conditions" },
+      { label: "Four paragraphs", test: ({ $$ }) => $$("p").length === 4 && text($$("p")[0]).startsWith("A 6.7-mile") },
+      { label: "No text left outside an element", test: ({ doc }) => [...doc.body.childNodes].every((n) => n.nodeType !== 3 || !n.textContent.trim()) },
+    ],
+  });
+
+  makeExercise(document.getElementById("ex-text"), {
+    title: "The right element for the words",
+    task: `<ol>
+      <li>Mark <em>Never hike the Mesa Trail after dark.</em> as strongly important.</li>
+      <li>Wrap <code>OSMP</code> in an abbreviation whose <code>title</code> is <code>Open Space and Mountain Parks</code>.</li>
+      <li>Wrap the date in a <code>&lt;time&gt;</code> element with a machine-readable <code>datetime</code> of <code>2026-05-01</code>.</li>
+      <li>Keep <em>A ranger said:</em> as a paragraph, and put the quotation after it in a <code>&lt;blockquote&gt;</code>.</li>
+    </ol>`,
+    html: `<p>Trail closes at sunset. Never hike the Mesa Trail after dark.</p>
+<p>The trail is managed by OSMP, Boulder's open space department.</p>
+<p>Reopening date: May 1, 2026.</p>
+<p>A ranger said: Leave no trace, and leave the wildflowers for the next hiker.</p>
+`,
+    css: "",
+    hints: [
+      "Strong importance is <strong>, not <b>.",
+      "<abbr title=\"Open Space and Mountain Parks\">OSMP</abbr>",
+      "<time datetime=\"2026-05-01\">May 1, 2026</time>",
+      "A blockquote is a block element, so it can't sit inside a <p>. Close the paragraph after \"said:\", then write <blockquote><p>…</p></blockquote>.",
+    ],
+    checks: [
+      { label: "The warning is in <strong>", test: ({ $ }) => text($("strong")) === "Never hike the Mesa Trail after dark." },
+      { label: "OSMP is an <abbr> with the full name as its title", test: ({ $ }) => text($("abbr")) === "OSMP" && /^open space and mountain parks$/i.test($("abbr").title.trim()) },
+      { label: "The date is a <time> with datetime=\"2026-05-01\"", test: ({ $ }) => $("time").getAttribute("datetime") === "2026-05-01" && text($("time")) === "May 1, 2026" },
+      { label: "The quotation is in a <blockquote>, not inside a <p>", test: ({ $ }) => /^Leave no trace/.test(text($("blockquote"))) && !$("p blockquote") && !text($("blockquote")).includes("ranger") },
+    ],
+  });
+
+  makeExercise(document.getElementById("ex-lists"), {
+    title: "Steps, gear and trail words",
+    task: `<ol>
+      <li>Turn the three numbered steps into an ordered list. Don't type the numbers: the list adds them.</li>
+      <li>Inside the second step, list the three things to pack (water, snacks, a map) as an unordered list.</li>
+      <li>Turn the trail words into a description list: each word is a term and its meaning is the description.</li>
+    </ol>`,
+    html: `<h2>Before you go</h2>
+<p>1. Check the weather. 2. Pack your bag: water, snacks, a map. 3. Tell someone your plan.</p>
+
+<h2>Trail words</h2>
+<p>Cairn: a stack of rocks that marks the route. Switchback: a zigzag that climbs a steep slope.</p>
+`,
+    css: "",
+    hints: [
+      "<ol> holds <li> items; the browser numbers them.",
+      "A nested list goes inside an <li>: <li>Pack your bag: <ul><li>water</li>…</ul></li>",
+      "<dl><dt>Cairn</dt><dd>a stack of rocks…</dd>…</dl>",
+    ],
+    checks: [
+      { label: "An ordered list of three steps", test: ({ $ }) => $("ol").querySelectorAll(":scope > li").length === 3 },
+      { label: "The numbers aren't typed in", test: ({ $ }) => !!$("ol > li") && !/\b[123]\./.test(text($("ol"))) },
+      { label: "The second step holds a list of three things to pack", test: ({ $ }) => $("ol > li:nth-child(2) > ul").querySelectorAll(":scope > li").length === 3 && !$("ol > ul") },
+      { label: "A description list with two terms and two descriptions", test: ({ $, $$ }) => $$("dl dt").length === 2 && $$("dl dd").length === 2 && text($("dt")).replace(/:$/, "") === "Cairn" },
+    ],
+  });
+
+  makeExercise(document.getElementById("ex-links"), {
+    title: "Links that go somewhere",
+    task: `<p>This page lives at the top of the site, next to <code>index.html</code>. Turn the nav lines into links:</p>
+    <ol>
+      <li><em>Home</em> goes to <code>index.html</code>.</li>
+      <li><em>Mesa Trail</em> goes to <code>mesa.html</code> inside the <code>trails</code> folder.</li>
+      <li><em>Email the club</em> starts an email to <code>club@example.com</code>.</li>
+      <li><em>Skip to safety tips</em> jumps to the Safety tips heading. Give that heading the id <code>safety</code>.</li>
+    </ol>
+    <p>Then link the words <em>Boulder OSMP</em> to <code>https://bouldercolorado.gov/osmp</code>.</p>`,
+    html: `<nav>
+  <p>Home</p>
+  <p>Mesa Trail</p>
+  <p>Email the club</p>
+  <p>Skip to safety tips</p>
+</nav>
+
+<h2>Safety tips</h2>
+<p>Carry more water than you think you need.</p>
+<p>Trail data comes from Boulder OSMP.</p>
+`,
+    css: "",
+    hints: [
+      "A relative path to a file in a folder: trails/mesa.html",
+      "Email links start with mailto:",
+      "A link to a spot on the same page: href=\"#safety\", and the heading needs id=\"safety\".",
+      "A link to another site needs the full URL, starting with https://",
+    ],
+    checks: (() => {
+      const link = ($$, words) => $$("a").find((a) => text(a) === words);
+      return [
+        { label: "Home → index.html, Mesa Trail → trails/mesa.html", test: ({ $$ }) => link($$, "Home").getAttribute("href") === "index.html" && /^(\.\/)?trails\/mesa\.html$/.test(link($$, "Mesa Trail").getAttribute("href")) },
+        { label: "Email the club is a mailto: link to club@example.com", test: ({ $$ }) => /^mailto:club@example\.com$/i.test(link($$, "Email the club").getAttribute("href")) },
+        { label: "Skip to safety tips jumps to #safety, and the heading has that id", test: ({ $, $$ }) => link($$, "Skip to safety tips").getAttribute("href") === "#safety" && $("h2#safety") },
+        { label: "Boulder OSMP links to the full https:// address", test: ({ $$ }) => /^https:\/\/bouldercolorado\.gov\/osmp\/?$/.test(link($$, "Boulder OSMP").getAttribute("href")) },
+      ];
+    })(),
+  });
+
+  makeQuiz(document.getElementById("quiz"), [
+    { id: "q1", q: "You type trailclub.org into the address bar. What does DNS do?", opts: ["Sends the page's HTML to your browser", "Finds the IP address that goes with the domain name", "Checks that the HTML is valid", "Encrypts the connection"], a: 1, why: "DNS is the address book: it turns a domain name into the IP address of the server to ask." },
+    { id: "q2", q: "The browser asks for a page that isn't on the server. What does the server send back?", opts: ["A 404 Not Found response", "Nothing at all", "A 200 OK response with an empty page", "The site's index.html"], a: 0, why: "The server still answers, with status 404 to say the file doesn't exist." },
+    { id: "q3", q: "Which of these is a void element, with no closing tag?", opts: ["<p>", "<a>", "<li>", "<img>"], a: 3, why: "<img> has no content, so it has no closing tag. Its information is all in attributes." },
+    { id: "q4", q: "Why write &lt; instead of < in the text of a page?", opts: ["It makes the character bigger", "It's needed for every special character", "So the browser doesn't read it as the start of a tag", "It's faster to load"], a: 2, why: "< starts a tag, so a literal < in text is written as the entity &lt;." },
+    { id: "q5", q: "What belongs in <head>?", opts: ["Information about the page, like its title, character set and stylesheets", "The page's main heading", "The navigation menu", "Everything above the first paragraph"], a: 0, why: "The head holds metadata the visitor doesn't see in the page itself. The visible heading goes in <body>." },
+    { id: "q6", q: "A page goes straight from <h1> to <h3>. What's the problem?", opts: ["Nothing, as long as it looks right", "The <h3> won't display", "<h3> must come before <h1>", "The outline skips a level, which confuses screen reader users"], a: 3, why: "Headings make an outline. Skipping from h1 to h3 leaves a gap. Choose the level by structure and size it with CSS." },
+    { id: "q7", q: "Which element says some text is strongly important?", opts: ["<b>", "<strong>", "<i>", "<mark>"], a: 1, why: "<strong> carries meaning (strong importance); <b> only draws attention, with no extra importance." },
+    { id: "q8", q: "trails/mesa.html links back to index.html, which is one folder up. Which href works?", opts: ["index.html", "/trails/index.html", "../index.html", "trails/../../index.html"], a: 2, why: "../ goes up one folder from the page's own folder, then finds index.html there." },
+    { id: "q9", q: "Someone visits your GitHub Pages site's address with no file name. Which file is served?", opts: ["index.html", "home.html", "README.md", "The first .html file alphabetically"], a: 0, why: "Web servers, GitHub Pages included, serve index.html when a URL names a folder." },
+    { id: "q10", q: "Browsers quietly repair broken HTML. What's the best way to find the mistakes?", opts: ["Look at the page in a different browser", "Run it through the HTML validator", "Delete tags until it looks right", "View it on a phone"], a: 1, why: "The validator reports each error with a line number, even ones the browser hid by repairing them." },
+  ], { once: true });
+</script>
+</body>
+</html>

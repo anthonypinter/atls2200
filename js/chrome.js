@@ -8,7 +8,8 @@
    - Sidebar: the table of contents with the current lesson highlighted and its sections listed under it.
      Docked beside the page on wide screens (open/closed is remembered), a drawer on narrow ones.
    - Footer: fills <footer data-book-nav> with previous/next links in reading order, plus a Mark complete button, or,
-     in a book with autoComplete (Book 2), a meter of how much of the lesson is done (lessonTally). There a lesson
+     in a book with autoComplete (Book 2), a meter of how much of the lesson is done (lessonTally), or, in a scored
+     book (practice.js), the page's points (Progress.score). There a lesson
      is complete when every section, quiz and exercise on it is done, and the sidebar ticks it off by itself.
    - Progress (js/progress.js): records the visit, then shows checkmarks and per-part counts in the sidebar.
      Each section's active reading time is recorded, and whether the student did what it asks (see trackSections);
@@ -212,7 +213,15 @@
     });
     if (themeBtn) label();
 
-    if (book.backend?.url && !printing) loadScript("js/backend.js");
+    if (book.backend?.url && !printing) loadScript("js/backend.js").then(() => {
+      // Scored pages (practice.js) ask a signed-out student to sign in, or their score never reaches the instructor.
+      const nudge = book.scored && document.querySelector(".practice-signin");
+      if (!nudge || !window.Backend) return;
+      const paint = () => { nudge.hidden = !!Backend.user; };
+      Backend.onChange(paint);
+      Backend.ready().then(paint, paint);
+      nudge.querySelector("[data-signin]")?.addEventListener("click", () => Backend.openDialog());
+    });
   });
 
   function buildBar() {
@@ -377,7 +386,9 @@
       const newPart = l.part !== current.part && dir === "next" ? `${PART} ${l.part.num} · ${esc(l.part.title)} →` : "";
       return `<a class="book-step ${dir}" href="${l.href}"><span class="eyebrow">${dir === "prev" ? "← Previous" : newPart || "Next →"}</span><span>${l.num} ${esc(l.title)}</span></a>`;
     };
-    const done = !P ? "" : book.autoComplete
+    const done = !P ? "" : book.scored
+      ? `<div class="book-done book-meter"><label for="book-meter">Your score</label><progress id="book-meter" max="1" value="0"></progress><span class="book-meter-text" aria-live="polite"></span></div>`
+      : book.autoComplete
       ? `<div class="book-done book-meter"><label for="book-meter">Your progress on this lesson</label><progress id="book-meter" max="1" value="0"></progress><span class="book-meter-text" aria-live="polite"></span></div>`
       : `<div class="book-done"><span>Finished this lesson?</span><button class="btn" type="button" aria-pressed="false">Mark lesson complete</button></div>`;
     foot.innerHTML = done + step(prev, "prev") + step(next, "next");
@@ -404,7 +415,20 @@
   let completing = false;
   function paintProgress(toc, sections) {
     const meter = document.getElementById("book-meter");
-    if (meter && current) {
+    if (meter && current && book.scored) {
+      // A scored practice page (practice.js): points, and done once the quiz is submitted and every exercise checked.
+      const quiz = document.querySelector(".wrap .quiz#quiz");
+      const sc = P.score(P.data(), { slug, questions: quiz?.quizItems?.length || 0, exercises: exerciseIds });
+      const parts = [sc.quiz.done, ...sc.exercises.map((e) => e.tried)];
+      const sent = parts.filter(Boolean).length;
+      meter.max = sc.max || 1;
+      meter.value = sc.points;
+      document.querySelector(".book-meter-text").textContent = `${sc.points} of ${sc.max} points · ${sent} of ${parts.length} parts tried`;
+      if (sent === parts.length && !completing && !P.isComplete(slug)) {
+        completing = true;
+        try { P.setComplete(slug, true); } finally { completing = false; }
+      }
+    } else if (meter && current) {
       const { done, total } = lessonTally(sections);
       meter.max = total || 1;
       meter.value = done;

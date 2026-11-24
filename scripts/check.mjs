@@ -1,6 +1,8 @@
 // Site checker: node scripts/check.mjs  (no dependencies; exits 1 if anything is wrong)
 //               node scripts/check.mjs --write  also rebuilds search-index.js. The publish workflow does this before
 //               every deploy, so running it locally is optional: it only refreshes search when testing on your machine.
+// - practice.js (Exercises & Quizzes): every set has a page, covers real Book 2 lessons, ships no solutions and
+//   uses a one-attempt quiz; all three manifests share one backend
 // - book.js: every lesson has the required fields, a unique slug, a matching .html file and a known diagram key,
 //   and its related lessons exist
 // - every .html page is in book.js (except the landing page index, book and glossary)
@@ -73,6 +75,31 @@ for (const part of book2.parts) {
 }
 const HEAD_SCRIPTS_2 = HEAD_SCRIPTS.replace('src="book.js"', 'src="book-2.js"');
 
+// Exercises & Quizzes (practice.js, hub practice.html): the scored weekly sets. Pages load practice.js in place of
+// book.js, are built by tools/practice/build.py, and keep their solutions out of the page (tools/practice/sets).
+const win3 = {};
+new Function("window", read("practice.js"))(win3);
+const practice = win3.BOOK;
+const slugs3 = new Set();
+for (const part of practice.parts) {
+  if (!part.title || !Array.isArray(part.lessons) || !part.lessons.length) err("practice.js", `part "${part.title || "?"}" needs a title and a set`);
+  for (const l of part.lessons || []) {
+    for (const k of ["slug", "title", "desc"]) if (!l[k]) err("practice.js", `${l.slug || "set"} is missing "${k}"`);
+    if (slugs.has(l.slug) || slugs2.has(l.slug) || slugs3.has(l.slug)) err("practice.js", `duplicate slug "${l.slug}"`);
+    slugs3.add(l.slug);
+    if (!existsSync(join(root, l.slug + ".html"))) err("practice.js", `${l.slug}.html does not exist (python3 tools/practice/build.py)`);
+    for (const c of l.covers || []) if (!slugs2.has(c)) err("practice.js", `${l.slug}: covers "${c}", which isn't a lesson in book-2.js`);
+    const page = existsSync(join(root, l.slug + ".html")) ? read(l.slug + ".html") : "";
+    if (page && /\bsolution\s*:/.test(page)) err(`${l.slug}.html`, "contains a solution: keep solutions in tools/practice/sets/week-N.solutions.js");
+    if (page && !/\{ once: true \}/.test(page)) err(`${l.slug}.html`, "its quiz must be makeQuiz(…, { once: true })");
+  }
+}
+const HEAD_SCRIPTS_3 = HEAD_SCRIPTS.replace('src="book.js"', 'src="practice.js"');
+// Sign-in works on every page only if all three manifests name the same Supabase project.
+for (const [f, b] of [["book-2.js", book2], ["practice.js", practice]]) {
+  if (JSON.stringify(b.backend || {}) !== JSON.stringify(book.backend || {})) err(f, "backend must match book.js exactly");
+}
+
 const formatted = [];
 const pages = readdirSync(root).filter((f) => f.endsWith(".html")).sort();
 const ids = new Map(pages.map((f) => [f, new Set([...read(f).matchAll(/\sid="([^"]+)"/g)].map((m) => m[1]))]));
@@ -81,7 +108,8 @@ for (const f of pages) {
   const html = read(f);
   const slug = f.replace(/\.html$/, "");
   const inBook2 = slug === "book-2" || slugs2.has(slug);
-  if (!["index", "book", "book-2", "mdn-links", "glossary", "print", "instructor"].includes(slug) && !slugs.has(slug) && !slugs2.has(slug)) err(f, "not listed in book.js or book-2.js");
+  const inPractice = slug === "practice" || slugs3.has(slug);
+  if (!["index", "book", "book-2", "practice", "mdn-links", "glossary", "print", "instructor"].includes(slug) && !slugs.has(slug) && !slugs2.has(slug) && !slugs3.has(slug)) err(f, "not listed in book.js, book-2.js or practice.js");
   // A lesson counts as converted once it has objectives; then it needs the rest of the format too.
   if ((slugs.has(slug) || slugs2.has(slug)) && html.includes('class="objectives"')) {
     formatted.push(slug);
@@ -94,7 +122,7 @@ for (const f of pages) {
   if (!/<meta name="viewport"/.test(html)) err(f, "missing viewport meta");
   const head = html.slice(0, html.indexOf("</head>"));
   if (!/<title>[^<]+<\/title>/.test(head)) err(f, "missing <title> in <head>");
-  const want = inBook2 ? HEAD_SCRIPTS_2 : HEAD_SCRIPTS;
+  const want = inPractice ? HEAD_SCRIPTS_3 : inBook2 ? HEAD_SCRIPTS_2 : HEAD_SCRIPTS;
   if (slug !== "index" && !head.includes(want)) err(f, "must load these scripts at the end of <head>, in this order:\n" + want);
   if ((html.match(/<main class="wrap">/g) || []).length !== 1) err(f, 'needs exactly one <main class="wrap"> around the page content (see templates/lesson.html)');
 
@@ -167,6 +195,17 @@ if (process.argv.includes("--write")) {
   console.log("wrote " + win2.BOOK.index + " (" + Math.round(searchIndex2.length / 1024) + " KB)");
 } else if (!existsSync(indexPath2) || readFileSync(indexPath2, "utf8") !== searchIndex2) {
   warnings.push(`${win2.BOOK.index}: older than Book 2's lessons, so the instructor dashboard may count the wrong items. GitHub rebuilds it when publishing; run node scripts/check.mjs --write to refresh your copy`);
+}
+
+// The practice index (search-index-practice.js): the instructor dashboard and practice.html read each set's
+// exercises and number of quiz questions from it, to score it.
+const searchIndex3 = buildSearchIndex(root, practice, win.GLOSSARY, win.glossaryId);
+const indexPath3 = join(root, practice.index);
+if (process.argv.includes("--write")) {
+  writeFileSync(indexPath3, searchIndex3);
+  console.log("wrote " + practice.index + " (" + Math.round(searchIndex3.length / 1024) + " KB)");
+} else if (!existsSync(indexPath3) || readFileSync(indexPath3, "utf8") !== searchIndex3) {
+  warnings.push(`${practice.index}: older than the practice pages, so scores may be out of the wrong total. GitHub rebuilds it when publishing; run node scripts/check.mjs --write to refresh your copy`);
 }
 
 for (const w of warnings) console.log("warn  " + w);
