@@ -6,6 +6,7 @@
 <meta name="robots" content="noindex">
 <title>Instructor Dashboard</title>
 <link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="live.css">
 <style>
   /* Instructor dashboard. This page is public but holds no data: everything comes from Supabase, and row-level
      security only answers instructors (supabase/migrations). */
@@ -69,6 +70,7 @@
     <ul class="dash-nav">
       <li><a class="btn" href="#progress">Class progress</a></li>
       <li><a class="btn" href="#student">One student</a></li>
+      <li><a class="btn" href="#live">Live class</a></li>
       <li><a class="btn" href="#notes">Instructor notes</a></li>
       <li><a class="btn" href="#roster">Roster</a></li>
       <li><button class="btn" type="button" id="refresh">Refresh data</button></li>
@@ -92,6 +94,18 @@
       <h2 id="student">One student</h2>
       <div class="panel dash-opts"><label>Student <select id="f-student"></select></label></div>
       <div id="detail"></div>
+    </section>
+
+    <section class="dash" aria-labelledby="live">
+      <h2 id="live">Live class</h2>
+      <p class="dash-legend">Attendance from in-class questions: each column is a class you ran from <a href="live-host.html">the live-class host page</a>, and each cell is how many of that class's questions the student answered. “—” means they answered none. It follows the Recitation, Course section and Find a student filters above.</p>
+      <div class="panel dash-opts"><a class="btn run" href="live-host.html">Run class →</a><button class="btn" type="button" id="live-csv">Download attendance CSV</button></div>
+      <p class="dash-msg" id="live-msg" role="status"></p>
+      <div class="dash-scroll" tabindex="0"><table class="dash-table" id="live-grid"></table></div>
+      <h3>Review a class</h3>
+      <p class="dash-legend">Every question from one class, with its results, who answered what and who was there but skipped it. The CSV has one row per answer.</p>
+      <div class="panel dash-opts"><label>Class <select id="live-pick"></select></label><button class="btn" type="button" id="live-pick-csv">Download this class's answers (CSV)</button></div>
+      <div id="live-review"></div>
     </section>
 
     <section class="dash" aria-labelledby="notes">
@@ -246,6 +260,82 @@
     drawNotes();
     drawRoster(a.data);
     drawRecitations();
+    loadLive();
+  }
+
+  // Live class attendance (supabase/migrations/0007_live_class.sql). Kept apart from load(), so the rest of the
+  // dashboard works before that migration has been run.
+  let liveSessions = [], liveSeen = new Map();
+  async function loadLive() {
+    const [s, a] = await Promise.all([
+      all(() => db.from("live_sessions").select("id, title, started_at, ended_at").order("started_at")),
+      all(() => db.from("live_attendance").select("session_id, user_id, answered, asked").order("session_id")),
+    ]);
+    const failed = s.error || a.error;
+    if (failed) { liveSessions = []; $("live-msg").textContent = /does not exist|schema cache/i.test(failed.message) ? "Live class isn't set up yet: run supabase/migrations/0007_live_class.sql in the Supabase SQL editor." : `Couldn't load live class: ${failed.message}`; $("live-grid").innerHTML = ""; return; }
+    liveSessions = s.data;
+    await loadScript("js/live.js");
+    const pick = $("live-pick").value;
+    $("live-pick").innerHTML = liveSessions.length ? [...liveSessions].reverse().map((x) => `<option value="${x.id}">${esc(Live.classLabel(x))}${x.ended_at ? "" : " (live now)"}</option>`).join("") : `<option value="">No classes yet</option>`;
+    if (pick && liveSessions.some((x) => String(x.id) === pick)) $("live-pick").value = pick;
+    reviewClass();
+    liveSeen = new Map(a.data.map((r) => [`${r.session_id}|${r.user_id}`, r]));
+    // asked comes with each attendance row; a class nobody answered in still shows, with its count unknown.
+    const asked = new Map(a.data.map((r) => [r.session_id, r.asked]));
+    liveSessions.forEach((x) => { x.asked = asked.get(x.id); });
+    $("live-msg").textContent = liveSessions.length ? "" : "No classes yet. Start one from the host page.";
+    drawLive();
+  }
+  // One class in full: questions, results and who answered what (Live.reviewHTML in js/live.js).
+  let reviewing = 0;
+  async function reviewClass() {
+    const id = Number($("live-pick").value), out = $("live-review");
+    if (!id) { out.innerHTML = ""; return; }
+    const mine = ++reviewing;
+    out.innerHTML = `<p class="dash-msg">Loading…</p>`;
+    try { const data = await Live.loadSession(db, id); if (mine === reviewing) out.innerHTML = Live.reviewHTML(data); }
+    catch (e) { if (mine === reviewing) out.innerHTML = `<p class="dash-msg bad">Couldn't load that class: ${esc(e.message)}</p>`; }
+  }
+  async function reviewCsv(e) {
+    const id = Number($("live-pick").value);
+    if (!id) return;
+    e.target.disabled = true;
+    try { Live.downloadCsv(await Live.loadSession(db, id)); } catch (err) { $("live-msg").textContent = `Couldn't get the answers: ${err.message}`; }
+    e.target.disabled = false;
+  }
+  const liveLabel = (x) => new Date(x.started_at).toLocaleDateString([], { month: "short", day: "numeric" });
+  function drawLive() {
+    if (!liveSessions.length) { $("live-grid").innerHTML = ""; return; }
+    const list = shownPeople().filter((p) => p.id);
+    const head = `<caption class="sr-only">Questions answered by student and class</caption><thead><tr><th scope="col">Student</th><th scope="col">Recitation</th>${liveSessions.map((x) => `<th scope="col"><button class="link" type="button" data-review="${x.id}" title="Review ${esc(x.title || "this class")}, ${esc(time(x.started_at))}">${esc(liveLabel(x))}</button></th>`).join("")}<th scope="col">Attended</th></tr></thead>`;
+    const body = list.map((p) => {
+      let n = 0;
+      const cells = liveSessions.map((x) => {
+        const r = liveSeen.get(`${x.id}|${p.id}`);
+        if (!r) return `<td><span class="pct none" style="--p:0%">—</span></td>`;
+        n++;
+        const pc = r.asked ? Math.round((r.answered / r.asked) * 100) : 100;
+        return `<td><span class="pct${pc === 100 ? " full" : ""}" style="--p:${pc}%">${r.answered}/${r.asked}</span></td>`;
+      }).join("");
+      return `<tr><th scope="row">${esc(name(p))}</th><td>${esc(p.recitation || "")}</td>${cells}<td>${pctCell(n, liveSessions.length).replace(/>\d+%</, `>${n} of ${liveSessions.length}<`)}</td></tr>`;
+    }).join("");
+    const present = liveSessions.map((x) => list.filter((p) => liveSeen.has(`${x.id}|${p.id}`)).length);
+    const foot = `<tfoot><tr><th scope="row">Students who answered</th><td></td>${present.map((n) => `<td>${n}</td>`).join("")}<td></td></tr></tfoot>`;
+    $("live-grid").onclick = (e) => { const b = e.target.closest("[data-review]"); if (!b) return; $("live-pick").value = b.dataset.review; reviewClass(); $("live-review").scrollIntoView({ behavior: "smooth", block: "start" }); };
+    $("live-grid").innerHTML = head + `<tbody>${body || `<tr><td colspan="${liveSessions.length + 3}">No students to show.</td></tr>`}</tbody>` + foot;
+  }
+  function liveCsv() {
+    const rows = [["email", "first_name", "last_name", "recitation", "course_section", "class_date", "class_title", "answered", "asked", "attended"]];
+    for (const p of shownPeople().filter((x) => x.id)) for (const x of liveSessions) {
+      const r = liveSeen.get(`${x.id}|${p.id}`);
+      rows.push([p.email, p.first_name || "", p.last_name || "", p.recitation || "", p.course_section || "", new Date(x.started_at).toISOString().slice(0, 10), x.title || "", r ? r.answered : 0, x.asked ?? "", r ? "yes" : "no"]);
+    }
+    const cell = (v) => { let s = String(v ?? ""); if (/^[=+\-@]/.test(s)) s = "'" + s; return `"${s.replace(/"/g, '""')}"`; };
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(new Blob([rows.map((r) => r.map(cell).join(",")).join("\n")], { type: "text/csv" }));
+    a.download = `class-attendance-${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(a.href), 1000);
   }
   // "Last, First" once there's a name (from the student, or the roster when you enrolled them); their email until then.
   const name = (p) => (p.last_name && p.first_name ? `${p.last_name}, ${p.first_name}` : p.display_name || p.email);
@@ -559,6 +649,11 @@
   }
 
   for (const id of ["f-part", "f-section", "f-rec"]) $(id).addEventListener("change", drawGrid);
+  for (const id of ["f-section", "f-rec"]) $(id).addEventListener("change", drawLive);
+  $("f-name").addEventListener("input", drawLive);
+  $("live-csv").addEventListener("click", liveCsv);
+  $("live-pick").addEventListener("change", reviewClass);
+  $("live-pick-csv").addEventListener("click", reviewCsv);
   $("rec-form").addEventListener("submit", addRecitation);
   $("rec-table").addEventListener("click", recitationAction);
   $("f-name").addEventListener("input", drawGrid);

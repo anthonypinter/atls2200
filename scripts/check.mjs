@@ -109,7 +109,7 @@ for (const f of pages) {
   const slug = f.replace(/\.html$/, "");
   const inBook2 = slug === "book-2" || slugs2.has(slug);
   const inPractice = slug === "practice" || slugs3.has(slug);
-  if (!["index", "book", "book-2", "practice", "mdn-links", "glossary", "print", "instructor"].includes(slug) && !slugs.has(slug) && !slugs2.has(slug) && !slugs3.has(slug)) err(f, "not listed in book.js, book-2.js or practice.js");
+  if (!["index", "book", "book-2", "practice", "mdn-links", "glossary", "print", "instructor", "live", "live-host", "account"].includes(slug) && !slugs.has(slug) && !slugs2.has(slug) && !slugs3.has(slug)) err(f, "not listed in book.js, book-2.js or practice.js");
   // A lesson counts as converted once it has objectives; then it needs the rest of the format too.
   if ((slugs.has(slug) || slugs2.has(slug)) && html.includes('class="objectives"')) {
     formatted.push(slug);
@@ -123,7 +123,9 @@ for (const f of pages) {
   const head = html.slice(0, html.indexOf("</head>"));
   if (!/<title>[^<]+<\/title>/.test(head)) err(f, "missing <title> in <head>");
   const want = inPractice ? HEAD_SCRIPTS_3 : inBook2 ? HEAD_SCRIPTS_2 : HEAD_SCRIPTS;
-  if (slug !== "index" && !head.includes(want)) err(f, "must load these scripts at the end of <head>, in this order:\n" + want);
+  // The live-class pages load js/live.js in place of js/quiz.js.
+  if (slug === "live" || slug === "live-host") { if (!head.includes(HEAD_SCRIPTS.replace("js/quiz.js", "js/live.js"))) err(f, "must load book.js, js/progress.js, js/chrome.js and js/live.js at the end of <head>"); }
+  else if (slug !== "index" && !head.includes(want)) err(f, "must load these scripts at the end of <head>, in this order:\n" + want);
   if ((html.match(/<main class="wrap">/g) || []).length !== 1) err(f, 'needs exactly one <main class="wrap"> around the page content (see templates/lesson.html)');
 
   const qids = [...html.matchAll(/^\s*\{ (id: "([^"]+)", )?q:/gm)];

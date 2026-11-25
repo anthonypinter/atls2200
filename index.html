@@ -26,10 +26,14 @@
   a.door:hover { border-color: var(--cobalt); transform: translateY(-2px); }
   a.door:hover h2 { color: var(--cobalt); }
   .door .arrow { font-family: var(--font-code); color: var(--cobalt); }
+  a.door[aria-disabled="true"]:hover { transform: none; border-color: var(--line); }
+  a.door[aria-disabled="true"]:hover h2 { color: var(--muted); }
   .door[aria-disabled="true"] { background: transparent; border-style: dashed; color: var(--muted); cursor: not-allowed; }
   .door[aria-disabled="true"] h2 { color: var(--muted); }
   .live-dot { display: inline-flex; align-items: center; gap: 8px; font: 600 0.7rem/1 var(--font-code); font-variation-settings: "MONO" 1; letter-spacing: 0.06em; text-transform: uppercase; border: 1px dashed var(--line); border-radius: 4px; padding: 5px 8px; white-space: nowrap; }
   .live-dot::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--line); }
+  .live-dot.on { border-style: solid; border-color: var(--good); color: var(--good); background: var(--good-soft); }
+  .live-dot.on::before { background: var(--good); }
   @media (prefers-reduced-motion: reduce) { a.door { transition: none; } a.door:hover { transform: none; } }
 </style>
 </head>
@@ -58,10 +62,10 @@
       <h2>Exercises &amp; Quizzes <span class="arrow" aria-hidden="true">→</span></h2>
       <p>A scored set each week: new exercises and a one-attempt quiz on that week's lessons.</p>
     </a>
-    <div class="door" role="link" aria-disabled="true">
-      <h2>Class is Live <span class="live-dot">Offline</span></h2>
-      <p>Opens during class sessions. Check back when class starts.</p>
-    </div>
+    <a class="door" id="live-door" href="live.html" aria-disabled="true">
+      <h2>Class is Live <span class="live-dot" id="live-dot">Offline</span></h2>
+      <p id="live-text">Opens during class sessions. Check back when class starts.</p>
+    </a>
   </nav>
 
   <footer class="page-foot"><span>© 2026 Anthony T. Pinter</span></footer>
@@ -69,6 +73,29 @@
 </main>
 
 <script>
+  // Class is Live: the door opens while the instructor has class running (live_now() in
+  // supabase/migrations/0007_live_class.sql, which anyone may ask). Checked now and every minute.
+  (function () {
+    const cfg = window.BOOK?.backend;
+    if (!cfg?.url || !cfg.anonKey) return;
+    const door = document.getElementById("live-door"), dot = document.getElementById("live-dot"), text = document.getElementById("live-text");
+    door.addEventListener("click", (e) => { if (door.getAttribute("aria-disabled") === "true") e.preventDefault(); });
+    async function check() {
+      let live = null;
+      try {
+        const res = await fetch(cfg.url + "/rest/v1/rpc/live_now", { method: "POST", headers: { apikey: cfg.anonKey, "Content-Type": "application/json" }, body: "{}" });
+        if (res.ok) live = await res.json();
+      } catch {}
+      const on = !!live?.live;
+      door.setAttribute("aria-disabled", on ? "false" : "true");
+      dot.textContent = on ? "Live now" : "Offline";
+      dot.classList.toggle("on", on);
+      text.textContent = on ? `Class is in session${live.title ? ": " + live.title : ""}. Join to answer questions.` : "Opens during class sessions. Check back when class starts.";
+    }
+    check();
+    setInterval(() => { if (document.visibilityState === "visible") check(); }, 60000);
+  })();
+
   // Log in uses the book's accounts (js/backend.js, configured by backend in book.js). Until a backend is set up
   // the button stays disabled.
   (function () {
@@ -88,7 +115,7 @@
     });
     const backend = () => loadScript("js/backend.js").then(() => window.Backend);
     const paint = (B) => {
-      const label = B?.user ? (B.profile?.first_name ? `Account · ${B.profile.first_name}` : "Account") : "Log in";
+      const label = B?.user ? (B.profile?.first_name ? `Your progress · ${B.profile.first_name}` : "Your progress") : "Log in";
       btn.innerHTML = `<span aria-hidden="true">${B?.user ? "●" : "○"}</span> ${label.replace(/</g, "&lt;")}`;
     };
     // A saved session or a sign-in link just opened: load accounts now so the button shows who's signed in.
@@ -96,7 +123,12 @@
     let saved = false;
     try { saved = !!localStorage.getItem(`sb-${ref}-auth-token`); } catch {}
     if (saved || /[#&](access_token|error_description)=/.test(location.hash)) backend().then((B) => B && (B.onChange(paint), paint(B)));
-    btn.addEventListener("click", () => backend().then((B) => { if (!B) return; B.onChange(paint); B.openDialog(); }));
+    // Signed in: the progress page (account.html). Otherwise the sign-in dialog.
+    btn.addEventListener("click", () => backend().then((B) => {
+      if (!B) return;
+      if (B.user && B.status !== "details") { location.assign("account.html"); return; }
+      B.onChange(paint); B.openDialog();
+    }));
   })();
 </script>
 </body>

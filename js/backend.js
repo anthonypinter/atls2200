@@ -239,9 +239,12 @@
   const MIN_PW = 8;
   function paintButton() {
     if (!button) return;
-    const label = !B.user ? "Sign in" : B.status === "details" ? "Account · finish signing in" : B.status === "error" ? "Account · not synced" : "Account";
+    const label = !B.user ? "Sign in" : B.status === "details" ? "Account · finish signing in" : B.status === "error" ? "Your progress · not synced" : "Your progress";
     button.innerHTML = `<span aria-hidden="true">${B.user ? "●" : "○"}</span> ${label}`;
     button.classList.toggle("signed-in", !!B.user);
+    // Signed in, the button goes to the progress page (account.html), which has the settings dialog on its own button.
+    if (toProgressPage()) button.removeAttribute("aria-haspopup"); else button.setAttribute("aria-haspopup", "dialog");
+    button.title = toProgressPage() ? "Your progress and account" : "";
     button.classList.toggle("sync-error", B.status === "error" || B.status === "details");
   }
   const TRACKED = "What's saved, and seen by your instructors: which sections you read and for how long (only while the page is open and you're active), what you try in the playgrounds and editors, your quiz answers, and your exercise code and Check results.";
@@ -378,6 +381,9 @@
     dialog.querySelector("input")?.focus();
   }
 
+  // Signed in and set up, on any page but the progress page itself.
+  const onProgressPage = /(^|\/)account\.html$/.test(location.pathname);
+  const toProgressPage = () => !!B.user && !onProgressPage && !needsSetup() && B.status !== "details";
   function addButton() {
     const tools = document.querySelector(".book-bar .book-tools");
     if (!tools || button) return;
@@ -385,7 +391,7 @@
     button.type = "button";
     button.className = "btn book-account";
     button.setAttribute("aria-haspopup", "dialog");
-    button.addEventListener("click", openDialog);
+    button.addEventListener("click", () => (toProgressPage() ? location.assign("account.html") : openDialog()));
     tools.prepend(button);
     paintButton();
   }

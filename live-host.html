@@ -1,0 +1,453 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Class is Live · Host</title>
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="live.css">
+<style>
+  /* Host controls (instructors only: the database refuses everyone else). ?screen is the projector view. */
+  .lh-top { display: flex; flex-wrap: wrap; gap: 10px 16px; align-items: center; justify-content: space-between; }
+  .lh-top .lv-actions { gap: 8px; }
+  .lh-grid { display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr); gap: 20px; align-items: start; margin-top: 18px; }
+  @media (max-width: 920px) { .lh-grid { grid-template-columns: minmax(0, 1fr); } }
+  .lh-col { display: grid; gap: 20px; min-width: 0; }
+  .lh-box { display: grid; gap: 14px; }
+  .lh-box > h2 { font-size: 1.15rem; }
+  .lh-form { display: grid; gap: 12px; }
+  .lh-form label { display: grid; gap: 4px; font-weight: 700; }
+  .lh-form textarea, .lh-form input[type="text"], .lh-form select { font: inherit; padding: 8px 10px; width: 100%; max-width: 100%; color: var(--ink); background: var(--paper); border: 1px solid var(--line); border-radius: 6px; }
+  .lh-form textarea { min-height: 4.5em; resize: vertical; }
+  .lh-row { display: flex; flex-wrap: wrap; gap: 10px 14px; align-items: end; }
+  .lh-row > label { flex: 1 1 120px; }
+  .lh-choice { display: grid; grid-template-columns: auto auto minmax(0, 1fr) auto; gap: 8px; align-items: center; }
+  .lh-choice .lv-letter { width: 1.7em; height: 1.7em; }
+  .lh-choice input[type="radio"] { width: 1.1em; height: 1.1em; accent-color: var(--good); margin: 0; }
+  .lh-x { padding: 4px 9px; }
+  .lh-hint { margin: 0; color: var(--muted); font-size: 0.88rem; font-weight: 400; }
+  .lh-list { display: grid; gap: 8px; margin: 0; padding: 0; list-style: none; }
+  .lh-item { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 6px 10px; align-items: center; padding: 10px 12px; border: 1px solid var(--line); border-radius: 8px; background: var(--paper); }
+  .lh-item.is-current { border-color: var(--cobalt); box-shadow: inset 3px 0 0 var(--cobalt); }
+  .lh-item p { margin: 0; overflow-wrap: anywhere; }
+  .lh-item small { color: var(--muted); font: 600 0.72rem var(--font-code); font-variation-settings: "MONO" 1; text-transform: uppercase; letter-spacing: 0.05em; }
+  .lh-item .lv-actions { gap: 6px; justify-content: flex-end; }
+  .lh-item .btn { padding: 4px 9px; font-size: 0.8rem; }
+  .lh-who { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+  .lh-who th, .lh-who td { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  .lh-who th { font: 600 0.75rem var(--font-code); font-variation-settings: "MONO" 1; color: var(--muted); }
+  .lh-private { font-size: 0.85rem; color: var(--muted); }
+  .lh-hidden { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; font-size: 0.9rem; color: var(--muted); }
+  .btn.danger { border-color: var(--bad); color: var(--bad); }
+  .btn.danger:hover { background: var(--bad-soft); }
+  .lh-start { display: grid; gap: 14px; justify-items: start; }
+
+  /* Projector view */
+  html.lv-screen-mode .book-bar, html.lv-screen-mode .book-toc, html.lv-screen-mode .book-backdrop { display: none !important; }
+  html.lv-screen-mode body { padding: 0 !important; }
+  .lv-screen { min-height: 100svh; display: grid; grid-template-rows: auto 1fr auto; gap: 3vh; padding: 3vh 4vw; max-width: none; font-size: clamp(16px, 1.55vw, 34px); }
+  .lv-screen header, .lv-screen footer { display: flex; flex-wrap: wrap; gap: 10px 24px; align-items: center; justify-content: space-between; }
+  .lv-screen .lv-status { font-size: 0.8em; }
+  .lv-screen .lv-join { font: 700 1.05em var(--font-code); font-variation-settings: "MONO" 1; color: var(--cobalt); overflow-wrap: anywhere; }
+  .lv-screen .lv-stage { display: grid; align-content: center; gap: 4vh; min-width: 0; }
+  .lv-screen .lv-prompt { font-size: 2.3em; }
+  .lv-screen .lv-meta { font-size: 0.9em; }
+  .lv-screen .lv-bars { gap: 2.2vh; font-size: 1.15em; }
+  .lv-screen .lv-track { height: 1.6em; }
+  .lv-screen .lv-num { font-size: 1em; }
+  .lv-screen .lv-col-track { height: 38vh; width: min(100%, 140px); }
+  .lv-screen .lv-col-n, .lv-screen .lv-col-v { font-size: 1.1em; }
+  .lv-screen .lv-mean { font-size: 1.3em; }
+  .lv-screen .lv-ends { font-size: 1em; }
+  .lv-screen .lv-cloud { font-size: 1.5em; min-height: 40vh; }
+  .lv-screen .lv-wait h2 { font-size: 2.4em; }
+  .lv-screen .lv-wait p { font-size: 1.1em; }
+  .lv-screen .lv-big-count { font: 800 1.2em var(--font-code); font-variation-settings: "MONO" 1; }
+</style>
+<script>if (new URLSearchParams(location.search).has("screen")) document.documentElement.classList.add("lv-screen-mode");</script>
+<script src="book.js"></script>
+<script src="js/progress.js"></script>
+<script src="js/chrome.js"></script>
+<script src="js/live.js"></script>
+</head>
+<body>
+<main class="wrap">
+  <div class="panel" id="gate" role="status"><p>Loading…</p></div>
+  <div id="app" hidden></div>
+</main>
+
+<script>
+(function () {
+  const { esc, results, plural, errText, answerText, LETTERS, KINDS } = Live;
+  const $ = (id) => document.getElementById(id);
+  const SCREEN = new URLSearchParams(location.search).has("screen");
+  const joinUrl = (location.origin + location.pathname.replace(/live-host\.html$/, "live.html")).replace(/^https?:\/\//, "");
+  const app = $("app");
+  let db = null, stop = null;
+  let st = null, questions = [], bank = [], who = null, showWho = false;
+  const gate = (html) => { $("gate").innerHTML = html; $("gate").hidden = false; app.hidden = true; };
+  const store = { get: (k) => { try { return JSON.parse(localStorage.getItem(k)); } catch { return null; } }, set: (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} } };
+
+  if (SCREEN) document.querySelector("main").classList.add("lv-screen");
+
+  Live.start(({ B, db: client, user, profile, offline }) => {
+    if (stop) { stop(); stop = null; }
+    db = client;
+    if (offline) return gate(`<p>Accounts aren't connected yet (no backend in <code>book.js</code>), so live class can't run.</p>`);
+    if (!user) {
+      gate(`<h1>Class is Live: host</h1><p>Sign in with your instructor account to run class.</p><p><button class="btn run" type="button" id="signin">Sign in</button></p>`);
+      $("signin").addEventListener("click", () => B.openDialog());
+      return;
+    }
+    if (profile?.role !== "instructor") return gate(`<p>You're signed in as ${esc(profile?.email)}, which isn't an instructor account. To answer questions, go to <a href="live.html">Class is Live</a>.</p>`);
+    $("gate").hidden = true; app.hidden = false;
+    if (!SCREEN) drawShell();
+    refresh(true);
+    stop = Live.watch(db, () => refresh(false), { every: SCREEN ? 3000 : 4000, answers: true });
+  });
+
+  // Data ------------------------------------------------------------------------------------------------------------
+  let busy = false, again = false;
+  async function refresh(full) {
+    if (!db) return;
+    if (busy) { again = true; return; }
+    busy = true;
+    const { data, error } = await db.rpc("live_state");
+    if (error) {
+      busy = false;
+      const missing = /live_state|schema cache|does not exist/i.test(error.message);
+      return gate(missing ? `<p>The live-class tables aren't in the database yet. Run <code>supabase/migrations/0007_live_class.sql</code> in the Supabase SQL editor, then reload.</p>` : `<p class="lv-msg bad">Couldn't reach the database: ${esc(errText(error))}</p>`);
+    }
+    st = data;
+    if (!SCREEN) {
+      const jobs = [];
+      if (st.live) jobs.push(db.from("live_questions").select("id, kind, prompt, options, status, reveal, created_at").eq("session_id", st.session.id).order("id").then((r) => { questions = r.data || []; }));
+      else questions = [];
+      if (full) jobs.push(loadBank());
+      if (showWho && st.question) jobs.push(loadWho());
+      await Promise.all(jobs);
+    }
+    busy = false;
+    SCREEN ? drawScreen() : drawLive();
+    if (again) { again = false; refresh(false); }
+  }
+  const loadBank = () => db.from("live_bank").select("id, kind, prompt, options, correct, sort").order("sort").then((r) => { bank = r.data || []; drawBank(); });
+  const loadWho = () => db.from("live_answers").select("user_id, value, at, profiles(first_name, last_name, email)").eq("question_id", st.question.id).order("at")
+    .then((r) => { who = r.data || []; });
+
+  async function act(promise, btn) {
+    if (btn) btn.disabled = true;
+    const { error } = await promise;
+    if (btn) btn.disabled = false;
+    if (error) { flash(errText(error), true); return false; }
+    await refresh(false);
+    return true;
+  }
+  const flash = (text, bad) => { const m = $("flash"); if (!m) return; m.textContent = text; m.className = "lv-msg" + (bad ? " bad" : " ok"); clearTimeout(flash.t); flash.t = setTimeout(() => { m.textContent = ""; }, 5000); };
+
+  // Projector ---------------------------------------------------------------------------------------------------------
+  function drawScreen() {
+    const q = st?.question, r = st?.results;
+    const head = `<header><span class="lv-status ${st?.live ? "on" : ""}">${st?.live ? "Live" : "Not live"}${st?.session?.title ? " · " + esc(st.session.title) : ""}</span>
+      <span>Answer at <span class="lv-join">${esc(joinUrl)}</span></span></header>`;
+    const foot = `<footer><span class="lv-meta">${q ? (q.status === "open" ? "Answers open" : "Answers closed") : ""}</span>
+      <span class="lv-actions"><button class="btn" type="button" id="fs">Full screen</button></span></footer>`;
+    let body;
+    if (!st?.live) body = `<div class="lv-wait"><h2>Class isn't live</h2><p>Start class from the host controls.</p></div>`;
+    else if (!q) body = `<div class="lv-wait"><h2>Join in</h2><p>Open <span class="lv-join">${esc(joinUrl)}</span> on your phone or laptop and sign in. Questions appear there.</p></div>`;
+    else body = `<div class="lv-meta"><span class="eyebrow">${KINDS[q.kind]}</span><span class="lv-big-count">${plural(r?.count || 0, "answer")}</span></div>
+      <h1 class="lv-prompt">${esc(q.prompt)}</h1>
+      <div>${results(q, r, { correct: q.reveal })}</div>`;
+    app.innerHTML = `${head}<div class="lv-stage">${body}</div>${foot}`;
+    app.style.display = "contents";
+    $("fs").addEventListener("click", () => (document.fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen?.()));
+  }
+
+  // Host controls ---------------------------------------------------------------------------------------------------
+  function drawShell() {
+    app.innerHTML = `
+      <header class="page-head">
+        <div class="lh-top"><span class="eyebrow">Instructor</span><span class="lv-status" id="status">Not live</span></div>
+        <h1>Class is Live: host</h1>
+        <p class="lede">Start class, ask a question, and everyone's answers appear here and on the projector. Students see results once they answer. Names show only to you, under “Who answered”.</p>
+      </header>
+      <div id="session"></div>
+      <p class="lv-msg" id="flash" role="status"></p>
+      <div class="lh-grid">
+        <div class="lh-col"><section class="panel lh-box" id="current" aria-labelledby="cur-h"></section><section class="panel lh-box" id="history" aria-labelledby="hist-h"></section></div>
+        <div class="lh-col">
+          <section class="panel lh-box" aria-labelledby="ask-h"><h2 id="ask-h">New question</h2><form class="lh-form" id="composer" novalidate></form></section>
+          <section class="panel lh-box" aria-labelledby="bank-h"><h2 id="bank-h">Saved questions</h2><p class="lh-hint">Write questions before class with “Save for later”. They're kept in your account, on any computer.</p><ul class="lh-list" id="bank"></ul></section>
+        </div>
+      </div>`;
+    drawComposer();
+  }
+
+  let ending = false;
+  function drawLive() {
+    const s = st.session;
+    $("status").textContent = st.live ? "Live" : "Not live";
+    $("status").classList.toggle("on", !!st.live);
+    // Rebuild the session panel only when live/not-live or the session changes, so typing a title isn't wiped.
+    const sid = st.live ? String(s.id) : "none";
+    if ($("session").dataset.sid !== sid) {
+      $("session").dataset.sid = sid;
+      if (!st.live) {
+        $("session").innerHTML = `<div class="panel lh-start"><h2>Start class</h2><p class="lh-hint">Students can answer only while class is live. It ends when you press End class, or after 4 hours.</p>
+          <form class="lh-row" id="start-form"><label style="flex:1 1 260px">Title (optional) <input type="text" id="title" maxlength="120" placeholder="${esc(new Date().toLocaleDateString([], { weekday: "long", month: "short", day: "numeric" }))}"></label><button class="btn run" type="submit">Start class</button></form></div>
+          <section class="panel lh-box" id="last" aria-labelledby="last-h" hidden></section>`;
+        $("start-form").addEventListener("submit", (e) => { e.preventDefault(); act(db.rpc("live_start", { p_title: $("title").value.trim() || null }), e.submitter); });
+        drawLastClass();
+      } else {
+        const started = new Date(s.started_at).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
+        $("session").innerHTML = `<div class="panel lh-top"><div><strong>${esc(s.title || "Class")}</strong> <span class="lh-hint">· started ${started} · students join at <span class="mono">${esc(joinUrl)}</span></span></div>
+          <div class="lv-actions"><a class="btn" href="live-host.html?screen" target="lv-screen">Open projector view ↗</a><button class="btn" type="button" id="csv-now" title="Every answer so far in this class, with names">Download answers (CSV)</button><button class="btn danger" type="button" id="end">End class</button></div></div>`;
+        $("csv-now").addEventListener("click", (e) => downloadSession(s.id, e.target));
+        $("end").addEventListener("click", (e) => {
+          if (!ending) { ending = true; e.target.textContent = "Press again to end"; setTimeout(() => { ending = false; if ($("end")) $("end").textContent = "End class"; }, 4000); return; }
+          ending = false;
+          act(db.rpc("live_end"), e.target).then((ok) => ok && flash("Class ended. Its answers are below, and on the dashboard (Live class) any time."));
+        });
+      }
+    }
+    drawCurrent();
+    drawHistory();
+    const askBtn = $("composer").querySelector("[data-ask]");
+    askBtn.disabled = !st.live; askBtn.title = st.live ? "" : "Start class first";
+    if (drawLive.wasLive !== !!st.live) { drawLive.wasLive = !!st.live; drawBank(); }
+  }
+
+  // Answers with names, for a class (the one running now, or one that's over).
+  async function downloadSession(id, btn) {
+    btn.disabled = true;
+    try { Live.downloadCsv(await Live.loadSession(db, id)); }
+    catch (e) { flash("Couldn't get the answers: " + errText(e), true); }
+    btn.disabled = false;
+  }
+
+  // Not live: the most recent class that's over, ready to review or download straight after End class.
+  async function drawLastClass() {
+    const box = $("last");
+    const { data, error } = await db.from("live_sessions").select("id, title, started_at, ended_at").order("started_at", { ascending: false }).limit(5);
+    const last = (data || []).filter((x) => x.ended_at).sort((a, b) => b.started_at.localeCompare(a.started_at))[0];
+    if (error || !last || !box?.isConnected) return;
+    box.hidden = false;
+    box.innerHTML = `<div class="lh-top"><h2 id="last-h">Last class: ${esc(Live.classLabel(last))}</h2>
+      <div class="lv-actions"><button class="btn" type="button" id="last-show" aria-expanded="false">Show who answered what</button><button class="btn" type="button" id="last-csv">Download answers (CSV)</button></div></div>
+      <p class="lh-hint">Older classes are on the <a href="instructor.html#live">dashboard</a>, under Live class.</p>
+      <div id="last-review" hidden></div>`;
+    $("last-csv").addEventListener("click", (e) => downloadSession(last.id, e.target));
+    $("last-show").addEventListener("click", async (e) => {
+      const out = $("last-review"), open = e.target.getAttribute("aria-expanded") === "true";
+      e.target.setAttribute("aria-expanded", String(!open));
+      e.target.textContent = open ? "Show who answered what" : "Hide answers";
+      out.hidden = open;
+      if (open || out.dataset.done) return;
+      out.innerHTML = `<p class="lv-empty">Loading…</p>`;
+      try { out.innerHTML = Live.reviewHTML(await Live.loadSession(db, last.id)); out.dataset.done = "1"; }
+      catch (err) { out.innerHTML = `<p class="lv-msg bad">Couldn't load the answers: ${esc(errText(err))}</p>`; }
+    });
+  }
+
+  function drawCurrent() {
+    const box = $("current"), q = st.question, r = st.results;
+    if (!st.live) { box.innerHTML = `<h2 id="cur-h">On screen</h2><p class="lv-empty">Start class to ask questions. You can write and save questions now.</p>`; return; }
+    if (!q) { box.innerHTML = `<h2 id="cur-h">On screen</h2><p class="lv-empty">Nothing yet. Students see “Waiting for the next question”. Ask one on the right.</p>`; return; }
+    const correct = q.kind === "choice" && Number.isInteger(r?.correct);
+    const tools = [
+      q.status === "open" ? `<button class="btn run" type="button" data-act="close">Close answers</button>` : `<button class="btn" type="button" data-act="open">Reopen answers</button>`,
+      correct ? `<button class="btn" type="button" data-act="reveal" aria-pressed="${q.reveal}">${q.reveal ? "Hide the answer" : "Reveal the answer"}</button>` : "",
+      `<button class="btn" type="button" data-act="who" aria-pressed="${showWho}">Who answered</button>`,
+      `<button class="btn" type="button" data-act="clear">Clear the screen</button>`,
+    ].join("");
+    const hidden = q.kind === "words" && r?.hidden?.length
+      ? `<div class="lh-hidden">Hidden from the cloud: ${r.hidden.map((w) => `<button class="btn lh-x" type="button" data-unhide="${esc(w)}" title="Show it again">${esc(w)} ↺</button>`).join("")}</div>` : "";
+    box.innerHTML = `<div class="lh-top"><h2 id="cur-h">On screen</h2><span class="lv-meta"><span class="eyebrow">${KINDS[q.kind]}</span>${q.status === "open" ? "Answers open" : "Answers closed"}</span></div>
+      <p class="lv-prompt">${esc(q.prompt)}</p>
+      <div class="lv-meta"><strong>${plural(r?.count || 0, "answer")}</strong>${correct && !q.reveal ? `<span class="lh-private">✓ marks the correct answer for you only, until you reveal it.</span>` : ""}${q.kind === "words" ? `<span class="lh-private">Press a word to hide it from the cloud.</span>` : ""}</div>
+      <div>${results(q, r, { correct: true, hideable: true })}</div>${hidden}
+      <div class="lv-actions">${tools}</div>
+      ${showWho ? whoTable(q) : ""}`;
+    box.querySelectorAll("[data-act]").forEach((b) => b.addEventListener("click", () => current(b.dataset.act, q, b)));
+    box.querySelectorAll("[data-word]").forEach((b) => b.addEventListener("click", () => act(db.rpc("live_hide_word", { p_question: q.id, p_word: b.dataset.word, p_hide: true }))));
+    box.querySelectorAll("[data-unhide]").forEach((b) => b.addEventListener("click", () => act(db.rpc("live_hide_word", { p_question: q.id, p_word: b.dataset.unhide, p_hide: false }))));
+  }
+  const pname = (p) => (p?.first_name && p?.last_name ? `${p.last_name}, ${p.first_name}` : p?.email || "?");
+  function whoTable(q) {
+    if (!who) return `<p class="lv-empty">Loading…</p>`;
+    if (!who.length) return `<p class="lv-empty">Nobody has answered yet.</p>`;
+    const rows = [...who].sort((a, b) => pname(a.profiles).localeCompare(pname(b.profiles)));
+    return `<p class="lh-private">For you only. Don't project this part.</p><div class="dash-scroll" style="overflow-x:auto"><table class="lh-who"><thead><tr><th>Student</th><th>Answer</th><th>At</th></tr></thead><tbody>${rows.map((a) =>
+      `<tr><td>${esc(pname(a.profiles))}</td><td>${esc(answerText(q, a.value))}</td><td class="mono">${new Date(a.at).toLocaleTimeString([], { hour: "numeric", minute: "2-digit", second: "2-digit" })}</td></tr>`).join("")}</tbody></table></div>`;
+  }
+  function current(what, q, btn) {
+    if (what === "close") return act(db.from("live_questions").update({ status: "closed", closed_at: new Date().toISOString() }).eq("id", q.id), btn);
+    if (what === "open") return act(db.from("live_questions").update({ status: "open", closed_at: null }).eq("id", q.id), btn);
+    if (what === "reveal") return act(db.from("live_questions").update({ reveal: !q.reveal }).eq("id", q.id), btn);
+    if (what === "clear") return act(db.from("live_sessions").update({ current_question: null }).eq("id", st.session.id), btn);
+    if (what === "who") { showWho = !showWho; who = null; drawCurrent(); if (showWho) loadWho().then(drawCurrent); }
+  }
+
+  function drawHistory() {
+    const box = $("history");
+    if (!st.live) { box.innerHTML = `<h2 id="hist-h">This class</h2><p class="lv-empty">Questions you ask appear here.</p>`; return; }
+    const cur = st.question?.id;
+    box.innerHTML = `<h2 id="hist-h">This class</h2>${questions.length ? `<ol class="lh-list">${[...questions].reverse().map((q, i) =>
+      `<li class="lh-item${q.id === cur ? " is-current" : ""}"><div><small>${questions.length - i} · ${KINDS[q.kind]} · ${q.id === cur ? "on screen" : q.status}</small><p>${esc(q.prompt)}</p></div>
+        <div class="lv-actions">${q.id === cur ? "" : `<button class="btn" type="button" data-show="${q.id}" title="Put it back on screen with its results">Show</button>`}<button class="btn" type="button" data-copy="${q.id}" title="Copy it into New question">Copy</button></div></li>`).join("")}</ol>`
+      : `<p class="lv-empty">No questions yet.</p>`}`;
+    box.querySelectorAll("[data-show]").forEach((b) => b.addEventListener("click", () => act(db.from("live_sessions").update({ current_question: Number(b.dataset.show) }).eq("id", st.session.id), b)));
+    box.querySelectorAll("[data-copy]").forEach((b) => b.addEventListener("click", async () => {
+      const q = questions.find((x) => x.id === Number(b.dataset.copy));
+      const { data } = await db.from("live_private").select("correct").eq("question_id", q.id).maybeSingle();
+      loadDraft({ ...q, correct: data?.correct ?? null });
+    }));
+  }
+
+  // Composer ----------------------------------------------------------------------------------------------------------
+  const DRAFT = "live:draft";
+  const blank = (kind = "choice") => ({ kind, prompt: "", choices: ["", ""], correct: null, max: 1, min: 1, top: 5, low: "", high: "" });
+  let draft = Object.assign(blank(), store.get(DRAFT) || {});
+  let editingBank = null;   // id of the saved question being edited
+  const keep = () => store.set(DRAFT, draft);
+
+  function loadDraft(q) {
+    const o = q.options || {};
+    draft = Object.assign(blank(q.kind), { kind: q.kind, prompt: q.prompt },
+      q.kind === "choice" ? { choices: [...(o.choices || ["", ""])], correct: q.correct ?? null } : {},
+      q.kind === "words" ? { max: o.max || 1 } : {},
+      q.kind === "scale" ? { min: o.min ?? 1, top: o.max ?? 5, low: o.low || "", high: o.high || "" } : {});
+    keep();
+    drawComposer();
+    $("composer").scrollIntoView({ behavior: "smooth", block: "center" });
+    $("q-prompt").focus();
+  }
+
+  function drawComposer() {
+    const f = $("composer");
+    const kindBtns = Object.entries(KINDS).map(([k, label]) => `<button class="btn" type="button" data-kind="${k}" aria-pressed="${draft.kind === k}">${label}</button>`).join("");
+    let extra = "";
+    if (draft.kind === "choice") {
+      extra = `<fieldset style="border:0;padding:0;margin:0;display:grid;gap:8px"><legend style="font-weight:700;margin-bottom:6px">Choices <span class="lh-hint">· tick the correct one, if there is one</span></legend>
+        ${draft.choices.map((c, i) => `<div class="lh-choice"><input type="radio" name="correct" value="${i}" ${draft.correct === i ? "checked" : ""} aria-label="Choice ${LETTERS[i]} is correct" title="Correct answer"><span class="lv-letter">${LETTERS[i]}</span>
+          <input type="text" maxlength="200" data-choice="${i}" value="${esc(c)}" aria-label="Choice ${LETTERS[i]}" placeholder="Choice ${LETTERS[i]}">
+          <button class="btn lh-x" type="button" data-remove="${i}" aria-label="Remove choice ${LETTERS[i]}" ${draft.choices.length <= 2 ? "disabled" : ""}>✕</button></div>`).join("")}
+        <div class="lv-actions"><button class="btn" type="button" id="add-choice" ${draft.choices.length >= 6 ? "disabled" : ""}>+ Add a choice</button>${draft.correct != null ? `<button class="btn" type="button" id="no-correct">No correct answer</button>` : ""}</div></fieldset>`;
+    } else if (draft.kind === "words") {
+      extra = `<label>Words per student <select id="q-max">${[1, 2, 3].map((n) => `<option ${draft.max === n ? "selected" : ""}>${n}</option>`).join("")}</select><span class="lh-hint">Entries are lower-cased and trimmed, so “Flexbox” and “flexbox ” count as one.</span></label>`;
+    } else {
+      extra = `<div class="lh-row"><label>From <select id="q-min">${[0, 1].map((n) => `<option ${draft.min === n ? "selected" : ""}>${n}</option>`).join("")}</select></label>
+        <label>To <select id="q-top">${[2, 3, 4, 5, 6, 7, 8, 9, 10].map((n) => `<option ${draft.top === n ? "selected" : ""}>${n}</option>`).join("")}</select></label></div>
+        <div class="lh-row"><label>Low end means (optional) <input type="text" id="q-low" maxlength="40" value="${esc(draft.low)}" placeholder="Not at all"></label>
+        <label>High end means (optional) <input type="text" id="q-high" maxlength="40" value="${esc(draft.high)}" placeholder="Completely"></label></div>`;
+    }
+    f.innerHTML = `<div class="seg" role="group" aria-label="Question type">${kindBtns}</div>
+      <label>Question <textarea id="q-prompt" maxlength="500" placeholder="${draft.kind === "words" ? "In one word, how does flexbox feel so far?" : draft.kind === "scale" ? "How confident are you with grid?" : "Which property makes a flex container?"}">${esc(draft.prompt)}</textarea></label>
+      ${extra}
+      <div class="lv-actions"><button class="btn run" type="submit" data-ask>Ask now</button><button class="btn" type="button" id="save">${editingBank ? "Update saved question" : "Save for later"}</button>
+        ${editingBank ? `<button class="btn" type="button" id="cancel-edit">Stop editing</button>` : ""}<button class="btn" type="button" id="reset">Clear</button></div>
+      <p class="lv-msg" id="c-msg" role="status"></p>`;
+    f.querySelector("[data-ask]").disabled = !st?.live;
+    f.querySelector("[data-ask]").title = st?.live ? "" : "Start class first";
+    f.querySelectorAll("[data-kind]").forEach((b) => b.addEventListener("click", () => { draft.kind = b.dataset.kind; keep(); drawComposer(); }));
+    $("q-prompt").addEventListener("input", (e) => { draft.prompt = e.target.value; keep(); });
+    f.querySelectorAll("[data-choice]").forEach((inp) => inp.addEventListener("input", () => { draft.choices[inp.dataset.choice] = inp.value; keep(); }));
+    f.querySelectorAll("input[name=correct]").forEach((r) => r.addEventListener("change", () => { draft.correct = Number(r.value); keep(); drawComposer(); }));
+    f.querySelectorAll("[data-remove]").forEach((b) => b.addEventListener("click", () => {
+      const i = Number(b.dataset.remove);
+      draft.choices.splice(i, 1);
+      if (draft.correct === i) draft.correct = null; else if (draft.correct > i) draft.correct--;
+      keep(); drawComposer();
+    }));
+    $("add-choice")?.addEventListener("click", () => { draft.choices.push(""); keep(); drawComposer(); f.querySelector(`[data-choice="${draft.choices.length - 1}"]`).focus(); });
+    $("no-correct")?.addEventListener("click", () => { draft.correct = null; keep(); drawComposer(); });
+    $("q-max")?.addEventListener("change", (e) => { draft.max = Number(e.target.value); keep(); });
+    $("q-min")?.addEventListener("change", (e) => { draft.min = Number(e.target.value); keep(); });
+    $("q-top")?.addEventListener("change", (e) => { draft.top = Number(e.target.value); keep(); });
+    $("q-low")?.addEventListener("input", (e) => { draft.low = e.target.value; keep(); });
+    $("q-high")?.addEventListener("input", (e) => { draft.high = e.target.value; keep(); });
+    $("reset").addEventListener("click", () => { draft = blank(draft.kind); editingBank = null; keep(); drawComposer(); });
+    $("cancel-edit")?.addEventListener("click", () => { editingBank = null; draft = blank(draft.kind); keep(); drawComposer(); });
+    $("save").addEventListener("click", (e) => saveToBank(e.target));
+    f.onsubmit = (e) => { e.preventDefault(); ask(e.submitter || f.querySelector("[data-ask]")); };
+  }
+
+  // The draft as the database wants it, or an error message.
+  function built() {
+    const prompt = draft.prompt.trim();
+    if (!prompt) return { error: "Write the question first." };
+    if (draft.kind === "choice") {
+      const kept = draft.choices.map((c, i) => [c.trim(), i]).filter(([c]) => c);
+      if (kept.length < 2) return { error: "Give at least two choices." };
+      const correct = draft.correct == null ? null : kept.findIndex(([, i]) => i === draft.correct);
+      if (draft.correct != null && correct < 0) return { error: "The choice ticked as correct is empty." };
+      return { kind: "choice", prompt, options: { choices: kept.map(([c]) => c) }, correct };
+    }
+    if (draft.kind === "words") return { kind: "words", prompt, options: { max: draft.max }, correct: null };
+    return { kind: "scale", prompt, options: { min: draft.min, max: draft.top, low: draft.low.trim() || null, high: draft.high.trim() || null }, correct: null };
+  }
+  const cmsg = (t, bad) => { const m = $("c-msg"); m.textContent = t; m.className = "lv-msg" + (bad ? " bad" : t ? " ok" : ""); };
+
+  async function ask(btn) {
+    const q = built();
+    if (q.error) return cmsg(q.error, true);
+    btn.disabled = true;
+    const { error } = await db.rpc("live_ask", { p_kind: q.kind, p_prompt: q.prompt, p_options: q.options, p_correct: q.correct });
+    btn.disabled = false;
+    if (error) return cmsg(errText(error), true);
+    showWho = false; who = null;
+    editingBank = null;
+    draft = blank(draft.kind); keep(); drawComposer();
+    cmsg("Asked. It's on everyone's screen now.");
+    refresh(false);
+  }
+
+  async function saveToBank(btn) {
+    const q = built();
+    if (q.error) return cmsg(q.error, true);
+    btn.disabled = true;
+    const row = { kind: q.kind, prompt: q.prompt, options: q.options, correct: q.correct };
+    const { error } = editingBank ? await db.from("live_bank").update(row).eq("id", editingBank) : await db.from("live_bank").insert(row);
+    btn.disabled = false;
+    if (error) return cmsg(errText(error), true);
+    cmsg(editingBank ? "Saved question updated." : "Saved for later.");
+    editingBank = null;
+    draft = blank(draft.kind); keep(); drawComposer();
+    loadBank();
+  }
+
+  function drawBank() {
+    const list = $("bank");
+    if (!list) return;
+    list.innerHTML = bank.length ? bank.map((q, i) => `<li class="lh-item"><div><small>${KINDS[q.kind]}${q.kind === "choice" ? ` · ${q.options.choices.length} choices${q.correct != null ? ` · answer ${LETTERS[q.correct]}` : ""}` : ""}</small><p>${esc(q.prompt)}</p></div>
+      <div class="lv-actions"><button class="btn run" type="button" data-bask="${i}" ${st?.live ? "" : "disabled title=\"Start class first\""}>Ask</button><button class="btn" type="button" data-bedit="${i}">Edit</button>
+        <button class="btn" type="button" data-bup="${i}" ${i ? "" : "disabled"} aria-label="Move up">↑</button><button class="btn danger" type="button" data-bdel="${i}" aria-label="Delete">✕</button></div></li>`).join("")
+      : `<li class="lv-empty">None yet.</li>`;
+    list.querySelectorAll("[data-bask]").forEach((b) => b.addEventListener("click", async () => {
+      const q = bank[b.dataset.bask];
+      b.disabled = true;
+      const { error } = await db.rpc("live_ask", { p_kind: q.kind, p_prompt: q.prompt, p_options: q.options, p_correct: q.correct });
+      b.disabled = false;
+      if (error) return flash(errText(error), true);
+      showWho = false; who = null;
+      flash("Asked: " + q.prompt);
+      refresh(false);
+    }));
+    list.querySelectorAll("[data-bedit]").forEach((b) => b.addEventListener("click", () => { const q = bank[b.dataset.bedit]; editingBank = q.id; loadDraft(q); }));
+    list.querySelectorAll("[data-bup]").forEach((b) => b.addEventListener("click", async () => {
+      const i = Number(b.dataset.bup), a = bank[i], z = bank[i - 1];
+      await Promise.all([db.from("live_bank").update({ sort: z.sort }).eq("id", a.id), db.from("live_bank").update({ sort: a.sort }).eq("id", z.id)]);
+      loadBank();
+    }));
+    let armed = null;
+    list.querySelectorAll("[data-bdel]").forEach((b) => b.addEventListener("click", async () => {
+      if (armed !== b) { armed = b; b.textContent = "Delete?"; setTimeout(() => { if (armed === b) { armed = null; b.textContent = "✕"; } }, 3000); return; }
+      await db.from("live_bank").delete().eq("id", bank[b.dataset.bdel].id);
+      loadBank();
+    }));
+  }
+})();
+</script>
+</body>
+</html>

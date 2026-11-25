@@ -232,6 +232,8 @@
     if (current) trail.push(`<li><a href="${HOME}#part-${current.part.num}">${PART} ${current.part.num} · ${esc(current.part.title)}</a></li>`, `<li aria-current="page">${current.num} ${esc(current.title)}</li>`);
     else if (slug === "glossary") trail.push(`<li aria-current="page">Glossary</li>`);
     else if (slug === "instructor") trail.push(`<li aria-current="page">Instructor dashboard</li>`);
+    else if (slug === "account") trail.splice(1, 1, `<li aria-current="page">Your progress</li>`);
+    else if (slug === "live" || slug === "live-host") trail.splice(1, 1, slug === "live" ? `<li aria-current="page">Class is Live</li>` : `<li><a href="live.html">Class is Live</a></li><li aria-current="page">Host</li>`);
     bar.innerHTML = `<button class="btn book-menu" type="button" aria-controls="book-toc" aria-expanded="false"><span aria-hidden="true">☰</span> Contents</button>`
       + (`<nav class="book-crumbs" aria-label="Breadcrumb"><ol>${trail.join("")}</ol></nav>`)
       + `<div class="book-tools">${book.search === false ? "" : `<button class="btn book-search" type="button" aria-haspopup="dialog" aria-keyshortcuts="Control+K Meta+K"><span aria-hidden="true">⌕</span> Search</button>`}${current ? `<a class="crumb" href="print.html?lesson=${current.slug}">Print</a>` : ""}${slug === "glossary" ? "" : `<a class="crumb" href="glossary.html">Glossary</a>`}${slug === homeSlug || slug === "mdn-links" ? `<button class="btn book-theme" type="button"></button>` : ""}</div>`;
@@ -295,6 +297,17 @@
   const IDLE_MS = 60000, FLUSH_MS = 15000, MIN_BAR = 5000, MAX_BAR = 90000, MS_PER_WORD = 90;
   const CONTROL = 'button, input, select, textarea, [role="button"], [role="tab"], [role="slider"], [contenteditable="true"], [data-use]';
   const OWN_SIGNALS = ".runner, .sandbox, .exercise, .quiz, .term, .term-btn, .term-tip, .copy";
+  // Per section, for the "What's left" list (lessonTally): its reading bar in ms and, for hands-on sections, what to do.
+  const secInfo = {};
+  function useHint(parts) {
+    const has = (sel) => parts.some((el) => el.matches(sel) || el.querySelector(sel));
+    if (has(".exercise") || exerciseIds.some((id) => has("#" + CSS.escape(id)))) return "Press Check on the exercise.";
+    if (has(".quiz")) return "Answer every question in the quiz.";
+    if (has(".runner")) return "Change the code and press Run.";
+    if (has(".sandbox")) return "Type something in the live editor.";
+    const n = parts.flatMap((el) => [...el.querySelectorAll(CONTROL)]).filter((c) => !c.closest(OWN_SIGNALS)).length;
+    return n > 1 ? "Try the playground: change at least two different controls." : "Try the playground.";
+  }
   function trackSections(wrap, sections) {
     if (!sections.length) return;
     const owner = new Map();
@@ -312,6 +325,7 @@
     for (const s of sections) {
       const words = partsOf(s.id).reduce((n, el) => n + (el.textContent.match(/\S+/g) || []).length, 0);
       bars[key(s.id)] = P.needsUse(s.kind) ? MIN_BAR : Math.min(MAX_BAR, Math.max(MIN_BAR, words * MS_PER_WORD));
+      secInfo[s.id] = { bar: bars[key(s.id)], hint: P.needsUse(s.kind) ? useHint(partsOf(s.id)) : "" };
       const rec = P.section(key(s.id));
       total[s.id] = rec?.ms || 0;
       seen[s.id] = !!rec?.seen;
@@ -389,7 +403,8 @@
     const done = !P ? "" : book.scored
       ? `<div class="book-done book-meter"><label for="book-meter">Your score</label><progress id="book-meter" max="1" value="0"></progress><span class="book-meter-text" aria-live="polite"></span></div>`
       : book.autoComplete
-      ? `<div class="book-done book-meter"><label for="book-meter">Your progress on this lesson</label><progress id="book-meter" max="1" value="0"></progress><span class="book-meter-text" aria-live="polite"></span></div>`
+      ? `<div class="book-done book-meter"><label for="book-meter">Your progress on this lesson</label><progress id="book-meter" max="1" value="0"></progress><span class="book-meter-text" aria-live="polite"></span>
+          <details class="book-todo" hidden><summary>What's left (<span class="book-todo-count"></span>)</summary><ul></ul></details></div>`
       : `<div class="book-done"><span>Finished this lesson?</span><button class="btn" type="button" aria-pressed="false">Mark lesson complete</button></div>`;
     foot.innerHTML = done + step(prev, "prev") + step(next, "next");
     const rel = lessons.filter((l) => related.get(slug).has(l.slug));
@@ -401,14 +416,48 @@
 
   // How much of this lesson is done, counted the way the instructor dashboard counts it: each section seen (and,
   // for Play, Try it, Practice and Check yourself, used), each quiz finished and each exercise passed is one item.
+  // Each item also says, when it isn't done, where it is and what's missing (the footer's "What's left" list).
   function lessonTally(sections) {
     const d = P.data();
     const items = [
-      ...sections.map((s) => P.sectionDone(d.sections[`${slug}/${s.id}`], s.kind)),
-      ...[...document.querySelectorAll(".wrap .quiz[id]")].map((q) => Number.isFinite(d.quizzes[`${slug}/${q.id}`]?.best?.total)),
-      ...exerciseIds.map((id) => !!d.exercises[`${slug}/${id}`]?.passed),
+      ...sections.map((s) => {
+        const rec = d.sections[`${slug}/${s.id}`];
+        const done = P.sectionDone(rec, s.kind);
+        let why = "";
+        if (!done) {
+          const info = secInfo[s.id] || {};
+          const left = Math.ceil(Math.max(0, (info.bar || 0) - (rec?.ms || 0)) / 1000);
+          why = !rec?.seen
+            ? P.needsUse(s.kind)
+              ? info.hint || "Scroll to this section and try it."
+              : `Keep this section on screen while you read${left ? ` (about ${left} more second${left === 1 ? "" : "s"})` : ""}.`
+            : info.hint || "Try what this section asks.";
+        }
+        return { done, href: "#" + s.id, label: s.kind && s.kind !== "notes" ? `${s.kind}: ${s.text}` : s.text, why };
+      }),
+      ...[...document.querySelectorAll(".wrap .quiz[id]")].map((q) => {
+        const rec = d.quizzes[`${slug}/${q.id}`];
+        const total = q.quizItems?.length || 0, answered = Object.keys(rec?.answers || {}).length;
+        return { done: Number.isFinite(rec?.best?.total), href: "#" + q.id, label: "Quiz",
+          why: total ? `Answer all ${total} questions (${answered} answered so far). Any score counts.` : "Answer every question. Any score counts." };
+      }),
+      ...exerciseIds.map((id) => {
+        const rec = d.exercises[`${slug}/${id}`];
+        const title = document.getElementById(id)?.exerciseDef?.title;
+        const best = rec?.best?.total ? ` Best so far: ${rec.best.score} of ${rec.best.total} checks.` : " Not checked yet.";
+        return { done: !!rec?.passed, href: "#" + id, label: `Exercise${title ? `: ${title}` : ""}`, why: `Pass every check.${best}` };
+      }),
     ];
-    return { done: items.filter(Boolean).length, total: items.length };
+    return { done: items.filter((i) => i.done).length, total: items.length, left: items.filter((i) => !i.done) };
+  }
+  function paintTodo(left) {
+    const box = document.querySelector(".book-todo");
+    if (!box) return;
+    box.hidden = !left.length;
+    const html = left.map((i) => `<li><a href="${i.href}">${esc(i.label)}</a><span>${esc(i.why)}</span></li>`).join("");
+    const list = box.querySelector("ul");
+    if (list.dataset.html !== html) { list.innerHTML = html; list.dataset.html = html; }   // don't rebuild under a focused link
+    box.querySelector(".book-todo-count").textContent = left.length;
   }
 
   // Checkmarks, per-part counts and the Mark complete button (or lesson meter), redrawn whenever progress changes (in any tab).
@@ -429,7 +478,8 @@
         try { P.setComplete(slug, true); } finally { completing = false; }
       }
     } else if (meter && current) {
-      const { done, total } = lessonTally(sections);
+      const { done, total, left } = lessonTally(sections);
+      paintTodo(left);
       meter.max = total || 1;
       meter.value = done;
       const pct = total ? Math.round((done / total) * 100) : 0;

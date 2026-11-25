@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Class is Live</title>
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="live.css">
+<style>
+  main.wrap { max-width: 800px; }
+  .lv-head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 10px; }
+  .lv-results { display: grid; gap: 14px; border-top: 1px solid var(--line); padding-top: 18px; }
+  .lv-results h3 { font-size: 1rem; }
+</style>
+<script src="book.js"></script>
+<script src="js/progress.js"></script>
+<script src="js/chrome.js"></script>
+<script src="js/live.js"></script>
+</head>
+<body>
+<main class="wrap">
+  <header class="page-head">
+    <div class="lv-head"><span class="eyebrow">ATLS 2200 · In class</span><span class="lv-status" id="status">Offline</span></div>
+    <h1>Class is Live</h1>
+    <p class="lede" id="lede">Answer the question on screen. Everyone's answers show up together, without names.</p>
+  </header>
+
+  <div id="view" aria-live="polite"><div class="panel lv-wait"><p>Loading…</p></div></div>
+
+  <footer class="page-foot"><a href="index.html">← Course home</a><span>Your answers count toward attendance. Classmates never see who answered what.</span></footer>
+</main>
+
+<script>
+(function () {
+  const { esc, results, plural, errText, LETTERS } = Live;
+  const view = document.getElementById("view");
+  const status = document.getElementById("status");
+  let db = null, stop = null, state = null, formKey = null;
+  const picks = {};          // question id → what's picked but not sent yet, so a refresh doesn't lose it
+  const editing = new Set(); // question ids the student chose to change their answer for
+
+  const wait = (title, text, extra = "") => `<div class="panel lv-wait"><h2>${title}</h2><p>${text}</p>${extra}</div>`;
+  const setStatus = (on, text) => { status.textContent = text; status.classList.toggle("on", on); };
+
+  Live.start(({ B, db: client, user, profile, offline }) => {
+    if (stop) { stop(); stop = null; }
+    db = client; state = null; formKey = null;
+    if (offline) { setStatus(false, "Offline"); view.innerHTML = wait("Not set up yet", "Accounts aren't connected to this site yet, so there's nothing to join."); return; }
+    if (!user) {
+      setStatus(false, "Signed out");
+      view.innerHTML = wait("Sign in to join", "Use your course account, the same one as the textbook.", `<p><button class="btn run" type="button" id="signin">Sign in</button></p>`);
+      document.getElementById("signin").addEventListener("click", () => B.openDialog());
+      return;
+    }
+    if (B.status === "details") { view.innerHTML = wait("Finish setting up your account", "Choose your password and give your name in the Account dialog, then come back here.", `<p><button class="btn run" type="button" id="acct">Open Account</button></p>`); document.getElementById("acct").addEventListener("click", () => B.openDialog()); return; }
+    if (profile?.role === "instructor") document.getElementById("lede").innerHTML = `You're an instructor. Run the class from <a href="live-host.html">the host controls</a>; this is the student view.`;
+    refresh();
+    stop = Live.watch(db, refresh, { every: 4000 });
+  });
+
+  let busy = false;
+  async function refresh() {
+    if (!db || busy) return;
+    busy = true;
+    const { data, error } = await db.rpc("live_state");
+    busy = false;
+    if (error) { setStatus(false, "Can't connect"); if (!state) view.innerHTML = wait("Can't reach class", esc(errText(error))); return; }
+    state = data;
+    draw();
+  }
+
+  function draw() {
+    if (!state?.live) {
+      setStatus(false, "Not live");
+      formKey = null;
+      view.innerHTML = wait("Class isn't live right now", "This page opens up when your instructor starts class. Leave it open; it'll update by itself.");
+      return;
+    }
+    setStatus(true, "Live");
+    const q = state.question, r = state.results;
+    if (!q) { formKey = null; view.innerHTML = wait("You're in", `${state.session.title ? esc(state.session.title) + ". " : ""}Waiting for the next question…`); return; }
+    const answered = !!r?.mine;
+    const showForm = q.status === "open" && (!answered || editing.has(q.id));
+    // Redraw the answer form only when it really changes, so a refresh never interrupts typing.
+    const key = [q.id, q.status, q.reveal, showForm, JSON.stringify(r?.mine)].join("|");
+    if (key !== formKey) {
+      formKey = key;
+      view.innerHTML = `<article class="panel lv-card">
+        <div class="lv-meta"><span class="eyebrow">${Live.KINDS[q.kind]}</span><span id="count"></span></div>
+        <h2 class="lv-prompt">${esc(q.prompt)}</h2>
+        <div id="answer"></div>
+        <p class="lv-msg" id="msg" role="status"></p>
+        <section class="lv-results" id="res-wrap"><h3>Class results</h3><div id="res"></div></section>
+      </article>`;
+      const box = document.getElementById("answer");
+      if (showForm) drawForm(box, q, r);
+      else if (q.status === "open") {
+        box.innerHTML = `<div class="lv-actions"><p class="lv-msg ok">✓ Answer sent</p><button class="btn" type="button" id="change">Change my answer</button></div><p class="lv-msg">You can change it until answers close.</p>`;
+        document.getElementById("change").addEventListener("click", () => { editing.add(q.id); picks[q.id] = mineToPick(q, r.mine); formKey = null; draw(); });
+      } else box.innerHTML = `<p class="lv-msg">${answered ? "✓ Answers are closed. Yours is counted." : "Answers are closed for this one."}</p>`;
+    }
+    document.getElementById("count").textContent = r ? plural(r.count, "answer") + (q.status === "open" ? " so far" : "") : "";
+    const wrap = document.getElementById("res-wrap");
+    wrap.hidden = !r?.shown;
+    if (r?.shown) document.getElementById("res").innerHTML = results(q, r, { correct: q.reveal, mine: true });
+  }
+
+  const mineToPick = (q, v) => (q.kind === "words" ? [...(v?.words || [])] : q.kind === "scale" ? v?.n : v?.choice);
+
+  function drawForm(box, q, r) {
+    const pick = picks[q.id] ?? (q.kind === "words" ? [] : null);
+    picks[q.id] = pick;
+    if (q.kind === "choice") {
+      box.innerHTML = `<ul class="lv-choices" role="radiogroup" aria-label="Choices">${q.options.choices.map((c, i) =>
+        `<li><button type="button" class="lv-choice" role="radio" aria-pressed="${pick === i}" aria-checked="${pick === i}" data-v="${i}"><span class="lv-letter">${LETTERS[i]}</span><span>${esc(c)}</span></button></li>`).join("")}</ul>`;
+    } else if (q.kind === "scale") {
+      const { min, max, low, high } = q.options;
+      const nums = []; for (let v = min; v <= max; v++) nums.push(v);
+      box.innerHTML = `<div class="lv-scale" role="radiogroup" aria-label="Scale from ${min} to ${max}" style="--n:${nums.length}">${nums.map((v) =>
+        `<button type="button" class="lv-choice" role="radio" aria-pressed="${pick === v}" aria-checked="${pick === v}" data-v="${v}">${v}</button>`).join("")}</div>
+        ${low || high ? `<div class="lv-ends"><span>${esc(low ? `${min} = ${low}` : "")}</span><span>${esc(high ? `${max} = ${high}` : "")}</span></div>` : ""}`;
+    } else {
+      const n = q.options.max || 1;
+      box.innerHTML = `<div class="lv-words">${Array.from({ length: n }, (_, i) =>
+        `<input type="text" maxlength="30" autocomplete="off" autocapitalize="none" aria-label="Word or short phrase${n > 1 ? ` ${i + 1} of ${n}` : ""}" placeholder="${i === 0 ? "A word or short phrase" : "Another (optional)"}" value="${esc(pick[i] || "")}" data-i="${i}">`).join("")}</div>`;
+    }
+    box.insertAdjacentHTML("beforeend", `<div class="lv-actions" style="margin-top:14px"><button class="btn run" type="button" id="send">Send answer</button>${editing.has(q.id) ? `<button class="btn" type="button" id="cancel">Keep my old answer</button>` : ""}</div>`);
+    box.querySelectorAll(".lv-choice").forEach((b) => b.addEventListener("click", () => {
+      picks[q.id] = Number(b.dataset.v);
+      box.querySelectorAll(".lv-choice").forEach((x) => { const on = x === b; x.setAttribute("aria-pressed", on); x.setAttribute("aria-checked", on); });
+    }));
+    box.querySelectorAll("input").forEach((inp) => {
+      inp.addEventListener("input", () => { picks[q.id][inp.dataset.i] = inp.value; });
+      inp.addEventListener("keydown", (e) => { if (e.key === "Enter") { e.preventDefault(); send(q); } });
+    });
+    document.getElementById("send").addEventListener("click", () => send(q));
+    document.getElementById("cancel")?.addEventListener("click", () => { editing.delete(q.id); formKey = null; draw(); });
+  }
+
+  let sending = false;
+  async function send(q) {
+    if (sending) return;
+    const msg = document.getElementById("msg");
+    const pick = picks[q.id];
+    let value;
+    if (q.kind === "words") {
+      const words = (pick || []).map((w) => String(w || "").trim()).filter(Boolean);
+      if (!words.length) { msg.className = "lv-msg bad"; msg.textContent = "Type a word or short phrase first."; return; }
+      value = { words };
+    } else {
+      if (pick == null) { msg.className = "lv-msg bad"; msg.textContent = q.kind === "scale" ? "Pick a number first." : "Pick a choice first."; return; }
+      value = q.kind === "scale" ? { n: pick } : { choice: pick };
+    }
+    sending = true;
+    const btn = document.getElementById("send");
+    btn.disabled = true; btn.textContent = "Sending…";
+    const { data, error } = await db.rpc("live_answer", { p_question: q.id, p_value: value });
+    sending = false;
+    if (error) {
+      btn.disabled = false; btn.textContent = "Send answer";
+      msg.className = "lv-msg bad"; msg.textContent = errText(error);
+      refresh();
+      return;
+    }
+    editing.delete(q.id);
+    delete picks[q.id];
+    if (state?.question?.id === q.id) state.results = data;
+    formKey = null;
+    draw();
+  }
+})();
+</script>
+</body>
+</html>

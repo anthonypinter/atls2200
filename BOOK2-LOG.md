@@ -150,6 +150,10 @@ points and late work themselves. Built 2026-11-16:
   recitation you assign; `--reset <email>` re-issues one. Self sign-up is off in Supabase. First sign-in forces a new
   password (`profiles.must_change_password`, cleared by a trigger on `auth.users` when the password changes, migration
   0004), then first and last name, unless the enrollment CSV gave it (`first_name`/`last_name` columns on the roster, copied to the profile, migration 0005; added 2026-11-20). Students can't change their recitation. Any email address can have an account (0006 dropped the @colorado.edu trigger; `emailDomain` removed from both manifests, 2026-11-21). "Forgot your password?" needs SMTP.
+- **"What's left" list** (added 2026-11-24): under the lesson meter, a collapsible list of every unfinished item with a
+  link to it and the reason ("keep this section on screen ~N more seconds", "change at least two controls", "Pass every
+  check. Best so far 3 of 5", "Answer all 6 questions"). Built by `lessonTally()`/`paintTodo()` in `js/chrome.js`;
+  hints come from `useHint()` and reading bars from `secInfo`, both filled in `trackSections()`.
 - Gotcha: `Progress.setComplete()` logs an event before it saves, and logging repaints. `paintProgress` has a
   `completing` guard against the resulting infinite loop.
 
@@ -178,6 +182,35 @@ all open at once.
   (built by `check.mjs --write`; index entries now carry `questions`).
 - Not yet done: an end-to-end click-through in a real browser (quiz submit → footer score → dashboard with real
   accounts). The automated harness covers exercises and quiz rendering only.
+
+## Class is Live (in-class questions), built 2026-11-25
+
+The instructor starts class at the start of the session and ends it at the end. While it's live they ask one question at a time, and students answer on their phones or laptops. Choices made: **multiple choice, word cloud and scale (0/1 to 2–10)**; answers **anonymous on screen** (names only in the host's "Who answered" table and on the dashboard); each session counts as an **attendance record** (no correctness score).
+
+- **`supabase/migrations/0007_live_class.sql`**: tables `live_sessions`, `live_questions`, `live_private` (correct choice and hidden words, instructors only), `live_answers` (one per student per question, changeable while open), `live_bank` (questions saved for later). Students never write tables directly: they answer through `live_answer()`, which checks the question is on screen and open and that their account is set up, and normalises words (lower-case, trimmed, no punctuation at either end, ≤30 chars). `live_results()` returns totals only, to students only once they've answered or the question is closed. `live_state()` is the one call pages poll. `live_now()` is open to signed-out visitors and is used by the landing page. A session left open counts as over after 4 hours. Realtime is enabled on the three live tables. View `live_attendance` = one row per student per session.
+- **`live.html`** (students): sign in → "Class isn't live" / "Waiting for the next question" / the answer form → "Answer sent", with a Change button and the class results. Polls every 4 s, and Realtime makes it instant.
+- **`live-host.html`** (instructor): Start/End class (End needs two presses), New question composer (draft kept in localStorage), On screen (Close/Reopen answers, Reveal the answer, Who answered, Clear the screen, press a word to hide it from the cloud), This class (Show again / Copy), Saved questions (Ask / Edit / ↑ / delete). **`live-host.html?screen`** is the projector view: big question and results, join URL and a Full screen button. Open it in a second window or on the classroom computer.
+- **`js/live.js` + `live.css`**: shared start/watch helpers and the results charts (single-hue bars, scale columns with average, word cloud sized by count).
+- **Landing page**: the Class is Live door lights up ("Live now") while a session is open, checked every minute.
+- **Dashboard**: new "Live class" section, with students × classes, cells answered/asked, an "Attended N of M" column and an attendance CSV. It follows the recitation, section and name filters.
+- check.mjs: `live` and `live-host` are allowlisted, and they load `js/live.js` in place of `js/quiz.js`.
+- **Who answered what, after the fact** (added the same day): `Live.loadSession` / `reviewHTML` / `downloadCsv` in `js/live.js`. The review shows every question's results, a "Who answered what" table (with ✓ yes/no when the question has a correct choice) and who was in class but skipped that question. The CSV has one row per answer: class date and title, question number, type, prompt, email, names, recitation, section, answer, correct, time.
+  - Host page: **Download answers (CSV)** while class is live. After End class, a **Last class** panel has Show who answered what plus the CSV.
+  - Dashboard → Live class → **Review a class**: pick any class (or click a date column header), with its own CSV.
+  - Also fixed: the Start class panel was redrawn every refresh, which wiped a title being typed.
+- **Tested** only against a mocked Supabase (a scratch mock of the RPCs in headless Chrome: full class flow, no errors). Still to do: run 0007 on the real project and click through with one instructor and one student account.
+
+## Student progress page (account.html), built 2026-11-25
+
+Signed in, the **Your progress** button in the top bar (and the landing page's Log in button) now goes to `account.html` instead of opening the Account dialog. Signed out, or mid-setup (temporary password or no name yet), it still opens the dialog. On `account.html` the **Account settings** button opens the dialog (name, password, Save now, Sign out, and for instructors the dashboard link).
+
+- Tiles: Textbook % (all items over all Book 2 lessons, plus lessons complete), Exercises & Quizzes points (out of 270), and Class is Live (classes answered in / classes held). Then a **Continue →** to the last lesson or set opened (`Progress.last()`).
+- Textbook: one collapsible row per week with a meter. The week being worked on starts open. Each lesson shows its % and what's left ("Left: 3 sections, the quiz, 1 exercise").
+- Exercises & Quizzes: points per weekly set, the quiz's first submitted attempt, exercises tried.
+- Class is Live: each class with questions answered of asked. This comes from `live_my_attendance()`, added to `0007_live_class.sql`, because students can't read past sessions directly.
+- The numbers use the dashboard's rules (`lessonStats` copied from instructor.html; `Progress.score` for sets), so the student and the instructor see the same figures. It reads book-2.js/practice.js and their search indexes by swapping `window.BOOK`, like instructor.html.
+- Signed out, the page still shows this browser's progress, with a banner saying the instructor can't see it.
+- Tested with the mock backend and seeded progress (desktop and phone screenshots). The real `js/backend.js` routing hasn't been clicked through.
 
 ## Open offers / loose ends
 

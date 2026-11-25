@@ -22,6 +22,7 @@ In **SQL Editor → New query**, paste each file's entire contents and press **R
 - [ ] `supabase/migrations/0004_enrollment.sql`
 - [ ] `supabase/migrations/0005_roster_names.sql`
 - [ ] `supabase/migrations/0006_any_email.sql`
+- [ ] `supabase/migrations/0007_live_class.sql` (Class is Live: in-class questions and attendance)
 
 ### 3. Make yourself an instructor
 - [ ] In the SQL Editor, run:
@@ -109,3 +110,4 @@ On first sign-in, each student must choose their own password, then give their f
 Add a dated line for each step and anything that went wrong.
 
 - 2026-11-16: Completion tracking built and tested with a mocked backend (see `BOOK2-LOG.md`, "Completion tracking"). Backend not yet connected.
+- 2026-11-25: Added `0007_live_class.sql` for Class is Live. Run it after 0006 (it also turns on Realtime for the three live tables). Written and tested against a mocked database only; first real run still to do.

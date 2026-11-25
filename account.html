@@ -1,0 +1,238 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Your Progress</title>
+<link rel="stylesheet" href="style.css">
+<style>
+  /* A student's own progress, from the same saved data the instructor dashboard reads (js/progress.js, synced to
+     their account by js/backend.js). Counts use the same rules as the dashboard, so both show the same numbers. */
+  .ac-head { display: flex; flex-wrap: wrap; gap: 10px 16px; align-items: center; justify-content: space-between; }
+  .ac-who { display: flex; flex-wrap: wrap; gap: 6px 14px; align-items: center; color: var(--muted); }
+  .ac-banner { display: flex; flex-wrap: wrap; gap: 10px 16px; align-items: center; justify-content: space-between; margin-bottom: 20px; border-color: var(--cobalt); background: var(--cobalt-soft); }
+  .ac-banner p { margin: 0; }
+  .ac-tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 14px; }
+  .ac-tile { display: grid; gap: 6px; align-content: start; color: var(--ink); text-decoration: none; }
+  a.ac-tile:hover { border-color: var(--cobalt); }
+  .ac-tile .eyebrow { display: block; }
+  .ac-big { font: 800 2.2rem/1 var(--font-code); font-variation-settings: "MONO" 1; letter-spacing: -0.02em; }
+  .ac-big small { font-size: 0.5em; color: var(--muted); font-weight: 600; letter-spacing: 0; }
+  .ac-tile p { margin: 0; color: var(--muted); font-size: 0.9rem; }
+  .ac-meter { height: 8px; border-radius: 4px; background: var(--stage); overflow: hidden; }
+  .ac-meter > span { display: block; height: 100%; width: var(--p); min-width: 0; background: var(--cobalt); border-radius: 0 4px 4px 0; }
+  .ac-meter.full > span { background: var(--good); }
+  .ac-continue { display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: center; justify-content: space-between; margin-top: 14px; }
+  .ac-continue p { margin: 0; }
+  .ac-sec { display: grid; gap: 12px; margin-top: 36px; }
+  .ac-sec > h2 { font-size: 1.4rem; }
+  .ac-sec > p { margin: 0; color: var(--muted); }
+  .ac-week { border: 1px solid var(--line); border-radius: var(--radius); background: var(--panel); }
+  .ac-week > summary { display: grid; grid-template-columns: minmax(0, 1fr) minmax(90px, 180px) 4.5em; gap: 8px 14px; align-items: center; padding: 12px 16px; cursor: pointer; }
+  .ac-week > summary::-webkit-details-marker { display: none; }
+  .ac-week > summary::before { content: "▸"; position: absolute; left: 12px; color: var(--muted); }
+  .ac-week[open] > summary::before { content: "▾"; }
+  .ac-week > summary { position: relative; padding-left: 28px; }
+  .ac-week-title { font-weight: 700; min-width: 0; }
+  .ac-week-title small { display: block; font: 600 0.72rem var(--font-code); font-variation-settings: "MONO" 1; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); margin-bottom: 2px; }
+  .ac-pct { font: 700 0.9rem var(--font-code); font-variation-settings: "MONO" 1; text-align: right; }
+  .ac-pct.full { color: var(--good); }
+  .ac-lessons { margin: 0; padding: 0 16px 12px; list-style: none; display: grid; }
+  .ac-lesson { display: grid; grid-template-columns: 3em minmax(0, 1fr) auto 4.5em; gap: 4px 12px; align-items: center; padding: 8px 0; border-top: 1px solid var(--line); }
+  .ac-lesson .num { font: 600 0.8rem var(--font-code); font-variation-settings: "MONO" 1; color: var(--muted); }
+  .ac-lesson a { font-weight: 600; overflow-wrap: anywhere; }
+  .ac-left { font-size: 0.82rem; color: var(--muted); white-space: nowrap; }
+  .ac-table-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: var(--radius); background: var(--panel); }
+  .ac-table { width: 100%; border-collapse: collapse; font-size: 0.92rem; }
+  .ac-table th, .ac-table td { padding: 9px 12px; border-bottom: 1px solid var(--line); text-align: left; white-space: nowrap; }
+  .ac-table thead th { font: 600 0.75rem var(--font-code); font-variation-settings: "MONO" 1; color: var(--muted); }
+  .ac-table tbody tr:last-child > * { border-bottom: 0; }
+  .ac-table td.wrap-ok { white-space: normal; min-width: 12em; }
+  .ac-yes { color: var(--good); font-weight: 700; }
+  .ac-no { color: var(--muted); }
+  .ac-empty { color: var(--muted); margin: 0; }
+  @media (max-width: 560px) {
+    .ac-week > summary { grid-template-columns: minmax(0, 1fr) 4em; }
+    .ac-week > summary .ac-meter { grid-column: 1 / -1; grid-row: 2; }
+    .ac-lesson { grid-template-columns: 2.6em minmax(0, 1fr) 3.6em; }
+    .ac-left { grid-column: 2 / -1; grid-row: 2; white-space: normal; }
+  }
+</style>
+<script src="book.js"></script>
+<script src="js/progress.js"></script>
+<script src="js/chrome.js"></script>
+<script src="js/quiz.js"></script>
+</head>
+<body>
+<main class="wrap">
+  <header class="page-head">
+    <div class="ac-head"><span class="eyebrow">ATLS 2200 · Your account</span><button class="btn" type="button" id="settings">Account settings</button></div>
+    <h1>Your progress</h1>
+    <p class="ac-who" id="who">Loading…</p>
+  </header>
+
+  <div id="app"><p class="ac-empty">Loading your progress…</p></div>
+
+  <footer class="page-foot"><a href="index.html">← Course home</a><span>These are the same numbers your instructor sees.</span></footer>
+</main>
+
+<script>
+(function () {
+  const P = window.Progress;
+  const $ = (id) => document.getElementById(id);
+  const esc = (s) => String(s ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+  const obj = (x) => (x && typeof x === "object" && !Array.isArray(x) ? x : {});
+  const pct = (done, total) => (total ? Math.round((done / total) * 100) : 0);
+  const plural = (n, one, many = one + "s") => `${n} ${n === 1 ? one : many}`;
+  const meter = (p) => `<div class="ac-meter${p === 100 ? " full" : ""}" role="img" aria-label="${p}%"><span style="--p:${p}%"></span></div>`;
+  const pts = (n) => String(Math.round(n * 10) / 10);
+
+  let B = null, textbook = null, practice = null, attendance = null, attendanceNote = "";
+
+  // The page loads book.js (for the top bar and accounts); the course's other manifests are read and set aside, the
+  // same way instructor.html does. Their indexes (built by scripts/check.mjs --write) list each lesson's items.
+  async function manifest(file, index) {
+    const keep = window.BOOK, keepIndex = window.SEARCH_INDEX;
+    await loadScript(file);
+    const book = window.BOOK;
+    window.BOOK = keep;
+    await loadScript(index);
+    const idx = new Map(window.SEARCH_INDEX.lessons.map((l) => [l.slug, l]));
+    window.SEARCH_INDEX = keepIndex;
+    book.parts.forEach((part, p) => {
+      part.num = p + 1;
+      part.lessons.forEach((l, i) => Object.assign(l, { num: `${p + 1}.${i + 1}`, part }));
+      part.lessons = part.lessons.filter((l) => !l.planned);
+    });
+    return { book, idx };
+  }
+
+  // A lesson's items and how many are done: the dashboard's rule (instructor.html, lessonStats).
+  function lessonStats(data, slug, idx) {
+    const l = idx.get(slug) || { sections: [], quizzes: [], exercises: [] };
+    const secs = obj(data.sections), quizzes = obj(data.quizzes), exs = obj(data.exercises);
+    const sections = l.sections.map((s) => P.sectionDone(obj(secs[`${slug}/${s.id}`]), s.kind));
+    const qs = l.quizzes.map((id) => Number.isFinite(obj(obj(quizzes[id]).best).total));
+    const es = l.exercises.map((id) => !!obj(exs[id]).passed);
+    const items = [...sections, ...qs, ...es];
+    const left = [];
+    const secLeft = sections.filter((d) => !d).length, qLeft = qs.filter((d) => !d).length, eLeft = es.filter((d) => !d).length;
+    if (secLeft) left.push(plural(secLeft, "section"));
+    if (qLeft) left.push(qLeft === 1 ? "the quiz" : plural(qLeft, "quiz", "quizzes"));
+    if (eLeft) left.push(plural(eLeft, "exercise"));
+    return { done: items.filter(Boolean).length, total: items.length, left, complete: !!obj(obj(data.lessons)[slug]).completed, visited: !!obj(obj(data.lessons)[slug]).visited };
+  }
+
+  function draw() {
+    if (!textbook || !practice) return;
+    const data = P.data();
+    const signedIn = !!B?.user;
+    const p = B?.profile || {};
+    $("who").innerHTML = signedIn
+      ? [esc([p.first_name, p.last_name].filter(Boolean).join(" ") || p.email || B.user.email), p.recitation ? `Recitation ${esc(p.recitation)}` : "", B.status === "error" ? `<span class="ac-no">Not saved just now; it will catch up when you're back online</span>` : ""].filter(Boolean).join(" · ")
+      : "Not signed in";
+    $("settings").textContent = signedIn ? "Account settings" : "Sign in";
+
+    // Textbook: every written lesson, week by week.
+    const { book: tb, idx: tbIdx } = textbook;
+    let tDone = 0, tTotal = 0, lessonsDone = 0, lessonsAll = 0;
+    const weeks = tb.parts.filter((w) => w.lessons.length).map((w) => {
+      const rows = w.lessons.map((l) => ({ l, st: lessonStats(data, l.slug, tbIdx) }));
+      const done = rows.reduce((n, r) => n + r.st.done, 0), total = rows.reduce((n, r) => n + r.st.total, 0);
+      tDone += done; tTotal += total;
+      lessonsAll += rows.length; lessonsDone += rows.filter((r) => r.st.complete || (r.st.total && r.st.done === r.st.total)).length;
+      return { w, rows, done, total };
+    });
+    const last = P.last();
+    const lastLesson = last && tb.parts.flatMap((w) => w.lessons).find((l) => l.slug === last.slug);
+    const lastSet = last && !lastLesson && practice.book.parts.flatMap((w) => w.lessons).find((l) => l.slug === last.slug);
+    // Open the week being worked on: the last lesson's, or the first unfinished one.
+    const openWeek = lastLesson?.part.num || weeks.find((x) => x.done < x.total)?.w.num;
+
+    // Exercises & Quizzes: points per weekly set.
+    const { book: pr, idx: prIdx } = practice;
+    const sets = pr.parts.flatMap((w) => w.lessons).map((l) => {
+      const page = prIdx.get(l.slug) || {};
+      const sc = P.score(data, { slug: l.slug, questions: page.questions || 0, exercises: (page.exercises || []).map((id) => id.split("/")[1]) });
+      return { l, sc, started: sc.quiz.done || sc.exercises.some((e) => e.tried) };
+    });
+    const pPts = sets.reduce((n, s) => n + s.sc.points, 0), pMax = sets.reduce((n, s) => n + s.sc.max, 0);
+
+    // Class is Live
+    const att = attendance || [];
+    const held = att.filter((a) => a.asked > 0), attended = held.filter((a) => a.answered > 0).length;
+
+    const tp = pct(tDone, tTotal);
+    const tiles = `<div class="ac-tiles">
+      <a class="panel ac-tile" href="#textbook"><span class="eyebrow">Textbook</span><span class="ac-big">${tp}<small>%</small></span>${meter(tp)}<p>${plural(lessonsDone, "lesson")} of ${lessonsAll} complete</p></a>
+      <a class="panel ac-tile" href="#practice"><span class="eyebrow">Exercises &amp; Quizzes</span><span class="ac-big">${pts(pPts)}<small> / ${pMax}</small></span>${meter(pct(pPts, pMax))}<p>${sets.filter((s) => s.started).length} of ${sets.length} weekly sets started</p></a>
+      <a class="panel ac-tile" href="#live"><span class="eyebrow">Class is Live</span>${attendance ? `<span class="ac-big">${attended}<small> / ${held.length}</small></span>${meter(pct(attended, held.length))}<p>classes you answered in</p>` : `<span class="ac-big"><small>—</small></span><p>${signedIn ? "Not available yet" : "Sign in to see it"}</p>`}</a>
+    </div>`;
+    const resume = lastLesson ? { label: `${lastLesson.num} ${lastLesson.title}`, slug: lastLesson.slug } : lastSet ? { label: `Exercises & Quizzes, Week ${lastSet.part.num}: ${lastSet.title}`, slug: lastSet.slug } : null;
+    const cont = resume ? `<div class="panel ac-continue"><p>Pick up where you left off: <strong>${esc(resume.label)}</strong></p><a class="btn run" href="${esc(resume.slug)}.html">Continue →</a></div>` : "";
+
+    const weekHtml = weeks.map(({ w, rows, done, total }) => {
+      const p = pct(done, total);
+      return `<details class="ac-week"${w.num === openWeek ? " open" : ""}><summary><span class="ac-week-title"><small>Week ${w.num}</small>${esc(w.title)}</span>${meter(p)}<span class="ac-pct${p === 100 ? " full" : ""}">${p}%</span></summary>
+        <ul class="ac-lessons">${rows.map(({ l, st }) => {
+          const lp = pct(st.done, st.total), full = st.complete || (st.total && st.done === st.total);
+          const left = full ? `<span class="ac-yes">✓ Complete</span>` : st.visited || st.done ? `Left: ${st.left.join(", ")}` : "Not started";
+          return `<li class="ac-lesson"><span class="num">${l.num}</span><a href="${esc(l.slug)}.html">${esc(l.title)}</a><span class="ac-left">${left}</span><span class="ac-pct${full ? " full" : ""}">${full ? "100" : lp}%</span></li>`;
+        }).join("")}</ul></details>`;
+    }).join("");
+
+    const setRows = sets.map(({ l, sc, started }) => {
+      const tried = sc.exercises.filter((e) => e.tried).length;
+      return `<tr><td class="wrap-ok"><a href="${esc(l.slug)}.html">Week ${l.part.num} · ${esc(l.title)}</a></td>
+        <td>${started ? `<strong>${pts(sc.points)}</strong> / ${sc.max}` : `<span class="ac-no">— / ${sc.max}</span>`}</td>
+        <td>${sc.quiz.done ? `<span class="ac-yes">✓</span> ${pts(sc.quiz.points)} / ${sc.quiz.max}` : `<span class="ac-no">Not taken</span>`}</td>
+        <td>${tried} of ${sc.exercises.length} tried${sc.exercises.some((e) => e.tried) ? ` · ${pts(sc.exercises.reduce((n, e) => n + e.points, 0))} pts` : ""}</td></tr>`;
+    }).join("");
+
+    const liveHtml = !signedIn ? `<p class="ac-empty">Sign in to see the classes you've answered in.</p>`
+      : !attendance ? `<p class="ac-empty">${esc(attendanceNote || "Loading…")}</p>`
+      : !held.length ? `<p class="ac-empty">No classes with questions yet.</p>`
+      : `<div class="ac-table-wrap"><table class="ac-table"><thead><tr><th>Class</th><th>Questions answered</th><th>Attended</th></tr></thead><tbody>${[...held].reverse().map((a) =>
+          `<tr><td class="wrap-ok">${esc(new Date(a.started_at).toLocaleDateString([], { weekday: "short", month: "short", day: "numeric" }))}${a.title ? ` · ${esc(a.title)}` : ""}</td><td>${a.answered} of ${a.asked}</td><td>${a.answered ? `<span class="ac-yes">✓ Yes</span>` : `<span class="ac-no">No answers</span>`}</td></tr>`).join("")}</tbody></table></div>`;
+
+    $("app").innerHTML = `${signedIn ? "" : `<div class="panel ac-banner"><p>You're not signed in, so this is only what's saved in this browser, and your instructor can't see it.</p><button class="btn run" type="button" data-signin>Sign in</button></div>`}
+      ${tiles}${cont}
+      <section class="ac-sec" aria-labelledby="textbook"><h2 id="textbook">Textbook</h2><p>A lesson counts as done when you've read every section, used every Play, Try it and Practice section, finished its quizzes and passed its exercises.</p>${weekHtml}</section>
+      <section class="ac-sec" aria-labelledby="practice"><h2 id="practice">Exercises &amp; Quizzes</h2><p>Points on each weekly set: 1 a quiz question (your one submitted attempt) and ${P.EXERCISE_POINTS} an exercise, in proportion to the most checks you've passed.</p>
+        <div class="ac-table-wrap"><table class="ac-table"><thead><tr><th>Set</th><th>Points</th><th>Quiz</th><th>Exercises</th></tr></thead><tbody>${setRows}</tbody></table></div></section>
+      <section class="ac-sec" aria-labelledby="live"><h2 id="live">Class is Live</h2><p>In-class questions count toward attendance: a class counts once you've answered at least one of its questions.</p>${liveHtml}</section>`;
+    $("app").querySelector("[data-signin]")?.addEventListener("click", () => B?.openDialog());
+  }
+
+  async function loadAttendance() {
+    attendance = null; attendanceNote = "";
+    if (!B?.user || B.status === "details") return;
+    const { data, error } = await B.client.rpc("live_my_attendance");
+    if (error) attendanceNote = "Not available yet."; else attendance = data || [];
+    draw();
+  }
+
+  async function boot() {
+    [textbook, practice] = [await manifest("book-2.js", "search-index-2.js"), await manifest("practice.js", "search-index-practice.js")];
+    draw();
+    P.subscribe(draw);
+    $("settings").addEventListener("click", () => B?.openDialog());
+    if (!window.BOOK.backend?.url) { $("settings").hidden = true; return; }
+    await loadScript("js/backend.js");
+    B = window.Backend;
+    if (!B) return;
+    let who;
+    const update = () => {
+      const now = B.user ? `${B.user.id}:${B.status === "details"}` : "";
+      if (now !== who) { who = now; loadAttendance(); }
+      draw();
+    };
+    B.onChange(update);
+    await B.ready();
+    update();
+  }
+  boot();
+})();
+</script>
+</body>
+</html>
